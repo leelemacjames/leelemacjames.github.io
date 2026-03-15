@@ -406,6 +406,89 @@
     border-bottom: none;
   }
 
+  #fnTip.vis { opacity:1; }
+  .tf { font-size:1rem; font-family:'Cormorant Garamond',serif; color:#c4965a; display:block; margin-bottom:0.1rem; }
+  .td { color:#6b6b80; font-size:0.62rem; }
+
+  /* ── FAREY DIAGRAM ── */
+  .farey-wrap {
+    margin: 2.4rem 0 0;
+    background: #13131a;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.4rem 1.6rem 1rem;
+  }
+
+  .farey-head { margin-bottom: 1rem; }
+
+  .farey-title {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--text-hi);
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .farey-sub {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: #7a7a95;
+    line-height: 1.7;
+    margin-bottom: 0.9rem;
+  }
+
+  .farey-ctrls {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+
+  .fcl {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #5a5a72;
+  }
+
+  .fn-btn-row { display: flex; gap: 0.25rem; }
+
+  .fn-btn {
+    width: 26px; height: 26px;
+    border-radius: 2px;
+    border: 1px solid #2e2e3e;
+    background: none;
+    color: #6a6a82;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    cursor: pointer;
+    transition: all 0.14s;
+  }
+  .fn-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .fn-btn.active { background: var(--accent); border-color: var(--accent); color: #0d0d0f; }
+
+  .ftog {
+    display: flex; align-items: center; gap: 0.35rem;
+    font-family: var(--mono); font-size: 0.6rem; color: #6a6a82;
+    cursor: pointer; user-select: none;
+  }
+  .ftog input { accent-color: var(--accent); cursor: pointer; }
+
+  .fn-legend {
+    display: flex; flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    margin-top: 0.8rem;
+  }
+
+  .fn-leg {
+    display: flex; align-items: center; gap: 0.3rem;
+    font-family: var(--mono); font-size: 0.58rem; color: #5a5a72;
+  }
+
+  .fn-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
   /* ── CODA ── */
   .coda {
     margin-top: 6rem;
@@ -631,6 +714,22 @@
         </a>
       </div>
 
+      <!-- ══ FAREY NUMBER LINE ══ -->
+      <div class="farey-wrap">
+        <div class="farey-head">
+          <span class="farey-title">The interval is not featureless</span>
+          <p class="farey-sub">Each row is F<sub>N</sub>: all fractions p/q with q &le; N, placed at their true position on [0,1]. Bright dots are new at that level, always the mediant of their two neighbours above. Hover any dot to inspect.</p>
+          <div class="farey-ctrls">
+            <span class="fcl">Max level N</span>
+            <div id="fnBtns" class="fn-btn-row"></div>
+            <label class="ftog"><input type="checkbox" id="fnLabels" checked> Labels</label>
+            <label class="ftog"><input type="checkbox" id="fnArcs" checked> Mediant arcs</label>
+          </div>
+        </div>
+        <div style="overflow-x:auto;"><canvas id="fnCanvas"></canvas></div>
+        <div id="fnLegend" class="fn-legend"></div>
+      </div>
+
       <div class="wst-wrap">
         <button class="wst-btn" onclick="openLayer('layer3', this)">
           <span class="arrow">▶</span>
@@ -802,6 +901,9 @@
 
 </div><!-- .page-wrap -->
 
+<div id="fnTip" style="position:fixed;pointer-events:none;background:#111114;border:1px solid #2a2a32;border-radius:3px;padding:0.4rem 0.75rem;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#e8e8f0;line-height:1.65;z-index:200;opacity:0;transition:opacity 0.12s;max-width:210px;">
+</div>
+
 <script>
   // ── SCROLL REVEAL ──
   const observer = new IntersectionObserver(entries => {
@@ -917,7 +1019,275 @@
   // Run once on load
   window.addEventListener('load', () => {
     computeTotient();
+    fnInit();
   });
+
+  // ── FAREY NUMBER LINE ────────────────────────────────────────
+
+  // Bright palette against dark bg
+  const FN_PAL = ['#e8a84a','#82b8e0','#b890d8','#72cc9a','#e08888','#ccc870','#88c4e0','#e0a8a8'];
+  const fnCol  = lv => FN_PAL[Math.min(lv-1, FN_PAL.length-1)];
+
+  function fnFarey(N) {
+    let a=0,b=1,c=1,d=N;
+    const r=[{p:0,q:1}];
+    while(c<=N){
+      const k=Math.floor((N+b)/d);
+      const ta=c,tb=d;
+      c=k*c-a; d=k*d-b; a=ta; b=tb;
+      r.push({p:a,q:b});
+    }
+    return r.map(f=>({...f,level:f.q}));
+  }
+
+  function fnNewAt(lv) {
+    const cur  = new Set(fnFarey(lv).map(f=>f.p+'/'+f.q));
+    const prev = lv>1 ? new Set(fnFarey(lv-1).map(f=>f.p+'/'+f.q)) : new Set();
+    const s = new Set();
+    for(const k of cur) if(!prev.has(k)) s.add(k);
+    return s;
+  }
+
+  function fnNbrs(seq, idx) {
+    const {p:a,q:b}=seq[idx], r=[];
+    if(idx>0){const{p:c,q:d}=seq[idx-1];if(Math.abs(a*d-c*b)===1)r.push(seq[idx-1]);}
+    if(idx<seq.length-1){const{p:c,q:d}=seq[idx+1];if(Math.abs(a*d-c*b)===1)r.push(seq[idx+1]);}
+    return r;
+  }
+
+  let fnN=6, fnShowLabels=true, fnShowArcs=true;
+  let fnHovRow=-1, fnHovIdx=-1;
+
+  const fnCanvas = document.getElementById('fnCanvas');
+  const fnCtx    = fnCanvas ? fnCanvas.getContext('2d') : null;
+
+  const FN_PL=32, FN_PR=32, FN_ROW=58, FN_DOT=20, FN_AX=26;
+
+  function fnWidth() {
+    const wrap = fnCanvas ? fnCanvas.parentElement : null;
+    if(!wrap) return 680;
+    return Math.max(340, wrap.clientWidth - 4);
+  }
+
+  function fnTx(t, W) { return FN_PL + t*(W - FN_PL - FN_PR); }
+
+  function fnSetSize() {
+    if(!fnCanvas) return;
+    fnCanvas.width  = fnWidth();
+    fnCanvas.height = fnN * FN_ROW + FN_AX + 8;
+  }
+
+  function fnDraw() {
+    if(!fnCtx) return;
+    const W = fnCanvas.width, H = fnCanvas.height;
+    fnCtx.clearRect(0,0,W,H);
+    fnCtx.fillStyle='#0f0f14'; fnCtx.fillRect(0,0,W,H);
+
+    const newSets={};
+    for(let lv=1;lv<=fnN;lv++) newSets[lv]=fnNewAt(lv);
+
+    // Drop lines
+    const full=fnFarey(fnN);
+    fnCtx.save();
+    fnCtx.strokeStyle='#252535'; fnCtx.lineWidth=0.5;
+    for(const f of full){
+      const x=fnTx(f.p/f.q,W);
+      fnCtx.beginPath(); fnCtx.moveTo(x,4); fnCtx.lineTo(x,H-FN_AX); fnCtx.stroke();
+    }
+    fnCtx.restore();
+
+    for(let lv=1;lv<=fnN;lv++){
+      const seq  = fnFarey(lv);
+      const rowY = (lv-1)*FN_ROW + FN_DOT;
+      const isHR = (fnHovRow===lv);
+
+      // Row label
+      fnCtx.save();
+      fnCtx.font=`300 9px 'IBM Plex Mono',monospace`;
+      fnCtx.fillStyle = isHR ? fnCol(lv) : '#4a4a62';
+      fnCtx.textAlign='right'; fnCtx.textBaseline='middle';
+      fnCtx.fillText('F'+lv, FN_PL-7, rowY);
+      fnCtx.restore();
+
+      // Row baseline
+      fnCtx.save();
+      fnCtx.strokeStyle = isHR ? fnCol(lv)+'44' : '#1c1c28';
+      fnCtx.lineWidth=0.7;
+      fnCtx.beginPath(); fnCtx.moveTo(FN_PL,rowY); fnCtx.lineTo(W-FN_PR,rowY); fnCtx.stroke();
+      fnCtx.restore();
+
+      // Mediant arcs
+      if(fnShowArcs && lv>1){
+        const prevSet=new Set(fnFarey(lv-1).map(f=>f.p+'/'+f.q));
+        for(let i=0;i<seq.length;i++){
+          const key=seq[i].p+'/'+seq[i].q;
+          if(!prevSet.has(key)){
+            const cx=fnTx(seq[i].p/seq[i].q,W);
+            const col=fnCol(lv);
+            for(const nb of [-1,1]){
+              const ni=i+nb;
+              if(ni<0||ni>=seq.length) continue;
+              if(!prevSet.has(seq[ni].p+'/'+seq[ni].q)) continue;
+              const nx=fnTx(seq[ni].p/seq[ni].q,W);
+              const mx=(cx+nx)/2;
+              const rise=Math.min(Math.abs(cx-nx)*0.45,16);
+              fnCtx.save();
+              fnCtx.strokeStyle=col+'55'; fnCtx.lineWidth=0.8;
+              fnCtx.beginPath();
+              fnCtx.moveTo(nx,rowY);
+              fnCtx.quadraticCurveTo(mx,rowY-rise,cx,rowY);
+              fnCtx.stroke();
+              fnCtx.restore();
+            }
+          }
+        }
+      }
+
+      // Dots and labels
+      for(let i=0;i<seq.length;i++){
+        const f   = seq[i];
+        const key = f.p+'/'+f.q;
+        const x   = fnTx(f.p/f.q,W);
+        const isN = newSets[lv].has(key);
+        const isH = (isHR && fnHovIdx===i);
+        const col = fnCol(f.level);
+        const r   = isH?6 : isN?4:2.6;
+        const opa = isH?1 : isN?1:0.28;
+
+        fnCtx.save();
+        if(isH){
+          fnCtx.beginPath(); fnCtx.arc(x,rowY,r+6,0,Math.PI*2);
+          fnCtx.fillStyle=col+'22'; fnCtx.fill();
+        }
+        fnCtx.globalAlpha=opa;
+        fnCtx.beginPath(); fnCtx.arc(x,rowY,r,0,Math.PI*2);
+        fnCtx.fillStyle=col; fnCtx.fill();
+        fnCtx.restore();
+
+        if(fnShowLabels && (isH || isN || f.level<=2)){
+          const ly   = rowY-14;
+          const fs   = isH?13 : f.level<=2?12:10;
+          const alpha= isH?1 : isN?0.92:0.4;
+          fnCtx.save();
+          fnCtx.globalAlpha=alpha;
+          fnCtx.fillStyle=col;
+          fnCtx.strokeStyle='#0f0f14'; fnCtx.lineWidth=3;
+          fnCtx.textAlign='center'; fnCtx.textBaseline='bottom';
+          fnCtx.font=`300 ${fs}px 'Cormorant Garamond',serif`;
+          if(f.q===1){
+            fnCtx.strokeText(String(f.p),x,ly);
+            fnCtx.fillText(String(f.p),x,ly);
+          } else {
+            const h=fs*0.52;
+            fnCtx.strokeText(String(f.p),x,ly-h-1); fnCtx.fillText(String(f.p),x,ly-h-1);
+            fnCtx.strokeText(String(f.q),x,ly+1);   fnCtx.fillText(String(f.q),x,ly+1);
+            fnCtx.save();
+            fnCtx.strokeStyle=col; fnCtx.lineWidth=0.7; fnCtx.globalAlpha=alpha;
+            fnCtx.beginPath();
+            fnCtx.moveTo(x-fs*0.42,ly-h+1); fnCtx.lineTo(x+fs*0.42,ly-h+1);
+            fnCtx.stroke();
+            fnCtx.restore();
+          }
+          fnCtx.restore();
+        }
+      }
+    }
+
+    // Axis
+    const axY=fnN*FN_ROW+12;
+    fnCtx.save();
+    fnCtx.strokeStyle='#5a5a78'; fnCtx.lineWidth=1;
+    fnCtx.beginPath(); fnCtx.moveTo(FN_PL,axY); fnCtx.lineTo(W-FN_PR,axY); fnCtx.stroke();
+    for(const [p,q] of [[0,1],[1,4],[1,3],[1,2],[2,3],[3,4],[1,1]]){
+      const x=fnTx(p/q,W);
+      fnCtx.strokeStyle='#4a4a66'; fnCtx.lineWidth=0.8;
+      fnCtx.beginPath(); fnCtx.moveTo(x,axY-3); fnCtx.lineTo(x,axY+4); fnCtx.stroke();
+      fnCtx.font=`300 9px 'IBM Plex Mono',monospace`;
+      fnCtx.fillStyle='#5a5a78'; fnCtx.textAlign='center'; fnCtx.textBaseline='top';
+      fnCtx.fillText(p+'/'+q,x,axY+6);
+    }
+    fnCtx.restore();
+  }
+
+  // Hover
+  if(fnCanvas) {
+    fnCanvas.addEventListener('mousemove', e => {
+      const rect=fnCanvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+      const W=fnCanvas.width;
+      const lv=Math.floor(my/FN_ROW)+1;
+      if(lv<1||lv>fnN){
+        if(fnHovRow!==-1){fnHovRow=-1;fnHovIdx=-1;fnDraw();}
+        document.getElementById('fnTip').classList.remove('vis');
+        return;
+      }
+      const seq=fnFarey(lv);
+      const rowY=(lv-1)*FN_ROW+FN_DOT;
+      let best=-1,bestD=16;
+      seq.forEach((f,i)=>{
+        const d=Math.hypot(mx-fnTx(f.p/f.q,W),my-rowY);
+        if(d<bestD){bestD=d;best=i;}
+      });
+      if(fnHovRow!==lv||fnHovIdx!==best){fnHovRow=lv;fnHovIdx=best;fnDraw();}
+      if(best>=0){
+        const f=seq[best];
+        const newS=fnNewAt(lv);
+        const nbrs=fnNbrs(seq,best);
+        const tip2=document.getElementById('fnTip');
+        tip2.innerHTML=`<span class="tf">${f.p}/${f.q}</span><span class="td">Level ${f.level} &nbsp;|&nbsp; ${newS.has(f.p+'/'+f.q)?'new at F'+lv:'since F'+f.level}</span><br><span class="td">Value: ${f.q===1?f.p:(f.p/f.q).toFixed(5)}</span><br><span class="td">Neighbours: ${nbrs.map(n=>n.p+'/'+n.q).join(' and ')}</span>`;
+        tip2.classList.add('vis');
+        tip2.style.left=(e.clientX+14)+'px';
+        tip2.style.top=(e.clientY-8)+'px';
+      } else {
+        document.getElementById('fnTip').classList.remove('vis');
+      }
+    });
+    fnCanvas.addEventListener('mouseleave',()=>{
+      fnHovRow=-1;fnHovIdx=-1;
+      document.getElementById('fnTip').classList.remove('vis');
+      fnDraw();
+    });
+  }
+
+  function fnBuildBtns(){
+    const wrap=document.getElementById('fnBtns');
+    if(!wrap) return;
+    wrap.innerHTML='';
+    for(let n=4;n<=9;n++){
+      const b=document.createElement('button');
+      b.className='fn-btn'+(n===fnN?' active':'');
+      b.textContent=n;
+      b.onclick=()=>{fnN=n;fnBuildBtns();fnBuildLegend();fnSetSize();fnDraw();};
+      wrap.appendChild(b);
+    }
+  }
+
+  function fnBuildLegend(){
+    const wrap=document.getElementById('fnLegend');
+    if(!wrap) return;
+    wrap.innerHTML='';
+    for(let lv=1;lv<=fnN;lv++){
+      const cnt=fnFarey(lv).length;
+      const prev=lv>1?fnFarey(lv-1).length:0;
+      const el=document.createElement('div');
+      el.className='fn-leg';
+      el.innerHTML=`<div class="fn-leg-dot" style="background:${fnCol(lv)}"></div>F${lv}: ${cnt}${lv>1?' (+' +(cnt-prev)+')':''}`;
+      wrap.appendChild(el);
+    }
+  }
+
+  function fnInit(){
+    if(!fnCanvas) return;
+    const labels=document.getElementById('fnLabels');
+    const arcs  =document.getElementById('fnArcs');
+    if(labels) labels.onchange=e=>{fnShowLabels=e.target.checked;fnDraw();};
+    if(arcs)   arcs.onchange  =e=>{fnShowArcs  =e.target.checked;fnDraw();};
+    window.addEventListener('resize',()=>{fnSetSize();fnDraw();});
+    fnBuildBtns();
+    fnBuildLegend();
+    fnSetSize();
+    fnDraw();
+  }
 </script>
 </body>
 </html>
