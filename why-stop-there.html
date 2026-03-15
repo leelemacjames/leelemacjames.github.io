@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Stop There? On Lazy Thinking and the Mathematics You Didn't Know You Were Invoking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+
+<style>
+  :root {
+    --bg:        #0d0d0f;
+    --bg2:       #111114;
+    --bg3:       #16161a;
+    --border:    #2a2a32;
+    --muted:     #3a3a48;
+    --text-dim:  #6b6b80;
+    --text:      #c8c8d8;
+    --text-hi:   #e8e8f0;
+    --accent:    #c4965a;
+    --accent2:   #7a9cbf;
+    --accent3:   #9b7ab8;
+    --gold:      #d4a853;
+    --serif:     'Cormorant Garamond', Georgia, serif;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'IBM Plex Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    position: relative; z-index: 1;
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 2rem 8rem;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 7rem 0 4rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 5rem;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 300;
+    line-height: 1.12;
+    color: var(--text-hi);
+    letter-spacing: -0.01em;
+    margin-bottom: 1.8rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    max-width: 560px;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .layer-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.2rem;
+    margin-bottom: 1.8rem;
+    margin-top: 5rem;
+  }
+
+  .layer-num {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+    padding-top: 0.15em;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 400;
+    color: var(--text-hi);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── PROSE ── */
+  p { margin-bottom: 1.4rem; }
+
+  p:last-child { margin-bottom: 0; }
+
+  strong {
+    font-weight: 500;
+    color: var(--text-hi);
+  }
+
+  em { font-style: italic; }
+
+  a {
+    color: var(--accent2);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  a:hover { border-bottom-color: var(--accent2); }
+
+  /* ── MATH DISPLAY ── */
+  .math-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.4rem 1.8rem;
+    margin: 2rem 0;
+    border-radius: 2px;
+    overflow-x: auto;
+  }
+
+  .math-block .katex-display { margin: 0; }
+
+  /* ── PULL QUOTE / ASIDE ── */
+  .pull {
+    border-left: 2px solid var(--accent);
+    padding: 0.6rem 0 0.6rem 1.6rem;
+    margin: 2.5rem 0;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text-hi);
+    line-height: 1.5;
+  }
+
+  /* ── DEFINITION BOX ── */
+  .def-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.4rem 1.8rem;
+    margin: 2rem 0;
+  }
+
+  .def-box .def-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 0.7rem;
+  }
+
+  .def-box p { margin-bottom: 0.6rem; }
+
+  /* ── TABLE ── */
+  .math-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    margin: 1.8rem 0;
+  }
+
+  .math-table th {
+    text-align: left;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+  }
+
+  .math-table td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .math-table tr:last-child td { border-bottom: none; }
+
+  .math-table .hi { color: var(--text-hi); }
+  .math-table .gold { color: var(--gold); }
+  .math-table .dim { color: var(--text-dim); }
+
+  /* ── WHY STOP THERE TRIGGER ── */
+  .wst-wrap {
+    margin: 4rem 0 0;
+    border-top: 1px solid var(--border);
+    padding-top: 2.5rem;
+  }
+
+  .wst-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--text-dim);
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    padding: 0.65rem 1.3rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.25s;
+    letter-spacing: 0.01em;
+  }
+
+  .wst-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .wst-btn .arrow {
+    font-style: normal;
+    font-size: 0.85rem;
+    transition: transform 0.25s;
+  }
+
+  .wst-btn.open .arrow { transform: rotate(90deg); }
+
+  /* ── INTERACTIVE TOTIENT ── */
+  .totient-widget {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.8rem;
+    margin: 2.2rem 0;
+  }
+
+  .totient-widget h3 {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 1.2rem;
+  }
+
+  .totient-input-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .totient-input-row label {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .totient-input-row input[type=number] {
+    background: var(--bg3);
+    border: 1px solid var(--muted);
+    color: var(--text-hi);
+    font-family: var(--mono);
+    font-size: 1rem;
+    padding: 0.4rem 0.8rem;
+    width: 90px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .totient-input-row input[type=number]:focus {
+    border-color: var(--accent);
+  }
+
+  .totient-input-row button {
+    background: var(--bg3);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .totient-input-row button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .totient-result {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    min-height: 2rem;
+  }
+
+  .totient-result .phi-val {
+    color: var(--gold);
+    font-size: 1.1rem;
+  }
+
+  .totient-result .coprime-list {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+    line-height: 1.6;
+  }
+
+  .totient-result .coprime-list span.cop {
+    color: var(--accent2);
+  }
+
+  .totient-result .coprime-list span.not-cop {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  /* ── LINK CARDS ── */
+  .link-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 520px) {
+    .link-cards { grid-template-columns: 1fr; }
+  }
+
+  .link-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.1rem 1.3rem;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .link-card:hover {
+    border-color: var(--accent2);
+    transform: translateY(-2px);
+  }
+
+  .link-card .lc-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+  }
+
+  .link-card .lc-title {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    color: var(--accent2);
+    line-height: 1.3;
+    border-bottom: none;
+  }
+
+  /* ── CODA ── */
+  .coda {
+    margin-top: 6rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .coda-marker {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+  }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin: 3rem 0;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+  }
+
+  .sep::before, .sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── LAYER PANELS (collapsed) ── */
+  .layer-panel {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease;
+  }
+
+  .layer-panel.open {
+    max-height: 9000px;
+    opacity: 1;
+  }
+
+  /* ── PROGRESS DOTS ── */
+  .progress-nav {
+    position: fixed;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    z-index: 100;
+  }
+
+  @media (max-width: 900px) {
+    .progress-nav { display: none; }
+  }
+
+  .prog-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s, transform 0.3s;
+    cursor: pointer;
+  }
+
+  .prog-dot.active {
+    background: var(--accent);
+    transform: scale(1.6);
+  }
+
+  /* katex sizing */
+  .katex { font-size: 1.05em; }
+
+</style>
+</head>
+<body>
+
+<nav class="progress-nav" aria-hidden="true">
+  <div class="prog-dot active" data-section="0" onclick="scrollToSection(0)"></div>
+  <div class="prog-dot" data-section="1" onclick="scrollToSection(1)"></div>
+  <div class="prog-dot" data-section="2" onclick="scrollToSection(2)"></div>
+  <div class="prog-dot" data-section="3" onclick="scrollToSection(3)"></div>
+  <div class="prog-dot" data-section="4" onclick="scrollToSection(4)"></div>
+  <div class="prog-dot" data-section="5" onclick="scrollToSection(5)"></div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header id="sec0" class="reveal">
+    <div class="kicker">Heuristics &nbsp;·&nbsp; Number Theory &nbsp;·&nbsp; Mathematical Intuition</div>
+    <h1>Why Stop <em>There?</em></h1>
+    <p class="subtitle">
+      On lazy thinking, survivorship, and the mathematics you didn't know you were invoking — when what feels like intuition is really a compression whose origins you can no longer trace.
+    </p>
+  </header>
+
+  <!-- ══════════════ SECTION 0: KAHNEMAN ══════════════ -->
+  <section id="sec-intro" class="reveal">
+    <p>
+      Kahneman distinguishes fast thinking from slow. Fast thinking gives you the answer before you know you were computing. The trouble is that it also gives you <em>confident</em> answers — and you cannot always tell, from the inside, whether the confidence is warranted or simply habitual.
+    </p>
+    <p>
+      Two mathematical examples. Both have the same shape: a satisfying answer that turns out to be a compression of something much deeper. In each case, the interesting question is not the answer but the question you forgot to ask — <em>why stop there?</em>
+    </p>
+  </section>
+
+  <!-- ══════════════ LAYER 1 ══════════════ -->
+  <section id="sec1" class="reveal">
+    <div class="layer-header">
+      <span class="layer-num">LAYER 01</span>
+      <h2>What you want: $\tfrac{1}{3} + \tfrac{1}{4} = \tfrac{2}{7}$</h2>
+    </div>
+
+    <p>
+      Every mathematics teacher has seen it. A student, asked to add $\frac{1}{3}$ and $\frac{1}{4}$, writes $\frac{2}{7}$. The numerators add. The denominators add. It feels right. The teacher corrects it immediately, and the student learns to suppress the instinct.
+    </p>
+
+    <p>
+      But notice what the teacher actually corrects: the <em>claim</em> that this is standard addition. What the teacher does <em>not</em> say is that the operation the student performed is meaningless. It isn't. Define it properly, and it has a name.
+    </p>
+
+    <div class="def-box">
+      <div class="def-label">Definition — The Mediant</div>
+      <p>
+        For fractions $\frac{a}{b}$ and $\frac{c}{d}$ in lowest terms, their <strong>mediant</strong> is:
+      </p>
+      <div class="math-block">
+        $$\frac{a}{b} \oplus \frac{c}{d} \;=\; \frac{a+c}{b+d}$$
+      </div>
+      <p>
+        The mediant always lies strictly between the two fractions: $\frac{a}{b} < \frac{a+c}{b+d} < \frac{c}{d}$. It is not their average. It is something more structured.
+      </p>
+    </div>
+
+    <p>
+      The student's instinct was geometrically correct: $\frac{2}{7}$ does lie between $\frac{1}{3}$ and $\frac{1}{4}$. The instinct was doing something real. It was just not doing standard fraction addition — because standard fraction addition answers a different question.
+    </p>
+
+    <div class="wst-wrap">
+      <button class="wst-btn" onclick="openLayer('layer2', this)">
+        <span class="arrow">▶</span>
+        Why stop there?
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════════ LAYER 2 ══════════════ -->
+  <div class="layer-panel" id="layer2">
+    <section id="sec2" class="reveal">
+      <div class="layer-header">
+        <span class="layer-num">LAYER 02</span>
+        <h2>What the mediant actually builds</h2>
+      </div>
+
+      <p>
+        Apply the mediant repeatedly. Start with $\frac{0}{1}$ and $\frac{1}{1}$. Insert their mediant: $\frac{1}{2}$. Now insert the mediant of each adjacent pair. Then again. The result is the <strong>Farey sequence</strong>: all fractions in $[0,1]$ in lowest terms, in order, generated entirely by this one operation.
+      </p>
+
+      <div class="math-block">
+        $$F_4 = \Bigl\{ \tfrac{0}{1},\; \tfrac{1}{4},\; \tfrac{1}{3},\; \tfrac{1}{2},\; \tfrac{2}{3},\; \tfrac{3}{4},\; \tfrac{1}{1} \Bigr\}$$
+      </div>
+
+      <p>
+        Adjacent fractions in any Farey sequence satisfy a remarkable property: if $\frac{a}{b}$ and $\frac{c}{d}$ are neighbours, then $|ad - bc| = 1$. This is the <strong>unimodular condition</strong> — the matrix
+        $\begin{pmatrix} a & c \\ b & d \end{pmatrix}$
+        has determinant $\pm 1$. The Farey sequence is secretly a sequence of $\mathrm{SL}(2,\mathbb{Z})$ matrices.
+      </p>
+
+      <p>
+        The geometry this encodes is hyperbolic. Each fraction $\frac{p}{q}$ corresponds to a <strong>Ford circle</strong>: a circle of radius $\frac{1}{2q^2}$ tangent to the real line at $\frac{p}{q}$. Two Ford circles are tangent to each other if and only if the corresponding fractions are Farey neighbours. The tangency condition is precisely the unimodular condition.
+      </p>
+
+      <p>
+        The $[0,1]$ interval is not a featureless continuum. It has structure — a tree of rational relationships, encoded in the geometry of touching circles, all generated by the operation the student was told was wrong.
+      </p>
+
+      <div class="sep">PYTHAGOREAN TRIPLES</div>
+
+      <p>
+        Here the story deepens further. Draw a line through $(-1, 0)$ with rational slope $m = \frac{p}{q}$. It intersects the unit circle at a second point. The coordinates of that point are:
+      </p>
+
+      <div class="math-block">
+        $$\Bigl(\frac{p^2 - q^2}{p^2 + q^2},\;\; \frac{2pq}{p^2 + q^2}\Bigr)$$
+      </div>
+
+      <p>
+        Clear denominators: the triple $(|p^2 - q^2|,\; 2pq,\; p^2 + q^2)$ satisfies $a^2 + b^2 = c^2$. Every primitive Pythagorean triple is generated this way. The slope — a Farey fraction — parametrises the entire family.
+      </p>
+
+      <p>
+        The student who wrote $\frac{2}{7}$ was, without knowing it, gesturing toward rational points on circles, projective coordinates, and the classification of integer solutions to a quadratic Diophantine equation.
+      </p>
+
+      <div class="link-cards">
+        <a href="https://leelemacjames.github.io/FareyPoylaStyle/" target="_blank" class="link-card">
+          <div class="lc-label">Interactive</div>
+          <div class="lc-title">What You Want vs What It Is — Farey, Mediants, Pythagorean Triples</div>
+        </a>
+        <a href="https://hyperbolic-farey-disc.vercel.app/" target="_blank" class="link-card">
+          <div class="lc-label">Interactive</div>
+          <div class="lc-title">Hyperbolic Farey Disc — Cross-Ratios and Projective Invariants</div>
+        </a>
+      </div>
+
+      <div class="wst-wrap">
+        <button class="wst-btn" onclick="openLayer('layer3', this)">
+          <span class="arrow">▶</span>
+          Why stop there?
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════ LAYER 3 ══════════════ -->
+  <div class="layer-panel" id="layer3">
+    <section id="sec3" class="reveal">
+      <div class="layer-header">
+        <span class="layer-num">LAYER 03</span>
+        <h2>The cicada and the survivor's account</h2>
+      </div>
+
+      <p>
+        Nassim Taleb makes a point about survivorship: we only hear from those who are here to tell the story. The ones who tried something and failed are not available for interview. This shapes — and distorts — every explanation we construct from observed patterns.
+      </p>
+
+      <p>
+        Certain cicada species emerge from underground dormancy every 13 years. Others every 17 years. Both 13 and 17 are prime. This is not a coincidence, and the standard explanation runs as follows.
+      </p>
+
+      <p>
+        Predators operate on cycles — annual, biennial, at most a few years in length, governed by the natural rhythms of seasons and food supply. A cicada that emerges on a cycle of $n$ years will coincide with a predator operating on a cycle of $k$ years every $\mathrm{lcm}(n, k)$ years. To maximise the time between dangerous coincidences, you want $\mathrm{lcm}(n, k)$ to be as large as possible for every small $k$.
+      </p>
+
+      <p>
+        If $n$ is prime, then $\gcd(n, k) = 1$ for every $k < n$, so $\mathrm{lcm}(n, k) = nk$. A prime emergence period cannot share a factor with any smaller period. The cicadas on 12-year cycles, or 15-year cycles, kept encountering predators in sync and were selected out. We hear about 13 and 17 because those are the lineages that survived.
+      </p>
+
+      <div class="pull">
+        The narrative tidiness of the prime explanation should itself be a warning. We are pattern-matching to a satisfying story. The question is whether the story is complete.
+      </div>
+
+      <div class="wst-wrap">
+        <button class="wst-btn" onclick="openLayer('layer4', this)">
+          <span class="arrow">▶</span>
+          Why stop there?
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════ LAYER 4 ══════════════ -->
+  <div class="layer-panel" id="layer4">
+    <section id="sec4" class="reveal">
+      <div class="layer-header">
+        <span class="layer-num">LAYER 04</span>
+        <h2>What "prime" is actually doing: the Euler totient</h2>
+      </div>
+
+      <p>
+        The LCM argument explains why primes are good. It does not explain <em>how good</em>, or what optimality means precisely. For that, we need a function Euler introduced in 1763.
+      </p>
+
+      <div class="def-box">
+        <div class="def-label">Definition — Euler's Totient Function</div>
+        <p>
+          For a positive integer $n$, the <strong>Euler totient</strong> $\varphi(n)$ counts the integers from $1$ to $n$ that share no common factor with $n$:
+        </p>
+        <div class="math-block">
+          $$\varphi(n) \;=\; \bigl|\{\, k \in \mathbb{Z} : 1 \leq k \leq n,\; \gcd(k, n) = 1 \,\}\bigr|$$
+        </div>
+        <p>
+          These are precisely the integers <em>coprime</em> to $n$ — the periods that cannot synchronise with a period-$n$ cycle at any harmonic.
+        </p>
+      </div>
+
+      <p>
+        Compute $\varphi(n)$ for small $n$ and compare:
+      </p>
+
+      <table class="math-table">
+        <thead>
+          <tr>
+            <th>$n$</th>
+            <th>Coprime to $n$</th>
+            <th>$\varphi(n)$</th>
+            <th>$\varphi(n)/(n-1)$</th>
+            <th>Prime?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">12</td><td>1, 5, 7, 11</td><td class="hi">4</td><td class="dim">0.36</td><td class="dim">No</td></tr>
+          <tr><td class="hi">13</td><td>1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12</td><td class="gold">12</td><td class="gold">1.00</td><td class="gold">Yes</td></tr>
+          <tr><td class="hi">15</td><td>1, 2, 4, 7, 8, 11, 13, 14</td><td class="hi">8</td><td class="dim">0.57</td><td class="dim">No</td></tr>
+          <tr><td class="hi">16</td><td>1, 3, 5, 7, 9, 11, 13, 15</td><td class="hi">8</td><td class="dim">0.53</td><td class="dim">No</td></tr>
+          <tr><td class="hi">17</td><td>1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16</td><td class="gold">16</td><td class="gold">1.00</td><td class="gold">Yes</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        For a prime $p$, every integer from $1$ to $p-1$ is coprime to $p$. Therefore:
+      </p>
+
+      <div class="math-block">
+        $$\varphi(p) = p - 1$$
+      </div>
+
+      <p>
+        This is the <strong>theoretical maximum</strong>. No integer $n$ has $\varphi(n) > n-1$. Primes achieve it. A prime emergence period is not merely hard to synchronise with — it is <em>maximally non-resonant</em> across the entire landscape of shorter periodic threats simultaneously.
+      </p>
+
+      <p>
+        The LCM argument was right. It was also incomplete. It told you that primes avoid any single predator cycle. The totient tells you that primes avoid <em>as many</em> as it is arithmetically possible to avoid. The cicada on a prime cycle is not just lucky — it is in the optimal position relative to every periodic threat at once.
+      </p>
+
+      <p>
+        The satisfying story you reached at "they're prime" was a compression of this. Correct at the surface. Incomplete underneath.
+      </p>
+
+      <!-- ── INTERACTIVE TOTIENT ── -->
+      <div class="totient-widget">
+        <h3>Euler Totient Calculator</h3>
+        <div class="totient-input-row">
+          <label for="tot-input">Compute $\varphi(n)$ for $n =$</label>
+          <input type="number" id="tot-input" min="1" max="200" value="12">
+          <button onclick="computeTotient()">Compute</button>
+        </div>
+        <div class="totient-result" id="tot-result"></div>
+      </div>
+
+      <div class="wst-wrap">
+        <button class="wst-btn" onclick="openLayer('layer5', this)">
+          <span class="arrow">▶</span>
+          Why stop there?
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════ LAYER 5 / CODA ══════════════ -->
+  <div class="layer-panel" id="layer5">
+    <section id="sec5" class="reveal">
+      <div class="coda">
+        <div class="coda-marker">Coda &nbsp;·&nbsp; Layer 05</div>
+
+        <div class="layer-header" style="margin-top:0">
+          <span class="layer-num">LAYER 05</span>
+          <h2>The heuristic trap named</h2>
+        </div>
+
+        <p>
+          Both examples have identical structure. A question is asked. An answer arrives quickly — one that feels right, that is not wrong, that contains genuine mathematical insight. The fast thinker accepts it and moves on. The slow thinker asks: what is that answer actually doing? What machinery am I invoking without naming?
+        </p>
+
+        <p>
+          The student who wrote $\frac{2}{7}$ was performing mediant arithmetic, gesturing at Ford circles and rational points on the unit circle, touching the edge of projective geometry — and did not know any of it. The story about cicadas and LCMs is correct as far as it goes, and contains a hidden invocation of totient-maximality that most tellers have never articulated.
+        </p>
+
+        <p>
+          This is what heuristic intuition actually is: the conclusion of a chain of reasoning you can no longer trace. It arrived compressed. The compression is useful — you cannot unpack every argument every time. But the compression is also dangerous, because it feels indistinguishable from the thing it replaced.
+        </p>
+
+        <div class="pull">
+          The sign of good mathematical intuition is not that it gives you answers fast. It is that when you pull the thread, you find something real underneath.
+        </div>
+
+        <p>
+          The cicada does not know about Euler. The student does not know about Farey. But the mathematics is there in the structure of what survived — in the 13-year silence of the forest, in the instinct that the numerators should add. Pull the thread. Something is always there.
+        </p>
+
+      </div>
+    </section>
+  </div>
+
+</div><!-- .page-wrap -->
+
+<script>
+  // ── SCROLL REVEAL ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── LAYER OPEN ──
+  function openLayer(id, btn) {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    panel.classList.add('open');
+    btn.classList.add('open');
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+
+    // trigger reveal inside
+    setTimeout(() => {
+      panel.querySelectorAll('.reveal').forEach(el => {
+        observer.observe(el);
+      });
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  // ── PROGRESS DOTS ──
+  const sections = ['sec0','sec-intro','sec1','sec2','sec3','sec4','sec5'];
+  const dots = document.querySelectorAll('.prog-dot');
+
+  const secObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = sections.indexOf(e.target.id);
+        if (idx >= 0) {
+          dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        }
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) secObserver.observe(el);
+  });
+
+  function scrollToSection(i) {
+    const el = document.getElementById(sections[i]);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── EULER TOTIENT CALCULATOR ──
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+  function computeTotient() {
+    const n = parseInt(document.getElementById('tot-input').value);
+    const out = document.getElementById('tot-result');
+
+    if (!n || n < 1 || n > 200) {
+      out.innerHTML = '<span style="color:var(--accent)">Enter an integer between 1 and 200.</span>';
+      return;
+    }
+
+    const coprimes = [];
+    const nonCoprimes = [];
+    for (let k = 1; k <= n; k++) {
+      if (gcd(k, n) === 1) coprimes.push(k);
+      else nonCoprimes.push(k);
+    }
+
+    const phi = coprimes.length;
+    const isPrime = n > 1 && phi === n - 1;
+    const ratio = n === 1 ? '1.00' : (phi / (n - 1)).toFixed(3);
+
+    // Build coprime display (cap at 50 for readability)
+    const displayList = [];
+    for (let k = 1; k <= n; k++) {
+      if (displayList.length > 60) { displayList.push('<span class="dim">…</span>'); break; }
+      if (gcd(k, n) === 1) {
+        displayList.push(`<span class="cop">${k}</span>`);
+      } else {
+        displayList.push(`<span class="not-cop">${k}</span>`);
+      }
+    }
+
+    out.innerHTML = `
+      <div style="margin-bottom:0.5rem">
+        $\\varphi(${n}) = $ <span class="phi-val">${phi}</span>
+        ${isPrime ? `<span style="color:var(--gold);margin-left:0.8rem;font-size:0.75rem;letter-spacing:0.1em">PRIME — maximum achieved: φ(p) = p−1</span>` : `<span style="color:var(--text-dim);margin-left:0.8rem;font-size:0.75rem">φ(n)/(n−1) = ${ratio}</span>`}
+      </div>
+      <div class="coprime-list">
+        Integers 1…${n}: &nbsp;${displayList.join(' ')}
+      </div>
+      <div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-dim)">
+        <span style="color:var(--accent2)">■</span> coprime to ${n} &nbsp;&nbsp;
+        <span style="color:var(--muted)">■</span> share a factor with ${n}
+      </div>
+    `;
+
+    // re-render KaTeX in the result
+    if (window.renderMathInElement) {
+      renderMathInElement(out, {
+        delimiters: [{left:'$',right:'$',display:false},{left:'$$',right:'$$',display:true}]
+      });
+    }
+  }
+
+  // Run once on load
+  window.addEventListener('load', () => {
+    computeTotient();
+  });
+</script>
+</body>
+</html>
