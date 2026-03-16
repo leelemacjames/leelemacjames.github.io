@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Capacity to Hold Heat — Water, Oceans, and Calorimetry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+
+<style>
+:root {
+  --bg:       #07090f;
+  --deep:     #0a0f1a;
+  --surface:  #0d1420;
+  --card:     #111824;
+  --border:   #1e2a3a;
+  --text:     #c8c2b8;
+  --muted:    #5a6070;
+  --water:    #2a7a8a;
+  --water-l:  #4aacbe;
+  --amber:    #c8a050;
+  --amber-l:  #e8c878;
+  --warm:     #c87840;
+  --teal:     #3ab8a8;
+  --serif:    'Cormorant Garamond', serif;
+  --mono:     'IBM Plex Mono', monospace;
+  --sans:     'IBM Plex Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+/* ── NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.7;
+}
+
+/* ── DEPTH GRADIENT ── */
+body::after {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; height: 100vh;
+  background: radial-gradient(ellipse at 30% 0%, rgba(42,122,138,0.06) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── WATER COLUMN SIDEBAR ── */
+.depth-bar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--water-l), var(--water), #0a3a4a, #020810);
+  z-index: 20;
+  opacity: 0.6;
+}
+
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 5rem 0 3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4rem;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--water-l);
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: #e8e2d8;
+  margin-bottom: 1rem;
+}
+
+.hero h1 em { font-style: italic; color: var(--water-l); }
+
+.hero-sub {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── SECTION MARKERS ── */
+.section-marker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 4rem 0 1.5rem;
+}
+
+.section-num {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 1px;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.9rem;
+  color: #ddd8d0;
+  line-height: 1.25;
+  margin-bottom: 1.2rem;
+}
+
+h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--amber);
+  margin: 2rem 0 0.7rem;
+}
+
+p {
+  font-size: 1.05rem;
+  margin-bottom: 1.1rem;
+  color: var(--text);
+}
+
+p + p { text-indent: 0; }
+
+strong { color: #e0dbd2; font-weight: 600; }
+
+em { color: var(--water-l); font-style: italic; }
+
+/* ── PULL QUOTE ── */
+.pullquote {
+  margin: 2.5rem 0;
+  padding: 1.5rem 2rem;
+  border-left: 2px solid var(--water);
+  background: rgba(42,122,138,0.05);
+}
+
+.pullquote p {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #ddd8ce;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── EQUATION BLOCK ── */
+.eq-block {
+  margin: 1.8rem 0;
+  padding: 1.2rem 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  overflow-x: auto;
+}
+
+.eq-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 0.6rem;
+}
+
+/* ── COMPARISON TABLE ── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.compare-cell {
+  background: var(--card);
+  padding: 1.2rem 1.4rem;
+}
+
+.compare-cell.header {
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.7rem 1.4rem;
+}
+
+.compare-cell h4 {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--amber-l);
+  margin-bottom: 0.4rem;
+}
+
+.compare-cell p {
+  font-size: 0.88rem;
+  margin: 0;
+  color: var(--text);
+}
+
+/* ── MATERIAL TABLE ── */
+.material-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 0.88rem;
+}
+
+.material-table th {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.material-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(30,42,58,0.5);
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.material-table tr.highlight td { color: var(--water-l); }
+.material-table tr:hover td { background: rgba(42,122,138,0.04); }
+
+.bar-cell { display: flex; align-items: center; gap: 0.7rem; }
+.bar {
+  height: 6px;
+  background: var(--water);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.bar.warm { background: var(--warm); }
+.bar.water { background: var(--water-l); }
+
+/* ── INTERACTIVE CALORIMETER ── */
+.calorimeter-section {
+  margin: 3rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--water);
+  padding: 0;
+  overflow: hidden;
+}
+
+.calo-header {
+  padding: 1.2rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.calo-title {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--water-l);
+}
+
+.calo-subtitle {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.calo-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.calo-diagram {
+  padding: 1.5rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calo-controls {
+  padding: 1.5rem;
+}
+
+/* SVG Calorimeter */
+.calorimeter-svg {
+  width: 200px;
+  height: 240px;
+}
+
+/* Sliders */
+.ctrl-row {
+  margin-bottom: 1.2rem;
+}
+
+.ctrl-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+}
+
+.ctrl-name {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--amber);
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 1px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: none;
+  cursor: pointer;
+}
+
+.result-box {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+
+.result-key {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.result-num {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--water-l);
+}
+
+.result-num.highlight { color: var(--amber-l); font-size: 1rem; }
+
+/* ── LOSS BREAKDOWN ── */
+.loss-section {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.loss-title {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.loss-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.6rem;
+}
+
+.loss-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.loss-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.loss-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.4s ease;
+}
+
+.loss-pct {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  width: 3rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── OCEAN SECTION ── */
+.ocean-panel {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(7,20,35,0.9), rgba(10,26,42,0.9));
+  border: 1px solid var(--water);
+  position: relative;
+  overflow: hidden;
+}
+
+.ocean-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--water-l), var(--teal), var(--water));
+}
+
+.ocean-stat {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}
+
+.ocean-stat-cell {
+  background: rgba(7,9,15,0.6);
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.stat-num {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--water-l);
+  display: block;
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-top: 0.3rem;
+}
+
+/* ── ANNOTATION BOXES ── */
+.annotation {
+  margin: 1.5rem 0;
+  padding: 0.8rem 1.2rem;
+  border-left: 2px solid;
+  font-size: 0.9rem;
+}
+
+.annotation.note {
+  border-color: var(--muted);
+  background: rgba(30,42,58,0.3);
+  color: var(--muted);
+}
+
+.annotation.warning {
+  border-color: var(--warm);
+  background: rgba(200,120,64,0.06);
+  color: #c8a88a;
+}
+
+.annotation.insight {
+  border-color: var(--teal);
+  background: rgba(58,184,168,0.05);
+  color: #8adad0;
+}
+
+.annotation .ann-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── TEMPERATURE DISPLAY ── */
+.temp-display {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--water-l);
+  text-align: center;
+  margin-top: 0.3rem;
+}
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+footer p {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .calo-body { grid-template-columns: 1fr; }
+  .calo-diagram { border-right: none; border-bottom: 1px solid var(--border); }
+  .compare-grid { grid-template-columns: 1fr; }
+  .ocean-stat { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="depth-bar"></div>
+
+<div class="page">
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-eyebrow">IB DP Physics · Thermal Physics · Calorimetry</div>
+  <h1>The Capacity<br>to <em>Hold</em> Heat</h1>
+  <p class="hero-sub">What does it mean for a substance to absorb energy and barely flinch — and what does that restraint cost a warming planet?</p>
+</header>
+
+<!-- ═══════════════════════════════ SECTION 1 ═══ -->
+<div class="section-marker reveal">
+  <span class="section-num">§ 01</span>
+  <div class="section-line"></div>
+  <span class="section-tag">Specific Heat</span>
+</div>
+
+<h2 class="reveal">What is "specific" about specific heat?</h2>
+
+<p class="reveal">The word <strong>specific</strong> in physics is precise. It means <em>per unit mass</em>. Specific heat capacity is not a property of a sample — it is a property of a <em>substance</em>, stripped of the accident of how much of it you happen to have. When we say water has a specific heat capacity of $c = 4181\ \text{J kg}^{-1}\text{K}^{-1}$, we are asserting something about every kilogram of water, everywhere, regardless of the size of the lake.</p>
+
+<p class="reveal">The defining equation is deceptively compact:</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Specific Heat Capacity</div>
+  $$Q = mc\Delta T$$
+  <p style="font-size:0.82rem; color:var(--muted); margin:0.6rem 0 0; font-family:var(--mono);">$Q$ = heat transferred (J) · $m$ = mass (kg) · $c$ = specific heat capacity (J kg⁻¹ K⁻¹) · $\Delta T$ = temperature change (K)</p>
+</div>
+
+<p class="reveal">But its compactness conceals a conceptual tension: the equation implicitly assumes that $c$ is constant across the temperature interval $\Delta T$. For water across reasonable ranges this holds well; for gases or materials undergoing phase transitions, it fails badly.</p>
+
+<div class="pullquote reveal">
+  <p>To measure $c$ is to ask: how many joules must I spend to raise one kilogram of this substance by one degree? The answer tells you something deep about how energy hides inside matter.</p>
+</div>
+
+<h3 class="reveal">Per mass vs. per volume: an important distinction</h3>
+
+<p class="reveal">Specific heat capacity normalises by <em>mass</em>, but engineers and atmospheric scientists often need to normalise by <em>volume</em> — because it is volume, not mass, that matters when designing pipework, or when comparing the heat stored in a cubic metre of ocean with a cubic metre of air above it.</p>
+
+<div class="compare-grid reveal">
+  <div class="compare-cell header">Quantity</div>
+  <div class="compare-cell header">Definition</div>
+  <div class="compare-cell">
+    <h4>Specific heat capacity $c$</h4>
+    <p>Energy per unit <strong>mass</strong> per kelvin.<br>Unit: J kg⁻¹ K⁻¹<br>Intrinsic property of the substance — independent of how much you have.</p>
+  </div>
+  <div class="compare-cell">
+    <h4>Volumetric heat capacity $C_v$</h4>
+    <p>Energy per unit <strong>volume</strong> per kelvin.<br>Unit: J m⁻³ K⁻¹<br>$C_v = \rho c$, where $\rho$ is density. Tells you how much heat a given <em>space</em> can hold.</p>
+  </div>
+  <div class="compare-cell">
+    <h4>Specific energy</h4>
+    <p>Energy content per unit <strong>mass</strong>.<br>Unit: J kg⁻¹<br>Used in fuel ratings, battery capacity, food energy density.</p>
+  </div>
+  <div class="compare-cell">
+    <h4>Energy density</h4>
+    <p>Energy content per unit <strong>volume</strong>.<br>Unit: J m⁻³<br>Critical for storage systems, fuels in confined spaces, ocean heat content.</p>
+  </div>
+</div>
+
+<p class="reveal">The ocean makes this distinction vivid. Seawater has $c \approx 3850\ \text{J kg}^{-1}\text{K}^{-1}$ and density $\rho \approx 1025\ \text{kg m}^{-3}$, giving a volumetric heat capacity of roughly $3.9 \times 10^6\ \text{J m}^{-3}\text{K}^{-1}$. Air, by contrast, has $c \approx 1005\ \text{J kg}^{-1}\text{K}^{-1}$ but density only $\rho \approx 1.2\ \text{kg m}^{-3}$ — a volumetric capacity of roughly $1200\ \text{J m}^{-3}\text{K}^{-1}$. One cubic metre of ocean stores roughly <em>3200 times</em> the heat of one cubic metre of atmosphere, degree for degree.</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Volumetric Heat Capacity</div>
+  $$C_v = \rho c \qquad \Rightarrow \qquad \frac{C_v(\text{ocean})}{C_v(\text{air})} = \frac{1025 \times 3850}{1.2 \times 1005} \approx 3270$$
+</div>
+
+<!-- ═══════════════════════════════ SECTION 2 ═══ -->
+<div class="section-marker reveal">
+  <span class="section-num">§ 02</span>
+  <div class="section-line"></div>
+  <span class="section-tag">Comparative Values</span>
+</div>
+
+<h2 class="reveal">Water is anomalously stubborn</h2>
+
+<p class="reveal">Among common substances, water is extraordinary. Its specific heat capacity is nearly twice that of ice, four times that of rock, and nearly ten times that of copper. This is not a coincidence of molecular weight — it is a consequence of hydrogen bonding. The extensive network of O–H···O hydrogen bonds in liquid water provides many ways for energy to distribute, requiring more energy input per kelvin rise than simpler liquids.</p>
+
+<table class="material-table reveal">
+  <thead>
+    <tr>
+      <th>Substance</th>
+      <th>$c$ (J kg⁻¹ K⁻¹)</th>
+      <th>Relative to water</th>
+      <th>Capacity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="highlight">
+      <td><strong>Water (liquid)</strong></td>
+      <td>4181</td>
+      <td>1.00</td>
+      <td><div class="bar-cell"><div class="bar water" style="width:100px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Seawater</td>
+      <td>3850</td>
+      <td>0.92</td>
+      <td><div class="bar-cell"><div class="bar water" style="width:92px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Ice</td>
+      <td>2090</td>
+      <td>0.50</td>
+      <td><div class="bar-cell"><div class="bar" style="width:50px; background:var(--water)"></div></div></td>
+    </tr>
+    <tr>
+      <td>Ethanol</td>
+      <td>2440</td>
+      <td>0.58</td>
+      <td><div class="bar-cell"><div class="bar" style="width:58px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Dry air (constant pressure)</td>
+      <td>1005</td>
+      <td>0.24</td>
+      <td><div class="bar-cell"><div class="bar" style="width:24px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Granite / rock</td>
+      <td>790</td>
+      <td>0.19</td>
+      <td><div class="bar-cell"><div class="bar warm" style="width:19px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Aluminium</td>
+      <td>897</td>
+      <td>0.21</td>
+      <td><div class="bar-cell"><div class="bar warm" style="width:21px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Iron / steel</td>
+      <td>450</td>
+      <td>0.11</td>
+      <td><div class="bar-cell"><div class="bar warm" style="width:11px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Copper</td>
+      <td>385</td>
+      <td>0.09</td>
+      <td><div class="bar-cell"><div class="bar warm" style="width:9px"></div></div></td>
+    </tr>
+    <tr>
+      <td>Lead</td>
+      <td>128</td>
+      <td>0.03</td>
+      <td><div class="bar-cell"><div class="bar warm" style="width:3px"></div></div></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="annotation insight reveal">
+  <div class="ann-label">Physical insight</div>
+  Water's high $c$ arises because hydrogen bonds store energy without raising temperature. When heat enters water, much of it goes into stretching and bending these bonds — it is absorbed into the structure before translational kinetic energy (which governs temperature) increases. The thermometer barely moves; the energy is distributed into molecular architecture.
+</div>
+
+<p class="reveal">The corollary is important: water releases this energy <em>slowly</em> on cooling. This is why coastal climates are mild, why the Gulf Stream moderates Northern Europe, and why the ocean acts as the planet's primary thermal buffer. The high heat capacity is not merely a physical curiosity — it is a geophysical fact of civilisational importance.</p>
+
+<!-- ═══════════════════════════════ SECTION 3 ═══ -->
+<div class="section-marker reveal">
+  <span class="section-num">§ 03</span>
+  <div class="section-line"></div>
+  <span class="section-tag">Calorimetry</span>
+</div>
+
+<h2 class="reveal">The classical experiment and its discontents</h2>
+
+<p class="reveal">The standard method for measuring the specific heat capacity of a liquid is the <strong>electrical calorimetry experiment</strong>. A known mass of liquid is placed in an insulated container. An electrical immersion heater delivers a measured power for a measured time. The temperature rise is recorded. The calculation follows directly from $Q = mc\Delta T$:</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Experimental determination of $c$</div>
+  $$c = \frac{Q}{m\Delta T} = \frac{Pt}{m\Delta T} = \frac{VIt}{m\Delta T}$$
+  <p style="font-size:0.82rem; color:var(--muted); margin:0.6rem 0 0; font-family:var(--mono);">$P$ = heater power (W) · $t$ = time (s) · $V$ = voltage (V) · $I$ = current (A) · $m$ = mass of liquid (kg) · $\Delta T$ = temperature rise (K)</p>
+</div>
+
+<p class="reveal">The experiment is simple in description and surprisingly difficult in practice. The gap between the formula and the measurement is where physics lives.</p>
+
+<!-- ── INTERACTIVE CALORIMETER ── -->
+<div class="calorimeter-section reveal">
+  <div class="calo-header">
+    <span class="calo-title">Interactive Calorimeter</span>
+    <span class="calo-subtitle">Adjust parameters — observe energy losses</span>
+  </div>
+  <div class="calo-body">
+
+    <div class="calo-diagram">
+      <svg class="calorimeter-svg" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer styrofoam wall -->
+        <rect x="30" y="50" width="140" height="170" rx="3" fill="#111824" stroke="#1e2a3a" stroke-width="1.5"/>
+        <!-- Insulation layer (shown as hatching colour) -->
+        <rect x="38" y="58" width="124" height="154" rx="2" fill="#0a0f1a" stroke="#1e2a3a" stroke-width="0.5"/>
+        <!-- Water fill (animated via JS) -->
+        <rect id="water-fill" x="46" y="120" width="108" height="85" rx="1" fill="rgba(42,122,138,0.3)"/>
+        <!-- Water surface shimmer -->
+        <line id="water-surface" x1="46" y1="120" x2="154" y2="120" stroke="#4aacbe" stroke-width="0.8" opacity="0.6"/>
+        <!-- Heater element -->
+        <rect x="88" y="130" width="6" height="60" rx="1" fill="#c87840" opacity="0.9"/>
+        <line x1="91" y1="125" x2="91" y2="58" stroke="#c87840" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <!-- Thermometer -->
+        <rect x="118" y="90" width="5" height="90" rx="2" fill="#1e2a3a" stroke="#2a7a8a" stroke-width="0.8"/>
+        <rect id="therm-fill" x="119.5" y="155" width="2" height="20" rx="1" fill="#c87840"/>
+        <line x1="120.5" y1="185" x2="120.5" y2="195" stroke="#4aacbe" stroke-width="0.8"/>
+        <!-- Lid -->
+        <rect x="30" y="42" width="140" height="12" rx="2" fill="#1e2a3a" stroke="#2a7a8a" stroke-width="0.8"/>
+        <!-- Heater wire through lid -->
+        <line x1="91" y1="42" x2="91" y2="30" stroke="#c87840" stroke-width="1.5"/>
+        <!-- Power terminals -->
+        <circle cx="82" cy="26" r="4" fill="#c87840" opacity="0.8"/>
+        <circle cx="100" cy="26" r="4" fill="#c87840" opacity="0.8"/>
+        <!-- Loss arrows (drawn in JS) -->
+        <!-- Evaporation arrow -->
+        <g id="evap-arrow" opacity="0.3">
+          <line x1="100" y1="42" x2="100" y2="15" stroke="#6ab8c8" stroke-width="1"/>
+          <polygon points="97,18 100,8 103,18" fill="#6ab8c8"/>
+          <text x="106" y="25" fill="#6ab8c8" font-size="7" font-family="IBM Plex Mono">evap</text>
+        </g>
+        <!-- Conduction arrow -->
+        <g id="cond-arrow" opacity="0.3">
+          <line x1="30" y1="130" x2="8" y2="130" stroke="#c87840" stroke-width="1"/>
+          <polygon points="11,127 2,130 11,133" fill="#c87840"/>
+          <text x="2" y="145" fill="#c87840" font-size="7" font-family="IBM Plex Mono" transform="rotate(-90,2,145)">cond</text>
+        </g>
+        <!-- Stirring label -->
+        <text x="46" y="250" fill="#5a6070" font-size="7" font-family="IBM Plex Mono">insulated calorimeter</text>
+      </svg>
+
+      <div class="temp-display" id="temp-display">T = 20.0 °C</div>
+    </div>
+
+    <div class="calo-controls">
+
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Heater Power</span>
+          <span class="ctrl-val" id="val-power">50 W</span>
+        </div>
+        <input type="range" id="sl-power" min="10" max="100" value="50" step="5">
+      </div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Mass of Water</span>
+          <span class="ctrl-val" id="val-mass">0.30 kg</span>
+        </div>
+        <input type="range" id="sl-mass" min="0.1" max="1.0" value="0.30" step="0.05">
+      </div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Heating Time</span>
+          <span class="ctrl-val" id="val-time">120 s</span>
+        </div>
+        <input type="range" id="sl-time" min="30" max="600" value="120" step="30">
+      </div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-label">
+          <span class="ctrl-name">Insulation quality</span>
+          <span class="ctrl-val" id="val-insul">moderate</span>
+        </div>
+        <input type="range" id="sl-insul" min="1" max="5" value="3" step="1">
+      </div>
+
+      <div class="result-box">
+        <div class="result-row">
+          <span class="result-key">Energy supplied (Pt)</span>
+          <span class="result-num" id="res-Q">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">Estimated heat loss</span>
+          <span class="result-num" id="res-loss">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">Effective ΔT (measured)</span>
+          <span class="result-num" id="res-dT">—</span>
+        </div>
+        <div class="result-row" style="border-top:1px solid var(--border);padding-top:0.4rem;margin-top:0.4rem;">
+          <span class="result-key">Calculated $c$ (apparent)</span>
+          <span class="result-num highlight" id="res-c">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">Error vs. true $c$</span>
+          <span class="result-num" id="res-err" style="color:var(--warm)">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="loss-section">
+    <div class="loss-title">Heat loss breakdown (estimated)</div>
+    <div class="loss-bar-row">
+      <span class="loss-label">Conduction through walls</span>
+      <div class="loss-track"><div class="loss-fill" id="loss-cond" style="background:var(--warm); width:0%"></div></div>
+      <span class="loss-pct" id="lp-cond">—</span>
+    </div>
+    <div class="loss-bar-row">
+      <span class="loss-label">Convection to air</span>
+      <div class="loss-track"><div class="loss-fill" id="loss-conv" style="background:#9a6060; width:0%"></div></div>
+      <span class="loss-pct" id="lp-conv">—</span>
+    </div>
+    <div class="loss-bar-row">
+      <span class="loss-label">Evaporation</span>
+      <div class="loss-track"><div class="loss-fill" id="loss-evap" style="background:var(--water); width:0%"></div></div>
+      <span class="loss-pct" id="lp-evap">—</span>
+    </div>
+    <div class="loss-bar-row">
+      <span class="loss-label">Heating calorimeter</span>
+      <div class="loss-track"><div class="loss-fill" id="loss-calo" style="background:var(--amber); width:0%"></div></div>
+      <span class="loss-pct" id="lp-calo">—</span>
+    </div>
+  </div>
+</div>
+
+<h3 class="reveal">The isolation problem</h3>
+
+<p class="reveal">The fundamental difficulty is this: the formula $c = Pt / m\Delta T$ assumes that <em>all</em> the electrical energy $Pt$ goes into raising the temperature of the water. In practice, energy escapes through multiple pathways simultaneously, and none of them announce themselves.</p>
+
+<div class="annotation warning reveal">
+  <div class="ann-label">Systematic error</div>
+  Because heat losses are <em>always</em> positive (heat always leaks out, never in), the measured $\Delta T$ is always <em>smaller</em> than it would be in a perfectly isolated system. This means the calculated $c$ is always <em>larger</em> than the true value — the experiment systematically overestimates $c$.
+</div>
+
+<p class="reveal">The heat losses are of four kinds:</p>
+
+<p class="reveal"><strong>Conduction through the calorimeter walls.</strong> Even polystyrene foam conducts heat. The rate is governed by Fourier's law: $\dot{Q}_\text{cond} = kA\Delta T_\text{wall}/d$, where $k$ is the thermal conductivity of the wall material, $A$ is the surface area, $\Delta T_\text{wall}$ is the temperature difference between inside and outside, and $d$ is the wall thickness. This loss grows as the water warms — meaning early in the experiment the losses are smaller than late in the experiment.</p>
+
+<p class="reveal"><strong>Convection from the surface.</strong> The open top of most calorimeters allows warm air to carry energy away by natural convection. This too grows with the temperature difference between water surface and ambient air.</p>
+
+<p class="reveal"><strong>Evaporation.</strong> Every molecule that leaves the water surface carries away the latent heat of vaporisation ($L_v \approx 2.26\ \text{MJ kg}^{-1}$ for water at 100°C, less at lower temperatures). With a lid, this is reduced but not eliminated — and a lid adds its own heat capacity to the system.</p>
+
+<p class="reveal"><strong>Heating the calorimeter and heater.</strong> Some energy goes into warming the metal of the heater, the stirrer (if one is used), the thermometer bulb, and the calorimeter walls themselves. This is systematically missed unless a correction is applied using the <em>water equivalent</em> of the calorimeter:</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Corrected equation with calorimeter heat capacity</div>
+  $$Q_\text{heater} = (m_w c_w + m_\text{cal} c_\text{cal})\Delta T$$
+  $$\Rightarrow c_w = \frac{Pt}{(m_w + m_\text{eq})\Delta T}, \quad m_\text{eq} = \frac{m_\text{cal} c_\text{cal}}{c_w}$$
+  <p style="font-size:0.82rem; color:var(--muted); margin:0.6rem 0 0; font-family:var(--mono);">$m_\text{eq}$ = water equivalent mass of the calorimeter — the mass of water that would absorb the same heat as the calorimeter for the same temperature rise. Requires prior knowledge of $c_\text{cal}$.</p>
+</div>
+
+<div class="annotation note reveal">
+  <div class="ann-label">Wittgenstein moment</div>
+  Notice that to correct for the calorimeter heat capacity, we need to know $c_\text{cal}$ — which was itself measured by some earlier experiment. The correction for systematic error depends on a prior measurement, which depended on prior corrections, and so on. There is no view from nowhere; every measurement presupposes other measurements.
+</div>
+
+<h3 class="reveal">Cooling correction: the graphical method</h3>
+
+<p class="reveal">The professional response to heat loss is the <strong>cooling correction</strong>. Rather than trying to eliminate losses (impossible), one measures them separately. After the heater is switched off, the water cools according to Newton's law of cooling. By extrapolating the cooling curve back to the moment of switch-off, and comparing this with the heating curve, one can estimate how much temperature rise was "stolen" by the losses during the heating phase.</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Newton's law of cooling (exponential decay)</div>
+  $$\frac{dT}{dt} = -k(T - T_\text{ambient}) \qquad \Rightarrow \qquad T(t) = T_\text{ambient} + (T_0 - T_\text{ambient})e^{-kt}$$
+  <p style="font-size:0.82rem; color:var(--muted); margin:0.6rem 0 0; font-family:var(--mono);">$k$ = cooling constant (s⁻¹) — determined experimentally from the post-heating decay. Valid when temperature excess above ambient is not too large.</p>
+</div>
+
+<p class="reveal">The graphical correction adds the estimated heat loss during the heating phase to the measured $\Delta T$, giving a corrected temperature rise that better approximates what an ideal calorimeter would have registered. It does not eliminate error; it characterises and accounts for it.</p>
+
+<!-- ═══════════════════════════════ SECTION 4 ═══ -->
+<div class="section-marker reveal">
+  <span class="section-num">§ 04</span>
+  <div class="section-line"></div>
+  <span class="section-tag">Global Scale</span>
+</div>
+
+<h2 class="reveal">The ocean as calorimeter: global warming</h2>
+
+<p class="reveal">The classical experiment aims to <em>prevent</em> heat loss — to keep the system isolated so that all energy stays in the water. The planet offers the opposite problem: we are <em>adding</em> heat to a fluid system (the ocean) that has no insulation at all, only the slow dynamics of the water column itself. And the same property that makes water such a good calorimeter — its enormous heat capacity — also means it can absorb vast quantities of anthropogenic heat before its temperature visibly rises.</p>
+
+<div class="ocean-panel reveal">
+  <p style="font-family:var(--mono); font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--water-l); margin-bottom:1rem;">Ocean heat content — key numbers</p>
+
+  <div class="ocean-stat">
+    <div class="ocean-stat-cell">
+      <span class="stat-num">90%</span>
+      <span class="stat-label">of excess planetary heat absorbed by oceans since 1970</span>
+    </div>
+    <div class="ocean-stat-cell">
+      <span class="stat-num">~5×10²³</span>
+      <span class="stat-label">joules of heat absorbed 1955–2023 (NOAA estimate)</span>
+    </div>
+    <div class="ocean-stat-cell">
+      <span class="stat-num">3,270×</span>
+      <span class="stat-label">greater volumetric heat capacity than atmosphere</span>
+    </div>
+  </div>
+
+  <p style="font-size:0.95rem; color:#a0bac8; margin:0;">The ocean's high heat capacity has <em>masked</em> the pace of warming from direct atmospheric temperature records. Surface air temperature is a noisy, fast-responding indicator. Ocean heat content is a more stable and arguably more meaningful measure of the planet's energy imbalance — but it requires deep measurement infrastructure to track.</p>
+</div>
+
+<p class="reveal">The calculation connects directly to the lab experiment. The energy imbalance at the top of the atmosphere is approximately $0.9\ \text{W m}^{-2}$ — a small forcing on a per-square-metre basis, but integrated over the ocean's surface area ($3.6 \times 10^{14}\ \text{m}^2$) and averaged over decades, it accumulates to a staggering total:</p>
+
+<div class="eq-block reveal">
+  <div class="eq-label">Ocean heat accumulation estimate (order of magnitude)</div>
+  $$Q = P \cdot A \cdot t = 0.9\ \text{W m}^{-2} \times 3.6\times10^{14}\ \text{m}^2 \times 50\ \text{yr} \approx 5\times10^{23}\ \text{J}$$
+  $$\Delta T_\text{mean ocean} = \frac{Q}{m_\text{ocean} \cdot c_\text{seawater}} = \frac{5\times10^{23}}{1.4\times10^{21} \times 3850} \approx 0.09\ \text{K}$$
+  <p style="font-size:0.82rem; color:var(--muted); margin:0.6rem 0 0; font-family:var(--mono);">Mass of ocean: $m \approx 1.4 \times 10^{21}$ kg. A $0.1$ K mean rise across the full ocean depth represents colossal energy — yet the number looks small. This is the heat capacity at work: the ocean absorbs energy with minimal thermal response.</p>
+</div>
+
+<div class="annotation warning reveal">
+  <div class="ann-label">The capacity paradox</div>
+  Water's high heat capacity is simultaneously what makes it a great coolant and what makes it dangerous. The ocean absorbs anthropogenic heat so efficiently that the warming feels slow — but the energy stored is enormous. When ocean circulation brings deep water to the surface, or when ice sheets transfer latent heat, the stored energy can be released rapidly into climate dynamics. The calorimeter eventually reaches equilibrium.
+</div>
+
+<p class="reveal">There is a structural parallel between the classical experiment and the planetary situation. In both cases, the system is not perfectly isolated — energy leaks or enters through boundaries we cannot fully control. In the lab, we correct for this using a cooling curve. At planetary scale, we measure it using the global energy imbalance. In both cases, the number that matters is not the temperature reading alone but <em>what drove it</em>.</p>
+
+<!-- ═══════════════════════════════ SECTION 5 ═══ -->
+<div class="section-marker reveal">
+  <span class="section-num">§ 05</span>
+  <div class="section-line"></div>
+  <span class="section-tag">Reflection</span>
+</div>
+
+<h2 class="reveal">What the experiment teaches beyond the number</h2>
+
+<p class="reveal">The standard IB calorimetry experiment produces a number — hopefully close to $4181\ \text{J kg}^{-1}\text{K}^{-1}$. But the pedagogical value is in the <em>gap</em> between the number obtained and the true value, and in understanding why the gap always runs in the same direction. Heat always escapes. The system is never truly isolated. The calculated $c$ is always too high.</p>
+
+<p class="reveal">This asymmetry — that losses are always losses, never gains — is itself a consequence of the second law. Heat flows spontaneously from hot to cold. A calorimeter that is hotter than its environment will always lose heat to it; the loss rate scales with the temperature difference. The larger $\Delta T$ you impose (more power, more time), the larger the fractional error. There is an optimal experimental window: enough heating to produce a measurable temperature rise, not so much that losses dominate.</p>
+
+<div class="pullquote reveal">
+  <p>The isolation problem in calorimetry is the same problem at planetary scale: we are always measuring something that is not fully closed. What we call "the system" is always a convenience imposed on a universe that does not respect our boundaries.</p>
+</div>
+
+<p class="reveal">Water's specific heat capacity is a number, $4181\ \text{J kg}^{-1}\text{K}^{-1}$. But it is also a statement about how energy distributes inside molecular structure, a description of coastal climates, an explanation for why the ocean absorbs centuries of excess heat without its surface temperature betraying the accumulation, and a key to understanding why the classical calorimetry experiment is harder than it looks. The number is the same in every context. What changes is what it means.</p>
+
+<footer>
+  <p>Dwight School London · Department of Natural Sciences · IB DP Physics</p>
+  <p>Specific heat capacity values: NIST/CRC Handbook · Ocean heat content: NOAA (2024)</p>
+</footer>
+
+</div><!-- end .page -->
+
+<script>
+// ── CALORIMETER INTERACTIVE ──
+const TRUE_C = 4181;
+
+const slPower  = document.getElementById('sl-power');
+const slMass   = document.getElementById('sl-mass');
+const slTime   = document.getElementById('sl-time');
+const slInsul  = document.getElementById('sl-insul');
+
+const valPower = document.getElementById('val-power');
+const valMass  = document.getElementById('val-mass');
+const valTime  = document.getElementById('val-time');
+const valInsul = document.getElementById('val-insul');
+
+const resQ    = document.getElementById('res-Q');
+const resLoss = document.getElementById('res-loss');
+const resDT   = document.getElementById('res-dT');
+const resC    = document.getElementById('res-c');
+const resErr  = document.getElementById('res-err');
+
+const tempDisplay = document.getElementById('temp-display');
+const thermFill   = document.getElementById('therm-fill');
+const waterFill   = document.getElementById('water-fill');
+const waterSurface = document.getElementById('water-surface');
+
+const insulLabels = ['none', 'poor', 'moderate', 'good', 'excellent'];
+// Loss fractions by insulation level (1-5): [conduction, convection, evaporation, calorimeter]
+const lossFractions = {
+  1: [0.18, 0.12, 0.08, 0.05],
+  2: [0.10, 0.08, 0.06, 0.04],
+  3: [0.06, 0.05, 0.04, 0.03],
+  4: [0.03, 0.025, 0.02, 0.02],
+  5: [0.01, 0.008, 0.005, 0.015],
+};
+
+function update() {
+  const P = parseFloat(slPower.value);
+  const m = parseFloat(slMass.value);
+  const t = parseFloat(slTime.value);
+  const insul = parseInt(slInsul.value);
+
+  valPower.textContent = P + ' W';
+  valMass.textContent  = m.toFixed(2) + ' kg';
+  valTime.textContent  = t + ' s';
+  valInsul.textContent = insulLabels[insul - 1];
+
+  const Q = P * t;
+  const lf = lossFractions[insul];
+  const totalLossFraction = lf[0] + lf[1] + lf[2] + lf[3];
+  const lossJ = Q * totalLossFraction;
+  const Qeff  = Q - lossJ;
+
+  // True dT (no losses)
+  const dT_true = Q / (m * TRUE_C);
+  // Measured dT (with losses reducing effective Q)
+  const dT_meas = Qeff / (m * TRUE_C);
+  // Apparent c (student uses Q not Qeff)
+  const c_app = Q / (m * dT_meas);
+  const err = ((c_app - TRUE_C) / TRUE_C) * 100;
+
+  const T_start = 20.0;
+  const T_current = T_start + dT_meas;
+
+  resQ.textContent    = Q.toFixed(0) + ' J';
+  resLoss.textContent = lossJ.toFixed(0) + ' J (' + (totalLossFraction*100).toFixed(1) + '%)';
+  resDT.textContent   = dT_meas.toFixed(2) + ' K';
+  resC.textContent    = c_app.toFixed(0) + ' J kg⁻¹K⁻¹';
+  resErr.textContent  = '+' + err.toFixed(1) + '%';
+  tempDisplay.textContent = 'T ≈ ' + T_current.toFixed(1) + ' °C';
+
+  // Update thermometer
+  const thermH = Math.min(75, dT_meas * 2.5);
+  const thermY = 175 - thermH;
+  thermFill.setAttribute('y', thermY);
+  thermFill.setAttribute('height', thermH + 10);
+  thermFill.setAttribute('fill', dT_meas > 30 ? '#e04020' : '#c87840');
+
+  // Update water level by mass (0.1kg=min, 1.0kg=max)
+  const waterH = 20 + (m - 0.1) / 0.9 * 75;
+  const waterY = 210 - waterH;
+  waterFill.setAttribute('y', waterY);
+  waterFill.setAttribute('height', waterH);
+  waterSurface.setAttribute('y1', waterY);
+  waterSurface.setAttribute('y2', waterY);
+
+  // Loss bars
+  const losses = [lf[0], lf[1], lf[2], lf[3]];
+  const ids = ['loss-cond','loss-conv','loss-evap','loss-calo'];
+  const pids = ['lp-cond','lp-conv','lp-evap','lp-calo'];
+  losses.forEach((l, i) => {
+    const pct = l * 100;
+    const barW = Math.min(100, pct * 4);
+    document.getElementById(ids[i]).style.width = barW + '%';
+    document.getElementById(pids[i]).textContent = pct.toFixed(1) + '%';
+  });
+}
+
+[slPower, slMass, slTime, slInsul].forEach(sl => sl.addEventListener('input', update));
+update();
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 50);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
