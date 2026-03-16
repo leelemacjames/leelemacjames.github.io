@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Tall Is That? — Similarity and the Art of Measuring the Unreachable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --parch:     #f5f0e4;
+  --parch-d:   #ede4ce;
+  --parch-dd:  #ddd0b4;
+  --ink:       #2a1f0a;
+  --ink-l:     #4a3a1a;
+  --ink-ll:    #7a6a4a;
+  --rust:      #8b3a1a;
+  --rust-l:    #c05a2a;
+  --teal:      #1a5a5a;
+  --teal-l:    #2a8a8a;
+  --gold:      #b87820;
+  --gold-l:    #d8a840;
+  --sky:       #4a7a9a;
+  --grass:     #3a6a2a;
+  --border:    #c8b888;
+  --serif:     'Crimson Text', Georgia, serif;
+  --display:   'Playfair Display', Georgia, serif;
+  --mono:      'Courier Prime', Courier, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--parch);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+/* ── PAPER TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,100,0.08) 28px),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 1;
+}
+
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 4rem 0 3rem;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 1rem;
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--rust);
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--ink-ll);
+  max-width: 540px;
+}
+
+/* ── DECORATIVE RULE ── */
+.ornament {
+  text-align: center;
+  color: var(--gold);
+  font-size: 1.2rem;
+  letter-spacing: 0.5em;
+  margin: 2rem 0;
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 3.5rem 0 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  flex-shrink: 0;
+}
+
+h2 {
+  font-family: var(--display);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+h3 {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--rust);
+  margin: 1.8rem 0 0.6rem;
+}
+
+p { margin-bottom: 1rem; }
+
+strong { color: var(--ink); font-weight: 600; }
+em { color: var(--rust-l); font-style: italic; }
+
+/* ── KEY IDEA BOX ── */
+.keyidea {
+  margin: 2rem 0;
+  padding: 1.2rem 1.6rem;
+  background: var(--parch-d);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--rust);
+  position: relative;
+}
+
+.keyidea-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 0.5rem;
+}
+
+.keyidea p { margin: 0; font-size: 1.05rem; }
+
+/* ── RATIO BOX ── */
+.ratio-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+  padding: 1.2rem;
+  background: var(--ink);
+  color: var(--parch);
+  font-family: var(--mono);
+  font-size: 1.1rem;
+}
+
+.ratio-box span { color: var(--gold-l); }
+
+/* ── SVG DIAGRAMS ── */
+.diagram-wrap {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.diagram-caption {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-ll);
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* ── STEP BOXES ── */
+.steps {
+  counter-reset: step;
+  margin: 1.5rem 0;
+}
+
+.step {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--parch-d);
+  border: 1px solid var(--border);
+}
+
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--rust);
+  flex-shrink: 0;
+  width: 1.8rem;
+  line-height: 1;
+  padding-top: 0.1rem;
+}
+
+.step p { margin: 0; font-size: 0.95rem; }
+
+/* ── INTERACTIVE PANELS ── */
+.interactive {
+  margin: 2.5rem 0;
+  border: 2px solid var(--ink);
+  overflow: hidden;
+}
+
+.interactive-header {
+  background: var(--ink);
+  color: var(--parch);
+  padding: 0.8rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.interactive-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.interactive-subtitle {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--gold-l);
+  letter-spacing: 0.05em;
+}
+
+.interactive-body {
+  padding: 1.2rem;
+  background: var(--parch-d);
+}
+
+/* ── SLIDERS ── */
+.ctrl {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.ctrl-lbl {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-ll);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--rust);
+  width: 55px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--rust);
+  border: 2px solid var(--parch);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ── RESULT DISPLAY ── */
+.result {
+  margin-top: 0.8rem;
+  padding: 0.8rem 1rem;
+  background: var(--ink);
+  color: var(--parch);
+  font-family: var(--mono);
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.result-label { font-size: 0.65rem; color: var(--ink-ll); letter-spacing: 0.1em; }
+.result-val { font-size: 1.1rem; color: var(--gold-l); }
+
+/* ── TWO COLUMN ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.2rem;
+  border: 1px dashed var(--gold);
+  background: rgba(184,120,32,0.05);
+  font-style: italic;
+  color: var(--ink-l);
+  font-size: 0.97rem;
+}
+
+.callout strong { font-style: normal; }
+
+/* ── EXTENSION BANNER ── */
+.extension {
+  margin: 3rem 0 1rem;
+  padding: 1.2rem 1.6rem;
+  background: var(--teal);
+  color: #e8f4f0;
+}
+
+.extension-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(232,244,240,0.6);
+  margin-bottom: 0.4rem;
+}
+
+.extension h2 {
+  color: #e8f4f0;
+  font-size: 1.5rem;
+}
+
+/* ── LADDER RUNGS ── */
+.ladder {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.rung {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  overflow: hidden;
+}
+
+.rung:last-child { border-bottom: 1px solid var(--border); }
+
+.rung-num {
+  background: var(--ink);
+  color: var(--gold-l);
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  flex-shrink: 0;
+}
+
+.rung-body {
+  padding: 0.8rem 1.2rem;
+  background: var(--parch-d);
+  flex: 1;
+}
+
+.rung-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--rust);
+  margin-bottom: 0.2rem;
+}
+
+.rung-body p {
+  font-size: 0.88rem;
+  margin: 0;
+  color: var(--ink-l);
+  line-height: 1.5;
+}
+
+.rung-dist {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--teal-l);
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  background: rgba(26,90,90,0.08);
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 90px;
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+footer p {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ink-ll);
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 600px) {
+  .two-col { grid-template-columns: 1fr; }
+  .ctrl-lbl { width: 90px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-eyebrow">Year 9 Mathematics &amp; Science · Geometry in the Field</div>
+  <h1>How Tall<br>Is <em>That?</em></h1>
+  <p class="hero-sub">On measuring heights and distances you cannot reach — using nothing but shadows, your thumb, a clinometer, and the geometry of similar triangles.</p>
+</header>
+
+<!-- ═══════════ SECTION 1: THE BIG IDEA ═══════════ -->
+<div class="section-header reveal">
+  <span class="section-num">§ 01</span>
+  <h2>The problem of the unreachable</h2>
+</div>
+
+<p class="reveal">How did the ancient Egyptians know how tall the pyramids were? They could not climb to the top with a measuring tape. Eratosthenes measured the circumference of the Earth in 240 BC — without ever leaving Egypt. Hipparchus estimated the distance to the Moon. None of them had telescopes, satellites, or electronic rangefinders.</p>
+
+<p class="reveal">Their tool was <strong>similarity</strong> — the idea that two shapes can have exactly the same proportions even though one is much larger than the other. If you understand this idea, you can measure almost anything.</p>
+
+<div class="keyidea reveal">
+  <div class="keyidea-label">The Core Idea</div>
+  <p>When two triangles have the <strong>same angles</strong>, their corresponding sides are always in the <strong>same ratio</strong>. It doesn't matter how big one is compared to the other. Shrink one, enlarge the other — the ratios stay fixed. This is what makes measurement possible at a distance.</p>
+</div>
+
+<!-- SVG: Two similar triangles side by side -->
+<div class="diagram-wrap reveal">
+<svg viewBox="0 0 700 220" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:680px">
+  <!-- Ground line -->
+  <line x1="30" y1="185" x2="670" y2="185" stroke="#c8b888" stroke-width="1.5"/>
+
+  <!-- Small triangle (left) -->
+  <polygon points="60,185 160,185 60,95" fill="rgba(139,58,26,0.08)" stroke="#8b3a1a" stroke-width="2"/>
+  <!-- Labels small triangle -->
+  <text x="100" y="202" font-family="Courier Prime, monospace" font-size="12" fill="#4a3a1a" text-anchor="middle">a = 4</text>
+  <text x="42" y="143" font-family="Courier Prime, monospace" font-size="12" fill="#4a3a1a" text-anchor="middle">b = 3</text>
+  <text x="122" y="140" font-family="Courier Prime, monospace" font-size="12" fill="#8b3a1a" text-anchor="middle" font-style="italic">h = ?</text>
+  <!-- Right angle marker small -->
+  <path d="M60,175 L70,175 L70,185" fill="none" stroke="#8b3a1a" stroke-width="1.5"/>
+  <!-- Angle arc small -->
+  <path d="M100,185 A40,40 0 0,0 75,156" fill="none" stroke="#b87820" stroke-width="1.5"/>
+  <text x="110" y="175" font-family="Courier Prime" font-size="11" fill="#b87820">θ</text>
+
+  <!-- Arrow between triangles -->
+  <text x="215" y="140" font-family="Playfair Display, serif" font-size="28" fill="#b87820" text-anchor="middle">∼</text>
+  <text x="215" y="165" font-family="Courier Prime, monospace" font-size="10" fill="#7a6a4a" text-anchor="middle">similar!</text>
+
+  <!-- Large triangle (right) -->
+  <polygon points="270,185 570,185 270,5" fill="rgba(26,90,90,0.07)" stroke="#1a5a5a" stroke-width="2"/>
+  <!-- Labels large triangle -->
+  <text x="420" y="202" font-family="Courier Prime, monospace" font-size="12" fill="#4a3a1a" text-anchor="middle">A = 12</text>
+  <text x="248" y="100" font-family="Courier Prime, monospace" font-size="12" fill="#4a3a1a" text-anchor="middle">B = 9</text>
+  <text x="460" y="100" font-family="Courier Prime, monospace" font-size="13" fill="#1a5a5a" text-anchor="middle" font-weight="bold">H = ?</text>
+  <!-- Right angle marker large -->
+  <path d="M270,172 L283,172 L283,185" fill="none" stroke="#1a5a5a" stroke-width="1.5"/>
+  <!-- Angle arc large -->
+  <path d="M340,185 A70,70 0 0,0 299,148" fill="none" stroke="#b87820" stroke-width="1.5"/>
+  <text x="352" y="171" font-family="Courier Prime" font-size="11" fill="#b87820">θ</text>
+
+  <!-- Ratio display -->
+  <text x="620" y="90" font-family="Courier Prime, monospace" font-size="11" fill="#8b3a1a" text-anchor="middle">a/A = b/B</text>
+  <text x="620" y="108" font-family="Courier Prime, monospace" font-size="11" fill="#8b3a1a" text-anchor="middle">4/12 = 3/9</text>
+  <text x="620" y="126" font-family="Courier Prime, monospace" font-size="11" fill="#b87820" text-anchor="middle">= 1/3</text>
+  <text x="620" y="152" font-family="Courier Prime, monospace" font-size="10" fill="#7a6a4a" text-anchor="middle">same ratio!</text>
+</svg>
+<p class="diagram-caption">Two similar triangles: same angles, sides in proportion. The ratio 1/3 appears everywhere.</p>
+</div>
+
+<p class="reveal">Look at the two triangles above. The big one is three times the size of the small one — but the <em>ratio</em> of base to height is identical: $\frac{4}{3} = \frac{12}{9}$. This is not a coincidence. It is a theorem. And it lets you calculate an unknown height from three known measurements.</p>
+
+<div class="ratio-box reveal">
+  <span>small height</span> / <span>small base</span> = <span>big height</span> / <span>big base</span>
+</div>
+
+<!-- ═══════════ SECTION 2: SHADOW METHOD ═══════════ -->
+<div class="section-header reveal">
+  <span class="section-num">§ 02</span>
+  <h2>Thales and the shadow method</h2>
+</div>
+
+<p class="reveal">Around 600 BC, the Greek mathematician <strong>Thales of Miletus</strong> reputedly measured the height of the Great Pyramid by its shadow. His method was elegantly simple: he waited until his own shadow was exactly as long as he was tall. At that moment, every shadow on Earth was equal in length to the object casting it. So the pyramid's shadow revealed its height directly.</p>
+
+<p class="reveal">But you don't need to wait for that special moment. On any sunny day, the Sun is at a fixed angle in the sky, so all vertical objects cast shadows in the same ratio:</p>
+
+<div class="diagram-wrap reveal">
+<svg viewBox="0 0 720 230" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:700px">
+  <!-- Sky -->
+  <rect x="0" y="0" width="720" height="230" fill="#f5f0e4"/>
+  <!-- Ground -->
+  <rect x="0" y="188" width="720" height="42" fill="#ddd0b4"/>
+  <line x1="0" y1="188" x2="720" y2="188" stroke="#c8b888" stroke-width="1.5"/>
+
+  <!-- Sun rays (parallel - key concept) -->
+  <g opacity="0.35" stroke="#d8a840" stroke-width="1.2">
+    <line x1="60" y1="0" x2="100" y2="188"/>
+    <line x1="200" y1="0" x2="240" y2="188"/>
+    <line x1="420" y1="0" x2="460" y2="188"/>
+    <line x1="560" y1="0" x2="600" y2="188"/>
+  </g>
+  <!-- Sun symbol -->
+  <circle cx="680" cy="18" r="14" fill="#d8a840" opacity="0.9"/>
+  <g stroke="#d8a840" stroke-width="2" opacity="0.7">
+    <line x1="680" y1="0" x2="680" y2="3"/>
+    <line x1="680" y1="33" x2="680" y2="36"/>
+    <line x1="662" y1="18" x2="659" y2="18"/>
+    <line x1="698" y1="18" x2="701" y2="18"/>
+    <line x1="668" y1="6" x2="666" y2="4"/>
+    <line x1="692" y1="30" x2="694" y2="32"/>
+  </g>
+
+  <!-- Person (stick figure) -->
+  <line x1="100" y1="188" x2="100" y2="140" stroke="#2a1f0a" stroke-width="2.5"/>
+  <circle cx="100" cy="135" r="6" fill="#2a1f0a"/>
+  <line x1="100" y1="150" x2="88" y2="162" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="100" y1="150" x2="112" y2="162" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="100" y1="165" x2="93" y2="188" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="100" y1="165" x2="107" y2="188" stroke="#2a1f0a" stroke-width="2"/>
+  <!-- Person height -->
+  <line x1="82" y1="129" x2="82" y2="188" stroke="#8b3a1a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="70" y="162" font-family="Courier Prime" font-size="11" fill="#8b3a1a" text-anchor="middle">h</text>
+  <!-- Person shadow -->
+  <line x1="100" y1="188" x2="145" y2="188" stroke="#2a1f0a" stroke-width="3" opacity="0.5"/>
+  <text x="122" y="204" font-family="Courier Prime" font-size="11" fill="#4a3a1a" text-anchor="middle">s</text>
+
+  <!-- Similar triangle overlay for person -->
+  <polygon points="100,129 145,188 100,188" fill="rgba(139,58,26,0.1)" stroke="#8b3a1a" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Tree -->
+  <line x1="460" y1="188" x2="460" y2="60" stroke="#3a6a2a" stroke-width="4"/>
+  <!-- Tree foliage (triangular) -->
+  <polygon points="460,30 440,80 480,80" fill="#3a6a2a" opacity="0.8"/>
+  <polygon points="460,50 435,100 485,100" fill="#3a6a2a" opacity="0.7"/>
+  <!-- Tree height label -->
+  <line x1="500" y1="188" x2="500" y2="60" stroke="#1a5a5a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="516" y="125" font-family="Courier Prime" font-size="12" fill="#1a5a5a" font-weight="bold">H = ?</text>
+  <!-- Tree shadow -->
+  <line x1="460" y1="188" x2="600" y2="188" stroke="#3a6a2a" stroke-width="3" opacity="0.6"/>
+  <text x="530" y="204" font-family="Courier Prime" font-size="11" fill="#4a3a1a" text-anchor="middle">S</text>
+
+  <!-- Similar triangle overlay tree -->
+  <polygon points="460,60 600,188 460,188" fill="rgba(26,90,90,0.08)" stroke="#1a5a5a" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Same angle marker -->
+  <path d="M120,188 A20,20 0 0,0 112,172" fill="none" stroke="#b87820" stroke-width="1.5"/>
+  <path d="M490,188 A30,30 0 0,0 478,164" fill="none" stroke="#b87820" stroke-width="1.5"/>
+  <text x="125" y="178" font-family="Courier Prime" font-size="10" fill="#b87820">θ</text>
+  <text x="495" y="175" font-family="Courier Prime" font-size="10" fill="#b87820">θ</text>
+
+  <!-- Ratio -->
+  <text x="280" y="155" font-family="Courier Prime, monospace" font-size="12" fill="#8b3a1a" text-anchor="middle">h/s = H/S</text>
+  <text x="280" y="173" font-family="Courier Prime, monospace" font-size="12" fill="#1a5a5a" text-anchor="middle">∴ H = h × S/s</text>
+</svg>
+<p class="diagram-caption">The Sun's parallel rays create similar triangles. Person and tree cast shadows in the same ratio as their heights.</p>
+</div>
+
+<div class="keyidea reveal">
+  <div class="keyidea-label">Shadow Method Formula</div>
+  <p>$$\frac{\text{your height}\ (h)}{\text{your shadow}\ (s)} = \frac{\text{tree height}\ (H)}{\text{tree shadow}\ (S)} \qquad \Rightarrow \qquad H = h \times \frac{S}{s}$$</p>
+</div>
+
+<div class="steps reveal">
+  <div class="step"><p>Stand upright in sunlight. Measure your height $h$ and the length of your shadow $s$.</p></div>
+  <div class="step"><p>Walk to the tree. Measure the length of the tree's shadow $S$ from base to tip.</p></div>
+  <div class="step"><p>Calculate: $H = h \times \dfrac{S}{s}$. Done — no climbing, no guessing.</p></div>
+</div>
+
+<!-- Shadow Interactive -->
+<div class="interactive reveal">
+  <div class="interactive-header">
+    <span class="interactive-title">☀ Shadow Method Calculator</span>
+    <span class="interactive-subtitle">drag the sliders</span>
+  </div>
+  <div class="interactive-body">
+    <div class="two-col">
+      <div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Your height h</span>
+          <input type="range" id="sh-h" min="1.2" max="2.0" value="1.6" step="0.01">
+          <span class="ctrl-val" id="sv-h">1.60 m</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Your shadow s</span>
+          <input type="range" id="sh-s" min="0.5" max="4.0" value="1.2" step="0.05">
+          <span class="ctrl-val" id="sv-s">1.20 m</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Tree shadow S</span>
+          <input type="range" id="sh-S" min="2" max="30" value="8" step="0.5">
+          <span class="ctrl-val" id="sv-S">8.0 m</span>
+        </div>
+      </div>
+      <div>
+        <div style="padding:0.8rem; background:var(--parch-dd); border:1px solid var(--border); height:100%">
+          <p style="font-family:var(--mono); font-size:0.65rem; color:var(--ink-ll); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.5rem">Ratio check</p>
+          <p style="font-family:var(--mono); font-size:0.9rem; margin:0" id="shadow-ratio">h/s = 1.33</p>
+          <p style="font-family:var(--mono); font-size:0.9rem; margin:0.3rem 0" id="shadow-check">H/S = 1.33 ✓</p>
+        </div>
+      </div>
+    </div>
+    <div class="result">
+      <span class="result-label">TREE HEIGHT</span>
+      <span class="result-val" id="shadow-H">H = 10.67 m</span>
+      <span class="result-label" style="margin-left:1rem">RATIO h/s =</span>
+      <span class="result-val" id="shadow-ratio2">1.33</span>
+    </div>
+  </div>
+</div>
+
+<div class="callout reveal">
+  <strong>Try it outside:</strong> On a sunny day, measure your own shadow and the shadow of a building, lamp post, or tree. Can you estimate the height using this formula? Check your answer by another method if you can.
+</div>
+
+<!-- ═══════════ SECTION 3: THE THUMB METHOD ═══════════ -->
+<div class="section-header reveal">
+  <span class="section-num">§ 03</span>
+  <h2>The thumb method — a ruler at arm's length</h2>
+</div>
+
+<p class="reveal">You don't always have a sunny day, and some objects don't cast convenient shadows. Here is a method that works any time: hold your thumb at arm's length and use it as a ruler — but a ruler for measuring <em>angles</em>, not lengths directly.</p>
+
+<p class="reveal">The trick relies on a simple fact: at arm's length (roughly 60 cm), your thumb is about 2 cm wide. Any object that appears to be the same width as your thumb at arm's length is approximately <strong>30 times its actual width away from you</strong>. Why? Because the ratio $\frac{2}{60} = \frac{1}{30}$ — the same similar-triangle ratio applies.</p>
+
+<div class="diagram-wrap reveal">
+<svg viewBox="0 0 700 200" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:680px">
+  <rect x="0" y="0" width="700" height="200" fill="#f5f0e4"/>
+  <!-- Ground -->
+  <line x1="0" y1="175" x2="700" y2="175" stroke="#c8b888" stroke-width="1"/>
+
+  <!-- Observer eye -->
+  <circle cx="50" cy="90" r="7" fill="#2a1f0a"/>
+  <circle cx="52" cy="89" r="3" fill="#f5f0e4"/>
+  <text x="30" y="115" font-family="Courier Prime" font-size="10" fill="#4a3a1a">eye</text>
+
+  <!-- Arm line -->
+  <line x1="50" y1="90" x2="180" y2="90" stroke="#2a1f0a" stroke-width="1.5"/>
+
+  <!-- Thumb at arm's length -->
+  <rect x="175" y="76" width="14" height="28" rx="3" fill="#c87840" opacity="0.8" stroke="#8b3a1a" stroke-width="1"/>
+  <text x="182" y="67" font-family="Courier Prime" font-size="10" fill="#8b3a1a" text-anchor="middle">thumb</text>
+  <text x="182" y="58" font-family="Courier Prime" font-size="10" fill="#8b3a1a" text-anchor="middle">≈2 cm</text>
+  <!-- Arm length label -->
+  <line x1="50" y1="106" x2="180" y2="106" stroke="#8b3a1a" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="115" y="120" font-family="Courier Prime" font-size="10" fill="#8b3a1a" text-anchor="middle">arm ≈ 60 cm</text>
+
+  <!-- Lines of sight through thumb to building -->
+  <line x1="50" y1="90" x2="540" y2="46" stroke="#b87820" stroke-width="1" stroke-dasharray="5,3" opacity="0.7"/>
+  <line x1="50" y1="90" x2="540" y2="134" stroke="#b87820" stroke-width="1" stroke-dasharray="5,3" opacity="0.7"/>
+
+  <!-- Building -->
+  <rect x="520" y="46" width="30" height="129" fill="rgba(26,90,90,0.15)" stroke="#1a5a5a" stroke-width="2"/>
+  <text x="535" y="38" font-family="Courier Prime" font-size="11" fill="#1a5a5a" text-anchor="middle" font-weight="bold">H = ?</text>
+  <!-- Windows -->
+  <g fill="rgba(26,90,90,0.2)" stroke="#1a5a5a" stroke-width="0.5">
+    <rect x="524" y="54" width="8" height="8"/>
+    <rect x="538" y="54" width="8" height="8"/>
+    <rect x="524" y="70" width="8" height="8"/>
+    <rect x="538" y="70" width="8" height="8"/>
+    <rect x="524" y="86" width="8" height="8"/>
+    <rect x="538" y="86" width="8" height="8"/>
+  </g>
+
+  <!-- Distance label -->
+  <line x1="50" y1="160" x2="520" y2="160" stroke="#1a5a5a" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="285" y="155" font-family="Courier Prime" font-size="11" fill="#1a5a5a" text-anchor="middle">distance D = 30 × arm length</text>
+
+  <!-- Similar triangles annotation -->
+  <polygon points="50,90 175,76 175,104" fill="rgba(139,58,26,0.1)" stroke="#8b3a1a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <polygon points="50,90 520,46 520,134" fill="rgba(26,90,90,0.06)" stroke="#1a5a5a" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <text x="370" y="32" font-family="Courier Prime" font-size="10" fill="#7a6a4a" text-anchor="middle">2/60 = H/D → H = D/30</text>
+</svg>
+<p class="diagram-caption">Your thumb at arm's length creates a tiny triangle. The building creates a similar larger one. If the building appears thumb-width, it is 30 thumb-widths away — and 30 thumb-widths tall.</p>
+</div>
+
+<div class="keyidea reveal">
+  <div class="keyidea-label">Thumb Method — General Form</div>
+  <p>If an object appears to be <strong>$n$ thumb-widths</strong> tall at arm's length, and you know the distance $D$ to the object:<br><br>
+  $$H = D \times \frac{\text{apparent thumb-widths} \times 2\,\text{cm}}{60\,\text{cm}} = D \times \frac{n}{30}$$
+  Equally: if the object is <em>exactly</em> one thumb-width and you know its real height $H$:<br><br>
+  $$D = 30 \times H$$</p>
+</div>
+
+<!-- Thumb Interactive -->
+<div class="interactive reveal">
+  <div class="interactive-header">
+    <span class="interactive-title">👍 Thumb Method Calculator</span>
+    <span class="interactive-subtitle">two ways to use it</span>
+  </div>
+  <div class="interactive-body">
+    <p style="font-family:var(--mono); font-size:0.65rem; color:var(--ink-ll); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.8rem">Mode A — find height from distance</p>
+    <div class="ctrl">
+      <span class="ctrl-lbl">Distance D</span>
+      <input type="range" id="th-D" min="5" max="500" value="60" step="5">
+      <span class="ctrl-val" id="tv-D">60 m</span>
+    </div>
+    <div class="ctrl">
+      <span class="ctrl-lbl">Thumb widths n</span>
+      <input type="range" id="th-n" min="0.5" max="10" value="2" step="0.5">
+      <span class="ctrl-val" id="tv-n">2.0</span>
+    </div>
+    <div class="result" id="thumb-result-A">
+      <span class="result-label">OBJECT HEIGHT</span>
+      <span class="result-val" id="thumb-H">H = 4.0 m</span>
+    </div>
+    <hr style="border:none; border-top:1px solid var(--border); margin:1rem 0">
+    <p style="font-family:var(--mono); font-size:0.65rem; color:var(--ink-ll); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.8rem">Mode B — find distance from known height</p>
+    <div class="ctrl">
+      <span class="ctrl-lbl">Known height H</span>
+      <input type="range" id="th-H2" min="1" max="100" value="15" step="1">
+      <span class="ctrl-val" id="tv-H2">15 m</span>
+    </div>
+    <div class="ctrl">
+      <span class="ctrl-lbl">Thumb widths n</span>
+      <input type="range" id="th-n2" min="0.5" max="10" value="2" step="0.5">
+      <span class="ctrl-val" id="tv-n2">2.0</span>
+    </div>
+    <div class="result">
+      <span class="result-label">ESTIMATED DISTANCE</span>
+      <span class="result-val" id="thumb-D2">D = 225 m</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION 4: ANGLE OF ELEVATION & CLINOMETER ═══════════ -->
+<div class="section-header reveal">
+  <span class="section-num">§ 04</span>
+  <h2>The angle of elevation and the clinometer</h2>
+</div>
+
+<p class="reveal">Both methods so far required you to measure lengths. But there is a third approach — use the <strong>angle</strong> at which you look up at the top of an object. This angle is called the <em>angle of elevation</em>. If you know this angle and your horizontal distance from the object, you can find its height — again using similar triangles.</p>
+
+<p class="reveal">The instrument for measuring angles of elevation is called a <strong>clinometer</strong> (or inclinometer). You can make one from a protractor, a straw, and a plumb-bob (a weight on a string). When you look through the straw at the top of a building, the string hangs straight down, and the angle it makes with the protractor gives the elevation angle.</p>
+
+<div class="diagram-wrap reveal">
+<svg viewBox="0 0 720 250" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:700px">
+  <!-- Sky / Ground -->
+  <rect x="0" y="0" width="720" height="250" fill="#f5f0e4"/>
+  <rect x="0" y="210" width="720" height="40" fill="#ddd0b4"/>
+  <line x1="0" y1="210" x2="720" y2="210" stroke="#c8b888" stroke-width="1.5"/>
+
+  <!-- Observer (stick figure) at left -->
+  <line x1="60" y1="210" x2="60" y2="160" stroke="#2a1f0a" stroke-width="2.5"/>
+  <circle cx="60" cy="153" r="7" fill="#2a1f0a"/>
+  <line x1="60" y1="170" x2="48" y2="185" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="60" y1="170" x2="72" y2="185" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="60" y1="185" x2="54" y2="210" stroke="#2a1f0a" stroke-width="2"/>
+  <line x1="60" y1="185" x2="66" y2="210" stroke="#2a1f0a" stroke-width="2"/>
+
+  <!-- Eye level line (dashed) -->
+  <line x1="60" y1="153" x2="560" y2="153" stroke="#8b3a1a" stroke-width="1" stroke-dasharray="5,4" opacity="0.7"/>
+  <text x="300" y="148" font-family="Courier Prime" font-size="10" fill="#8b3a1a" opacity="0.8" text-anchor="middle">eye level</text>
+
+  <!-- Line of sight to top of building -->
+  <line x1="60" y1="153" x2="560" y2="35" stroke="#b87820" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- Angle of elevation arc -->
+  <path d="M120,153 A60,60 0 0,0 88,121" fill="none" stroke="#b87820" stroke-width="2"/>
+  <text x="138" y="142" font-family="Courier Prime" font-size="13" fill="#b87820" font-weight="bold">θ</text>
+
+  <!-- Observer height label -->
+  <line x1="38" y1="210" x2="38" y2="153" stroke="#8b3a1a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="25" y="183" font-family="Courier Prime" font-size="10" fill="#8b3a1a" text-anchor="middle">eye</text>
+  <text x="25" y="195" font-family="Courier Prime" font-size="10" fill="#8b3a1a" text-anchor="middle">ht e</text>
+
+  <!-- Building -->
+  <rect x="545" y="35" width="35" height="175" fill="rgba(26,90,90,0.12)" stroke="#1a5a5a" stroke-width="2"/>
+  <!-- Windows -->
+  <g fill="rgba(26,90,90,0.2)" stroke="#1a5a5a" stroke-width="0.5">
+    <rect x="549" y="45" width="9" height="9"/>
+    <rect x="563" y="45" width="9" height="9"/>
+    <rect x="549" y="62" width="9" height="9"/>
+    <rect x="563" y="62" width="9" height="9"/>
+    <rect x="549" y="79" width="9" height="9"/>
+    <rect x="563" y="79" width="9" height="9"/>
+    <rect x="549" y="96" width="9" height="9"/>
+    <rect x="563" y="96" width="9" height="9"/>
+  </g>
+
+  <!-- Horizontal distance label -->
+  <line x1="60" y1="228" x2="560" y2="228" stroke="#1a5a5a" stroke-width="1.5"/>
+  <line x1="60" y1="220" x2="60" y2="236" stroke="#1a5a5a" stroke-width="1.5"/>
+  <line x1="560" y1="220" x2="560" y2="236" stroke="#1a5a5a" stroke-width="1.5"/>
+  <text x="310" y="244" font-family="Courier Prime" font-size="12" fill="#1a5a5a" text-anchor="middle">horizontal distance d</text>
+
+  <!-- Height above eye level -->
+  <line x1="595" y1="35" x2="595" y2="153" stroke="#8b3a1a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="650" y="100" font-family="Courier Prime" font-size="11" fill="#8b3a1a" text-anchor="middle">height above</text>
+  <text x="650" y="113" font-family="Courier Prime" font-size="11" fill="#8b3a1a" text-anchor="middle">eye level = x</text>
+
+  <!-- Total height -->
+  <text x="650" y="155" font-family="Courier Prime" font-size="11" fill="#1a5a5a" text-anchor="middle">Total H =</text>
+  <text x="650" y="168" font-family="Courier Prime" font-size="11" fill="#1a5a5a" text-anchor="middle">x + e</text>
+
+  <!-- Right angle marker at building base level -->
+  <path d="M560,153 L548,153 L548,165" fill="none" stroke="#1a5a5a" stroke-width="1.5"/>
+</svg>
+<p class="diagram-caption">The angle of elevation θ and the horizontal distance d define a right-angled triangle. The height x above eye level can be found from the ratio x/d.</p>
+</div>
+
+<p class="reveal">Now here is where Pythagoras has already given you a head start. You know about right-angled triangles. In the diagram above, the horizontal distance $d$, the height above eye level $x$, and the line of sight form a right-angled triangle. The ratio $x/d$ depends only on the angle $\theta$. Later, you will learn that this ratio has a name — the tangent — but for now, you can <strong>read it from a table or calculate it using the similar-triangle principle</strong>.</p>
+
+<div class="keyidea reveal">
+  <div class="keyidea-label">Angle of Elevation Method</div>
+  <p>If you know the angle of elevation $\theta$ and the horizontal distance $d$:
+  <br><br>
+  The similar triangle gives: <strong>opposite / adjacent</strong> is a fixed ratio for each angle.
+  <br><br>
+  For $\theta = 45°$: the triangle is isosceles, so $x = d$ (the height equals the distance).
+  <br>
+  For $\theta = 30°$: $x \approx 0.577 \times d$ (roughly half the distance).
+  <br>
+  For $\theta = 60°$: $x \approx 1.732 \times d$ (taller than it is far).
+  <br><br>
+  Add your eye height $e$: <strong>Total height $H = x + e$</strong></p>
+</div>
+
+<!-- Clinometer Interactive -->
+<div class="interactive reveal">
+  <div class="interactive-header">
+    <span class="interactive-title">📐 Clinometer Calculator</span>
+    <span class="interactive-subtitle">angle of elevation method</span>
+  </div>
+  <div class="interactive-body">
+    <div class="two-col">
+      <div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Distance d</span>
+          <input type="range" id="cl-d" min="2" max="200" value="30" step="1">
+          <span class="ctrl-val" id="cv-d">30 m</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Elevation θ</span>
+          <input type="range" id="cl-theta" min="5" max="80" value="45" step="1">
+          <span class="ctrl-val" id="cv-theta">45°</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-lbl">Eye height e</span>
+          <input type="range" id="cl-e" min="1.0" max="1.9" value="1.5" step="0.05">
+          <span class="ctrl-val" id="cv-e">1.50 m</span>
+        </div>
+      </div>
+      <div>
+        <!-- Live triangle sketch -->
+        <svg id="clin-svg" viewBox="0 0 200 160" width="100%" style="border:1px solid var(--border); background:var(--parch-dd)">
+          <line x1="10" y1="145" x2="190" y2="145" stroke="#c8b888" stroke-width="1"/>
+          <line id="clin-base" x1="10" y1="125" x2="170" y2="125" stroke="#1a5a5a" stroke-width="2"/>
+          <line id="clin-vert" x1="170" y1="125" x2="170" y2="30" stroke="#8b3a1a" stroke-width="2"/>
+          <line id="clin-hyp" x1="10" y1="125" x2="170" y2="30" stroke="#b87820" stroke-width="2" stroke-dasharray="5,3"/>
+          <path id="clin-arc" d="M55,125 A45,45 0 0,0 42,102" fill="none" stroke="#b87820" stroke-width="1.5"/>
+          <text id="clin-angle-lbl" x="62" y="118" font-family="Courier Prime" font-size="11" fill="#b87820">45°</text>
+          <text x="85" y="140" font-family="Courier Prime" font-size="9" fill="#1a5a5a" text-anchor="middle">d</text>
+          <text x="183" y="80" font-family="Courier Prime" font-size="9" fill="#8b3a1a">x</text>
+        </svg>
+      </div>
+    </div>
+    <div class="result">
+      <span class="result-label">x ABOVE EYE</span>
+      <span class="result-val" id="clin-x">30.0 m</span>
+      <span class="result-label" style="margin-left:1rem">TOTAL HEIGHT H = x + e</span>
+      <span class="result-val" id="clin-H">31.5 m</span>
+    </div>
+    <div style="margin-top:0.6rem; padding:0.6rem 0.8rem; background:var(--parch-dd); border:1px solid var(--border)">
+      <p style="font-family:var(--mono); font-size:0.68rem; color:var(--ink-ll); margin:0" id="clin-explain">At 45°: the triangle is isosceles, so the height above eye level equals the horizontal distance.</p>
+    </div>
+  </div>
+</div>
+
+<h3 class="reveal">Making a clinometer</h3>
+<div class="steps reveal">
+  <div class="step"><p>Take a protractor (half-circle, 0–180°). Tape a drinking straw along the straight edge.</p></div>
+  <div class="step"><p>Tie a small weight (a key, an eraser) to a piece of thread. Attach the thread to the centre point of the straight edge so it hangs freely as a plumb-bob.</p></div>
+  <div class="step"><p>Look through the straw at the top of the object. Hold still. Your partner reads the angle where the hanging thread crosses the protractor scale. The angle of elevation is 90° minus that reading.</p></div>
+  <div class="step"><p>Measure your horizontal distance to the base of the object. Use the calculator above to find the height.</p></div>
+</div>
+
+<!-- ═══════════ SECTION 5: HOW DO YOU KNOW WHICH TO USE? ═══════════ -->
+<div class="section-header reveal">
+  <span class="section-num">§ 05</span>
+  <h2>Choosing your method</h2>
+</div>
+
+<p class="reveal">You now have three different approaches. Which is best depends on what you can measure:</p>
+
+<div class="reveal" style="margin:1.5rem 0">
+<table style="width:100%; border-collapse:collapse; font-size:0.92rem">
+  <thead>
+    <tr style="background:var(--ink); color:var(--parch)">
+      <th style="padding:0.6rem 0.8rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; font-weight:400">Method</th>
+      <th style="padding:0.6rem 0.8rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; font-weight:400">What you measure</th>
+      <th style="padding:0.6rem 0.8rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; font-weight:400">Best when</th>
+      <th style="padding:0.6rem 0.8rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; font-weight:400">Limitation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:0.6rem 0.8rem; font-weight:600; color:var(--rust)">Shadow</td>
+      <td style="padding:0.6rem 0.8rem">Your height, your shadow, object's shadow</td>
+      <td style="padding:0.6rem 0.8rem">Sunny day, shadow accessible</td>
+      <td style="padding:0.6rem 0.8rem">Needs sunshine; shadow may be inaccessible</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border); background:rgba(200,180,140,0.1)">
+      <td style="padding:0.6rem 0.8rem; font-weight:600; color:var(--rust)">Thumb</td>
+      <td style="padding:0.6rem 0.8rem">Distance to object, apparent angular size</td>
+      <td style="padding:0.6rem 0.8rem">Known distance or known height</td>
+      <td style="padding:0.6rem 0.8rem">Rough estimate only (arm length varies)</td>
+    </tr>
+    <tr>
+      <td style="padding:0.6rem 0.8rem; font-weight:600; color:var(--rust)">Clinometer</td>
+      <td style="padding:0.6rem 0.8rem">Horizontal distance, angle of elevation</td>
+      <td style="padding:0.6rem 0.8rem">Any weather, most precise</td>
+      <td style="padding:0.6rem 0.8rem">Need to measure horizontal distance</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="reveal">All three methods use the same underlying geometry: <strong>similar triangles</strong>. You are always constructing a small, measurable triangle that is similar to a large, unmeasurable one. The ratio between the two is the key.</p>
+
+<!-- ═══════════ EXTENSION: COSMIC DISTANCE LADDER ═══════════ -->
+<div class="extension reveal">
+  <div class="extension-label">Extension — for the curious</div>
+  <h2>The Cosmic Distance Ladder</h2>
+</div>
+
+<p class="reveal">Everything we have done so far works for objects within a few kilometres. But astronomers use the <em>exact same logic</em> — the logic of similar triangles and known ratios — to measure distances to stars, galaxies, and the edges of the observable universe. The distances are so vast that each method only reaches so far. So astronomers build a <strong>ladder</strong>: each rung uses the previous one as its foundation.</p>
+
+<div class="ladder reveal">
+
+  <div class="rung">
+    <div class="rung-num">1</div>
+    <div class="rung-body">
+      <div class="rung-title">Direct measurement — radar ranging</div>
+      <p>Bounce radio waves off nearby planets and time the echo. Speed of light × time / 2 = distance. Gives us the exact size of the Solar System. This is our anchor.</p>
+    </div>
+    <div class="rung-dist">up to<br>~5 AU</div>
+  </div>
+
+  <div class="rung">
+    <div class="rung-num">2</div>
+    <div class="rung-body">
+      <div class="rung-title">Parallax — the geometry of two viewpoints</div>
+      <p>As Earth orbits the Sun, nearby stars appear to shift against the distant background — exactly like your thumb shifting when you close one eye, then the other. The angle of shift (parallax angle) and the known Earth-Sun distance form a similar triangle. This works out to about 100 light-years.</p>
+    </div>
+    <div class="rung-dist">up to<br>~100 ly</div>
+  </div>
+
+  <div class="rung">
+    <div class="rung-num">3</div>
+    <div class="rung-body">
+      <div class="rung-title">Standard candles — Cepheid variables</div>
+      <p>Certain stars (Cepheids) pulsate with a period that reveals their true brightness. Compare true brightness to apparent brightness and the inverse-square law gives distance — the same ratio logic, now in light intensity. Hubble used this to prove the Milky Way was not the whole universe.</p>
+    </div>
+    <div class="rung-dist">up to<br>~100 Mly</div>
+  </div>
+
+  <div class="rung">
+    <div class="rung-num">4</div>
+    <div class="rung-body">
+      <div class="rung-title">Type Ia supernovae — standard explosions</div>
+      <p>A certain type of stellar explosion always reaches the same peak brightness. Like a very reliable candle, comparing its apparent brightness to its known true brightness gives distance across billions of light-years. This is how we discovered the universe's expansion is accelerating.</p>
+    </div>
+    <div class="rung-dist">up to<br>~10 Gly</div>
+  </div>
+
+  <div class="rung">
+    <div class="rung-num">5</div>
+    <div class="rung-body">
+      <div class="rung-title">Redshift and Hubble's Law</div>
+      <p>The most distant objects recede so fast that their light is stretched (redshifted). The amount of redshift, calibrated against the lower rungs of the ladder, gives distance to the edge of the observable universe — 46 billion light-years.</p>
+    </div>
+    <div class="rung-dist">up to<br>46 Gly</div>
+  </div>
+
+</div>
+
+<div class="keyidea reveal">
+  <div class="keyidea-label">The unbroken thread</div>
+  <p>From your thumb at arm's length to the edge of the observable universe — every distance measurement is built on the same principle: <strong>a known ratio, a measurable length, and the logic of similar triangles</strong>. The instruments change; the geometry does not.</p>
+</div>
+
+<div class="callout reveal">
+  <strong>Parallax and your two eyes:</strong> Close your left eye and point at something across the room. Now switch — open the left, close the right. Your finger appears to jump. The angle it jumps through, combined with the known distance between your eyes, forms a similar triangle that your brain uses unconsciously to perceive depth. You have been doing parallax geometry since you were a baby.
+</div>
+
+<footer>
+  <p>Year 9 Mathematics &amp; Science · Dwight School London</p>
+  <p>Shadow method · Thumb method · Clinometer · Cosmic distance ladder</p>
+</footer>
+
+</div><!-- end .page -->
+
+<script>
+// ─── SHADOW METHOD ───────────────────────────────
+function updateShadow() {
+  const h = parseFloat(document.getElementById('sh-h').value);
+  const s = parseFloat(document.getElementById('sh-s').value);
+  const S = parseFloat(document.getElementById('sh-S').value);
+  document.getElementById('sv-h').textContent = h.toFixed(2) + ' m';
+  document.getElementById('sv-s').textContent = s.toFixed(2) + ' m';
+  document.getElementById('sv-S').textContent = S.toFixed(1) + ' m';
+  const ratio = h / s;
+  const H = ratio * S;
+  document.getElementById('shadow-H').textContent = 'H = ' + H.toFixed(2) + ' m';
+  document.getElementById('shadow-ratio2').textContent = ratio.toFixed(3);
+  document.getElementById('shadow-ratio').textContent = 'h/s = ' + ratio.toFixed(3);
+  document.getElementById('shadow-check').textContent = 'H/S = ' + (H/S).toFixed(3) + ' ✓';
+}
+['sh-h','sh-s','sh-S'].forEach(id => document.getElementById(id).addEventListener('input', updateShadow));
+updateShadow();
+
+// ─── THUMB METHOD ────────────────────────────────
+function updateThumb() {
+  const D = parseFloat(document.getElementById('th-D').value);
+  const n = parseFloat(document.getElementById('th-n').value);
+  document.getElementById('tv-D').textContent = D.toFixed(0) + ' m';
+  document.getElementById('tv-n').textContent = n.toFixed(1);
+  const H = D * n / 30;
+  document.getElementById('thumb-H').textContent = 'H = ' + H.toFixed(1) + ' m';
+}
+function updateThumbB() {
+  const H2 = parseFloat(document.getElementById('th-H2').value);
+  const n2 = parseFloat(document.getElementById('th-n2').value);
+  document.getElementById('tv-H2').textContent = H2.toFixed(0) + ' m';
+  document.getElementById('tv-n2').textContent = n2.toFixed(1);
+  const D2 = H2 * 30 / n2;
+  document.getElementById('thumb-D2').textContent = 'D = ' + D2.toFixed(0) + ' m';
+}
+['th-D','th-n'].forEach(id => document.getElementById(id).addEventListener('input', updateThumb));
+['th-H2','th-n2'].forEach(id => document.getElementById(id).addEventListener('input', updateThumbB));
+updateThumb(); updateThumbB();
+
+// ─── CLINOMETER ──────────────────────────────────
+function updateClin() {
+  const d = parseFloat(document.getElementById('cl-d').value);
+  const theta = parseFloat(document.getElementById('cl-theta').value);
+  const e = parseFloat(document.getElementById('cl-e').value);
+  document.getElementById('cv-d').textContent = d.toFixed(0) + ' m';
+  document.getElementById('cv-theta').textContent = theta.toFixed(0) + '°';
+  document.getElementById('cv-e').textContent = e.toFixed(2) + ' m';
+
+  const rad = theta * Math.PI / 180;
+  const tanVal = Math.tan(rad);
+  const x = d * tanVal;
+  const H = x + e;
+  document.getElementById('clin-x').textContent = x.toFixed(1) + ' m';
+  document.getElementById('clin-H').textContent = H.toFixed(1) + ' m';
+
+  // Explanation
+  let explain = '';
+  if (theta === 45) explain = 'At 45°: the triangle is isosceles, so the height above eye level equals the horizontal distance.';
+  else if (theta < 45) explain = `At ${theta}°: the object is wider than it is tall from your viewpoint. Ratio x/d ≈ ${tanVal.toFixed(3)}.`;
+  else explain = `At ${theta}°: the object is taller than it is far. Ratio x/d ≈ ${tanVal.toFixed(3)}.`;
+  document.getElementById('clin-explain').textContent = explain;
+
+  // Update SVG sketch
+  const svg = document.getElementById('clin-svg');
+  const svgW = 190, svgH = 140;
+  const eyeX = 10, eyeY = 125;
+  const maxBase = 160;
+  // Scale so the triangle fits
+  const scale = Math.min(1, maxBase / Math.max(d, x * 0.8 + 10));
+  const baseLen = Math.min(160, 160);
+  const vertH = Math.min(90, baseLen * tanVal);
+  const tipX = eyeX + baseLen;
+  const tipY = eyeY - vertH;
+  const baseX2 = eyeX + baseLen;
+
+  document.getElementById('clin-base').setAttribute('x1', eyeX);
+  document.getElementById('clin-base').setAttribute('y1', eyeY);
+  document.getElementById('clin-base').setAttribute('x2', baseX2);
+  document.getElementById('clin-base').setAttribute('y2', eyeY);
+
+  document.getElementById('clin-vert').setAttribute('x1', baseX2);
+  document.getElementById('clin-vert').setAttribute('y1', eyeY);
+  document.getElementById('clin-vert').setAttribute('x2', tipX);
+  document.getElementById('clin-vert').setAttribute('y2', tipY);
+
+  document.getElementById('clin-hyp').setAttribute('x1', eyeX);
+  document.getElementById('clin-hyp').setAttribute('y1', eyeY);
+  document.getElementById('clin-hyp').setAttribute('x2', tipX);
+  document.getElementById('clin-hyp').setAttribute('y2', tipY);
+
+  document.getElementById('clin-angle-lbl').textContent = theta + '°';
+  document.getElementById('clin-angle-lbl').setAttribute('x', eyeX + 45);
+  document.getElementById('clin-angle-lbl').setAttribute('y', eyeY - 6);
+}
+['cl-d','cl-theta','cl-e'].forEach(id => document.getElementById(id).addEventListener('input', updateClin));
+updateClin();
+
+// ─── SCROLL REVEAL ───────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 40);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+document.querySelectorAll('.reveal').forEach(c => io.observe(c));
+</script>
+</body>
+</html>
