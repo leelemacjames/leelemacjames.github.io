@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why i Makes Fibonacci Inevitable: Determinants, Norms, and Recurrence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0d10;
+      --bg-raised: #13141a;
+      --bg-card: #181a22;
+      --ink: #d4d4d8;
+      --ink-bright: #eeeef0;
+      --ink-muted: #7c7e8a;
+      --gold: #c8a96e;
+      --gold-dim: rgba(200, 169, 110, 0.15);
+      --gold-glow: rgba(200, 169, 110, 0.06);
+      --blue: #5b8ade;
+      --blue-dim: rgba(91, 138, 222, 0.12);
+      --violet: #9b7ad8;
+      --green: #6dbda1;
+      --red-soft: #c97a6d;
+      --border: rgba(200, 169, 110, 0.12);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+      --ease: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--serif);
+      font-size: 19px;
+      line-height: 1.72;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    /* ── layout ── */
+    .page {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+    }
+
+    /* ── hero ── */
+    .hero {
+      padding: 80px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -50vw; right: -50vw;
+      height: 100%;
+      background:
+        radial-gradient(ellipse 600px 400px at 30% 20%, var(--gold-glow), transparent),
+        radial-gradient(ellipse 400px 300px at 70% 60%, var(--blue-dim), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      font-weight: 600;
+      line-height: 1.12;
+      color: var(--ink-bright);
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--ink-muted);
+      max-width: 560px;
+      line-height: 1.65;
+    }
+
+    /* ── sections ── */
+    .essay-section {
+      margin-bottom: 52px;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.45rem, 3vw, 1.85rem);
+      font-weight: 600;
+      color: var(--ink-bright);
+      margin-bottom: 18px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 10px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin-bottom: 1.15em;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--ink-bright);
+    }
+
+    em { color: var(--ink-bright); }
+
+    a {
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold-dim);
+      transition: border-color 0.3s;
+    }
+    a:hover { border-color: var(--gold); }
+
+    /* ── math blocks ── */
+    .math-block {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px;
+      padding: 18px 22px;
+      margin: 22px 0 26px;
+      overflow-x: auto;
+      font-size: 1.05rem;
+    }
+
+    .math-inline {
+      /* handled by KaTeX */
+    }
+
+    /* ── aside / margin note ── */
+    .aside {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 26px 0;
+      font-size: 0.95rem;
+      color: var(--ink-muted);
+      line-height: 1.65;
+    }
+
+    .aside strong {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .aside p:last-child { margin-bottom: 0; }
+
+    /* ── key insight box ── */
+    .insight {
+      position: relative;
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-raised));
+      border: 1px solid var(--gold-dim);
+      border-radius: 10px;
+      padding: 26px 28px;
+      margin: 32px 0;
+    }
+
+    .insight::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--gold-dim), transparent 60%);
+      z-index: -1;
+    }
+
+    .insight-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .insight p {
+      color: var(--ink-bright);
+      font-size: 1.08rem;
+    }
+
+    .insight p:last-child { margin-bottom: 0; }
+
+    /* ── code / computation ── */
+    .code-block {
+      background: #0a0b0e;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 18px 20px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #b0b8cc;
+      overflow-x: auto;
+      margin: 22px 0 26px;
+    }
+
+    .code-block .comment { color: #555b6e; font-style: italic; }
+    .code-block .keyword { color: var(--violet); }
+    .code-block .fn { color: var(--blue); }
+    .code-block .string { color: var(--green); }
+    .code-block .number { color: var(--gold); }
+
+    /* ── exercise ── */
+    .exercise {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 18px 0;
+      background: var(--bg-raised);
+    }
+
+    .exercise-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .exercise p { margin-bottom: 0.5em; }
+    .exercise p:last-child { margin-bottom: 0; }
+
+    /* ── separator ── */
+    .sep {
+      width: 60px;
+      height: 1px;
+      background: var(--gold-dim);
+      margin: 48px auto;
+    }
+
+    /* ── list ── */
+    ul, ol {
+      padding-left: 1.3em;
+      margin-bottom: 1.15em;
+    }
+    li {
+      margin-bottom: 0.45em;
+    }
+
+    /* ── table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 22px 0 26px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background: var(--bg-card);
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 0.85rem;
+      font-family: var(--mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    td { vertical-align: top; }
+
+    /* ── footer ── */
+    .footer {
+      margin-top: 64px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      .hero { padding: 52px 0 36px; }
+      .math-block, .code-block { padding: 14px 16px; }
+      .insight { padding: 20px 22px; }
+    }
+
+    /* ── fade-in on scroll ── */
+    .essay-section {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    .essay-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* ── reveal button ── */
+    .reveal-btn {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--gold);
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .reveal-btn:hover { background: var(--gold-dim); border-color: var(--gold); }
+    .reveal {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: var(--bg);
+      border-left: 2px solid var(--gold-dim);
+      border-radius: 0 4px 4px 0;
+      font-size: 0.95rem;
+      color: var(--ink-muted);
+    }
+    .reveal p:last-child { margin-bottom: 0; }
+
+    /* ── interactives ── */
+    .interactive-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      margin: 20px 0 28px;
+    }
+    .interactive-controls { margin-bottom: 8px; }
+    .size-btn {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink-muted);
+      padding: 5px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .size-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .size-btn.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .circ-input {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      width: 52px;
+      padding: 6px 8px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--ink-bright);
+      text-align: center;
+    }
+    .circ-input:focus { outline: none; border-color: var(--gold); }
+    .term-pill {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--ink-muted);
+    }
+    .term-pill span { color: var(--gold); }
+
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <header class="hero">
+    <div class="hero-label">McMurmerings · Mathematics</div>
+    <h1>Why <em>i</em> Makes Fibonacci Inevitable</h1>
+    <p class="hero-sub" style="font-size:1rem;color:var(--ink-muted);margin-top:6px;margin-bottom:0;font-family:var(--mono);letter-spacing:0.04em;">
+      Determinants, Norms, and Recurrence
+    </p>
+    <p class="hero-sub" style="margin-top:22px;">
+      The imaginary unit isn't decoration. It is the algebraic move that turns a
+      determinant's built-in subtraction into the addition that defines Fibonacci.
+    </p>
+    <p class="hero-sub">
+      But that move only matters because determinants already encode number systems.
+      A 2×2 symmetric determinant produces the difference of two squares.
+      A 3×3 circulant produces a cubic norm form. Tridiagonal chains produce recurrences.
+      The patterns are already there.
+    </p>
+    <p class="hero-sub">
+      The role of \(i\) is simply this: it selects the additive branch of that structure.
+      Fibonacci, Pell, metallic means, Cassini, and cubic norm identities are not separate
+      phenomena. They are different shadows cast by the same determinant machinery.
+    </p>
+  </header>
+
+  <!-- ═══════════ §1 ═══════════ -->
+  <section class="essay-section">
+    <h2>The determinant already subtracts</h2>
+    <p>
+      A determinant is an alternating machine. Feed it a 2×2 matrix and it hands back
+      one product minus another. That's the whole of it. No extra structure needed:
+    </p>
+    <div class="math-block">
+      \[\det\!\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc\]
+    </div>
+    <p>
+      Now impose a single symmetry constraint: make the matrix symmetric with equal
+      diagonal entries. That raw subtraction crystallises into something familiar:
+    </p>
+    <div class="math-block">
+      \[\det\!\begin{pmatrix} a & b \\ b & a \end{pmatrix} = a^2 - b^2\]
+    </div>
+    <p>
+      The difference of two squares isn't an isolated trick. It is the simplest structured
+      determinant. That framing matters, because it means we can generalise by changing the
+      matrix rather than guessing at algebraic patterns.
+    </p>
+
+    <div class="insight">
+      <div class="insight-label">First rung of the ladder</div>
+      <p>
+        Every odd integer is a structured determinant:
+      </p>
+      <div class="math-block" style="margin:14px 0;">
+        \[n \;=\; a^2 - b^2 \;=\; \det\!\begin{pmatrix} a & b \\ b & a \end{pmatrix},
+        \qquad a = \tfrac{n+1}{2},\quad b = \tfrac{n-1}{2}\]
+      </div>
+      <p>
+        Both \(a\) and \(b\) are integers precisely when \(n\) is odd. So the odd integers
+        are exactly the values taken by a symmetric 2×2 determinant over the integers.
+        This is not a trick. It is the simplest instance of a general phenomenon:
+        structured matrices generate structured subsets of the integers. The matrix
+        symmetry type determines which subset. Everything that follows is a consequence
+        of asking what happens when you change the structure.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════ §2 ═══════════ -->
+  <section class="essay-section">
+    <h2>From a single identity to a whole sequence</h2>
+    <p>
+      One determinant gives one number. But stack identical structure along a
+      tridiagonal spine and the determinants form a <em>sequence</em>, each term
+      determined by the previous two.
+    </p>
+    <p>
+      Consider the \(n \times n\) tridiagonal matrix with 1s on the diagonal and
+      \(x\) on every neighbouring off-diagonal:
+    </p>
+    <div class="math-block">
+      \[K_n(x) \;=\; \det\!\begin{pmatrix}
+      1 & x & 0 & \cdots \\
+      x & 1 & x & \cdots \\
+      0 & x & 1 & \ddots \\
+      \vdots & & \ddots & \ddots
+      \end{pmatrix}\]
+    </div>
+    <p>
+      Expanding along the first row (the standard cofactor move) gives the
+      <em>continuant recurrence</em>:
+    </p>
+    <div class="math-block">
+      \[K_n(x) \;=\; K_{n-1}(x) \;-\; x^2\, K_{n-2}(x), \qquad K_0 = 1,\;\; K_1 = 1.\]
+    </div>
+    <p>
+      That minus sign is structural. It comes from the alternating character of
+      the determinant itself. Every tridiagonal continuant subtracts.
+    </p>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- ═══════════ §3 -- the hook ═══════════ -->
+  <section class="essay-section">
+    <h2>The substitution that changes everything</h2>
+    <p>
+      Now set \(x = i\).
+    </p>
+    <p>
+      That's it. The entire Fibonacci connection is this one move. Watch what happens
+      to the coefficient of \(K_{n-2}\):
+    </p>
+    <div class="math-block">
+      \[-x^2 \;=\; -i^2 \;=\; -(-1) \;=\; +1\]
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">The key insight</div>
+      <p>
+        The imaginary unit flips the determinant's built-in minus into a plus.
+        The continuant recurrence
+        \(K_n = K_{n-1} - x^2 K_{n-2}\)
+        becomes
+        \(K_n = K_{n-1} + K_{n-2}\).
+      </p>
+      <p>
+        That is the Fibonacci recurrence. Not by analogy. <em>Exactly.</em>
+      </p>
+    </div>
+
+    <p>
+      So \(i\) isn't a decorative phase factor. It is the precise algebraic choice
+      that converts structured determinant subtraction into the additive recurrence
+      that defines the Fibonacci numbers. With \(K_0 = 1\) and \(K_1 = 1\) we get:
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>n</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color: var(--ink-muted);">K<sub>n</sub>(i)</td>
+          <td>1</td><td>2</td><td>3</td><td>5</td><td>8</td><td>13</td><td>21</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Fibonacci numbers, shifted by one index. Falling out of determinants of
+      tridiagonal matrices whose off-diagonals happen to be imaginary.
+    </p>
+  </section>
+
+  <!-- ═══════════ §4 ═══════════ -->
+  <section class="essay-section">
+    <h2>The metallic family: same trick, different amplitude</h2>
+    <p>
+      If \(x = i\) gives Fibonacci, what does \(x = \sqrt{m}\, i\) give? The coefficient
+      becomes:
+    </p>
+    <div class="math-block">
+      \[-x^2 \;=\; -(\sqrt{m}\,i)^2 \;=\; -(-m) \;=\; +m\]
+    </div>
+    <p>
+      So the recurrence generalises to:
+    </p>
+    <div class="math-block">
+      \[D_n \;=\; D_{n-1} \;+\; m\, D_{n-2}\]
+    </div>
+    <p>
+      This is the <em>metallic mean</em> family. Each value of \(m\) picks out
+      a classical sequence:
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>m</th><th>Off-diagonal</th><th>Recurrence</th><th>Sequence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>\(i\)</td>
+          <td>\(D_n = D_{n-1} + D_{n-2}\)</td>
+          <td>Fibonacci (golden)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>\(\sqrt{2}\,i\)</td>
+          <td>\(D_n = D_{n-1} + 2D_{n-2}\)</td>
+          <td>Pell (silver)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>\(\sqrt{3}\,i\)</td>
+          <td>\(D_n = D_{n-1} + 3D_{n-2}\)</td>
+          <td>Bronze</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      The whole metallic zoo lives inside one parametric family of tridiagonal
+      determinants. The parameter isn't the ratio; it's the off-diagonal entry.
+      And the imaginary unit is what makes every member additive rather than
+      subtractive.
+    </p>
+  </section>
+
+  <!-- ═══════════ §5 ═══════════ -->
+  <section class="essay-section">
+    <h2>Cassini as a determinant shadow</h2>
+    <p>
+      Once Fibonacci numbers live inside determinants, Cassini's identity stops
+      being a surprise and starts being a corollary. Take three consecutive
+      Fibonacci numbers \(f_{n-1}, f_n, f_{n+1}\) and build a 2×2 matrix:
+    </p>
+    <div class="math-block">
+      \[\det\!\begin{pmatrix} f_n & f_{n-1} \\ f_{n+1} & f_n \end{pmatrix}
+      \;=\; f_n^2 - f_{n-1}\, f_{n+1} \;=\; (-1)^{n+1}\]
+    </div>
+    <p>
+      The determinant of consecutive Fibonacci numbers never wanders. It oscillates
+      between \(+1\) and \(-1\), forever. Geometrically this is telling you something
+      sharp: the two column vectors of the matrix span a parallelogram of area exactly 1,
+      and the sign records orientation. As \(n\) increases the parallelogram stretches
+      and shears dramatically as Fibonacci numbers grow, yet its signed area flips
+      between \(\pm 1\) at each step. The determinant is counting handedness:
+      each successive Fibonacci pair reverses the orientation of the frame they define.
+    </p>
+
+    <div class="aside">
+      <strong>The bridge.</strong> Difference of two squares is a <em>static</em>
+      2×2 determinant identity. Cassini is a <em>dynamic</em> one: the entries
+      are sequence terms, and the identity holds for every index. The tridiagonal
+      continuant is the engine that makes the dynamic version work.
+    </div>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- ═══════════ §6 ═══════════ -->
+  <section class="essay-section">
+    <h2>Two directions of generalisation</h2>
+
+    <h3>A: Same shape, new parameters</h3>
+    <p>
+      Stay tridiagonal but vary the off-diagonal. This gives the metallic family
+      (above), Cassini-type identities for each member, and a clean taxonomy of
+      second-order recurrences parametrised by a single number \(m\).
+    </p>
+
+    <div class="exercise">
+      <div class="exercise-label">What about Tribonacci?</div>
+      <p>
+        Does \(x = i\) in a larger tridiagonal matrix give
+        \(T_n = T_{n-1} + T_{n-2} + T_{n-3}\)?
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          No. Tridiagonal matrices only couple nearest neighbours, so cofactor
+          expansion always produces a <em>second</em>-order recurrence regardless
+          of size. To encode Tribonacci you need the <em>companion matrix</em> of
+          its characteristic polynomial \(\lambda^3 - \lambda^2 - \lambda - 1 = 0\):
+        </p>
+        <div class="math-block">
+          \[C = \begin{pmatrix} 1 & 1 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix},
+          \qquad
+          C\begin{pmatrix}T_{n-1}\\T_{n-2}\\T_{n-3}\end{pmatrix}
+          = \begin{pmatrix}T_{n-1}+T_{n-2}+T_{n-3}\\T_{n-1}\\T_{n-2}\end{pmatrix}\]
+        </div>
+        <p>
+          It is called a companion because it accompanies a polynomial: the top row
+          reads off the recurrence coefficients, and the lower rows shift the state.
+          The recurrence order equals the matrix dimension. Tribonacci needs
+          a genuinely three-dimensional state space; a tridiagonal tweak cannot
+          reach it.
+        </p>
+      </div>
+    </div>
+
+    <h3>B: Circulant matrices and the Eisenstein norm</h3>
+    <p>
+      A <em>circulant</em> matrix has each row equal to the previous one shifted
+      one place right, wrapping cyclically. The 3×3 case with entries \(a, b, c\):
+    </p>
+    <div class="math-block">
+      \[\begin{pmatrix}
+      a & b & c \\
+      c & a & b \\
+      b & c & a
+      \end{pmatrix}, \qquad \det = a^3 + b^3 + c^3 - 3abc\]
+    </div>
+    <p>
+      Over the integers this factors. Expanding \((a+b+c)(a^2+b^2+c^2-ab-bc-ca)\)
+      term by term:
+    </p>
+    <div class="math-block">
+      \[\begin{aligned}
+      &a(a^2+b^2+c^2-ab-bc-ca)\\
+      +\;&b(a^2+b^2+c^2-ab-bc-ca)\\
+      +\;&c(a^2+b^2+c^2-ab-bc-ca)
+      \end{aligned}\]
+    </div>
+    <p>
+      Collecting: the \(a^3, b^3, c^3\) terms survive; every cross term
+      \(a^2b\) appears once with a plus sign (from the \(a \cdot a^2\) row of \(b\)'s bracket)
+      and once with a minus sign (from \(b \cdot (-ab)\)), so all six cross-terms cancel,
+      and the \(abc\) terms add to \(-3abc\):
+    </p>
+    <div class="math-block">
+      \[(a+b+c)(a^2+b^2+c^2-ab-bc-ca) = a^3+b^3+c^3-3abc \quad \checkmark\]
+    </div>
+    <p>
+      The quadratic factor \(a^2+b^2+c^2-ab-bc-ca\) is the Eisenstein norm in disguise.
+      Let \(\omega = e^{2\pi i/3}\), the primitive cube root of unity satisfying
+      \(\omega^2+\omega+1=0\), so \(\omega^2 = -\omega-1\).
+      Define \(z = a + \omega b + \omega^2 c\). Using \(\omega^2 = -\omega-1\) this
+      reduces to a two-term element of the Eisenstein integers \(\mathbb{Z}[\omega]\):
+    </p>
+    <div class="math-block">
+      \[z = a + \omega b + (-\omega-1)c = (a-c) + (b-c)\,\omega\]
+    </div>
+    <p>
+      The norm of \(p + q\omega \in \mathbb{Z}[\omega]\) is \(N(p+q\omega) = p^2 - pq + q^2\).
+      With \(p = a-c\), \(q = b-c\):
+    </p>
+    <div class="math-block">
+      \[N(z) = (a-c)^2 - (a-c)(b-c) + (b-c)^2 = a^2+b^2+c^2-ab-bc-ca\]
+    </div>
+    <p>
+      The form \(p^2-pq+q^2\) is the norm form of \(\mathbb{Z}[\omega]\): positive definite,
+      vanishing only at \(p=q=0\), its level sets the hexagonal geometry of the Eisenstein lattice.
+    </p>
+
+    <h3>What integers does this determinant produce?</h3>
+    <p>
+      The 3×3 circulant determinant \(a^3+b^3+c^3-3abc\) produces a specific arithmetic
+      slice of the integers, exactly as the 2×2 symmetric determinant produces the odd integers.
+      Take three consecutive integers \(a = n+1,\ b = n,\ c = n-1\). Direct expansion gives:
+    </p>
+    <div class="math-block">
+      \[(n+1)^3 + n^3 + (n-1)^3 - 3(n+1)n(n-1) = 9n\]
+    </div>
+    <p>
+      So every multiple of 9 is realised by this determinant. More is true. Using
+      \(s = a+b+c\) and \(q = a^2+b^2+c^2-ab-bc-ca\), we have \(\det = sq\) and the identity
+      \(q = s^2 - 3(ab+bc+ca) \equiv s^2 \pmod{3}\). This forces a rigidity: if the
+      determinant is divisible by 3, then \(3 \mid s\), so \(q \equiv s^2 \equiv 0 \pmod{3}\),
+      and hence \(9 \mid sq\). The determinant can never be congruent to 3 or 6 mod 9.
+    </p>
+    <p>
+      The representability gap is exact: \(a^3+b^3+c^3-3abc\) takes precisely those integer
+      values not divisible by 3, together with all multiples of 9. Numbers divisible by 3
+      but not by 9 (such as 3, 6, 12, 15, …) never occur. The prime 3 plays in the cubic
+      setting the role that 2 plays one dimension down.
+    </p>
+
+    <div class="exercise">
+      <div class="exercise-label">Why consecutive integers give 9n</div>
+      <p>Verify \((n+1)^3 + n^3 + (n-1)^3 - 3(n+1)n(n-1) = 9n\) by direct expansion.</p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show working</button>
+      <div class="reveal">
+        <p>Expand the cubes separately:</p>
+        <div class="math-block">
+          \[\begin{aligned}
+          (n+1)^3 &= n^3+3n^2+3n+1\\
+          n^3 &= n^3\\
+          (n-1)^3 &= n^3-3n^2+3n-1
+          \end{aligned}\]
+        </div>
+        <p>Sum: \(3n^3 + 6n\). For the product term:</p>
+        <div class="math-block">
+          \[3(n+1)n(n-1) = 3n(n^2-1) = 3n^3 - 3n\]
+        </div>
+        <p>Subtracting: \((3n^3+6n)-(3n^3-3n) = 9n\). \(\square\)</p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Why 3, 6, 12, 15, … never occur</div>
+      <p>
+        Prove that if \(3 \mid (a^3+b^3+c^3-3abc)\) then \(9 \mid (a^3+b^3+c^3-3abc)\).
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show working</button>
+      <div class="reveal">
+        <p>
+          Write \(\det = sq\) where \(s = a+b+c\) and \(q = a^2+b^2+c^2-ab-bc-ca\).
+          The key identity: \(q = s^2 - 3(ab+bc+ca)\), so \(q \equiv s^2 \pmod{3}\).
+        </p>
+        <p>
+          Suppose \(3 \mid sq\). Two cases:
+        </p>
+        <p>
+          <strong>Case A: \(3 \mid s\).</strong> Then \(q \equiv s^2 \equiv 0 \pmod{3}\),
+          so \(3 \mid q\) as well. Hence \(9 \mid sq\).
+        </p>
+        <p>
+          <strong>Case B: \(3 \nmid s\).</strong> Then \(s \equiv \pm 1 \pmod{3}\), so
+          \(s^2 \equiv 1 \pmod{3}\), giving \(q \equiv 1 \pmod{3}\). So \(3 \nmid q\),
+          which means \(3 \nmid sq\). This contradicts our assumption.
+        </p>
+        <p>
+          Case B is impossible. Therefore \(3 \mid \det\) implies \(9 \mid \det\). \(\square\)
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Every multiple of 9 is reachable</div>
+      <p>
+        Show that the construction \((a,b,c) = (n+1,n,n-1)\) realises every multiple of 9,
+        and give the first three examples.
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show working</button>
+      <div class="reveal">
+        <p>
+          By the expansion above, this triple gives determinant \(9n\). As \(n\) ranges over
+          all integers, \(9n\) ranges over all multiples of 9. The first three positive examples:
+        </p>
+        <div class="math-block">
+          \[(2,1,0) \mapsto 9 \qquad (3,2,1) \mapsto 18 \qquad (4,3,2) \mapsto 27\]
+        </div>
+        <p>
+          Combined with the previous result, the integers represented by \(a^3+b^3+c^3-3abc\)
+          are exactly those not congruent to 3 or 6 mod 9. \(\square\)
+        </p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">The ladder of norms</div>
+      <p>
+        \(a^2+b^2\) is the norm in \(\mathbb{Z}[i]\) (Gaussian integers, \(i^2=-1\)).
+        \(a^2-ab+b^2\) is the norm in \(\mathbb{Z}[\omega]\) (Eisenstein integers,
+        \(\omega^2+\omega+1=0\)).
+        The 3×3 circulant determinant, after extracting \((a+b+c)\), delivers
+        the Eisenstein norm with \(p = a-c\), \(q = b-c\).
+        The matrix symmetry type selects the ring.
+      </p>
+    </div>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- ═══════════ §7 ═══════════ -->
+  <section class="essay-section">
+    <h2>The principle, stated precisely</h2>
+
+    <div class="insight">
+      <div class="insight-label">Determinant–recurrence principle</div>
+      <p>
+        Let \(D_n\) be the determinant of an \(n \times n\) band matrix with fixed diagonals.
+        Then \((D_n)\) satisfies a linear recurrence, and the order of that recurrence
+        equals the bandwidth:
+      </p>
+      <ul style="margin-top:10px;">
+        <li>Tridiagonal → second order</li>
+        <li>Pentadiagonal → third order</li>
+        <li>Circulant → homogeneous polynomial (norm-type) forms</li>
+      </ul>
+      <p style="margin-top:12px;">
+        The determinant encodes the recurrence automatically via cofactor expansion.
+        No further argument is needed: the structure of the matrix determines the
+        structure of the sequence.
+      </p>
+    </div>
+
+    <div class="insight" style="margin-top:20px;">
+      <div class="insight-label">Imaginary substitution</div>
+      <p>
+        Setting \(x = \sqrt{m}\,i\) converts the intrinsic subtraction of the
+        tridiagonal determinant into addition:
+      </p>
+      <div class="math-block" style="margin:14px 0;">
+        \[D_n = D_{n-1} - x^2 D_{n-2} \;\longrightarrow\; D_n = D_{n-1} + m\,D_{n-2}\]
+      </div>
+      <p>
+        This single move generates Fibonacci (\(m=1\)), Pell (\(m=2\)), and the entire
+        metallic family from one structural source. The imaginary unit does not create
+        the recurrence. It selects the additive branch of a structure that was already there.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════ §9 exercises ═══════════ -->
+  <section class="essay-section">
+    <h2>Exercises</h2>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise A · the gap</div>
+      <p>
+        The symmetric 2×2 determinant produces all odd integers. What does it produce
+        for even \(n\)? Show that \(a^2 - b^2 = n\) has no integer solution when \(n \equiv 2 \pmod{4}\),
+        and find integer solutions for all \(n \equiv 0 \pmod{4}\).
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          \(a^2 - b^2 = (a+b)(a-b)\). If \(a,b\) are both integers, then \(a+b\) and \(a-b\)
+          have the same parity. So their product is either odd×odd = odd, or even×even = multiple of 4.
+          It can never be \(\equiv 2 \pmod 4\). For \(n = 4k\), take \(a = k+1\), \(b = k-1\):
+          then \((a+b)(a-b) = 2k \cdot 2 = 4k\). So the symmetric 2×2 determinant over the integers
+          produces exactly the integers not congruent to 2 mod 4: all odd numbers and all multiples of 4.
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise B · discover continuants</div>
+      <p>
+        For the tridiagonal matrix with diagonal 1 and off-diagonal \(x\),
+        compute \(K_n\) for \(n = 1, 2, 3, 4\). Guess and prove the recurrence.
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          \(K_1 = 1\), \(K_2 = 1 - x^2\), \(K_3 = 1 - 2x^2\), \(K_4 = 1 - 3x^2 + x^4\).
+          The pattern is \(K_n = K_{n-1} - x^2 K_{n-2}\), proved by cofactor expansion
+          along the first row: the \((1,1)\) minor gives \(K_{n-1}\), the \((1,2)\) minor
+          gives \(x \cdot x \cdot K_{n-2}\) with a sign from the alternating determinant,
+          yielding \(-x^2 K_{n-2}\).
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise C · the substitution</div>
+      <p>
+        Set \(x = i\). Explain algebraically why the continuant recurrence
+        becomes the Fibonacci recurrence.
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          The recurrence \(K_n = K_{n-1} - x^2 K_{n-2}\) has coefficient \(-x^2\).
+          With \(x = i\): \(-x^2 = -i^2 = -(-1) = +1\). So the recurrence becomes
+          \(K_n = K_{n-1} + K_{n-2}\), the Fibonacci recurrence exactly. The imaginary
+          unit doesn't change the matrix structure; it flips the sign of \(x^2\) from
+          positive to negative, converting subtraction into addition.
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise D · metallic family</div>
+      <p>
+        Choose \(x = \sqrt{m}\, i\) and prove \(D_n = D_{n-1} + m D_{n-2}\).
+        Compute the first eight terms for \(m = 2\) (Pell).
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          \(-x^2 = -(\sqrt{m}\,i)^2 = -(-m) = +m\), so the recurrence becomes
+          \(D_n = D_{n-1} + m\,D_{n-2}\). For \(m = 2\) with \(D_0 = 1, D_1 = 1\):
+          the first eight terms are \(1, 1, 3, 5, 11, 21, 43, 85\).
+          These are the Pell numbers (shifted). The ratio \(D_n / D_{n-1}\) converges
+          to \(1 + \sqrt{2}\), the silver mean.
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise E · Eisenstein norm</div>
+      <p>
+        Let \(\omega = e^{2\pi i/3}\) and \(z = a + \omega b + \omega^2 c\).
+        Compute \(z\bar{z}\) directly and verify it equals \(a^2+b^2+c^2-ab-bc-ca\).
+        Then show \((a+b+c)\cdot z\bar{z} = a^3+b^3+c^3-3abc\).
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          \(\bar{z} = a + \omega^2 b + \omega c\). Expanding \(z\bar{z}\) using
+          \(\omega^3=1\) and \(1+\omega+\omega^2=0\):
+          \(z\bar{z} = a^2 + b^2 + c^2 + ab(\omega^2+\omega) + bc(\omega+\omega^2) + ca(\omega^2+\omega)
+          = a^2+b^2+c^2 - ab - bc - ca\),
+          since \(\omega+\omega^2 = -1\).
+          For the second part: \((a+b+c)(a^2+b^2+c^2-ab-bc-ca)\).
+          Expand: collect \(a^3\) terms to get \(a^3+b^3+c^3\),
+          then cross terms cancel to leave \(-3abc\). Done.
+        </p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-label">Exercise F · challenge</div>
+      <p>
+        The Eisenstein norm \(a^2 - ab + b^2\) is the norm in \(\mathbb{Z}[\omega]\).
+        The Gaussian norm is \(a^2 + b^2\), the norm in \(\mathbb{Z}[i]\).
+        Which 2×2 structured matrix has \(a^2 + b^2\) as its determinant,
+        and what does its entry structure imply about the underlying ring?
+      </p>
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show answer</button>
+      <div class="reveal">
+        <p>
+          \(\det\!\begin{pmatrix}a & -b \\ b & a\end{pmatrix} = a^2 + b^2\).
+          The matrix represents multiplication by \(a + bi\) in \(\mathbb{Z}[i]\):
+          its columns are the images of \(1\) and \(i\) under that map.
+          The determinant is the Gaussian norm \(N(a+bi) = a^2+b^2\).
+          Comparing: the symmetric matrix \(\begin{pmatrix}a&b\\b&a\end{pmatrix}\)
+          gives \(a^2-b^2\) (split integers \(\mathbb{Z}[\sqrt{1}]\));
+          the skew matrix gives \(a^2+b^2\) (Gaussian integers \(\mathbb{Z}[i]\)).
+          The off-diagonal sign encodes whether the extension is real or imaginary.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ §10 interactives ═══════════ -->
+  <section class="essay-section">
+    <h2>Explore interactively</h2>
+
+    <h3>Metallic family: vary m</h3>
+    <p>
+      Drag the slider to change \(m\). The sequence \(D_n = D_{n-1} + m\,D_{n-2}\)
+      updates live, along with the limiting ratio (the metallic mean for that \(m\)).
+    </p>
+
+    <div class="interactive-box" id="metallic-box">
+      <div class="interactive-controls">
+        <label for="m-slider" style="font-family:var(--mono);font-size:0.8rem;color:var(--gold);">
+          m = <span id="m-val">1</span>
+        </label>
+        <input type="range" id="m-slider" min="1" max="10" value="1" step="1"
+               style="width:100%;accent-color:var(--gold);margin:8px 0;" />
+      </div>
+      <div id="metallic-recurrence" style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-muted);margin-bottom:12px;"></div>
+      <div id="metallic-terms" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+      <div id="metallic-ratio" style="font-family:var(--mono);font-size:0.82rem;color:var(--ink-muted);"></div>
+      <div id="metallic-name" style="font-family:var(--mono);font-size:0.75rem;color:var(--gold);margin-top:6px;letter-spacing:0.08em;"></div>
+    </div>
+
+    <h3>Circulant determinants: choose size</h3>
+    <p>
+      Select 2×2, 3×3, or 4×4 and enter values. The matrix and its determinant
+      update immediately, showing both the numerical value and the algebraic form
+      of the norm.
+    </p>
+
+    <div class="interactive-box" id="circulant-box">
+      <div class="interactive-controls" style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="size-btn active" data-n="2" onclick="setSize(2)">2 × 2</button>
+        <button class="size-btn" data-n="3" onclick="setSize(3)">3 × 3</button>
+        <button class="size-btn" data-n="4" onclick="setSize(4)">4 × 4</button>
+      </div>
+      <div id="circulant-inputs" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;"></div>
+      <div id="circulant-matrix" style="margin-bottom:14px;font-family:var(--mono);font-size:0.88rem;line-height:1.8;color:var(--ink-muted);"></div>
+      <div id="circulant-det" style="font-family:var(--mono);font-size:0.9rem;color:var(--ink-bright);"></div>
+      <div id="circulant-form" style="font-family:var(--mono);font-size:0.8rem;color:var(--gold);margin-top:8px;"></div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ coda ═══════════ -->
+  <section class="essay-section">
+    <h2>Coda</h2>
+    <p>
+      Determinants do not merely compute values. They classify arithmetic structures.
+      Quadratic norms, cubic norms, and linear recurrences all arise from symmetry
+      choices in matrices: the symmetry type of the matrix determines which number
+      system it inhabits.
+    </p>
+    <p>
+      This is the Erlangen programme applied to arithmetic. Just as Klein classified
+      geometries by their symmetry groups, we can classify integer sequences and norm
+      forms by the matrix structures that generate them. The 2×2 symmetric determinant
+      corresponds to \(\mathbb{Z}[i]\) and \(\mathbb{Z}[\sqrt{m}]\). The 3×3 circulant
+      corresponds to \(\mathbb{Z}[\omega]\), the Eisenstein integers. The tridiagonal
+      family corresponds to metallic recurrences.
+    </p>
+    <p>
+      The imaginary unit \(i\), or more generally the cyclotomic elements \(i\) and \(\omega\),
+      do not create these structures. They select which branch behaves additively.
+      Setting \(x = \sqrt{m}\,i\) in a tridiagonal determinant does not invent Fibonacci:
+      it reveals that Fibonacci was always sitting inside the subtractive structure,
+      waiting for the sign to flip.
+    </p>
+    <p>
+      That is what "inevitable" means.
+    </p>
+  </section>
+
+  <div class="footer">
+    McMurmerings · Lee McCulloch-James · 2026
+  </div>
+</div>
+
+<!-- ── KaTeX ── -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$$', right: '$$', display: true}
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+
+<!-- ── interactives ── -->
+<script>
+  // ── reveal toggle ──
+  function toggleReveal(btn) {
+    const rev = btn.nextElementSibling;
+    const open = rev.style.display === 'block';
+    rev.style.display = open ? 'none' : 'block';
+    btn.textContent = open ? 'Show answer' : 'Hide answer';
+    if (!open && window.renderMathInElement) renderMathInElement(rev);
+  }
+
+  // ── metallic family ──
+  const NAMES = {1:'Golden (Fibonacci)',2:'Silver (Pell)',3:'Bronze',4:'Copper',5:'Nickel',6:'Aluminium',7:'Iron',8:'Tin',9:'Lead',10:'Zinc'};
+  function metallicMean(m) { return (1 + Math.sqrt(1 + 4*m)) / 2; }
+
+  function updateMetallic() {
+    const m = parseInt(document.getElementById('m-slider').value);
+    document.getElementById('m-val').textContent = m;
+    document.getElementById('metallic-recurrence').textContent =
+      `D(n) = D(n-1) + ${m}·D(n-2),  D(0)=1, D(1)=1`;
+
+    let terms = [1, 1];
+    for (let k = 2; k < 12; k++) terms.push(terms[k-1] + m * terms[k-2]);
+
+    const pillsEl = document.getElementById('metallic-terms');
+    pillsEl.innerHTML = terms.map((t, i) =>
+      `<div class="term-pill">D<sub>${i}</sub> = <span>${t}</span></div>`
+    ).join('');
+
+    const ratio = (terms[11] / terms[10]).toFixed(6);
+    const exact = metallicMean(m).toFixed(6);
+    document.getElementById('metallic-ratio').textContent =
+      `D(11)/D(10) = ${ratio}   →   metallic mean = (1 + √${1+4*m})/2 = ${exact}`;
+    document.getElementById('metallic-name').textContent = NAMES[m] || '';
+  }
+
+  document.getElementById('m-slider').addEventListener('input', updateMetallic);
+  updateMetallic();
+
+  // ── circulant determinant ──
+  let currentN = 2;
+  const LABELS = ['a','b','c','d'];
+
+  function circulantMatrix(vals, n) {
+    // Build n×n circulant: row k is vals shifted k positions right
+    const M = [];
+    for (let r = 0; r < n; r++) {
+      const row = [];
+      for (let c = 0; c < n; c++) row.push(vals[(c - r + n) % n]);
+      M.push(row);
+    }
+    return M;
+  }
+
+  function detMatrix(M, n) {
+    if (n === 1) return M[0][0];
+    if (n === 2) return M[0][0]*M[1][1] - M[0][1]*M[1][0];
+    let d = 0;
+    for (let c = 0; c < n; c++) {
+      const sub = M.slice(1).map(row => row.filter((_,j) => j !== c));
+      d += M[0][c] * detMatrix(sub, n-1) * (c % 2 === 0 ? 1 : -1);
+    }
+    return d;
+  }
+
+  function normFormLabel(n) {
+    if (n === 2) return 'Norm form: a² - b²  =  (a+b)(a-b)';
+    if (n === 3) return 'Norm form: a³+b³+c³ - 3abc  =  (a+b+c)(a²+b²+c² - ab - bc - ca)';
+    if (n === 4) return 'Norm form: degree-4 in a,b,c,d  (factors over ℚ(i))';
+    return '';
+  }
+
+  function renderMatrix(M, n) {
+    const rows = M.map(row =>
+      '│ ' + row.map(v => String(v).padStart(6)).join('  ') + ' │'
+    ).join('\n');
+    return rows;
+  }
+
+  function setSize(n) {
+    currentN = n;
+    document.querySelectorAll('.size-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.n) === n);
+    });
+    const inp = document.getElementById('circulant-inputs');
+    inp.innerHTML = '';
+    for (let k = 0; k < n; k++) {
+      const label = document.createElement('label');
+      label.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);font-size:0.72rem;color:var(--ink-muted);';
+      label.innerHTML = LABELS[k];
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'circ-input';
+      input.value = k + 1;
+      input.addEventListener('input', updateCirculant);
+      label.appendChild(input);
+      inp.appendChild(label);
+    }
+    updateCirculant();
+  }
+
+  function updateCirculant() {
+    const n = currentN;
+    const inputs = document.querySelectorAll('.circ-input');
+    const vals = Array.from(inputs).map(i => parseFloat(i.value) || 0);
+    const M = circulantMatrix(vals, n);
+    const d = detMatrix(M, n);
+
+    // Display matrix
+    const matEl = document.getElementById('circulant-matrix');
+    const colW = 5;
+    let html = '<pre style="font-family:var(--mono);font-size:0.82rem;line-height:1.7;color:var(--ink-muted);">';
+    for (let r = 0; r < n; r++) {
+      const bracket_l = r === 0 ? '⎡' : (r === n-1 ? '⎣' : '⎢');
+      const bracket_r = r === 0 ? '⎤' : (r === n-1 ? '⎦' : '⎥');
+      html += bracket_l + '  ' + M[r].map(v => String(v).padStart(colW)).join('  ') + '  ' + bracket_r + '\n';
+    }
+    html += '</pre>';
+    matEl.innerHTML = html;
+
+    const detEl = document.getElementById('circulant-det');
+    detEl.textContent = `det = ${Number.isInteger(d) ? d : d.toFixed(4)}`;
+
+    document.getElementById('circulant-form').textContent = normFormLabel(n);
+  }
+
+  setSize(2);
+</script>
+
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.essay-section').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
