@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pencils on the Circle — Pythagorean Triples via y = m(x + a)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0c0d10;
+    --bg-card: #12131a;
+    --bg-card-hover: #181a24;
+    --gold: #c8a96e;
+    --gold-dim: #9a7d4a;
+    --gold-bright: #e8c97e;
+    --text: #d4d0c8;
+    --text-dim: #8a8578;
+    --text-bright: #f0ece4;
+    --accent-blue: #5b8faa;
+    --accent-red: #b05555;
+    --accent-green: #6a9a6a;
+    --accent-purple: #8a6aaa;
+    --border: #2a2b33;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 2.8rem;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.3rem;
+  }
+
+  h1 + .subtitle {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.6rem;
+    color: var(--gold-dim);
+    margin: 2.5rem 0 1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+  }
+
+  p { margin-bottom: 1rem; }
+
+  .math-block {
+    text-align: center;
+    margin: 1.5rem 0;
+    font-size: 1.1rem;
+  }
+
+  .math-inline { /* rendered by KaTeX */ }
+
+  /* Layout grid */
+  .explorer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 900px) {
+    .explorer-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Canvas panel */
+  .canvas-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .canvas-panel canvas {
+    width: 100%;
+    aspect-ratio: 1;
+    display: block;
+    border-radius: 2px;
+  }
+
+  /* Controls panel */
+  .controls-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+  }
+
+  .control-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .control-group label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .slider-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .slider-row input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .slider-value {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--gold-bright);
+    min-width: 4.5rem;
+    text-align: right;
+  }
+
+  /* Fraction inputs */
+  .fraction-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+  }
+
+  .fraction-input input {
+    width: 3rem;
+    text-align: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--gold-bright);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 0.3rem;
+    border-radius: 2px;
+  }
+
+  .fraction-input input:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+
+  .fraction-input .divider {
+    color: var(--text-dim);
+    font-size: 1.2rem;
+  }
+
+  /* Toggle buttons */
+  .toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .toggle-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 0.35rem 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn:hover {
+    border-color: var(--gold-dim);
+    color: var(--text);
+  }
+
+  .toggle-btn.active {
+    background: var(--gold-dim);
+    color: var(--bg);
+    border-color: var(--gold);
+  }
+
+  /* Preset chips for a */
+  .preset-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .chip:hover { border-color: var(--gold-dim); color: var(--text); }
+  .chip.active { background: var(--gold-dim); color: var(--bg); border-color: var(--gold); }
+
+  /* Results table */
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    margin-top: 1rem;
+  }
+
+  .results-table th {
+    text-align: left;
+    color: var(--gold-dim);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.7rem;
+  }
+
+  .results-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #1a1b22;
+    color: var(--text);
+  }
+
+  .results-table tr:hover td {
+    background: var(--bg-card-hover);
+    cursor: pointer;
+  }
+
+  .results-table tr.highlighted td {
+    background: rgba(200, 169, 110, 0.08);
+    color: var(--gold-bright);
+  }
+
+  .q1 { color: var(--accent-green); }
+  .q2 { color: var(--accent-blue); }
+  .q3 { color: var(--accent-purple); }
+  .q4 { color: var(--accent-red); }
+
+  /* Info readout */
+  .readout {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0.8rem 1rem;
+    margin-top: 1rem;
+    line-height: 1.8;
+  }
+
+  .readout .highlight {
+    color: var(--gold-bright);
+  }
+
+  .readout .label {
+    color: var(--gold-dim);
+  }
+
+  /* Comparison mode */
+  .comparison-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .comparison-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .comparison-tag .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .scroll-table-wrap {
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .scroll-table-wrap::-webkit-scrollbar { width: 6px; }
+  .scroll-table-wrap::-webkit-scrollbar-track { background: var(--bg); }
+  .scroll-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .note {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    font-style: italic;
+    margin: 0.5rem 0;
+  }
+
+  .section-text {
+    max-width: 780px;
+  }
+
+  .canvas-legend {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .canvas-legend .item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .canvas-legend .swatch {
+    width: 12px;
+    height: 3px;
+    border-radius: 1px;
+  }
+
+  .canvas-legend .swatch-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Pencils on the Circle</h1>
+  <div class="subtitle">Pythagorean triples via y = m(x + a)</div>
+
+  <div class="section-text">
+    <p>
+      The classical construction draws lines <span class="math-inline" data-tex="y = m(x+1)"></span> through
+      <span class="math-inline" data-tex="(-1,\,0)"></span>, a point <em>on</em> the unit circle. Every rational slope
+      <span class="math-inline" data-tex="m"></span> yields a rational intersection — a Pythagorean triple. This is the
+      stereographic parametrisation: exhaustive and bijective.
+    </p>
+    <p>
+      What if we shift the pencil point? The family <span class="math-inline" data-tex="y = m(x + a)"></span> for rational
+      <span class="math-inline" data-tex="a \neq 1"></span> emanates from <span class="math-inline" data-tex="(-a,\,0)"></span>,
+      which is <em>off</em> the circle. Only certain rational slopes now produce rational intersections — a Diophantine filter.
+      Different values of <span class="math-inline" data-tex="a"></span> select different subsets of the same universal set of triples.
+    </p>
+  </div>
+
+  <h2>Interactive Explorer</h2>
+
+  <div class="explorer-grid">
+    <div class="canvas-panel">
+      <canvas id="mainCanvas" width="800" height="800"></canvas>
+      <div class="canvas-legend" id="canvasLegend"></div>
+    </div>
+
+    <div class="controls-panel">
+      <div class="control-group">
+        <label>Pencil parameter a = p / q</label>
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <div class="fraction-input">
+            <input type="number" id="aNum" value="1" min="-20" max="20" step="1">
+            <span class="divider">/</span>
+            <input type="number" id="aDen" value="1" min="1" max="20" step="1">
+          </div>
+          <span class="slider-value" id="aDisplay">a = 1</span>
+        </div>
+        <div class="preset-chips" id="presetChips">
+          <div class="chip" data-num="1" data-den="3">1/3</div>
+          <div class="chip" data-num="1" data-den="2">1/2</div>
+          <div class="chip" data-num="2" data-den="5">2/5</div>
+          <div class="chip active" data-num="1" data-den="1">1</div>
+          <div class="chip" data-num="3" data-den="2">3/2</div>
+          <div class="chip" data-num="2" data-den="1">2</div>
+          <div class="chip" data-num="5" data-den="2">5/2</div>
+          <div class="chip" data-num="3" data-den="1">3</div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Search depth (max numerator/denominator)</label>
+        <div class="slider-row">
+          <input type="range" id="depthSlider" min="10" max="80" value="30" step="5">
+          <span class="slider-value" id="depthDisplay">30</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Show quadrants</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-q="1">Q1 <span class="q1">●</span></button>
+          <button class="toggle-btn active" data-q="2">Q2 <span class="q2">●</span></button>
+          <button class="toggle-btn active" data-q="3">Q3 <span class="q3">●</span></button>
+          <button class="toggle-btn active" data-q="4">Q4 <span class="q4">●</span></button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Display</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="showLines">Lines</button>
+          <button class="toggle-btn active" id="showPoints">Points</button>
+          <button class="toggle-btn" id="showA1Ghost">a=1 ghost</button>
+          <button class="toggle-btn" id="showReciprocal">a & 1/a</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Highlight slope m = p / q</label>
+        <div class="fraction-input">
+          <input type="number" id="mNum" value="1" min="-50" max="50" step="1">
+          <span class="divider">/</span>
+          <input type="number" id="mDen" value="2" min="1" max="50" step="1">
+        </div>
+      </div>
+
+      <div class="readout" id="readout">
+        <span class="label">Pencil:</span> <span class="highlight">y = m(x + 1)</span> from <span class="highlight">(−1, 0)</span><br>
+        <span class="label">Status:</span> <span class="highlight">a = 1 — on circle — all rational slopes yield triples</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Rational Intersections Found</h2>
+  <div id="resultsSummary" class="note"></div>
+  <div class="scroll-table-wrap">
+    <table class="results-table" id="resultsTable">
+      <thead>
+        <tr>
+          <th>m</th>
+          <th>x</th>
+          <th>y</th>
+          <th>Triple</th>
+          <th>Q</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
+  <h2>The Discriminant Condition</h2>
+  <div class="section-text">
+    <p>
+      Substituting <span class="math-inline" data-tex="y = m(x+a)"></span> into
+      <span class="math-inline" data-tex="x^2 + y^2 = 1"></span> gives
+    </p>
+    <div class="math-block" data-tex="(1 + m^2)\,x^2 + 2a\,m^2\,x + a^2 m^2 - 1 = 0"></div>
+    <p>
+      Rational roots require the discriminant to be a perfect rational square:
+    </p>
+    <div class="math-block" data-tex="\Delta = 4\bigl[m^2(1 - a^2) + 1\bigr] = (2r)^2, \qquad r \in \mathbb{Q}"></div>
+    <p>
+      For <span class="math-inline" data-tex="a = 1"></span>, the
+      <span class="math-inline" data-tex="m^2"></span> term vanishes and the condition becomes
+      <span class="math-inline" data-tex="1 = r^2"></span>, satisfied identically with
+      <span class="math-inline" data-tex="r = 1"></span> for every rational
+      <span class="math-inline" data-tex="m"></span>. Geometrically, this is because
+      <span class="math-inline" data-tex="(-1,0)"></span> lies on the circle: one root of the quadratic is always
+      <span class="math-inline" data-tex="x = -1"></span>, reducing it to a linear equation whose other root is automatically rational.
+    </p>
+    <p>
+      For <span class="math-inline" data-tex="a \neq 1"></span>, the condition
+      <span class="math-inline" data-tex="m^2(1 - a^2) + 1 = r^2"></span> is a conic
+      <span class="math-inline" data-tex="C"></span> in
+      <span class="math-inline" data-tex="(m, r)"></span>. It has a rational point at
+      <span class="math-inline" data-tex="(0, 1)"></span>, so by stereographic projection from that point we can parametrise all solutions
+      by a single rational parameter <span class="math-inline" data-tex="t"></span>:
+    </p>
+    <div class="math-block" data-tex="r = 1 + tm \;\;\Longrightarrow\;\; m(t) = \frac{2t}{1 - a^2 - t^2}"></div>
+    <p>
+      This is a degree-2 rational map
+      <span class="math-inline" data-tex="\mathbb{P}^1 \to \mathbb{P}^1"></span>:
+      a rational <span class="math-inline" data-tex="t = u/v"></span> of height
+      <span class="math-inline" data-tex="\leq N"></span> produces an
+      <span class="math-inline" data-tex="m"></span> of height generically
+      <span class="math-inline" data-tex="O(N^2)"></span>. So rational
+      <span class="math-inline" data-tex="m"></span> of height
+      <span class="math-inline" data-tex="\leq N"></span> correspond to
+      <span class="math-inline" data-tex="t"></span> of height
+      <span class="math-inline" data-tex="O(\sqrt{N})"></span>, giving
+      <span class="math-inline" data-tex="O(N)"></span> valid slopes versus
+      <span class="math-inline" data-tex="O(N^2)"></span> for
+      <span class="math-inline" data-tex="a = 1"></span>.
+      The arc never fills.
+    </p>
+    <p>
+      The special slope <span class="math-inline" data-tex="m = 1/a"></span> always works: it forces the constant term
+      <span class="math-inline" data-tex="a^2 m^2 - 1 = 0"></span>, placing one intersection at
+      <span class="math-inline" data-tex="(0,\,1)"></span>.
+    </p>
+  </div>
+</div>
+
+<script>
+// === MATH UTILITIES ===
+function gcd(a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+function isqrt(n) {
+  if (n < 0) return -1;
+  if (n === 0) return 0;
+  let x = Math.round(Math.sqrt(n));
+  // Check x-1, x, x+1 due to floating point
+  for (let c = Math.max(0, x - 2); c <= x + 2; c++) {
+    if (c * c === n) return c;
+  }
+  return -1;
+}
+
+// Rational number as [num, den] always reduced, den > 0
+function rat(n, d) {
+  if (d === 0) return null;
+  if (n === 0) return [0, 1];
+  let s = d < 0 ? -1 : 1;
+  n *= s; d *= s;
+  let g = gcd(Math.abs(n), d);
+  return [n / g, d / g];
+}
+
+function ratStr(r) {
+  if (!r) return '—';
+  return r[1] === 1 ? `${r[0]}` : `${r[0]}/${r[1]}`;
+}
+
+function ratFloat(r) { return r[0] / r[1]; }
+function ratEq(a, b) { return a[0] * b[1] === b[0] * a[1]; }
+
+// Find all rational m (with |num|,den <= depth) where y=m(x+a) meets x²+y²=1 rationally
+function findIntersections(aNum, aDen, depth) {
+  const results = [];
+  const seen = new Set();
+  const a2num = aNum * aNum;
+  const a2den = aDen * aDen;
+
+  for (let p = -depth; p <= depth; p++) {
+    for (let q = 1; q <= depth; q++) {
+      if (gcd(Math.abs(p), q) !== 1) continue;
+      if (p === 0) continue;
+
+      // m = p/q
+      // disc_inner = m²(1 - a²) + 1
+      // = (p²/q²)(1 - aNum²/aDen²) + 1
+      // = (p²/q²)((aDen² - aNum²)/aDen²) + 1
+      // = (p²(aDen² - aNum²))/(q²·aDen²) + 1
+      // = [p²(aDen² - aNum²) + q²·aDen²] / (q²·aDen²)
+
+      const num_disc = p * p * (a2den - a2num) + q * q * a2den;
+      const den_disc = q * q * a2den;
+
+      if (num_disc < 0) continue;
+
+      // Need num_disc * den_disc to be a perfect square (for sqrt to be rational)
+      // Actually: disc_inner = num_disc / den_disc
+      // sqrt(disc_inner) = sqrt(num_disc) / sqrt(den_disc)
+      // Both must be perfect squares independently since den_disc = (q*aDen)² is already a perfect square
+      const den_sq = q * aDen;
+      // den_disc = den_sq², so sqrt(den_disc) = |den_sq|, always integer ✓
+      // Need num_disc to be a perfect square
+      const r_int = isqrt(num_disc);
+      if (r_int < 0) continue;
+
+      // r = r_int / den_sq  (rational sqrt of disc_inner)
+      // Quadratic: (1+m²)x² + 2am²x + a²m² - 1 = 0
+      // x = (-2am² ± 2r) / (2(1+m²))
+      // All in integers: multiply through
+      // 1+m² = (q²+p²)/q²
+      // 2am² = 2(aNum/aDen)(p²/q²) = 2·aNum·p²/(aDen·q²)
+      // 2r = 2·r_int/(q·aDen)
+      // denom = 2(q²+p²)/q²
+
+      // x = [ -2·aNum·p²/(aDen·q²) ± 2·r_int/(q·aDen) ] / [ 2(q²+p²)/q² ]
+      //   = [ (-2·aNum·p² ± 2·r_int·q) / (aDen·q²) ] / [ 2(q²+p²)/q² ]
+      //   = [ (-2·aNum·p² ± 2·r_int·q) · q² ] / [ aDen·q² · 2(q²+p²) ]
+      //   = [ -2·aNum·p² ± 2·r_int·q ] / [ 2·aDen·(q²+p²) ]
+      //   = [ -aNum·p² ± r_int·q ] / [ aDen·(q²+p²) ]
+
+      const denom_x = aDen * (q * q + p * p);
+
+      for (const sign of [1, -1]) {
+        const num_x = -aNum * p * p + sign * r_int * q;
+
+        const g1 = gcd(Math.abs(num_x), Math.abs(denom_x));
+        const xn = num_x / g1;
+        const xd = denom_x / g1;
+
+        // y = m(x + a) = (p/q)(xn/xd + aNum/aDen)
+        //   = (p/q) · (xn·aDen + aNum·xd) / (xd·aDen)
+        const num_y_inner = xn * aDen + aNum * xd;
+        const den_y_inner = xd * aDen;
+        const num_y = p * num_y_inner;
+        const den_y = q * den_y_inner;
+
+        const g2 = gcd(Math.abs(num_y), Math.abs(den_y));
+        const yn = num_y / g2;
+        const yd = Math.abs(den_y / g2);
+        const yns = den_y < 0 ? -yn : yn;
+
+        // Verify x²+y² = 1 (optional sanity check for small values)
+        const xf = xn / xd;
+        const yf = yns / yd;
+        const check = xf * xf + yf * yf;
+        if (Math.abs(check - 1) > 1e-9) continue;
+
+        const key = `${xn}/${xd}:${yns}/${yd}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        // Determine quadrant
+        let quad = 0;
+        if (xf > 0.0001 && yf > 0.0001) quad = 1;
+        else if (xf < -0.0001 && yf > 0.0001) quad = 2;
+        else if (xf < -0.0001 && yf < -0.0001) quad = 3;
+        else if (xf > 0.0001 && yf < -0.0001) quad = 4;
+
+        // Extract triple from rational point
+        const xr = rat(xn, xd);
+        const yr = rat(yns, yd);
+        if (!xr || !yr) continue;
+
+        const L = Math.abs(xr[1] * yr[1]) / gcd(xr[1], yr[1]); // lcm of denominators
+        const ta = Math.abs(xr[0]) * (L / xr[1]);
+        const tb = Math.abs(yr[0]) * (L / yr[1]);
+
+        results.push({
+          m: rat(p, q),
+          x: xr,
+          y: yr,
+          xf, yf,
+          quad,
+          triple: [ta, tb, L]
+        });
+      }
+    }
+  }
+
+  results.sort((a, b) => {
+    if (a.quad !== b.quad) return a.quad - b.quad;
+    return Math.atan2(b.yf, b.xf) - Math.atan2(a.yf, a.xf);
+  });
+
+  return results;
+}
+
+// === RENDERING ===
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+
+let state = {
+  aNum: 1, aDen: 1,
+  depth: 30,
+  quadrants: { 1: true, 2: true, 3: true, 4: true },
+  showLines: true,
+  showPoints: true,
+  showA1Ghost: false,
+  showReciprocal: false,
+  highlightM: [1, 2],
+  results: [],
+  recipResults: [],
+  hoveredRow: -1,
+};
+
+const quadColors = {
+  1: '#6a9a6a',
+  2: '#5b8faa',
+  3: '#8a6aaa',
+  4: '#b05555',
+  0: '#666'
+};
+
+function worldToCanvas(x, y, cx, cy, scale) {
+  return [cx + x * scale, cy - y * scale];
+}
+
+function drawScene() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = rect.width;
+  const H = rect.height;
+
+  ctx.fillStyle = '#0a0b0e';
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2;
+  const cy = H / 2;
+  const scale = W * 0.38;
+
+  // Grid
+  ctx.strokeStyle = '#1a1b22';
+  ctx.lineWidth = 0.5;
+  for (let i = -3; i <= 3; i++) {
+    const [x1, y1] = worldToCanvas(i, -3, cx, cy, scale);
+    const [x2, y2] = worldToCanvas(i, 3, cx, cy, scale);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const [x3, y3] = worldToCanvas(-3, i, cx, cy, scale);
+    const [x4, y4] = worldToCanvas(3, i, cx, cy, scale);
+    ctx.beginPath(); ctx.moveTo(x3, y3); ctx.lineTo(x4, y4); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#2a2b33';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+
+  // Unit circle
+  ctx.strokeStyle = '#c8a96e44';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, scale, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  // First quadrant arc highlighted
+  ctx.strokeStyle = '#c8a96e';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, scale, -Math.PI / 2, 0);
+  ctx.stroke();
+
+  // Base point (-a, 0)
+  const aVal = state.aNum / state.aDen;
+  const [bx, by] = worldToCanvas(-aVal, 0, cx, cy, scale);
+  ctx.fillStyle = '#c8a96e';
+  ctx.beginPath();
+  ctx.arc(bx, by, 5, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Label base point
+  ctx.font = '12px "IBM Plex Mono"';
+  ctx.fillStyle = '#c8a96e';
+  ctx.fillText(`(${ratStr(rat(-state.aNum, state.aDen))}, 0)`, bx - 10, by + 18);
+
+  // If showing reciprocal
+  if (state.showReciprocal && Math.abs(state.aNum) !== state.aDen) {
+    const aRecip = state.aDen / state.aNum;
+    const [rx, ry] = worldToCanvas(-aRecip, 0, cx, cy, scale);
+    ctx.fillStyle = '#8a6aaa88';
+    ctx.beginPath();
+    ctx.arc(rx, ry, 4, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillStyle = '#8a6aaa';
+    ctx.font = '11px "IBM Plex Mono"';
+    ctx.fillText(`(${ratStr(rat(-state.aDen, state.aNum))}, 0)`, rx - 10, ry + 16);
+  }
+
+  // Ghost a=1 points
+  if (state.showA1Ghost) {
+    const ghostResults = findIntersections(1, 1, state.depth);
+    for (const r of ghostResults) {
+      if (r.quad === 0) continue;
+      if (!state.quadrants[r.quad]) continue;
+      const [px, py] = worldToCanvas(r.xf, r.yf, cx, cy, scale);
+      ctx.fillStyle = '#c8a96e22';
+      ctx.beginPath();
+      ctx.arc(px, py, 2.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+
+  // Draw lines and points for current a
+  // First pass: non-highlighted items
+  for (let i = 0; i < state.results.length; i++) {
+    const r = state.results[i];
+    if (!state.quadrants[r.quad] && r.quad !== 0) continue;
+    const isHighlight = ratEq(r.m, state.highlightM);
+    const isHover = i === state.hoveredRow;
+    if (isHighlight || isHover) continue; // draw these later on top
+
+    const col = quadColors[r.quad] || '#666';
+
+    if (state.showLines) {
+      const mf = ratFloat(r.m);
+      const x1w = -aVal;
+      const ext = 3;
+      const x2w = x1w + ext;
+      const y2w = mf * (x2w + aVal);
+      const [lx1, ly1] = worldToCanvas(x1w, 0, cx, cy, scale);
+      const [lx2, ly2] = worldToCanvas(x2w, y2w, cx, cy, scale);
+      ctx.strokeStyle = col + '25';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
+    }
+
+    if (state.showPoints) {
+      const [px, py] = worldToCanvas(r.xf, r.yf, cx, cy, scale);
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, 2 * Math.PI); ctx.fill();
+    }
+  }
+
+  // Reciprocal set (dimmer)
+  if (state.showReciprocal && Math.abs(state.aNum) !== state.aDen) {
+    for (const r of state.recipResults) {
+      if (r.quad === 0) continue;
+      if (!state.quadrants[r.quad]) continue;
+      const [px, py] = worldToCanvas(r.xf, r.yf, cx, cy, scale);
+      ctx.fillStyle = '#8a6aaa66';
+      ctx.beginPath();
+      ctx.arc(px, py, 3.5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Also draw reciprocal lines if enabled
+      if (state.showLines) {
+        const mf = ratFloat(r.m);
+        const aRecip = state.aDen / state.aNum;
+        const x1w = -aRecip;
+        const ext = 3;
+        const x2w = x1w + ext;
+        const y2w = mf * (x2w + aRecip);
+        const [lx1, ly1] = worldToCanvas(x1w, 0, cx, cy, scale);
+        const [lx2, ly2] = worldToCanvas(x2w, y2w, cx, cy, scale);
+        ctx.strokeStyle = '#8a6aaa20';
+        ctx.lineWidth = 0.4;
+        ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
+      }
+    }
+  }
+
+  // Second pass: highlighted / hovered items drawn on top
+  for (let i = 0; i < state.results.length; i++) {
+    const r = state.results[i];
+    if (!state.quadrants[r.quad] && r.quad !== 0) continue;
+    const isHighlight = ratEq(r.m, state.highlightM);
+    const isHover = i === state.hoveredRow;
+    if (!isHighlight && !isHover) continue;
+
+    const col = quadColors[r.quad] || '#666';
+
+    if (state.showLines) {
+      const mf = ratFloat(r.m);
+      const x1w = -aVal;
+      // extend line both directions from base point
+      const ext = 3;
+      const x2w = x1w + ext;
+      const y2w = mf * (x2w + aVal);
+      const x0w = x1w - ext * 0.3;
+      const y0w = mf * (x0w + aVal);
+      const [lx0, ly0] = worldToCanvas(x0w, y0w, cx, cy, scale);
+      const [lx1, ly1] = worldToCanvas(x1w, 0, cx, cy, scale);
+      const [lx2, ly2] = worldToCanvas(x2w, y2w, cx, cy, scale);
+
+      // Glow
+      ctx.strokeStyle = isHighlight ? '#f0e8d0' : col;
+      ctx.lineWidth = isHighlight ? 2.5 : 2;
+      ctx.globalAlpha = isHighlight ? 0.3 : 0.2;
+      ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx2, ly2); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Core line
+      ctx.strokeStyle = isHighlight ? '#f0e8d0' : '#fff';
+      ctx.lineWidth = isHighlight ? 2 : 1.5;
+      ctx.setLineDash(isHover && !isHighlight ? [4, 3] : []);
+      ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx2, ly2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    if (state.showPoints) {
+      const [px, py] = worldToCanvas(r.xf, r.yf, cx, cy, scale);
+
+      // Outer ring
+      ctx.strokeStyle = isHighlight ? '#f0e8d0' : '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(px, py, 7, 0, 2 * Math.PI); ctx.stroke();
+
+      // Inner dot
+      ctx.fillStyle = isHighlight ? '#f0e8d0' : '#fff';
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, 2 * Math.PI); ctx.fill();
+
+      // Label
+      ctx.font = 'bold 11px "IBM Plex Mono"';
+      ctx.fillStyle = '#f0ece4';
+      const label = `(${ratStr(r.x)}, ${ratStr(r.y)})`;
+      const triLabel = `${r.triple[0]}–${r.triple[1]}–${r.triple[2]}`;
+
+      // Position label to avoid overlap with circle edge
+      const angle = Math.atan2(r.yf, r.xf);
+      const lx = px + Math.cos(angle) * 16;
+      const ly = py - Math.sin(angle) * 16;
+      ctx.fillText(label, lx, ly - 6);
+      ctx.font = '10px "IBM Plex Mono"';
+      ctx.fillStyle = '#c8a96e';
+      ctx.fillText(triLabel, lx, ly + 7);
+
+      // Also label the slope
+      ctx.font = '10px "IBM Plex Mono"';
+      ctx.fillStyle = isHighlight ? '#f0e8d0' : '#ccc';
+      const mx = (px + worldToCanvas(-aVal, 0, cx, cy, scale)[0]) / 2;
+      const my = (py + worldToCanvas(-aVal, 0, cx, cy, scale)[1]) / 2;
+      ctx.fillText(`m=${ratStr(r.m)}`, mx + 5, my - 5);
+    }
+  }
+
+  // Mark (-1, 0) and (1,0) for reference
+  for (const [wx, label] of [[-1, '−1'], [1, '1']]) {
+    const [sx, sy] = worldToCanvas(wx, 0, cx, cy, scale);
+    ctx.fillStyle = '#444';
+    ctx.beginPath(); ctx.arc(sx, sy, 2, 0, 2 * Math.PI); ctx.fill();
+    ctx.font = '10px "IBM Plex Mono"';
+    ctx.fillText(label, sx - 4, sy + 14);
+  }
+}
+
+function updateResults() {
+  state.results = findIntersections(state.aNum, state.aDen, state.depth);
+
+  if (state.showReciprocal && Math.abs(state.aNum) !== state.aDen) {
+    state.recipResults = findIntersections(state.aDen, state.aNum, state.depth);
+  } else {
+    state.recipResults = [];
+  }
+
+  // Update table
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < state.results.length; i++) {
+    const r = state.results[i];
+    if (!state.quadrants[r.quad] && r.quad !== 0) continue;
+    const tr = document.createElement('tr');
+    const qClass = `q${r.quad}`;
+    const isHL = ratEq(r.m, state.highlightM);
+    if (isHL) tr.classList.add('highlighted');
+
+    tr.innerHTML = `
+      <td>${ratStr(r.m)}</td>
+      <td>${ratStr(r.x)}</td>
+      <td>${ratStr(r.y)}</td>
+      <td>${r.triple[0]}–${r.triple[1]}–${r.triple[2]}</td>
+      <td class="${qClass}">Q${r.quad || '?'}</td>
+    `;
+
+    tr.addEventListener('mouseenter', () => {
+      state.hoveredRow = i;
+      drawScene();
+    });
+    tr.addEventListener('mouseleave', () => {
+      state.hoveredRow = -1;
+      drawScene();
+    });
+    tr.addEventListener('click', () => {
+      state.highlightM = r.m;
+      document.getElementById('mNum').value = r.m[0];
+      document.getElementById('mDen').value = r.m[1];
+      updateResults();
+    });
+
+    tbody.appendChild(tr);
+  }
+
+  // Summary
+  const total = state.results.filter(r => state.quadrants[r.quad] || r.quad === 0).length;
+  const q1 = state.results.filter(r => r.quad === 1).length;
+  const aStr = ratStr(rat(state.aNum, state.aDen));
+  document.getElementById('resultsSummary').textContent =
+    `Found ${total} rational intersections (${q1} in Q1) for a = ${aStr} with search depth ${state.depth}`;
+
+  // Readout
+  const aVal = state.aNum / state.aDen;
+  const onCircle = Math.abs(aVal * aVal - 1) < 1e-12;
+  const readout = document.getElementById('readout');
+  readout.innerHTML = `
+    <span class="label">Pencil:</span> <span class="highlight">y = m(x + ${aStr})</span> from <span class="highlight">(−${aStr}, 0)</span><br>
+    <span class="label">Base point:</span> ${onCircle ? '<span class="highlight">ON the circle</span> — every rational m yields a triple' : '<span style="color:#b05555">OFF the circle</span> — only select rational m yield triples'}<br>
+    <span class="label">Special slope:</span> <span class="highlight">m = ${ratStr(rat(state.aDen, state.aNum))} = 1/a</span> always gives (0, 1)
+  `;
+
+  // Legend
+  const legend = document.getElementById('canvasLegend');
+  let legendHTML = `
+    <div class="item"><div class="swatch-dot" style="background:var(--gold)"></div> base (−a, 0)</div>
+    <div class="item"><div class="swatch-dot" style="background:var(--accent-green)"></div> Q1</div>
+    <div class="item"><div class="swatch-dot" style="background:var(--accent-blue)"></div> Q2</div>
+    <div class="item"><div class="swatch-dot" style="background:var(--accent-purple)"></div> Q3</div>
+    <div class="item"><div class="swatch-dot" style="background:var(--accent-red)"></div> Q4</div>
+  `;
+  if (state.showA1Ghost) {
+    legendHTML += `<div class="item"><div class="swatch-dot" style="background:#c8a96e44"></div> a=1 (all triples)</div>`;
+  }
+  if (state.showReciprocal && Math.abs(state.aNum) !== state.aDen) {
+    legendHTML += `<div class="item"><div class="swatch-dot" style="background:#8a6aaa"></div> a=1/${ratStr(rat(state.aNum, state.aDen))}</div>`;
+  }
+  legendHTML += `<div class="item"><div class="swatch-dot" style="background:#f0e8d0"></div> highlighted</div>`;
+  legend.innerHTML = legendHTML;
+
+  drawScene();
+}
+
+// === EVENT WIRING ===
+function wireControls() {
+  const aNumEl = document.getElementById('aNum');
+  const aDenEl = document.getElementById('aDen');
+  const aDisplay = document.getElementById('aDisplay');
+
+  function setA(n, d) {
+    const g = gcd(Math.abs(n), Math.abs(d));
+    state.aNum = n / g;
+    state.aDen = d / g;
+    aNumEl.value = state.aNum;
+    aDenEl.value = state.aDen;
+    aDisplay.textContent = `a = ${ratStr(rat(state.aNum, state.aDen))}`;
+
+    // Update active chip
+    document.querySelectorAll('.chip').forEach(c => {
+      const cn = parseInt(c.dataset.num);
+      const cd = parseInt(c.dataset.den);
+      c.classList.toggle('active', cn * state.aDen === state.aNum * cd);
+    });
+
+    updateResults();
+  }
+
+  aNumEl.addEventListener('input', () => setA(parseInt(aNumEl.value) || 1, parseInt(aDenEl.value) || 1));
+  aDenEl.addEventListener('input', () => setA(parseInt(aNumEl.value) || 1, parseInt(aDenEl.value) || 1));
+
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => setA(parseInt(c.dataset.num), parseInt(c.dataset.den)));
+  });
+
+  // Depth slider
+  const depthSlider = document.getElementById('depthSlider');
+  const depthDisplay = document.getElementById('depthDisplay');
+  depthSlider.addEventListener('input', () => {
+    state.depth = parseInt(depthSlider.value);
+    depthDisplay.textContent = state.depth;
+    updateResults();
+  });
+
+  // Quadrant toggles
+  document.querySelectorAll('.toggle-btn[data-q]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = parseInt(btn.dataset.q);
+      state.quadrants[q] = !state.quadrants[q];
+      btn.classList.toggle('active', state.quadrants[q]);
+      updateResults();
+    });
+  });
+
+  // Display toggles
+  const toggleMap = {
+    'showLines': 'showLines',
+    'showPoints': 'showPoints',
+    'showA1Ghost': 'showA1Ghost',
+    'showReciprocal': 'showReciprocal',
+  };
+  for (const [id, key] of Object.entries(toggleMap)) {
+    const el = document.getElementById(id);
+    el.addEventListener('click', () => {
+      state[key] = !state[key];
+      el.classList.toggle('active', state[key]);
+      updateResults();
+    });
+  }
+
+  // Highlight m
+  const mNumEl = document.getElementById('mNum');
+  const mDenEl = document.getElementById('mDen');
+  function updateM() {
+    state.highlightM = rat(parseInt(mNumEl.value) || 0, parseInt(mDenEl.value) || 1);
+    updateResults();
+  }
+  mNumEl.addEventListener('input', updateM);
+  mDenEl.addEventListener('input', updateM);
+
+  // Resize
+  window.addEventListener('resize', () => { drawScene(); });
+}
+
+// === KATEX RENDERING ===
+function renderMath() {
+  document.querySelectorAll('.math-inline[data-tex]').forEach(el => {
+    katex.render(el.dataset.tex, el, { throwOnError: false });
+  });
+  document.querySelectorAll('.math-block[data-tex]').forEach(el => {
+    katex.render(el.dataset.tex, el, { throwOnError: false, displayMode: true });
+  });
+}
+
+// === INIT ===
+renderMath();
+wireControls();
+updateResults();
+</script>
+</body>
+</html>
