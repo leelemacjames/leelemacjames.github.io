@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IB CS HL — Option A: Databases · Oct 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --surface: #13151a;
+    --surface2: #1a1d24;
+    --border: #2a2d36;
+    --gold: #c8a96e;
+    --gold-dim: #8a7048;
+    --text: #e8e4dc;
+    --text-muted: #8a8a9a;
+    --green: #4caf7d;
+    --blue: #5b9cf6;
+    --red: #e05a5a;
+    --q1: #c8a96e;
+    --q2: #5b9cf6;
+    --q3: #4caf7d;
+    --q4: #c97ab4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+    background: linear-gradient(180deg, #161820 0%, transparent 100%);
+  }
+
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  header h1 span { color: var(--gold); }
+
+  .header-sub {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* Controls */
+  .controls {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0.6rem;
+    padding: 1rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .ctrl-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 0.3rem;
+  }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold); }
+  .btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,110,0.08); }
+  .btn-all { border-color: var(--gold-dim); color: var(--gold); }
+  .btn-all:hover { background: rgba(200,169,110,0.15); }
+
+  .marks-total {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .marks-total span { color: var(--gold); font-weight: 500; }
+
+  /* Main layout */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  /* Question group */
+  .q-group {
+    margin-bottom: 3rem;
+  }
+
+  .q-group-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .q-group-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .q-group-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    flex: 1;
+  }
+
+  /* Individual question card */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .q-card:hover { border-color: var(--gold-dim); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .q-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .q-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .q-text .context {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+
+  .q-right {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .marks-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .toggle-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .toggle-btn.revealed { border-color: var(--green); color: var(--green); background: rgba(76,175,125,0.07); }
+
+  /* Answer panel */
+  .q-answer {
+    display: none;
+    padding: 0 1.2rem 1.2rem 1.2rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+    animation: slideIn 0.2s ease;
+  }
+
+  .q-answer.visible { display: block; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .answer-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    padding: 0.7rem 0 0.5rem;
+    display: block;
+  }
+
+  .answer-body {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .answer-body ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .answer-body ul li {
+    padding: 0.2rem 0 0.2rem 1.2rem;
+    position: relative;
+    color: var(--text);
+  }
+
+  .answer-body ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 0.7rem;
+    top: 0.28rem;
+  }
+
+  .answer-body p { margin-bottom: 0.6rem; }
+  .answer-body p:last-child { margin-bottom: 0; }
+
+  .answer-body code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.1rem 0.4rem;
+    color: var(--blue);
+  }
+
+  .answer-body .code-block {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    padding: 0.8rem 1rem;
+    margin: 0.6rem 0;
+    color: var(--blue);
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  .answer-body .note {
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-style: italic;
+    background: rgba(200,169,110,0.06);
+    border-left: 2px solid var(--gold-dim);
+    padding: 0.4rem 0.7rem;
+    margin-top: 0.6rem;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .answer-body .warn {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-style: italic;
+    background: rgba(90,90,110,0.15);
+    border-left: 2px solid var(--border);
+    padding: 0.4rem 0.7rem;
+    margin-top: 0.6rem;
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* ERD diagram */
+  .erd {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 0.8rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+  }
+
+  .erd-entity {
+    border: 1px solid var(--gold);
+    padding: 0.4rem 0.9rem;
+    background: var(--surface2);
+    color: var(--gold);
+    white-space: nowrap;
+    border-radius: 3px;
+  }
+
+  .erd-line {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .erd-connector {
+    display: flex;
+    align-items: center;
+  }
+
+  .erd-line span { font-size: 0.65rem; color: var(--text-muted); }
+  .erd-dash { border-top: 1px solid var(--gold-dim); width: 30px; }
+  .erd-crow { color: var(--gold-dim); font-size: 1rem; }
+
+  /* 3NF tables */
+  .db-table {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    margin: 0.4rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .db-table .tname {
+    color: var(--blue);
+    font-weight: 500;
+  }
+  .db-table .pk { color: var(--gold); text-decoration: underline; }
+  .db-table .fk { color: var(--q4); font-style: italic; }
+  .db-table .field { color: var(--text); }
+
+  /* Section divider */
+  .section-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    margin-top: -0.4rem;
+    padding-left: 0.2rem;
+  }
+
+  /* Colours per question group */
+  .g1 .q-id { background: rgba(200,169,110,0.12); color: var(--q1); border: 1px solid rgba(200,169,110,0.3); }
+  .g2 .q-id { background: rgba(91,156,246,0.12); color: var(--q2); border: 1px solid rgba(91,156,246,0.3); }
+  .g3 .q-id { background: rgba(76,175,125,0.12); color: var(--q3); border: 1px solid rgba(76,175,125,0.3); }
+  .g4 .q-id { background: rgba(201,122,180,0.12); color: var(--q4); border: 1px solid rgba(201,122,180,0.3); }
+
+  .g1 .q-group-title { color: var(--q1); }
+  .g2 .q-group-title { color: var(--q2); }
+  .g3 .q-group-title { color: var(--q3); }
+  .g4 .q-group-title { color: var(--q4); }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  /* Footer */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1.5rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<header>
+  <div class="header-meta">IB Computer Science HL · Paper 2 · 29 October 2024</div>
+  <h1>Option A — <span>Databases</span></h1>
+  <div class="header-sub">65 marks · 1 hour 20 minutes · Questions 1–4</div>
+</header>
+
+<div class="controls">
+  <span class="ctrl-label">Filter:</span>
+  <button class="btn active" onclick="filterGroup('all', this)">All</button>
+  <button class="btn" onclick="filterGroup('g1', this)">Q1 · ERD & Views</button>
+  <button class="btn" onclick="filterGroup('g2', this)">Q2 · Normalisation</button>
+  <button class="btn" onclick="filterGroup('g3', this)">Q3 · Concurrency & Mining</button>
+  <button class="btn" onclick="filterGroup('g4', this)">Q4 · DB Types & Warehousing</button>
+  <span style="flex:1"></span>
+  <button class="btn btn-all" onclick="revealAll()">Reveal All</button>
+  <button class="btn btn-all" onclick="hideAll()">Hide All</button>
+  <span class="marks-total">Total: <span>65 marks</span></span>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════ Q1 ═══════════════════════════════════════ -->
+<div class="q-group g1" data-group="g1">
+  <div class="q-group-header">
+    <span class="q-group-title">Question 1</span>
+    <span class="q-group-desc">Police interviews · ERD · Referential integrity · Views</span>
+  </div>
+  <div class="section-note">Context: police officers interview witnesses; a witness may be interviewed many times</div>
+
+  <!-- 1a -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">1(a)</span>
+      <div class="q-text">Construct an entity-relationship diagram (ERD) that shows the relationships between the <strong>interview</strong>, the <strong>police officer</strong> and the <strong>witness</strong>.</div>
+      <div class="q-right">
+        <span class="marks-badge">[2]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Mark Scheme Answer</span>
+      <div class="answer-body">
+        <p>Award <strong>[1]</strong> for 3 correct entities / 2 correct with a 1-M relationship shown.<br>
+        Award <strong>[2]</strong> for three correct entities <em>and</em> correct relationships.</p>
+        <div class="erd">
+          <div class="erd-entity">WITNESS</div>
+          <div class="erd-line">
+            <span>1</span>
+            <div class="erd-connector">
+              <div class="erd-dash"></div>
+              <span style="padding:0 4px;color:var(--gold-dim)">has ►</span>
+              <div class="erd-dash"></div>
+            </div>
+            <span>M</span>
+          </div>
+          <div class="erd-entity">INTERVIEW</div>
+          <div class="erd-line">
+            <span>M</span>
+            <div class="erd-connector">
+              <div class="erd-dash"></div>
+              <span style="padding:0 4px;color:var(--gold-dim)">◄ conducts</span>
+              <div class="erd-dash"></div>
+            </div>
+            <span>1</span>
+          </div>
+          <div class="erd-entity">OFFICER</div>
+        </div>
+        <ul>
+          <li>WITNESS — 1-to-many — INTERVIEW (a witness has many interviews)</li>
+          <li>OFFICER — 1-to-many — INTERVIEW (an officer conducts many interviews)</li>
+          <li>INTERVIEW is the associative/junction entity in the middle</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1b -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">1(b)</span>
+      <div class="q-text">Identify <strong>three reasons</strong> why it is important to enforce referential integrity.</div>
+      <div class="q-right">
+        <span class="marks-badge">[3]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 1 mark per point</span>
+      <div class="answer-body">
+        <ul>
+          <li>Improves data accuracy / reduces record anomalies / improves data retrieval accuracy</li>
+          <li>Improves data consistency — ensures records in a linked table relate to data in another table (via primary/foreign key), allowing extraction from different tables</li>
+          <li>Ensures a deleted record does not leave "hanging" records unlinked to other tables</li>
+          <li>Simplifies update/maintenance through cascade delete/update</li>
+        </ul>
+        <div class="note">e.g. If a police officer who interviewed a witness is deleted, they cannot be identified from the interview record — referential integrity prevents this orphan.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1c -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">1(c)</span>
+      <div class="q-text">Explain how a query can provide a <strong>view</strong> of the database.</div>
+      <div class="q-right">
+        <span class="marks-badge">[3]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — choose one cluster</span>
+      <div class="answer-body">
+        <p><strong>Cluster 1 — how a view is defined:</strong></p>
+        <ul>
+          <li>A name is assigned to the view: <code>CREATE VIEW view_name AS</code></li>
+          <li>Fields (columns) are selected: <code>SELECT field1, field2 FROM table(s)</code></li>
+          <li>A condition/filter is specified: <code>WHERE condition</code></li>
+          <li>This reduces the dataset to include only the required data</li>
+        </ul>
+        <p><strong>Cluster 2 — properties of a view:</strong></p>
+        <ul>
+          <li>A query/filter provides a subset of the database</li>
+          <li>It can be saved and reused regularly (e.g. weekly updates)</li>
+          <li>The view is not part of the physical schema (virtual table)</li>
+          <li>The view can be organised/sorted to meet reporting needs</li>
+        </ul>
+        <div class="warn">Note: marks awarded from one cluster only — do not mix clusters.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ Q2 ═══════════════════════════════════════ -->
+<div class="q-group g2" data-group="g2">
+  <div class="q-group-header">
+    <span class="q-group-title">Question 2</span>
+    <span class="q-group-desc">Secondary keys · Composite PKs · 3NF normalisation</span>
+  </div>
+
+  <!-- 2a -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">2(a)</span>
+      <div class="q-text">Define the term <strong>secondary key</strong>.</div>
+      <div class="q-right">
+        <span class="marks-badge">[1]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>A field (or combination of fields) that is used to index a table <em>other than</em> the primary key</li>
+          <li>It allows efficient searching/retrieval on non-primary-key fields</li>
+          <li>It does <strong>not</strong> have to be unique (unlike a primary key)</li>
+          <li>Also called an <em>alternate key</em> or <em>index key</em> in some contexts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b(i) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">2(b)(i)</span>
+      <div class="q-text">
+        <span class="context">INTERVIEW(WitnessID, CrimeID, OfficerID, Statement, …) — composite PK = {WitnessID, CrimeID, OfficerID}</span>
+        Outline why <strong>{WitnessID, CrimeID, OfficerID}</strong> is <em>not</em> a suitable composite primary key.</div>
+      <div class="q-right">
+        <span class="marks-badge">[2]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>A witness may be interviewed <strong>more than once</strong> by the same officer about the same crime</li>
+          <li>This means the combination {WitnessID, CrimeID, OfficerID} would <strong>not be unique</strong> across all rows</li>
+          <li>A primary key must uniquely identify each record — this composite key fails that requirement</li>
+          <li>Solution: add a surrogate key such as <code>InterviewID</code> (auto-increment) as the PK, or include <code>DateTimeStatement</code> in the composite</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b(ii) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">2(b)(ii)</span>
+      <div class="q-text">Outline why the INTERVIEW table is <strong>not in 3NF</strong>.<br>
+        <span class="context">INTERVIEW(WitnessID, CrimeID, OfficerID, Statement, CrimeLocation, DateTimeStatement, PoliceStation, StationPhone)</span></div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 2NF and 3NF violations</span>
+      <div class="answer-body">
+        <p><strong>2NF violation (partial dependency):</strong></p>
+        <ul>
+          <li><code>CrimeLocation</code> depends only on <code>CrimeID</code>, not on the full composite key → partial dependency</li>
+          <li>This violates 2NF: every non-key attribute must depend on the <em>whole</em> key</li>
+        </ul>
+        <p><strong>3NF violation (transitive dependency):</strong></p>
+        <ul>
+          <li><code>StationPhone</code> depends on <code>PoliceStation</code>, not directly on the primary key</li>
+          <li>This is a transitive dependency: PK → PoliceStation → StationPhone</li>
+          <li>3NF requires every non-key attribute to depend <em>only</em> on the primary key, not on another non-key field</li>
+        </ul>
+        <div class="note">To reach 3NF: remove CrimeLocation to CRIME table; create a POLICESTATION(PoliceStation, StationPhone) table and reference it by FK from INTERVIEW.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2c -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">2(c)</span>
+      <div class="q-text">Outline why an <strong>alphanumeric</strong> data type is used for the <code>VictimPhone</code> field.</div>
+      <div class="q-right">
+        <span class="marks-badge">[2]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>Phone numbers may include leading zeros (e.g. 01029…) — storing as integer would strip them</li>
+          <li>Phone numbers may include non-numeric characters: spaces, hyphens, +44 country codes, brackets</li>
+          <li>No arithmetic is performed on phone numbers, so numeric type offers no benefit</li>
+          <li>Alphanumeric preserves the number exactly as entered</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2d -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">2(d)</span>
+      <div class="q-text">Construct the database in <strong>3rd Normal Form (3NF)</strong> for all data shown in Figure 1 (police crime data). Use database notation.</div>
+      <div class="q-right">
+        <span class="marks-badge">[6]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 3NF decomposition</span>
+      <div class="answer-body">
+        <p>The un-normalised CRIME table contains repeating groups (multiple officers, victims, evidence per crime). Decompose as follows:</p>
+
+        <div class="db-table">
+          <span class="tname">CRIME</span>(<span class="pk">CrimeID</span>, CrimeType, CrimeAddress, CrimeDateTime)
+        </div>
+        <div class="db-table">
+          <span class="tname">OFFICER</span>(<span class="pk">OfficerID</span>, OfficerName)
+        </div>
+        <div class="db-table">
+          <span class="tname">CRIME_OFFICER</span>(<span class="pk"><span class="fk">CrimeID</span>, <span class="fk">OfficerID</span></span>) &nbsp;← junction table
+        </div>
+        <div class="db-table">
+          <span class="tname">VICTIM</span>(<span class="pk">VictimID</span>, VictimName, VictimPhone)
+        </div>
+        <div class="db-table">
+          <span class="tname">CRIME_VICTIM</span>(<span class="pk"><span class="fk">CrimeID</span>, <span class="fk">VictimID</span></span>) &nbsp;← junction table
+        </div>
+        <div class="db-table">
+          <span class="tname">EVIDENCE</span>(<span class="pk">EvidenceID</span>, <span class="fk">CrimeID</span>, EvidenceType, EvidenceDesc)
+        </div>
+
+        <ul style="margin-top:0.5rem">
+          <li><span style="color:var(--gold)">Underlined</span> = primary key &nbsp;|&nbsp; <span style="color:var(--q4)">italic</span> = foreign key</li>
+          <li>Repeating groups (officers, victims, evidence) are moved to separate tables with junction/bridge tables for M:M relationships</li>
+          <li>VictimPhone stays in VICTIM — it depends only on VictimID (no transitive dependency)</li>
+          <li>Award marks for: correct PKs, appropriate FKs, resolving M:M with junction tables, no repeating groups</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ Q3 ═══════════════════════════════════════ -->
+<div class="q-group g3" data-group="g3">
+  <div class="q-group-header">
+    <span class="q-group-title">Question 3</span>
+    <span class="q-group-desc">Concurrency · Centralised DB · Data mining · Matching · GDPR</span>
+  </div>
+
+  <!-- 3a -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(a)</span>
+      <div class="q-text">
+        <span class="context">Two police officers attempt to update a witness statement at the same time.</span>
+        Describe how <strong>data locking</strong> can be used to deal with this situation.
+      </div>
+      <div class="q-right">
+        <span class="marks-badge">[2]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>When Officer A begins editing the record, the DBMS places a <strong>lock</strong> on that record</li>
+          <li>Officer B's attempt to edit the same record is blocked / queued until the lock is released</li>
+          <li>Once Officer A commits/saves, the lock is released and Officer B can then access and update the record</li>
+          <li>This prevents a <strong>lost update</strong> anomaly where one officer's changes overwrite the other's</li>
+        </ul>
+        <div class="note">Row-level locking is preferred over table-level locking as it allows other witnesses' records to remain accessible.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3b -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(b)</span>
+      <div class="q-text">Discuss the <strong>advantages and disadvantages</strong> of using a centralised crime database.</div>
+      <div class="q-right">
+        <span class="marks-badge">[5]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — balanced discussion required</span>
+      <div class="answer-body">
+        <p><strong>Advantages:</strong></p>
+        <ul>
+          <li>Single source of truth — all forces access the same, up-to-date data; no inconsistency</li>
+          <li>Easier to search nationally — officers can identify suspects/witnesses across regions</li>
+          <li>Simpler to maintain, update, and apply security patches in one place</li>
+          <li>Supports national crime statistics and policy analysis</li>
+          <li>Avoids data duplication — storage efficient</li>
+        </ul>
+        <p><strong>Disadvantages:</strong></p>
+        <ul>
+          <li>Single point of failure — if the central server fails, all forces lose access</li>
+          <li>Network dependency — remote access requires reliable high-speed connectivity</li>
+          <li>High-value target for hackers / cyberattacks; a breach exposes all data</li>
+          <li>Privacy concerns — GDPR compliance more complex across multiple jurisdictions</li>
+          <li>Bottleneck under high concurrent load from thousands of officers</li>
+        </ul>
+        <div class="warn">For full marks: must include at least 2 advantages AND 2 disadvantages with development/explanation, not just listing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3c(i) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(c)(i)</span>
+      <div class="q-text">Explain why <strong>data mining</strong> might be used to extract information from crime data held in a police database.</div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>Crime databases contain vast volumes of records — too large for manual analysis</li>
+          <li>Data mining uses algorithms to discover hidden patterns, correlations, and trends within the data</li>
+          <li>e.g. identifying crime hotspots — crimes cluster geographically or temporally in ways not obvious to human analysts</li>
+          <li>e.g. predicting repeat offender behaviour — patterns in previous offences predict future crimes</li>
+          <li>e.g. linking crimes from different precincts that share modus operandi / suspect descriptions</li>
+          <li>Helps allocate police resources efficiently (patrol times, locations)</li>
+          <li>Can reveal relationships between crimes and external factors (weather, events, social data)</li>
+        </ul>
+        <div class="note">Award marks for: identifying that manual analysis is insufficient + specific benefit with example.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3c(ii) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(c)(ii)</span>
+      <div class="q-text">Explain, using an example, how <strong>data matching</strong> could be applied to the crime data.</div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>Data matching compares records across two or more datasets to identify records that refer to the same real-world entity</li>
+          <li>It can be <em>exact matching</em> (same ID) or <em>fuzzy matching</em> (similar names, addresses)</li>
+        </ul>
+        <p><strong>Example in crime context:</strong></p>
+        <ul>
+          <li>Matching a suspect's name/DOB in the crime database against the DVLA vehicle register to find their address</li>
+          <li>Matching witness phone numbers across crimes to identify the same witness appearing in multiple cases</li>
+          <li>Matching a description of stolen goods against pawnshop transaction records to trace receivers of stolen property</li>
+          <li>Cross-referencing fingerprint/DNA evidence records across crime scenes to link crimes to one perpetrator</li>
+        </ul>
+        <div class="note">Must include a clear example for full marks; general description alone capped at [2].</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3d(i) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(d)(i)</span>
+      <div class="q-text">Outline <strong>two reasons</strong> why a password-only approach would not be secure.</div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 2 marks per reason (identify + develop)</span>
+      <div class="answer-body">
+        <ul>
+          <li><strong>Passwords can be guessed / brute-forced:</strong> without lockout policies, an attacker can systematically try combinations; weak passwords are vulnerable to dictionary attacks</li>
+          <li><strong>Passwords can be stolen / phished:</strong> users may be tricked into entering credentials on a fake login page; passwords can be intercepted if transmitted insecurely</li>
+          <li><strong>Passwords can be shared:</strong> officers may share credentials, making it impossible to audit individual access and breaching the principle of least privilege</li>
+          <li><strong>No verification of physical identity:</strong> a stolen password grants full access; multi-factor authentication (MFA) — e.g. biometrics, smart card — adds a second factor that is much harder to steal</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3d(ii) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">3(d)(ii)</span>
+      <div class="q-text">Identify <strong>three ways</strong> that legislation such as GDPR protects individuals whose data is stored electronically.</div>
+      <div class="q-right">
+        <span class="marks-badge">[3]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 1 mark each</span>
+      <div class="answer-body">
+        <ul>
+          <li>Right of access — individuals can request to see what data is held about them</li>
+          <li>Right to erasure ("right to be forgotten") — data must be deleted on request if no longer necessary</li>
+          <li>Data minimisation — only data necessary for the stated purpose may be collected/stored</li>
+          <li>Consent — explicit, informed consent must be obtained before collecting personal data</li>
+          <li>Data accuracy — organisations must keep data up to date and correct errors on request</li>
+          <li>Breach notification — individuals must be informed within 72 hours if their data is compromised</li>
+          <li>Right to portability — individuals can receive their data in a machine-readable format</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ Q4 ═══════════════════════════════════════ -->
+<div class="q-group g4" data-group="g4">
+  <div class="q-group-header">
+    <span class="q-group-title">Question 4</span>
+    <span class="q-group-desc">Network DB · OO DB · Data warehousing · Predictive modelling · Link analysis</span>
+  </div>
+
+  <!-- 4a -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">4(a)</span>
+      <div class="q-text">Identify <strong>two characteristics</strong> of a <em>network database</em>.</div>
+      <div class="q-right">
+        <span class="marks-badge">[2]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 1 mark each</span>
+      <div class="answer-body">
+        <ul>
+          <li>Data is organised as a <strong>graph</strong> of records (nodes) connected by pointers/links (edges) — not tables</li>
+          <li>Supports <strong>many-to-many relationships</strong> natively without junction tables</li>
+          <li>Data is accessed via navigational paths through the network (pointer chains)</li>
+          <li>Based on the CODASYL model; predates relational databases</li>
+          <li>A child record can have <strong>multiple parent records</strong> (unlike hierarchical databases)</li>
+          <li>Schema is defined at design time; changes are difficult (rigid structure)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4b -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">4(b)</span>
+      <div class="q-text">Discuss the <strong>advantages and disadvantages</strong> of an <em>object-oriented database</em> compared to a relational database.</div>
+      <div class="q-right">
+        <span class="marks-badge">[5]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — balanced discussion</span>
+      <div class="answer-body">
+        <p><strong>Advantages of OO database:</strong></p>
+        <ul>
+          <li>Can store complex/multimedia data types (images, audio, video) that map poorly to relational tables</li>
+          <li>Objects encapsulate data + methods — behaviour is stored alongside data, reducing application code</li>
+          <li>Inheritance and polymorphism allow reuse and extension of data structures</li>
+          <li>Eliminates "impedance mismatch" — objects in code map directly to objects in the database</li>
+          <li>Better for complex hierarchical/nested data (e.g. crime evidence with sub-types)</li>
+        </ul>
+        <p><strong>Disadvantages of OO database:</strong></p>
+        <ul>
+          <li>Less mature technology — fewer standard query languages (no universal equivalent of SQL)</li>
+          <li>Fewer trained staff / less vendor support compared to relational DBMS</li>
+          <li>Existing police databases are relational — migration is expensive and risky</li>
+          <li>Ad-hoc querying is more difficult; reporting tools are less rich than for relational DBs</li>
+          <li>Optimisation / indexing less well understood at scale</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4c -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">4(c)</span>
+      <div class="q-text">Outline <strong>two advantages</strong> of creating a <em>data warehouse</em> to store Europol crime data.</div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 2 marks per advantage</span>
+      <div class="answer-body">
+        <ul>
+          <li><strong>Integrated historical data:</strong> consolidates data from multiple national police systems into one repository, enabling cross-border analysis over time that would be impossible from individual operational databases</li>
+          <li><strong>Optimised for analytical queries:</strong> data warehouses use OLAP (Online Analytical Processing) structures optimised for complex read queries and aggregations, without degrading performance of live operational systems</li>
+          <li><strong>Supports OLAP / multidimensional analysis:</strong> analysts can slice data by time, geography, crime type simultaneously — e.g. "thefts in border regions Q3 2022"</li>
+          <li><strong>Separation from operational data:</strong> analytical workloads don't interfere with day-to-day police record updates; data is cleaned and standardised on import (ETL)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4d -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">4(d)</span>
+      <div class="q-text">Outline <strong>two benefits</strong> of applying <em>predictive modelling</em> to crime data.</div>
+      <div class="q-right">
+        <span class="marks-badge">[4]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer — 2 marks per benefit</span>
+      <div class="answer-body">
+        <ul>
+          <li><strong>Proactive resource allocation:</strong> models predict where and when crimes are likely to occur, allowing police to pre-deploy patrols to high-risk areas before crimes happen, rather than only responding reactively</li>
+          <li><strong>Identifying likely offenders / recidivism risk:</strong> models trained on offender histories can assess probability of reoffending, informing decisions about bail, parole, or targeted intervention programmes</li>
+          <li><strong>Detecting emerging crime trends:</strong> statistical models identify deviations from baseline patterns early (e.g. sudden spike in organised retail theft) giving analysts actionable alerts</li>
+          <li><strong>Cost efficiency:</strong> focusing investigative resources on predicted high-risk individuals/locations reduces wasted effort and can lower overall crime rates</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4e -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggleCard(this)">
+      <span class="q-id">4(e)</span>
+      <div class="q-text">Explain how <strong>link analysis</strong> can be applied to crime datasets to investigate fraud, uncover terrorist networks and investigate criminal activities.</div>
+      <div class="q-right">
+        <span class="marks-badge">[5]</span>
+        <button class="toggle-btn" onclick="toggleAnswer(event, this)">Show</button>
+      </div>
+    </div>
+    <div class="q-answer">
+      <span class="answer-label">✓ Model Answer</span>
+      <div class="answer-body">
+        <ul>
+          <li>Link analysis represents entities (people, organisations, locations, phone numbers, bank accounts) as <strong>nodes</strong> and relationships between them as <strong>edges</strong> in a graph</li>
+          <li>Algorithms traverse this graph to identify clusters of connected entities — revealing networks that are not apparent from individual records</li>
+          <li><strong>Fraud:</strong> links between financial transactions, account holders, and IP addresses can reveal coordinated fraud rings — multiple fraudulent accounts connected through shared devices or money flows</li>
+          <li><strong>Terrorist networks:</strong> communication records (calls, emails) link individuals; graph centrality metrics (e.g. betweenness centrality) identify key organisers/couriers even if they avoid direct communication with leaders</li>
+          <li><strong>Criminal investigations:</strong> linking crime scenes by suspect description, vehicle registration, or witness appearances can connect seemingly unrelated crimes to one organised group</li>
+          <li>Can surface indirect connections: A → B → C where A and C are not directly linked but share common associates</li>
+        </ul>
+        <div class="note">Strong answer: defines nodes/edges, gives a specific application example, mentions what the analysis reveals that standard queries cannot.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>IB Computer Science HL · Paper 2 Option A · Oct 2024 · Q&amp;A Revision Tool</footer>
+
+<script>
+  function toggleAnswer(e, btn) {
+    e.stopPropagation();
+    const card = btn.closest('.q-card');
+    const answer = card.querySelector('.q-answer');
+    const isVisible = answer.classList.contains('visible');
+    answer.classList.toggle('visible');
+    btn.textContent = isVisible ? 'Show' : 'Hide';
+    btn.classList.toggle('revealed', !isVisible);
+    updateProgress();
+  }
+
+  function toggleCard(header) {
+    const btn = header.querySelector('.toggle-btn');
+    toggleAnswer({ stopPropagation: () => {} }, btn);
+  }
+
+  function revealAll() {
+    document.querySelectorAll('.q-answer:not(.visible)').forEach(a => {
+      a.classList.add('visible');
+      const btn = a.closest('.q-card').querySelector('.toggle-btn');
+      btn.textContent = 'Hide';
+      btn.classList.add('revealed');
+    });
+    updateProgress();
+  }
+
+  function hideAll() {
+    document.querySelectorAll('.q-answer.visible').forEach(a => {
+      a.classList.remove('visible');
+      const btn = a.closest('.q-card').querySelector('.toggle-btn');
+      btn.textContent = 'Show';
+      btn.classList.remove('revealed');
+    });
+    updateProgress();
+  }
+
+  function filterGroup(group, btn) {
+    document.querySelectorAll('.controls .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.q-group').forEach(g => {
+      g.style.display = (group === 'all' || g.dataset.group === group) ? '' : 'none';
+    });
+  }
+
+  function updateProgress() {
+    const total = document.querySelectorAll('.q-card').length;
+    const revealed = document.querySelectorAll('.q-answer.visible').length;
+    document.getElementById('progress').style.width = (revealed / total * 100) + '%';
+  }
+</script>
+</body>
+</html>
