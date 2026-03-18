@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratios — Methods & Geometry</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #161820;
+    --surface2: #1e2028;
+    --border: #2a2d3a;
+    --gold: #c8a96e;
+    --gold-light: #e8c98e;
+    --teal: #5ec4b0;
+    --rose: #e07070;
+    --lavender: #9b8ec4;
+    --text: #e8e6f0;
+    --muted: #8a8899;
+    --accent: #c8a96e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .header-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .header-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 300;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Nav tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+
+  .nav-tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+  .nav-tab.active {
+    background: var(--gold);
+    color: #0e0f14;
+    font-weight: 600;
+  }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Section header */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 600px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Formula display */
+  .formula {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--gold-light);
+    margin: 16px 0;
+    line-height: 1.8;
+  }
+
+  /* Steps */
+  .steps { list-style: none; }
+  .step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--gold);
+    color: #0e0f14;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content { flex: 1; line-height: 1.6; font-size: 0.9rem; }
+  .step-content strong { color: var(--gold-light); }
+
+  /* Interactive demo */
+  .demo-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+  }
+
+  .demo-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 20px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .input-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  input[type="number"], input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    width: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus, input[type="text"]:focus {
+    border-color: var(--gold);
+  }
+
+  .colon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+    color: var(--gold);
+  }
+
+  .btn {
+    background: var(--gold);
+    color: #0e0f14;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn:hover { background: var(--gold-light); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-teal {
+    background: var(--teal);
+    color: #0e0f14;
+  }
+  .btn-teal:hover { background: #7ed4c2; }
+
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    line-height: 2;
+    color: var(--text);
+    min-height: 60px;
+    display: none;
+  }
+
+  .result-box.show { display: block; }
+  .result-box .highlight { color: var(--gold); }
+  .result-box .teal { color: var(--teal); }
+  .result-box .rose { color: var(--rose); }
+
+  /* Bar visualisation */
+  .bar-container {
+    height: 40px;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+    display: flex;
+    border: 1px solid var(--border);
+  }
+
+  .bar-a {
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #0e0f14;
+    font-weight: 600;
+    min-width: 2px;
+  }
+
+  .bar-b {
+    background: linear-gradient(90deg, var(--teal), #7ed4c2);
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #0e0f14;
+    font-weight: 600;
+    min-width: 2px;
+  }
+
+  /* Ratio grid visualiser */
+  .grid-vis {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+
+  .grid-square {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+
+  .sq-shaded { background: var(--gold); border-color: var(--gold); }
+  .sq-unshaded { background: var(--surface2); }
+
+  /* Geometry section */
+  .shape-demo {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .shape-box {
+    text-align: center;
+  }
+
+  .shape-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  svg.shape-svg { overflow: visible; }
+
+  /* Highlight tags */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-right: 6px;
+    margin-bottom: 4px;
+  }
+
+  .tag-gold { background: rgba(200,169,110,0.15); color: var(--gold); border: 1px solid rgba(200,169,110,0.3); }
+  .tag-teal { background: rgba(94,196,176,0.15); color: var(--teal); border: 1px solid rgba(94,196,176,0.3); }
+  .tag-rose { background: rgba(224,112,112,0.15); color: var(--rose); border: 1px solid rgba(224,112,112,0.3); }
+  .tag-lav { background: rgba(155,142,196,0.15); color: var(--lavender); border: 1px solid rgba(155,142,196,0.3); }
+
+  /* Connection callout */
+  .callout {
+    background: linear-gradient(135deg, rgba(200,169,110,0.08), rgba(94,196,176,0.05));
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .callout-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+
+  .callout strong { color: var(--gold-light); }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 16px 0;
+  }
+
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(42,45,58,0.5);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(200,169,110,0.04); }
+
+  /* GCD display */
+  .gcd-steps {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  .gcd-steps .em { color: var(--teal); }
+
+  /* Similarity/congruence comparison */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 500px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .compare-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .compare-card.congruent h3 { color: var(--teal); }
+  .compare-card.similar h3 { color: var(--gold); }
+
+  .crit-list {
+    list-style: none;
+    font-size: 0.85rem;
+    line-height: 2;
+    color: var(--muted);
+  }
+
+  .crit-list li::before {
+    content: '→ ';
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Scale factor interactive */
+  .sf-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    text-align: center;
+    padding: 12px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover { background: var(--gold-light); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 32px 0;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="header-eyebrow">KS3 / KS4 Mathematics</div>
+    <h1>The Language of <em>Ratios</em></h1>
+    <p class="header-sub">From simplifying and sharing to the geometry of congruence and similarity — ratios as a unified idea.</p>
+  </header>
+
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="showTab('simplify')">Simplifying</button>
+    <button class="nav-tab" onclick="showTab('unitary')">Unitary Method</button>
+    <button class="nav-tab" onclick="showTab('sharing')">Sharing</button>
+    <button class="nav-tab" onclick="showTab('congruence')">Congruence</button>
+    <button class="nav-tab" onclick="showTab('similarity')">Similarity</button>
+    <button class="nav-tab" onclick="showTab('problems')" style="background:rgba(200,169,110,0.08); color:var(--gold);">Practice ★</button>
+  </nav>
+
+  <!-- =========================================================
+       TAB 1: SIMPLIFYING
+  ========================================================= -->
+  <section class="section active" id="tab-simplify">
+    <h2 class="section-title">Simplifying Ratios</h2>
+    <p class="section-desc">Dividing both parts of a ratio by their Highest Common Factor (HCF) gives the simplest form. Think of it as cancelling a fraction, but for two quantities.</p>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Method</div>
+        <ul class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">Write the ratio <strong>a : b</strong></div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">Find the <strong>HCF</strong> of a and b — the largest number that divides both exactly</div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">Divide <strong>both</strong> parts by the HCF</div>
+          </li>
+          <li class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">Check neither part shares any common factor ≥ 2</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Worked Example</div>
+        <div style="font-size:0.9rem; line-height:2; color:var(--muted)">
+          Simplify  <span class="mono" style="color:var(--text)">8 : 2</span><br>
+          Factors of 8: 1, 2, 4, 8<br>
+          Factors of 2: 1, <span style="color:var(--gold)">2</span><br>
+          HCF = <span style="color:var(--gold)">2</span><br>
+          8 ÷ 2 = <span style="color:var(--teal)">4</span> &nbsp;|&nbsp; 2 ÷ 2 = <span style="color:var(--teal)">1</span><br>
+          <strong style="color:var(--text)">8 : 2 &nbsp;→&nbsp; <span style="color:var(--gold-light)">4 : 1</span></strong>
+        </div>
+        <div class="formula">
+          a : b  →  (a ÷ HCF) : (b ÷ HCF)
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive simplifier -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Interactive Simplifier</div>
+      <div class="input-row">
+        <span class="input-label">Enter ratio</span>
+        <input type="number" id="s-a" value="12" min="1">
+        <span class="colon">:</span>
+        <input type="number" id="s-b" value="8" min="1">
+        <button class="btn" onclick="doSimplify()">Simplify</button>
+      </div>
+
+      <div id="simplify-bar" class="bar-container" style="display:none;">
+        <div class="bar-a" id="sb-a"></div>
+        <div class="bar-b" id="sb-b"></div>
+      </div>
+
+      <div class="result-box" id="simplify-result"></div>
+    </div>
+
+    <!-- Fraction link -->
+    <div class="callout" style="margin-top:24px;">
+      <span class="callout-icon">💡</span>
+      <strong>Ratio as a fraction:</strong> The ratio 8 : 2 means "8 out of 10 total parts", which is the fraction 8/10 = 4/5. Ratios and fractions describe the same proportional relationship — just different notations.
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 2: UNITARY METHOD
+  ========================================================= -->
+  <section class="section" id="tab-unitary">
+    <h2 class="section-title">Unitary Method</h2>
+    <p class="section-desc">Convert any ratio to the form 1 : n by dividing both sides by the first part. This makes comparison between different ratios instant.</p>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Method — 1 : n form</div>
+        <ul class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">Start with ratio <strong>a : b</strong></div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">Divide <strong>both</strong> sides by <strong>a</strong></div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">Result: <strong>1 : (b/a)</strong> — now n can be a decimal or fraction</div>
+          </li>
+        </ul>
+        <div class="formula">
+          a : b  →  1 : (b ÷ a)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Examples</div>
+        <table>
+          <thead><tr><th>Original</th><th>÷ first part</th><th>Unitary</th></tr></thead>
+          <tbody>
+            <tr><td>4 : 2</td><td>÷ 4</td><td style="color:var(--gold)">1 : 0.5</td></tr>
+            <tr><td>20 : 5</td><td>÷ 20</td><td style="color:var(--gold)">1 : 0.25</td></tr>
+            <tr><td>25 : 10</td><td>÷ 25</td><td style="color:var(--gold)">1 : 0.4</td></tr>
+            <tr><td>2 : 4</td><td>÷ 2</td><td style="color:var(--gold)">1 : 2</td></tr>
+            <tr><td>7.2 : 0.9</td><td>÷ 7.2</td><td style="color:var(--gold)">1 : 0.125</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Interactive unitary -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Unitary Converter</div>
+      <div class="input-row">
+        <span class="input-label">Ratio</span>
+        <input type="number" id="u-a" value="8" min="0.01" step="0.1">
+        <span class="colon">:</span>
+        <input type="number" id="u-b" value="4" min="0.01" step="0.1">
+        <button class="btn" onclick="doUnitary()">Convert to 1 : n</button>
+      </div>
+      <div class="result-box" id="unitary-result"></div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon">🔗</span>
+      <strong>Why it matters:</strong> The unitary form 1 : n is exactly how we express <strong>scale factors</strong> in geometry. If a photograph is enlarged with ratio 1 : 2.5, every length on the copy is 2.5× the original — that's a scale factor of 2.5.
+    </div>
+
+    <!-- Three-part ratios -->
+    <div class="card">
+      <div class="card-title">Three-Part Ratios</div>
+      <p style="font-size:0.9rem; color:var(--muted); line-height:1.7; margin-bottom:16px;">For <span class="mono" style="color:var(--text)">a : b : c</span>, divide all three parts by <em>a</em> to get <span class="mono" style="color:var(--gold)">1 : b/a : c/a</span></p>
+      <div class="input-row">
+        <input type="number" id="t-a" value="50" min="0.01" step="1">
+        <span class="colon">:</span>
+        <input type="number" id="t-b" value="15" min="0.01" step="1">
+        <span class="colon">:</span>
+        <input type="number" id="t-c" value="10" min="0.01" step="1">
+        <button class="btn btn-teal" onclick="doThreePart()">Convert</button>
+      </div>
+      <div class="result-box" id="threepart-result"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 3: SHARING
+  ========================================================= -->
+  <section class="section" id="tab-sharing">
+    <h2 class="section-title">Sharing in a Given Ratio</h2>
+    <p class="section-desc">Divide a total amount into parts according to a ratio. The total is split into "shares" and each person/part gets the right number of shares.</p>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Method</div>
+        <ul class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">Add the ratio parts → <strong>total number of shares</strong></div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">Divide the total by the number of shares → <strong>value of 1 share</strong></div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">Multiply each ratio part by the value of 1 share</div>
+          </li>
+          <li class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">Check: the parts should sum back to the original total</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Example — Share £30 in ratio 2 : 3</div>
+        <div style="font-size:0.9rem; line-height:2.2; color:var(--muted)">
+          Total shares: 2 + 3 = <span style="color:var(--gold)">5</span><br>
+          Value of 1 share: £30 ÷ 5 = <span style="color:var(--gold)">£6</span><br>
+          Part A: 2 × £6 = <span style="color:var(--teal)">£12</span><br>
+          Part B: 3 × £6 = <span style="color:var(--rose)">£18</span><br>
+          Check: £12 + £18 = <span style="color:var(--text)">£30 ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sharing interactive -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Sharing Calculator</div>
+      <div class="input-row">
+        <span class="input-label">Total</span>
+        <input type="number" id="sh-total" value="30" min="1" style="width:90px">
+        <span class="input-label" style="margin-left:12px">Ratio</span>
+        <input type="number" id="sh-a" value="2" min="1">
+        <span class="colon">:</span>
+        <input type="number" id="sh-b" value="3" min="1">
+        <button class="btn" onclick="doShare()">Share</button>
+      </div>
+
+      <div id="share-bar" class="bar-container" style="display:none;">
+        <div class="bar-a" id="sbar-a"></div>
+        <div class="bar-b" id="sbar-b"></div>
+      </div>
+
+      <div class="result-box" id="share-result"></div>
+    </div>
+
+    <!-- Grid visualiser -->
+    <div class="card" style="margin-top:24px;">
+      <div class="card-title">Grid Visualiser — Shaded vs Unshaded Squares</div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:16px;">The rectangle below shows the ratio of shaded (gold) to unshaded squares. How many extra need shading to change the ratio?</p>
+      <div class="input-row">
+        <span class="input-label">Target ratio shaded : unshaded</span>
+        <input type="number" id="g-shaded" value="3" min="1" max="10">
+        <span class="colon">:</span>
+        <input type="number" id="g-unshaded" value="5" min="1" max="10">
+        <button class="btn btn-teal" onclick="doGrid()">Visualise</button>
+      </div>
+      <div style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">Currently shaded : unshaded = 1 : 5 (4 squares shaded, 20 total)</div>
+      <div class="grid-vis" id="grid-vis"></div>
+      <div class="result-box" id="grid-result" style="margin-top:12px;"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 4: CONGRUENCE
+  ========================================================= -->
+  <section class="section" id="tab-congruence">
+    <h2 class="section-title">Congruence &amp; Ratios</h2>
+    <p class="section-desc">Congruent shapes are identical in size and shape. Their side ratios are all <strong>1 : 1</strong> — the ultimate simplest ratio.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card congruent">
+        <h3>Congruent</h3>
+        <ul class="crit-list">
+          <li>SSS — all 3 sides equal</li>
+          <li>SAS — 2 sides + included angle</li>
+          <li>AAS — 2 angles + a side</li>
+          <li>RHS — right angle, hypotenuse, side</li>
+        </ul>
+        <div style="margin-top:12px; font-size:0.82rem; color:var(--muted);">
+          Ratio of all corresponding sides = <span class="mono" style="color:var(--teal)">1 : 1</span>
+        </div>
+      </div>
+      <div class="compare-card similar">
+        <h3>Similar</h3>
+        <ul class="crit-list">
+          <li>All angles equal</li>
+          <li>Sides in constant ratio k : 1</li>
+          <li>Can be reflection / rotation</li>
+          <li>Scale factor k = enlarged ÷ original</li>
+        </ul>
+        <div style="margin-top:12px; font-size:0.82rem; color:var(--muted);">
+          Ratio of corresponding sides = <span class="mono" style="color:var(--gold)">k : 1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive congruence conditions explorer -->
+    <div class="card" id="cong-explorer">
+      <div class="card-title">Interactive — Explore the Four Congruence Conditions</div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:18px; line-height:1.6;">Select a condition to see the two triangles. Click <strong style="color:var(--gold)">Reveal</strong> to highlight which sides and angles are the matching pair.</p>
+
+      <!-- Condition selector buttons -->
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;" id="cong-btns">
+        <button class="btn" onclick="showCond('SSS')" id="cbtn-SSS" style="background:var(--teal);color:#0e0f14;">SSS</button>
+        <button class="btn" onclick="showCond('SAS')" id="cbtn-SAS" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">SAS</button>
+        <button class="btn" onclick="showCond('AAS')" id="cbtn-AAS" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">AAS</button>
+        <button class="btn" onclick="showCond('RHS')" id="cbtn-RHS" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);">RHS</button>
+      </div>
+
+      <!-- SVG canvas for the interactive diagram -->
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px;">
+        <svg id="cong-svg" width="100%" viewBox="0 0 560 200" style="overflow:visible; display:block;"></svg>
+      </div>
+
+      <!-- Description text revealed on button press -->
+      <div id="cong-desc" style="font-size:0.9rem; line-height:1.8; color:var(--muted); min-height:48px; padding:8px 0;"></div>
+
+      <!-- Reveal button -->
+      <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+        <button class="btn" id="cong-reveal-btn" onclick="revealCond()" style="display:none;">Reveal matching pairs</button>
+        <span id="cong-reveal-hint" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);"></span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon">📐</span>
+      <strong>Congruence = ratio 1 : 1.</strong> When two triangles are congruent, AB/PQ = BC/QR = AC/PR = 1. Congruent shapes can be mapped onto each other via translations, rotations, and reflections — no scaling needed.
+    </div>
+
+    <!-- Congruence checker -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Side Ratio Checker — Are these triangles congruent?</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:16px;">Enter the three sides of two triangles. The tool checks whether all three side ratios are equal (similar) or equal to 1 (congruent).</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:16px;">
+        <div>
+          <div style="font-size:0.8rem; color:var(--teal); margin-bottom:8px; font-family:'JetBrains Mono',monospace;">TRIANGLE A</div>
+          <div class="input-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">a₁</span><input type="number" id="ca1" value="5" min="0.1" step="0.1" style="width:70px"></div>
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">b₁</span><input type="number" id="cb1" value="7" min="0.1" step="0.1" style="width:70px"></div>
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">c₁</span><input type="number" id="cc1" value="9" min="0.1" step="0.1" style="width:70px"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:var(--gold); margin-bottom:8px; font-family:'JetBrains Mono',monospace;">TRIANGLE B</div>
+          <div class="input-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">a₂</span><input type="number" id="ca2" value="5" min="0.1" step="0.1" style="width:70px"></div>
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">b₂</span><input type="number" id="cb2" value="7" min="0.1" step="0.1" style="width:70px"></div>
+            <div style="display:flex; gap:8px; align-items:center;"><span class="input-label" style="width:20px">c₂</span><input type="number" id="cc2" value="9" min="0.1" step="0.1" style="width:70px"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn" onclick="checkCongruence()">Check</button>
+      <div class="result-box" id="congruence-result" style="margin-top:16px;"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 5: SIMILARITY
+  ========================================================= -->
+  <section class="section" id="tab-similarity">
+    <h2 class="section-title">Similarity &amp; Scale Factors</h2>
+    <p class="section-desc">Similar shapes have equal angles but sides in a constant ratio — the scale factor k. Ratios are the mathematical backbone of all enlargements.</p>
+
+    <div class="card">
+      <div class="card-title">Scale Factor Formula</div>
+      <div class="formula">
+        Scale factor k = (length on enlargement) ÷ (corresponding length on original)<br><br>
+        PQ/AB = QR/BC = PR/AC = k
+      </div>
+      <p style="font-size:0.88rem; color:var(--muted); line-height:1.7;">
+        If k &gt; 1 → enlargement &nbsp;|&nbsp; k = 1 → congruent &nbsp;|&nbsp; k &lt; 1 → reduction
+      </p>
+    </div>
+
+    <!-- Scale factor slider -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Scale Factor Visual</div>
+      <div style="margin-bottom:8px; font-size:0.82rem; color:var(--muted)">Drag to change scale factor k</div>
+      <input type="range" id="sf-slider" min="0.3" max="3" step="0.1" value="1.5" oninput="updateScaleSVG()">
+      <div class="sf-display" id="sf-display">k = 1.5</div>
+
+      <svg id="sf-svg" width="100%" viewBox="0 0 500 220" style="margin-top:8px; overflow:visible;">
+        <!-- Original triangle -->
+        <polygon id="tri-orig" points="60,180 160,180 60,80" fill="rgba(94,196,176,0.15)" stroke="var(--teal)" stroke-width="2"/>
+        <text x="90" y="200" fill="var(--teal)" font-family="JetBrains Mono" font-size="11">Original</text>
+        <!-- Scaled triangle (dynamically positioned) -->
+        <polygon id="tri-scaled" points="" fill="rgba(200,169,110,0.15)" stroke="var(--gold)" stroke-width="2"/>
+        <text id="scaled-label" x="" y="" fill="var(--gold)" font-family="JetBrains Mono" font-size="11">Scaled (k=1.5)</text>
+        <!-- Arrow indicating k -->
+        <line id="k-line" x1="" y1="" x2="" y2="" stroke="var(--rose)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text id="k-text" x="" y="" fill="var(--rose)" font-family="JetBrains Mono" font-size="10">k</text>
+      </svg>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Always similar shapes -->
+    <div class="card">
+      <div class="card-title">Which shapes are always similar?</div>
+      <div style="font-size:0.9rem; line-height:1.8; color:var(--muted);">
+        <div style="margin-bottom:12px;">
+          <span class="tag tag-teal">✓ Always</span>
+          <span style="color:var(--text)">Any two squares, any two equilateral triangles, any two circles, any two cubes</span><br>
+          <span style="font-size:0.8rem; margin-left:6px;">→ These have only one "shape" — all sides/angles are fixed by one parameter</span>
+        </div>
+        <div>
+          <span class="tag tag-rose">✗ Not always</span>
+          <span style="color:var(--text)">Rectangles, isosceles triangles, cylinders</span><br>
+          <span style="font-size:0.8rem; margin-left:6px;">→ These have two independent parameters (e.g. width &amp; height for a rectangle), so side ratios can differ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scale factor calculator -->
+    <div class="demo-panel">
+      <div class="demo-title">▶ Find Scale Factor &amp; Missing Side</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:16px;">Enter a known pair of corresponding sides to find k, then enter another side on the original to find the enlarged version.</p>
+      <div class="input-row">
+        <span class="input-label">Original side</span>
+        <input type="number" id="sf-orig" value="6" min="0.01" step="0.1">
+        <span class="input-label">Enlarged side</span>
+        <input type="number" id="sf-enl" value="9" min="0.01" step="0.1">
+      </div>
+      <div class="input-row">
+        <span class="input-label">Find enlarged version of</span>
+        <input type="number" id="sf-unknown" value="4" min="0.01" step="0.1">
+        <button class="btn" onclick="doScaleFactor()">Calculate</button>
+      </div>
+      <div class="result-box" id="sf-result"></div>
+    </div>
+
+    <!-- Summary table -->
+    <div class="card" style="margin-top:24px;">
+      <div class="card-title">Summary — Ratios in Geometry</div>
+      <table>
+        <thead><tr><th>Relationship</th><th>Side ratios</th><th>Angles</th><th>Scale factor k</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--teal)">Congruent</td><td>All 1 : 1</td><td>All equal</td><td style="color:var(--teal)">k = 1</td></tr>
+          <tr><td style="color:var(--gold)">Similar (enlargement)</td><td>All k : 1</td><td>All equal</td><td style="color:var(--gold)">k &gt; 1</td></tr>
+          <tr><td style="color:var(--lavender)">Similar (reduction)</td><td>All k : 1</td><td>All equal</td><td style="color:var(--lavender)">0 &lt; k &lt; 1</td></tr>
+          <tr><td style="color:var(--rose)">Neither</td><td>Different ratios</td><td>May differ</td><td style="color:var(--rose)">n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon">🔗</span>
+      <strong>The big picture:</strong> All ratio methods — simplifying (finding HCF), unitary form (dividing by first part), sharing (dividing by total parts) — are the same underlying operation: <strong>scaling both sides by a common factor</strong>. In geometry, that scaling factor becomes the scale factor k of an enlargement. Ratios are not a separate topic — they're the language of proportional thinking throughout mathematics.
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 6: PRACTICE PROBLEMS
+  ========================================================= -->
+  <section class="section" id="tab-problems">
+    <h2 class="section-title">Practice Problems</h2>
+    <p class="section-desc">Work through these problems on similar triangles and ratios. Select a type, then reveal the solution step by step. For more problems see <a href="https://www.mathsisfun.com/geometry/triangles-similar-finding.html" target="_blank" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(200,169,110,0.4);">MathIsFun — Finding Similar Triangles ↗</a></p>
+
+    <!-- Problem type selector -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px;">
+      <button class="btn" onclick="loadProblem('aa')" id="pb-aa">AA Similarity</button>
+      <button class="btn btn-teal" onclick="loadProblem('sas')" id="pb-sas">SAS Similarity</button>
+      <button class="btn" style="background:var(--lavender);color:#0e0f14;" onclick="loadProblem('sss')" id="pb-sss">SSS Similarity</button>
+      <button class="btn" style="background:var(--rose);color:#0e0f14;" onclick="loadProblem('missing')" id="pb-missing">Find Missing Side</button>
+      <button class="btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" onclick="loadProblem('ratio')" id="pb-ratio">Ratio from Sides</button>
+    </div>
+
+    <!-- Problem display -->
+    <div class="card" id="problem-card" style="min-height:260px;">
+      <div class="card-title" id="prob-type-label">Select a problem type above</div>
+
+      <!-- SVG diagram -->
+      <div style="display:flex; justify-content:center; margin:20px 0;" id="prob-diagram">
+        <svg width="460" height="160" viewBox="0 0 460 160" id="prob-svg">
+          <text x="230" y="85" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="13">← choose a problem type</text>
+        </svg>
+      </div>
+
+      <!-- Question text -->
+      <div id="prob-question" style="font-size:0.95rem; line-height:1.8; color:var(--text); margin-bottom:20px; min-height:40px;"></div>
+
+      <!-- Step reveal -->
+      <div id="prob-steps" style="display:none;">
+        <div class="divider" style="margin:16px 0;"></div>
+        <div class="card-title" style="color:var(--teal); margin-bottom:12px;">Solution Steps</div>
+        <div id="step-container"></div>
+        <div id="step-controls" style="display:flex; gap:10px; margin-top:16px; align-items:center;">
+          <button class="btn btn-teal" id="next-step-btn" onclick="nextStep()">Show Step 1</button>
+          <span id="step-counter" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;" id="prob-actions" style="display:none;">
+        <button class="btn" onclick="revealAll()" id="reveal-btn" style="display:none;">Reveal All</button>
+        <button class="btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" onclick="loadProblem(currentProbType)">New Problem ↺</button>
+      </div>
+    </div>
+
+    <!-- Reference box -->
+    <div class="callout" style="margin-top:24px;">
+      <span class="callout-icon">📖</span>
+      <strong>Similarity conditions (for triangles):</strong>
+      &nbsp;<span class="tag tag-gold">AA</span> two angles equal →
+      &nbsp;<span class="tag tag-teal">SAS</span> two sides in same ratio + included angle equal →
+      &nbsp;<span class="tag tag-lav">SSS</span> all three sides in same ratio.
+      Note: for congruence (SSS/SAS/AAS/RHS) ALL sides must have ratio <span class="mono" style="color:var(--teal)">1 : 1</span>.
+    </div>
+
+    <!-- Link banner -->
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-top:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:4px;">Further Practice</div>
+        <div style="font-size:0.9rem; color:var(--muted); line-height:1.6;">More worked examples and interactive problems on finding similar triangles using AA, SAS and SSS.</div>
+      </div>
+      <a href="https://www.mathsisfun.com/geometry/triangles-similar-finding.html" target="_blank"
+         style="display:inline-block; background:var(--gold); color:#0e0f14; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; padding:10px 22px; border-radius:8px; text-decoration:none; white-space:nowrap; transition:background 0.2s;"
+         onmouseover="this.style.background='#e8c98e'" onmouseout="this.style.background='#c8a96e'">
+        MathIsFun ↗
+      </a>
+    </div>
+  </section>
+
+</div><!-- /wrapper -->
+
+<script>
+// ---- Utility ----
+function gcd(a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+function round2(x) { return Math.round(x * 1000) / 1000; }
+
+// ---- Tab switching ----
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const tabs = ['simplify','unitary','sharing','congruence','similarity','problems'];
+  document.querySelectorAll('.nav-tab')[tabs.indexOf(id)].classList.add('active');
+}
+
+// ---- Simplify ----
+function doSimplify() {
+  const a = parseFloat(document.getElementById('s-a').value);
+  const b = parseFloat(document.getElementById('s-b').value);
+  if (!a || !b || a <= 0 || b <= 0) return;
+
+  // Work with integers for HCF
+  const scale = 1000;
+  const ai = Math.round(a * scale), bi = Math.round(b * scale);
+  const h = gcd(ai, bi);
+  const sa = ai / h, sb = bi / h;
+
+  const total = a + b;
+  const pctA = (a / total * 100).toFixed(1);
+  const pctB = (b / total * 100).toFixed(1);
+
+  const bar = document.getElementById('simplify-bar');
+  bar.style.display = 'flex';
+  const barA = document.getElementById('sb-a');
+  const barB = document.getElementById('sb-b');
+  barA.style.width = pctA + '%';
+  barB.style.width = pctB + '%';
+  barA.textContent = a > 3 ? a : '';
+  barB.textContent = b > 3 ? b : '';
+
+  const hcfReal = gcd(Math.round(a*100), Math.round(b*100)) / 100;
+
+  const res = document.getElementById('simplify-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    <span class="highlight">${a} : ${b}</span><br>
+    HCF(${a}, ${b}) = <span class="teal">${hcfReal}</span><br>
+    ${a} ÷ ${hcfReal} = ${round2(a/hcfReal)} &nbsp; | &nbsp; ${b} ÷ ${hcfReal} = ${round2(b/hcfReal)}<br>
+    Simplest form: <span class="highlight">${round2(a/hcfReal)} : ${round2(b/hcfReal)}</span>
+    &nbsp; (as fraction: ${round2(a/hcfReal)}/${round2(a/hcfReal + b/hcfReal)})
+  `;
+}
+
+// ---- Unitary ----
+function doUnitary() {
+  const a = parseFloat(document.getElementById('u-a').value);
+  const b = parseFloat(document.getElementById('u-b').value);
+  if (!a || !b || a <= 0 || b <= 0) return;
+  const n = round2(b / a);
+  const res = document.getElementById('unitary-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    <span class="highlight">${a} : ${b}</span><br>
+    Divide both by ${a}:<br>
+    ${a} ÷ ${a} = <span class="teal">1</span> &nbsp; | &nbsp; ${b} ÷ ${a} = <span class="teal">${n}</span><br>
+    Unitary form: <span class="highlight">1 : ${n}</span>
+    ${n < 1 ? ' &nbsp; (second is smaller — ratio favours first part)' : n > 1 ? ' &nbsp; (second is larger)' : ' &nbsp; (equal parts — 1 : 1)'}
+  `;
+}
+
+function doThreePart() {
+  const a = parseFloat(document.getElementById('t-a').value);
+  const b = parseFloat(document.getElementById('t-b').value);
+  const c = parseFloat(document.getElementById('t-c').value);
+  if (!a || !b || !c) return;
+  const res = document.getElementById('threepart-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    <span class="highlight">${a} : ${b} : ${c}</span><br>
+    Divide all by ${a}:<br>
+    = <span class="highlight">1 : ${round2(b/a)} : ${round2(c/a)}</span>
+  `;
+}
+
+// ---- Sharing ----
+function doShare() {
+  const total = parseFloat(document.getElementById('sh-total').value);
+  const a = parseFloat(document.getElementById('sh-a').value);
+  const b = parseFloat(document.getElementById('sh-b').value);
+  if (!total || !a || !b) return;
+  const parts = a + b;
+  const one = total / parts;
+  const partA = round2(one * a);
+  const partB = round2(one * b);
+
+  const bar = document.getElementById('share-bar');
+  bar.style.display = 'flex';
+  document.getElementById('sbar-a').style.width = (a / parts * 100) + '%';
+  document.getElementById('sbar-b').style.width = (b / parts * 100) + '%';
+  document.getElementById('sbar-a').textContent = partA;
+  document.getElementById('sbar-b').textContent = partB;
+
+  const res = document.getElementById('share-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    Total shares: ${a} + ${b} = <span class="highlight">${parts}</span><br>
+    Value of 1 share: ${total} ÷ ${parts} = <span class="highlight">${round2(one)}</span><br>
+    Part A (${a} shares): ${a} × ${round2(one)} = <span class="teal">${partA}</span><br>
+    Part B (${b} shares): ${b} × ${round2(one)} = <span class="rose">${partB}</span><br>
+    Check: ${partA} + ${partB} = <span class="highlight">${round2(partA + partB)}</span> ${Math.abs(partA+partB-total)<0.01?'✓':'⚠ rounding'}
+  `;
+}
+
+// ---- Grid ----
+function doGrid() {
+  const targetShaded = parseInt(document.getElementById('g-shaded').value);
+  const targetUnshaded = parseInt(document.getElementById('g-unshaded').value);
+  const totalSquares = 24; // 4×6
+  const currentShaded = 4; // 1:5 ratio, 4+20=24
+
+  const targetTotal = targetShaded + targetUnshaded;
+  // Need shaded/total = targetShaded/targetTotal
+  const neededShaded = Math.round(totalSquares * targetShaded / targetTotal);
+  const extra = neededShaded - currentShaded;
+
+  const vis = document.getElementById('grid-vis');
+  vis.innerHTML = '';
+  for (let i = 0; i < totalSquares; i++) {
+    const sq = document.createElement('div');
+    sq.className = 'grid-square ' + (i < neededShaded ? 'sq-shaded' : 'sq-unshaded');
+    vis.appendChild(sq);
+  }
+
+  const res = document.getElementById('grid-result');
+  res.classList.add('show');
+  res.innerHTML = extra >= 0
+    ? `To get <span class="highlight">${targetShaded} : ${targetUnshaded}</span> from 24 squares:<br>Need <span class="teal">${neededShaded}</span> shaded squares.<br>Currently have ${currentShaded} → shade <span class="highlight">${extra} more</span>`
+    : `<span class="rose">Cannot achieve ${targetShaded} : ${targetUnshaded} with 24 squares using only whole squares</span>`;
+}
+
+// Initialise grid on load
+window.addEventListener('load', () => {
+  const vis = document.getElementById('grid-vis');
+  for (let i = 0; i < 24; i++) {
+    const sq = document.createElement('div');
+    sq.className = 'grid-square ' + (i < 4 ? 'sq-shaded' : 'sq-unshaded');
+    vis.appendChild(sq);
+  }
+  updateScaleSVG();
+});
+
+// ---- Congruence checker ----
+function checkCongruence() {
+  const sides = [
+    [parseFloat(document.getElementById('ca1').value), parseFloat(document.getElementById('cb1').value), parseFloat(document.getElementById('cc1').value)],
+    [parseFloat(document.getElementById('ca2').value), parseFloat(document.getElementById('cb2').value), parseFloat(document.getElementById('cc2').value)]
+  ];
+  // Sort sides for comparison
+  const s1 = [...sides[0]].sort((a,b)=>a-b);
+  const s2 = [...sides[1]].sort((a,b)=>a-b);
+
+  const ratios = s1.map((s, i) => round2(s2[i] / s));
+  const allEqual = ratios.every(r => Math.abs(r - ratios[0]) < 0.001);
+  const k = ratios[0];
+  const isCongruent = allEqual && Math.abs(k - 1) < 0.001;
+  const isSimilar = allEqual && !isCongruent;
+
+  const res = document.getElementById('congruence-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    Side ratios (B÷A, sorted): <span class="highlight">${ratios[0]} : ${ratios[1]} : ${ratios[2]}</span><br>
+    All equal? <span class="${allEqual?'teal':'rose'}">${allEqual?'Yes':'No'}</span><br>
+    ${isCongruent ? '<span class="teal">▶ CONGRUENT — ratio 1 : 1 on all sides, k = 1</span>' :
+      isSimilar ? `<span class="highlight">▶ SIMILAR — scale factor k = ${k}</span>` :
+      '<span class="rose">▶ NEITHER congruent nor similar (side ratios differ)</span>'}
+  `;
+}
+
+// ---- Scale Factor ----
+function doScaleFactor() {
+  const orig = parseFloat(document.getElementById('sf-orig').value);
+  const enl = parseFloat(document.getElementById('sf-enl').value);
+  const unknown = parseFloat(document.getElementById('sf-unknown').value);
+  const k = round2(enl / orig);
+  const result = round2(unknown * k);
+
+  const res = document.getElementById('sf-result');
+  res.classList.add('show');
+  res.innerHTML = `
+    k = ${enl} ÷ ${orig} = <span class="highlight">${k}</span><br>
+    Enlarged side = ${unknown} × ${k} = <span class="teal">${result}</span>
+    ${k > 1 ? ' &nbsp;(enlargement)' : k < 1 ? ' &nbsp;(reduction)' : ' &nbsp;(congruent)'}
+  `;
+}
+
+// ---- Scale factor SVG animation ----
+function updateScaleSVG() {
+  const k = parseFloat(document.getElementById('sf-slider').value);
+  document.getElementById('sf-display').textContent = 'k = ' + k.toFixed(1);
+
+  // Original triangle: (60,180), (160,180), (60,80) — base 100, height 100
+  const ox = 60, oy = 180;
+  const origPts = [[60,180],[160,180],[60,80]];
+
+  // Scale from origin point (60, 180)
+  const scaledPts = origPts.map(([x, y]) => [
+    ox + (x - ox) * k,
+    oy + (y - oy) * k
+  ]);
+
+  const ptsStr = scaledPts.map(p => p.join(',')).join(' ');
+  document.getElementById('tri-scaled').setAttribute('points', ptsStr);
+
+  // Label
+  const lbl = document.getElementById('scaled-label');
+  lbl.setAttribute('x', scaledPts[1][0] - 10);
+  lbl.setAttribute('y', scaledPts[1][1] + 14);
+  lbl.textContent = `Scaled (k=${k.toFixed(1)})`;
+
+  // Dashed line showing k along hypotenuse
+  const kLine = document.getElementById('k-line');
+  kLine.setAttribute('x1', origPts[2][0]);
+  kLine.setAttribute('y1', origPts[2][1]);
+  kLine.setAttribute('x2', scaledPts[2][0]);
+  kLine.setAttribute('y2', scaledPts[2][1]);
+
+  const kTxt = document.getElementById('k-text');
+  kTxt.setAttribute('x', (origPts[2][0] + scaledPts[2][0]) / 2 + 4);
+  kTxt.setAttribute('y', (origPts[2][1] + scaledPts[2][1]) / 2);
+}
+
+// =============================================
+// PRACTICE PROBLEMS ENGINE
+// =============================================
+let currentProbType = null;
+let currentSteps = [];
+let currentStepIndex = 0;
+
+// Problem banks — each entry has: title, svg (function name), question, steps[]
+const problemBanks = {
+
+  aa: [
+    {
+      title: 'AA Similarity',
+      question: 'Triangle ABC has angles 72°, 35° and a third angle. Triangle PQR has angles 72° and 35°. Are they similar?',
+      svgFn: drawAA1,
+      steps: [
+        'In △ABC: angles are 72°, 35°, and 180° − (72° + 35°) = <strong style="color:var(--gold)">73°</strong>.',
+        'In △PQR: angles are 72°, 35°, and 180° − (72° + 35°) = <strong style="color:var(--gold)">73°</strong>.',
+        'All three angles match: 72° = 72°, 35° = 35°, 73° = 73°.',
+        '<span style="color:var(--teal)">▶ YES — similar by AA (two angles equal ⟹ all three equal).</span>'
+      ]
+    },
+    {
+      title: 'AA Similarity',
+      question: 'A tree casts a 6 m shadow. A 1.5 m stick casts a 2 m shadow at the same time of day. How tall is the tree?',
+      svgFn: drawAA2,
+      steps: [
+        'Both the tree and stick make right angles with the ground, and the sun angle is the same → <strong style="color:var(--gold)">AA similarity</strong>.',
+        'The two triangles are similar, so corresponding sides are in the same ratio.',
+        'Shadow ratio: 6 ÷ 2 = <strong style="color:var(--gold)">3</strong>. This is the scale factor k = 3.',
+        'Height of tree = 1.5 × 3 = <span style="color:var(--teal)">4.5 m</span>.'
+      ]
+    }
+  ],
+
+  sas: [
+    {
+      title: 'SAS Similarity',
+      question: 'In △ABC: AB = 21, AC = 15, ∠A = 75°. In △XYZ: XY = 14, XZ = 10, ∠X = 75°. Are they similar?',
+      svgFn: drawSAS1,
+      steps: [
+        'Check side ratios: AB/XY = 21/14 = <strong style="color:var(--gold)">3/2</strong>.',
+        'AC/XZ = 15/10 = <strong style="color:var(--gold)">3/2</strong>.',
+        'The ratios are equal, and the <strong>included angles</strong> are both 75°.',
+        '<span style="color:var(--teal)">▶ YES — similar by SAS. Scale factor k = 3/2 = 1.5.</span>'
+      ]
+    },
+    {
+      title: 'SAS Similarity',
+      question: 'In △PQR: PQ = 8, PR = 6, ∠P = 50°. In △STU: ST = 4, SU = 3, ∠S = 50°. Are they similar?',
+      svgFn: drawSAS2,
+      steps: [
+        'Check side ratios: PQ/ST = 8/4 = <strong style="color:var(--gold)">2</strong>.',
+        'PR/SU = 6/3 = <strong style="color:var(--gold)">2</strong>.',
+        'Both ratios equal 2, and the included angles are both 50°.',
+        '<span style="color:var(--teal)">▶ YES — similar by SAS. Scale factor k = 2.</span>'
+      ]
+    }
+  ],
+
+  sss: [
+    {
+      title: 'SSS Similarity',
+      question: 'Triangle 1 has sides 4, 6, 8. Triangle 2 has sides 5, 7.5, 10. Are they similar?',
+      svgFn: drawSSS1,
+      steps: [
+        'Sort both triangles by side length: (4,6,8) and (5,7.5,10).',
+        'Ratio of smallest sides: 5/4 = <strong style="color:var(--gold)">1.25</strong>.',
+        'Ratio of middle sides: 7.5/6 = <strong style="color:var(--gold)">1.25</strong>.',
+        'Ratio of largest sides: 10/8 = <strong style="color:var(--gold)">1.25</strong>.',
+        '<span style="color:var(--teal)">▶ YES — all three ratios equal 1.25, so similar by SSS. k = 5/4.</span>'
+      ]
+    },
+    {
+      title: 'SSS Similarity',
+      question: 'Triangle 1 has sides 3, 4, 5. Triangle 2 has sides 6, 8, 10. Are they similar? Are they congruent?',
+      svgFn: drawSSS2,
+      steps: [
+        'Ratios: 6/3 = <strong style="color:var(--gold)">2</strong>, 8/4 = <strong style="color:var(--gold)">2</strong>, 10/5 = <strong style="color:var(--gold)">2</strong>.',
+        'All three ratios are equal → <span style="color:var(--teal)">similar by SSS, scale factor k = 2</span>.',
+        'Since k ≠ 1, they are <span style="color:var(--rose)">NOT congruent</span>.',
+        'Note: (3,4,5) is a right-angled triangle (Pythagorean triple). So is (6,8,10)!'
+      ]
+    }
+  ],
+
+  missing: [
+    {
+      title: 'Find the Missing Side',
+      question: 'Two similar triangles. Triangle A has sides 9, 12, x. Triangle B has sides 6, 8, 5. Find x.',
+      svgFn: drawMissing1,
+      steps: [
+        'First find scale factor using known corresponding sides: 9/6 = <strong style="color:var(--gold)">1.5</strong>. Check: 12/8 = 1.5 ✓.',
+        'So k = 1.5. The side 5 in triangle B corresponds to x in triangle A.',
+        'x = 5 × 1.5 = <span style="color:var(--teal)">7.5</span>.',
+        'Always verify: all three ratios should equal k → 9/6 = 12/8 = 7.5/5 = 1.5 ✓'
+      ]
+    },
+    {
+      title: 'Find the Missing Side',
+      question: 'Two similar triangles. Triangle A has sides 10, 15, 20. Triangle B has sides x, 9, 12. Find x.',
+      svgFn: drawMissing2,
+      steps: [
+        'Find k using 15 and 9: k = 9/15 = <strong style="color:var(--gold)">0.6</strong>. Check: 12/20 = 0.6 ✓.',
+        'k = 0.6 (this is a reduction, Triangle B is smaller).',
+        'x corresponds to 10 in Triangle A: x = 10 × 0.6 = <span style="color:var(--teal)">6</span>.',
+        'Check: 6/10 = 9/15 = 12/20 = 0.6 ✓'
+      ]
+    }
+  ],
+
+  ratio: [
+    {
+      title: 'Ratio from Sides',
+      question: 'Triangle A: sides 12 and 18. Triangle B: corresponding sides 8 and 12. (a) Find the scale factor. (b) Express as a simplified ratio.',
+      svgFn: drawRatio1,
+      steps: [
+        'Scale factor k = 8/12 = <strong style="color:var(--gold)">2/3</strong>. Check: 12/18 = 2/3 ✓.',
+        'As a ratio (B : A): 8 : 12 = <strong style="color:var(--gold)">2 : 3</strong> (divide both by HCF = 4).',
+        'So each side in B is 2/3 the corresponding side in A.',
+        '<span style="color:var(--teal)">Scale factor k = 2/3. Ratio of sides = 2 : 3.</span>'
+      ]
+    },
+    {
+      title: 'Ratio from Sides',
+      question: 'Two similar rectangles. Rectangle 1 is 15 cm × 10 cm. Rectangle 2 is 6 cm × ? cm. Find the missing dimension and the ratio of areas.',
+      svgFn: drawRatio2,
+      steps: [
+        'Scale factor: 6/15 = <strong style="color:var(--gold)">0.4</strong>. So k = 2/5.',
+        'Missing side = 10 × 0.4 = <span style="color:var(--teal)">4 cm</span>.',
+        'Area ratio = k² = (2/5)² = <strong style="color:var(--gold)">4/25</strong>.',
+        'Area 1 = 150 cm². Area 2 = 150 × 4/25 = <span style="color:var(--teal)">24 cm²</span>. Check: 6 × 4 = 24 ✓'
+      ]
+    }
+  ]
+};
+
+// ---- SVG drawing functions ----
+function triSVG(pts, col, labels, ticks, angleVerts) {
+  // pts: [[x,y],…], col: stroke colour, labels: ['A','B','C'], ticks: [0,1,2] sides to tick, angleVerts: indices
+  const [A, B, C] = pts;
+  let s = `<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="${col}22" stroke="${col}" stroke-width="2"/>`;
+  // vertices
+  pts.forEach(([x,y], i) => {
+    const vc = angleVerts && angleVerts.includes(i) ? '#e07070' : col;
+    s += `<circle cx="${x}" cy="${y}" r="9" fill="${vc}"/>`;
+    s += `<text x="${x}" y="${y+4}" text-anchor="middle" fill="#0e0f14" font-family="JetBrains Mono" font-size="9" font-weight="700">${labels[i]}</text>`;
+  });
+  return s;
+}
+
+function midpoint(p1, p2) { return [(p1[0]+p2[0])/2, (p1[1]+p2[1])/2]; }
+
+function tickMark(p1, p2, n=1, col='#c8a96e') {
+  const [mx, my] = midpoint(p1, p2);
+  const dx = p2[0]-p1[0], dy = p2[1]-p1[1];
+  const len = Math.sqrt(dx*dx+dy*dy);
+  const nx = -dy/len*6, ny = dx/len*6;
+  let s = '';
+  const offsets = n===1 ? [0] : n===2 ? [-3,3] : [-5,0,5];
+  offsets.forEach(o => {
+    const ox = dx/len*o, oy = dy/len*o;
+    s += `<line x1="${mx+nx+ox}" y1="${my+ny+oy}" x2="${mx-nx+ox}" y2="${my-ny+oy}" stroke="${col}" stroke-width="2"/>`;
+  });
+  return s;
+}
+
+function sideLabelSVG(p1, p2, label, col='#8a8899', offset=12) {
+  const [mx, my] = midpoint(p1, p2);
+  const dx = p2[0]-p1[0], dy = p2[1]-p1[1];
+  const len = Math.sqrt(dx*dx+dy*dy);
+  const nx = -dy/len*offset, ny = dx/len*offset;
+  return `<text x="${mx+nx}" y="${my+ny+4}" text-anchor="middle" fill="${col}" font-family="JetBrains Mono" font-size="10">${label}</text>`;
+}
+
+function drawAA1(svg) {
+  svg.innerHTML = `
+    ${triSVG([[60,140],[160,140],[100,30]],'#5ec4b0',['A','B','C'],[],[0,1])}
+    ${sideLabelSVG([60,140],[160,140],'35°','#e07070')}
+    ${sideLabelSVG([160,140],[100,30],'73°','#c8a96e')}
+    <text x="75" y="50" fill="#5ec4b0" font-family="JetBrains Mono" font-size="10">72°</text>
+    ${triSVG([[260,140],[360,140],[310,60]],'#c8a96e',['P','Q','R'],[],[0,1])}
+    <text x="275" y="80" fill="#5ec4b0" font-family="JetBrains Mono" font-size="10">72°</text>
+    <text x="348" y="130" fill="#e07070" font-family="JetBrains Mono" font-size="10">35°</text>
+    <text x="200" y="95" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="18">~</text>
+    <text x="200" y="115" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="9">similar?</text>`;
+}
+
+function drawAA2(svg) {
+  svg.innerHTML = `
+    <polygon points="40,140 40,60 180,140" fill="rgba(94,196,176,0.1)" stroke="var(--teal)" stroke-width="2"/>
+    <polyline points="40,125 52,125 52,140" fill="none" stroke="var(--teal)" stroke-width="1.5"/>
+    <text x="40" y="155" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="9">shadow 6m</text>
+    ${sideLabelSVG([40,60],[40,140],'tree?','#c8a96e',16)}
+    <polygon points="260,140 260,115 310,140" fill="rgba(200,169,110,0.1)" stroke="var(--gold)" stroke-width="2"/>
+    <polyline points="260,130 268,130 268,140" fill="none" stroke="var(--gold)" stroke-width="1.5"/>
+    <text x="285" y="155" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="9">shadow 2m</text>
+    ${sideLabelSVG([260,115],[260,140],'1.5m','#c8a96e',16)}
+    <text x="200" y="100" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="10">same sun angle → AA</text>`;
+}
+
+function drawSAS1(svg) {
+  svg.innerHTML = `
+    ${triSVG([[50,140],[170,140],[80,40]],'#c8a96e',['A','B','C'],[],[0])}
+    ${sideLabelSVG([50,140],[170,140],'AB=21','#c8a96e')}
+    ${sideLabelSVG([50,140],[80,40],'AC=15','#c8a96e',16)}
+    <text x="75" y="132" fill="#e07070" font-family="JetBrains Mono" font-size="10">75°</text>
+    ${triSVG([[260,140],[360,140],[280,65]],'#9b8ec4',['X','Y','Z'],[],[0])}
+    ${sideLabelSVG([260,140],[360,140],'XY=14','#9b8ec4')}
+    ${sideLabelSVG([260,140],[280,65],'XZ=10','#9b8ec4',16)}
+    <text x="285" y="132" fill="#e07070" font-family="JetBrains Mono" font-size="10">75°</text>`;
+}
+
+function drawSAS2(svg) {
+  svg.innerHTML = `
+    ${triSVG([[50,140],[160,140],[90,50]],'#c8a96e',['P','Q','R'],[],[0])}
+    ${sideLabelSVG([50,140],[160,140],'PQ=8','#c8a96e')}
+    ${sideLabelSVG([50,140],[90,50],'PR=6','#c8a96e',16)}
+    <text x="72" y="132" fill="#e07070" font-family="JetBrains Mono" font-size="10">50°</text>
+    ${triSVG([[265,140],[340,140],[282,87]],'#5ec4b0',['S','T','U'],[],[0])}
+    ${sideLabelSVG([265,140],[340,140],'ST=4','#5ec4b0')}
+    ${sideLabelSVG([265,140],[282,87],'SU=3','#5ec4b0',16)}
+    <text x="282" y="132" fill="#e07070" font-family="JetBrains Mono" font-size="10">50°</text>`;
+}
+
+function drawSSS1(svg) {
+  svg.innerHTML = `
+    ${triSVG([[40,140],[160,140],[80,50]],'#5ec4b0',['','',''],[])}
+    ${sideLabelSVG([40,140],[160,140],'8','#5ec4b0')}
+    ${sideLabelSVG([40,140],[80,50],'4','#5ec4b0',14)}
+    ${sideLabelSVG([160,140],[80,50],'6','#5ec4b0',14)}
+    ${triSVG([[240,140],[380,140],[292,48]],'#c8a96e',['','',''],[])}
+    ${sideLabelSVG([240,140],[380,140],'10','#c8a96e')}
+    ${sideLabelSVG([240,140],[292,48],'5','#c8a96e',14)}
+    ${sideLabelSVG([380,140],[292,48],'7.5','#c8a96e',14)}`;
+}
+
+function drawSSS2(svg) {
+  svg.innerHTML = `
+    ${triSVG([[60,140],[160,140],[60,40]],'#5ec4b0',['','',''],[])}
+    ${sideLabelSVG([60,140],[160,140],'4','#5ec4b0')}
+    ${sideLabelSVG([60,140],[60,40],'3','#5ec4b0',14)}
+    ${sideLabelSVG([160,140],[60,40],'5','#5ec4b0',14)}
+    <polyline points="60,123 74,123 74,140" fill="none" stroke="var(--teal)" stroke-width="1.5"/>
+    ${triSVG([[240,140],[440,140],[240,40]],'#c8a96e',['','',''],[])}
+    ${sideLabelSVG([240,140],[440,140],'8','#c8a96e')}
+    ${sideLabelSVG([240,140],[240,40],'6','#c8a96e',14)}
+    ${sideLabelSVG([440,140],[240,40],'10','#c8a96e',14)}
+    <polyline points="240,117 257,117 257,140" fill="none" stroke="var(--gold)" stroke-width="1.5"/>`;
+}
+
+function drawMissing1(svg) {
+  svg.innerHTML = `
+    ${triSVG([[50,140],[170,140],[100,40]],'#c8a96e',['','',''],[])}
+    ${sideLabelSVG([50,140],[170,140],'12','#c8a96e')}
+    ${sideLabelSVG([50,140],[100,40],'9','#c8a96e',14)}
+    ${sideLabelSVG([170,140],[100,40],'x','#e07070',14)}
+    ${triSVG([[250,140],[370,140],[300,60]],'#5ec4b0',['','',''],[])}
+    ${sideLabelSVG([250,140],[370,140],'8','#5ec4b0')}
+    ${sideLabelSVG([250,140],[300,60],'6','#5ec4b0',14)}
+    ${sideLabelSVG([370,140],[300,60],'5','#5ec4b0',14)}
+    <text x="215" y="95" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="18">~</text>`;
+}
+
+function drawMissing2(svg) {
+  svg.innerHTML = `
+    ${triSVG([[40,140],[180,140],[95,40]],'#c8a96e',['','',''],[])}
+    ${sideLabelSVG([40,140],[180,140],'20','#c8a96e')}
+    ${sideLabelSVG([40,140],[95,40],'10','#c8a96e',14)}
+    ${sideLabelSVG([180,140],[95,40],'15','#c8a96e',14)}
+    ${triSVG([[245,140],[350,140],[290,60]],'#5ec4b0',['','',''],[])}
+    ${sideLabelSVG([245,140],[350,140],'12','#5ec4b0')}
+    ${sideLabelSVG([245,140],[290,60],'x','#e07070',14)}
+    ${sideLabelSVG([350,140],[290,60],'9','#5ec4b0',14)}
+    <text x="215" y="95" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="18">~</text>`;
+}
+
+function drawRatio1(svg) {
+  svg.innerHTML = `
+    ${triSVG([[50,140],[180,140],[105,40]],'#c8a96e',['','',''],[])}
+    ${sideLabelSVG([50,140],[180,140],'18','#c8a96e')}
+    ${sideLabelSVG([50,140],[105,40],'12','#c8a96e',14)}
+    ${triSVG([[250,140],[350,140],[293,60]],'#5ec4b0',['','',''],[])}
+    ${sideLabelSVG([250,140],[350,140],'12','#5ec4b0')}
+    ${sideLabelSVG([250,140],[293,60],'8','#5ec4b0',14)}
+    <text x="215" y="100" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="9">ratio?</text>`;
+}
+
+function drawRatio2(svg) {
+  svg.innerHTML = `
+    <rect x="30" y="60" width="150" height="100" fill="rgba(200,169,110,0.1)" stroke="var(--gold)" stroke-width="2" rx="4"/>
+    <text x="105" y="115" text-anchor="middle" fill="var(--gold)" font-family="JetBrains Mono" font-size="10">15 × 10</text>
+    <rect x="250" y="80" width="90" height="60" fill="rgba(94,196,176,0.1)" stroke="var(--teal)" stroke-width="2" rx="4"/>
+    <text x="295" y="115" text-anchor="middle" fill="var(--teal)" font-family="JetBrains Mono" font-size="10">6 × ?</text>
+    <text x="215" y="115" text-anchor="middle" fill="var(--muted)" font-family="JetBrains Mono" font-size="18">~</text>`;
+}
+
+// ---- Problem loading ----
+function loadProblem(type) {
+  currentProbType = type;
+  currentStepIndex = 0;
+  const bank = problemBanks[type];
+  const prob = bank[Math.floor(Math.random() * bank.length)];
+  currentSteps = prob.steps;
+
+  document.getElementById('prob-type-label').textContent = prob.title;
+  document.getElementById('prob-question').innerHTML = prob.question;
+
+  // Draw SVG
+  const svg = document.getElementById('prob-svg');
+  svg.setAttribute('viewBox','0 0 460 160');
+  prob.svgFn(svg);
+
+  // Reset steps
+  document.getElementById('step-container').innerHTML = '';
+  document.getElementById('prob-steps').style.display = 'block';
+  document.getElementById('prob-actions').style.display = 'flex';
+  document.getElementById('reveal-btn').style.display = 'inline-block';
+  document.getElementById('next-step-btn').textContent = 'Show Step 1';
+  document.getElementById('step-counter').textContent = `0 / ${currentSteps.length} steps`;
+}
+
+function nextStep() {
+  if (currentStepIndex >= currentSteps.length) return;
+  const container = document.getElementById('step-container');
+  const div = document.createElement('div');
+  div.style.cssText = 'padding:10px 0; border-bottom:1px solid var(--border); font-size:0.88rem; line-height:1.7; animation:fadeIn 0.3s ease;';
+  div.innerHTML = `<span style="color:var(--gold);font-family:\'JetBrains Mono\',monospace;margin-right:8px;">${currentStepIndex+1}.</span>${currentSteps[currentStepIndex]}`;
+  container.appendChild(div);
+  currentStepIndex++;
+  const btn = document.getElementById('next-step-btn');
+  document.getElementById('step-counter').textContent = `${currentStepIndex} / ${currentSteps.length} steps`;
+  if (currentStepIndex >= currentSteps.length) {
+    btn.textContent = 'Complete ✓';
+    btn.style.background = 'var(--teal)';
+    document.getElementById('reveal-btn').style.display = 'none';
+  } else {
+    btn.textContent = `Show Step ${currentStepIndex+1}`;
+  }
+}
+
+function revealAll() {
+  while (currentStepIndex < currentSteps.length) nextStep();
+}
+
+// =============================================
+// INTERACTIVE CONGRUENCE EXPLORER
+// =============================================
+
+const CONG = {
+  SSS: {
+    label: 'Side · Side · Side',
+    hint: 'All three pairs of corresponding sides are equal. Click <strong>Reveal</strong> to see which sides match.',
+    desc: 'When all three sides of one triangle equal the corresponding sides of the other, the triangles must be congruent. Each colour links a matching pair of sides.',
+    tri1: { pts: [[30,165],[170,165],[80,40]], label: ['A','B','C'] },
+    tri2: { pts: [[300,165],[440,165],[360,40]], label: ['P','Q','R'] },
+    edges: [
+      { tri:0, v:[0,1], group:'AB' }, { tri:1, v:[0,1], group:'AB' },
+      { tri:0, v:[0,2], group:'AC' }, { tri:1, v:[0,2], group:'AC' },
+      { tri:0, v:[1,2], group:'BC' }, { tri:1, v:[1,2], group:'BC' },
+    ],
+    angles: [],
+    angleLabels: [],
+    edgeDesc: 'AB = PQ (teal) · AC = PR (gold) · BC = QR (lavender)'
+  },
+  SAS: {
+    label: 'Side · Angle · Side',
+    hint: 'Two sides and the INCLUDED angle between them are equal. Click <strong>Reveal</strong> to see which elements match.',
+    desc: 'Two pairs of sides are equal AND the angle sandwiched between them is equal. The included angle (∠A = ∠P) is highlighted in rose — it sits between the two known sides.',
+    tri1: { pts: [[30,165],[175,165],[105,40]], label: ['A','B','C'] },
+    tri2: { pts: [[300,165],[445,165],[375,40]], label: ['P','Q','R'] },
+    edges: [
+      { tri:0, v:[0,1], group:'AB' }, { tri:1, v:[0,1], group:'AB' },
+      { tri:0, v:[0,2], group:'AC' }, { tri:1, v:[0,2], group:'AC' },
+      { tri:0, v:[1,2], group:'none' }, { tri:1, v:[1,2], group:'none' },
+    ],
+    angles: [ { tri:0, v:0 }, { tri:1, v:0 } ],
+    angleLabels: ['∠A', '∠P'],
+    edgeDesc: 'AB = PQ (teal) · AC = PR (gold) · ∠A = ∠P (rose vertex — the included angle)'
+  },
+  AAS: {
+    label: 'Angle · Angle · Side',
+    hint: 'Two angles and one corresponding side are equal. Click <strong>Reveal</strong> — remember: knowing two angles fixes the third automatically.',
+    desc: 'Two angle pairs are equal (∠A = ∠P and ∠B = ∠Q, shown in rose). Because angles sum to 180°, the third angle is also determined. One corresponding side length confirms congruence.',
+    tri1: { pts: [[30,165],[185,165],[90,40]], label: ['A','B','C'] },
+    tri2: { pts: [[300,165],[455,165],[360,40]], label: ['P','Q','R'] },
+    edges: [
+      { tri:0, v:[0,2], group:'none' }, { tri:1, v:[0,2], group:'none' },
+      { tri:0, v:[1,2], group:'none' }, { tri:1, v:[1,2], group:'none' },
+      { tri:0, v:[0,1], group:'AB' },  { tri:1, v:[0,1], group:'AB' },
+    ],
+    angles: [
+      { tri:0, v:0 }, { tri:1, v:0 },
+      { tri:0, v:1 }, { tri:1, v:1 },
+    ],
+    angleLabels: ['∠A','∠P','∠B','∠Q'],
+    edgeDesc: '∠A = ∠P · ∠B = ∠Q (both rose) · AB = PQ (teal — the corresponding side)'
+  },
+  RHS: {
+    label: 'Right angle · Hypotenuse · Side',
+    hint: 'Both triangles are right-angled. Click <strong>Reveal</strong> to see the right angles, equal hypotenuses and equal shorter sides.',
+    desc: 'Both have a 90° angle (∠A = ∠P, rose vertices with a corner square). The hypotenuse (opposite the right angle) is equal, plus one other side. Pythagoras then forces the third side to match too.',
+    tri1: { pts: [[30,165],[30,40],[185,165]], label: ['A','B','C'] },
+    tri2: { pts: [[305,165],[305,40],[460,165]], label: ['P','Q','R'] },
+    edges: [
+      { tri:0, v:[0,1], group:'none' },  { tri:1, v:[0,1], group:'none' },
+      { tri:0, v:[0,2], group:'AC' },    { tri:1, v:[0,2], group:'AC' },
+      { tri:0, v:[1,2], group:'hyp' },   { tri:1, v:[1,2], group:'hyp' },
+    ],
+    angles: [ { tri:0, v:0 }, { tri:1, v:0 } ],
+    rightAngles: [ { tri:0, v:0 }, { tri:1, v:0 } ],
+    angleLabels: ['90°','90°'],
+    edgeDesc: 'Hypotenuse BC = QR (gold) · AC = PR (teal) · ∠A = ∠P = 90° (rose + corner □)'
+  }
+};
+
+const GRP_COL = { AB:'#5ec4b0', AC:'#c8a96e', BC:'#9b8ec4', hyp:'#c8a96e', none:'#3a3d4e' };
+
+let currentCond = 'SSS';
+
+function showCond(cond) {
+  currentCond = cond;
+  ['SSS','SAS','AAS','RHS'].forEach(c => {
+    const b = document.getElementById('cbtn-'+c);
+    if (c === cond) { b.style.cssText = 'background:#5ec4b0;color:#0e0f14;border:none;padding:8px 20px;border-radius:8px;font-family:"DM Sans",sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;'; }
+    else { b.style.cssText = 'background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 20px;border-radius:8px;font-family:"DM Sans",sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;'; }
+  });
+  renderCong(false);
+}
+
+function revealCond() { renderCong(true); }
+
+function renderCong(revealed) {
+  const cfg = CONG[currentCond];
+  const svg = document.getElementById('cong-svg');
+  const tris = [cfg.tri1, cfg.tri2];
+
+  function pt(ti, vi) { return tris[ti].pts[vi]; }
+  function lbl(ti, vi) { return tris[ti].label[vi]; }
+
+  let s = '';
+
+  // 1. Draw edges first (below everything)
+  cfg.edges.forEach(e => {
+    const [p0, p1] = [pt(e.tri, e.v[0]), pt(e.tri, e.v[1])];
+    const col  = revealed ? (GRP_COL[e.group] || '#3a3d4e') : '#4a4e60';
+    const w    = (revealed && e.group !== 'none') ? 3.5 : 2;
+    s += `<line x1="${p0[0]}" y1="${p0[1]}" x2="${p1[0]}" y2="${p1[1]}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  });
+
+  // 2. Right-angle squares
+  if (revealed && cfg.rightAngles) {
+    cfg.rightAngles.forEach(ra => {
+      const pts = tris[ra.tri].pts;
+      const [ax, ay] = pts[ra.v];
+      const others = [0,1,2].filter(i => i !== ra.v);
+      const d0 = [pts[others[0]][0]-ax, pts[others[0]][1]-ay];
+      const d1 = [pts[others[1]][0]-ax, pts[others[1]][1]-ay];
+      const l0 = Math.sqrt(d0[0]**2+d0[1]**2), l1 = Math.sqrt(d1[0]**2+d1[1]**2);
+      const sz = 16;
+      const u0 = [d0[0]/l0*sz, d0[1]/l0*sz], u1 = [d1[0]/l1*sz, d1[1]/l1*sz];
+      s += `<polyline points="${ax+u0[0]},${ay+u0[1]} ${ax+u0[0]+u1[0]},${ay+u0[1]+u1[1]} ${ax+u1[0]},${ay+u1[1]}" fill="none" stroke="#e07070" stroke-width="2"/>`;
+    });
+  }
+
+  // 3. Side labels (revealed only)
+  if (revealed) {
+    cfg.edges.forEach(e => {
+      if (e.group === 'none') return;
+      const [p0, p1] = [pt(e.tri, e.v[0]), pt(e.tri, e.v[1])];
+      const mx = (p0[0]+p1[0])/2, my = (p0[1]+p1[1])/2;
+      const dx = p1[0]-p0[0], dy = p1[1]-p0[1];
+      const len = Math.sqrt(dx*dx+dy*dy) || 1;
+      const nx = -dy/len*15, ny = dx/len*15;
+      const sideName = lbl(e.tri,e.v[0]) + lbl(e.tri,e.v[1]);
+      const col = GRP_COL[e.group];
+      s += `<text x="${mx+nx}" y="${my+ny+4}" text-anchor="middle" fill="${col}" font-family="JetBrains Mono" font-size="9" font-weight="700">${sideName}</text>`;
+    });
+  }
+
+  // 4. Vertex circles
+  tris.forEach((tri, ti) => {
+    tri.pts.forEach(([x,y], vi) => {
+      const isAngle = revealed && cfg.angles && cfg.angles.some(a => a.tri===ti && a.v===vi);
+      const bgFill  = isAngle ? '#e07070' : (revealed ? '#1e2130' : '#252835');
+      const ring    = isAngle ? '#e07070' : '#5a5e70';
+      const textCol = isAngle ? '#0e0f14' : (ti===0 ? '#5ec4b0' : '#c8a96e');
+      s += `<circle cx="${x}" cy="${y}" r="12" fill="${bgFill}" stroke="${ring}" stroke-width="1.5"/>`;
+      s += `<text x="${x}" y="${y+4}" text-anchor="middle" fill="${textCol}" font-family="JetBrains Mono" font-size="10" font-weight="700">${lbl(ti,vi)}</text>`;
+    });
+  });
+
+  // 5. Angle labels below rose vertices
+  if (revealed && cfg.angles && cfg.angleLabels) {
+    cfg.angles.forEach((a, i) => {
+      const [x,y] = pt(a.tri, a.v);
+      s += `<text x="${x}" y="${y+30}" text-anchor="middle" fill="#e07070" font-family="JetBrains Mono" font-size="9" font-weight="600">${cfg.angleLabels[i]||''}</text>`;
+    });
+  }
+
+  // 6. Triangle name labels
+  tris.forEach((tri, ti) => {
+    const xs = tri.pts.map(p=>p[0]);
+    const cx = (Math.min(...xs)+Math.max(...xs))/2;
+    const col = ti===0 ? '#5ec4b0' : '#c8a96e';
+    s += `<text x="${cx}" y="192" text-anchor="middle" fill="${col}" font-family="JetBrains Mono" font-size="10">△ ${tri.label.join('')}</text>`;
+  });
+
+  svg.innerHTML = s;
+
+  // Update description and button
+  const desc    = document.getElementById('cong-desc');
+  const revBtn  = document.getElementById('cong-reveal-btn');
+  revBtn.style.display = 'inline-block';
+
+  if (!revealed) {
+    desc.innerHTML = `<strong style="color:var(--text)">${cfg.label}</strong> — ${cfg.hint}`;
+    revBtn.textContent = 'Reveal matching pairs';
+    revBtn.style.cssText = 'background:var(--gold);color:#0e0f14;border:none;padding:8px 20px;border-radius:8px;font-family:"DM Sans",sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;';
+    revBtn.onclick = revealCond;
+  } else {
+    desc.innerHTML = `<strong style="color:var(--gold)">${cfg.label}</strong> — ${cfg.desc}<br><span style="font-size:0.78rem;color:var(--muted);display:block;margin-top:6px;">${cfg.edgeDesc}</span>`;
+    revBtn.textContent = 'Hide ↩';
+    revBtn.style.cssText = 'background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 20px;border-radius:8px;font-family:"DM Sans",sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;';
+    revBtn.onclick = () => { renderCong(false); revBtn.onclick = revealCond; };
+  }
+}
+
+// ---- Initialise everything on load ----
+window.addEventListener('load', () => {
+  // Grid squares
+  const vis = document.getElementById('grid-vis');
+  if (vis) {
+    for (let i = 0; i < 24; i++) {
+      const sq = document.createElement('div');
+      sq.className = 'grid-square ' + (i < 4 ? 'sq-shaded' : 'sq-unshaded');
+      vis.appendChild(sq);
+    }
+  }
+  updateScaleSVG();
+  showCond('SSS');
+});
+</script>
+</body>
+</html>
