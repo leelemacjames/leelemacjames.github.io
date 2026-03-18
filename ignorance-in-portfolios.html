@@ -490,13 +490,10 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <!-- ════════════════════════════════════════════ -->
 <div class="prose">
 
-<h2>I. The Markowitz Starting Point</h2>
+<h2>I. The Markowitz Objective</h2>
 
 <p>
-  Modern portfolio theory begins with a deceptively simple claim: investors are
-  <strong>rational agents</strong> who balance expected return against risk. Given a universe
-  of assets, each with expected return \(E_i\) and a covariance structure \(\Sigma\),
-  the investor seeks to maximise a utility function:
+  The Markowitz utility function is
 </p>
 
 <div class="equation-block">
@@ -504,25 +501,20 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 </div>
 
 <p>
-  Here \(\mathbf{w}\) is the vector of portfolio weights (how much of your capital sits in each asset),
-  and \(\lambda\) is the investor's <strong>risk aversion</strong> — a scalar that governs how
-  aggressively they tilt away from the safe, diversified baseline toward assets they believe offer
-  higher returns. A high \(\lambda\) means the investor demands a large expected return premium
-  before concentrating their portfolio; a low \(\lambda\) means they chase even modest edges.
+  where \(\mathbf{w}\) is the portfolio weight vector, \(\mathbf{E}\) the expected returns,
+  \(\Sigma\) the covariance matrix, and \(\lambda\) a scalar encoding risk aversion.
+  High \(\lambda\): the investor demands a large return premium before concentrating the portfolio.
+  Low \(\lambda\): they chase modest edges.
 </p>
 
 <p>
-  The critical insight is what happens at <span class="em">maximum ignorance</span>.
-  When an investor has no information to distinguish one asset from another — no edge, no signal,
-  no view — the optimal portfolio is <strong>equal-weighted</strong>: \(w_i = 1/N\) for all
-  \(N\) assets. This is the portfolio of total epistemic neutrality. Every departure from
-  equal-weight is a <span class="em">knowledge claim</span> — an assertion that some assets deserve
-  more of your capital than others, backed by beliefs about return differences.
+  At <span class="em">maximum ignorance</span> — no information distinguishing one asset from
+  another — the optimal portfolio is <strong>equal-weighted</strong>: \(w_i = 1/N\).
+  Every departure from equal-weight is a <span class="em">knowledge claim</span>.
 </p>
 
 <p>
-  In the simple two-asset case (asset A versus asset B, where B has a true excess return
-  \(\varepsilon > 0\) over A), the optimal weight in B reduces to:
+  In the two-asset case (A with return 0.5, B with true return \(0.5 + \varepsilon\)):
 </p>
 
 <div class="equation-block">
@@ -530,84 +522,58 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 </div>
 
 <p>
-  where \(p_i\) is the investor's <strong>credence</strong> that B really is better —
-  their subjective probability that \(\varepsilon > 0\). When \(p_i = 0.5\) (complete
-  uncertainty), the tilt vanishes and we recover equal-weighting. When \(p_i \to 1\)
-  (full conviction), the weight shifts maximally toward B, constrained only by risk
-  aversion \(\lambda\).
+  where \(p_i\) is the agent's credence that \(\varepsilon > 0\). At \(p_i = 0.5\):
+  equal-weight. At \(p_i \to 1\): maximal tilt toward B. At \(p_i < 0.5\): the agent
+  backs the wrong asset. In textbook Markowitz, \(p_i\) is taken as given. In reality,
+  it is socially constructed — and that construction is the subject of this simulation.
+  See the accompanying paper at
+  <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold)">leelemacjames.github.io</a>.
 </p>
-
-<div class="callout">
-  <div class="callout-title">The key question</div>
-  <p>
-    How does \(p_i\) — the investor's credence — actually evolve? In textbook Markowitz, it's
-    taken as given: the investor "knows" the expected returns. But in reality, beliefs about
-    returns are <strong>socially constructed</strong>. Analysts talk to each other. Consensus
-    estimates propagate through networks. Research gets shared, discounted, amplified, or ignored
-    depending on who trusts whom. This is exactly the problem studied in the paper
-    <span class="em">Ignorance in Social Networks</span> — and the mapping between the two
-    frameworks turns out to be structurally exact.
-  </p>
-</div>
 
 <!-- ════════════════════════════════════════════ -->
 <!-- SECTION 2: THE MAPPING                      -->
 <!-- ════════════════════════════════════════════ -->
 
-<h2>II. The Mapping: Credence Updates as Return Estimation</h2>
+<h2>II. The Mapping</h2>
 
 <p>
-  In the epistemic network model, each agent holds a credence \(p_i \in [0,1]\)
-  that action B is superior to action A. Agents run experiments (binomial trials),
-  share results with their network neighbours, and update their beliefs.
-  Under <strong>Bayes' rule</strong> (full trust), agents treat all received evidence
-  at face value. Under <strong>Jeffrey's rule</strong> with a homophily assumption,
-  agents discount evidence from neighbours whose beliefs differ from their own — the
-  greater the disagreement, the larger the discount.
+  Each agent holds credence \(p_i \in [0,1]\) that B is superior. Agents run binomial trials,
+  share results with neighbours, and update. Under <strong>Bayes' rule</strong>, evidence is
+  taken at face value. Under <strong>Jeffrey's rule</strong>, agents discount evidence from
+  neighbours whose credences differ — the larger the disagreement, the larger the discount.
 </p>
 
 <p>
-  The portfolio mapping works as follows. Each agent's credence \(p_i\) becomes their
-  <span class="em">conviction about asset B's excess return</span>. The portfolio weight
-  \(w_B\) is then derived from that credence via the Markowitz optimality condition above.
-  Three consequences follow immediately:
+  Each agent's credence \(p_i\) maps to conviction about B's excess return.
+  The portfolio weight \(w_B\) follows from the Markowitz condition above. Three consequences:
 </p>
 
 <p>
-  <strong>Mistrust acts as emergent risk aversion.</strong> When agents discount their
-  neighbours' evidence (Jeffrey updating), their credences converge more slowly toward the
-  truth. In portfolio terms, this is indistinguishable from having a higher \(\lambda\):
-  the portfolio stays closer to equal-weight for longer than it should, given that the
-  evidence is factive (true). Social distrust inflates effective risk aversion.
+  <strong>Mistrust is emergent risk aversion.</strong> Jeffrey discounting slows credence convergence.
+  In portfolio terms: the weights stay near equal-weight longer than warranted. Social distrust
+  inflates effective \(\lambda\).
 </p>
 
 <p>
-  <strong>Network topology shapes the trajectory of portfolio weights.</strong> The paper's
-  central finding is that networks with the same overall connectivity but different
-  <span class="em">shapes</span> produce significantly different convergence times. In portfolio
-  terms: it's not just how many analysts inform your views, but how they're connected to each
-  other, that determines how quickly the market portfolio departs from equal-weight toward the
-  optimal allocation.
+  <strong>Topology shapes weight trajectories.</strong> Networks with identical connectivity but
+  different <span class="em">shapes</span> produce different convergence times. It is not how many
+  analysts inform your views, but how they are connected to each other.
 </p>
 
 <p>
-  <strong>Polarisation is a barbell that never rebalances.</strong> When mistrust is strong
-  enough (\(m > 1\)), the network can reach stable polarisation: one subgroup converges to near-certainty
-  that B is better, while the rest refuse to update. The "market portfolio" — the mean across all
-  agents — sits at an intermediate weight that <span class="em">nobody actually holds</span>. This mirrors
-  a market split between momentum believers and sceptics, where the consensus price is an artefact
-  of averaging irreconcilable positions.
+  <strong>Polarisation is a barbell that never rebalances.</strong> At \(m > 1\), the network
+  fractures: one subgroup converges to near-certainty, the rest refuse to update. The mean weight
+  is held by <span class="em">nobody</span> — a phantom portfolio.
 </p>
 
 <!-- ════════════════════════════════════════════ -->
 <!-- SECTION 3: TOPOLOGY PRIMER                  -->
 <!-- ════════════════════════════════════════════ -->
 
-<h2>III. Network Topologies: A Primer</h2>
+<h2>III. Network Topologies</h2>
 
 <p>
-  The simulation below lets you run the credence-update model on four network types.
-  Each topology has a real-world archetype in financial information flow:
+  Four network types, each with a financial archetype:
 </p>
 
 </div><!-- end .prose -->
@@ -668,13 +634,11 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <!-- SECTION 4: SIMULATION                       -->
 <!-- ════════════════════════════════════════════ -->
 
-<h2>IV. The Simulation</h2>
+<h2>IV. Simulation</h2>
 
 <p>
-  Use the controls below to configure and run the simulation. Each run initialises agents
-  with random credences (the epistemic equivalent of an uninformed prior — the equal-weighted
-  portfolio starting point), then iterates the experiment-share-update loop until convergence
-  or a maximum of 2,000 steps.
+  Configure and run below. Agents initialise with random credences (uniform prior = equal-weighted
+  starting portfolio), then iterate the experiment-share-update loop until convergence or 2,000 steps.
 </p>
 
 </div><!-- end .prose -->
@@ -784,12 +748,9 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <div class="reading-guide">
   <div class="guide-title">Reading the network graph</div>
   <p>
-    Each circle is an agent. Lines are communication channels — edges along which evidence flows.
-    At the end of the simulation, <strong>gold nodes</strong> have converged to high credence in B
-    (the correct belief), while <strong>blue nodes</strong> remain sceptical or committed to A.
-    <strong>Red-tinted edges</strong> connect agents who ended up far apart in their beliefs — these
-    are the "broken bridges" where mistrust prevented evidence from crossing.
-    In a healthy convergence, all nodes turn gold and no red edges remain.
+    Circles are agents. Lines are communication channels. <strong>Gold nodes</strong>: high credence in B
+    (correct). <strong>Blue nodes</strong>: committed to A. <strong>Red edges</strong>: high credence
+    distance — broken bridges where mistrust blocks evidence flow. Healthy convergence: all gold, no red.
   </p>
 </div>
 
@@ -819,18 +780,14 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <div class="reading-guide">
   <div class="guide-title">Reading the trajectory charts</div>
   <p>
-    <strong>Left (Credence):</strong> Each thin coloured line traces one agent's belief over time.
-    The <strong>white line</strong> is the network mean — the "consensus view." The dashed
-    horizontal at 0.5 is the line of total uncertainty. Trajectories rising above 0.5 indicate
-    growing conviction that B is better; convergence to ~1.0 means the truth has been found.
-    If lines cluster into two bands (some high, some low), that's <span class="em">polarisation</span>.
+    <strong>Left (Credence):</strong> Thin coloured lines: individual agents. <strong>White line</strong>:
+    network mean. Dashed line at 0.5: total uncertainty. Rising above 0.5 = growing conviction in B.
+    Two bands = <span class="em">polarisation</span>.
   </p>
   <p>
-    <strong>Right (Portfolio weights):</strong> The same trajectories, but mapped through the Markowitz
-    formula. The 0.5 line now represents <span class="em">equal-weighting</span> — the portfolio of
-    maximum ignorance. Watch how long the white mean line hugs 0.5 before lifting off toward the
-    optimal weight. That delay — the gap between "truth is out there" and "portfolio reflects it" —
-    is the cost of network structure and mistrust, measured in allocation drag.
+    <strong>Right (Portfolio weights):</strong> Same trajectories through the Markowitz map. The 0.5 line
+    is <span class="em">equal-weighting</span>. The delay before the white line lifts off is the allocation
+    cost of network structure and mistrust.
   </p>
 </div>
 
@@ -850,13 +807,9 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <div class="reading-guide">
   <div class="guide-title">Reading the aggregate chart</div>
   <p>
-    The <strong>gold curve</strong> shows the network's aggregate portfolio weight in asset B,
-    computed as the mean weight across all agents. The <strong>green dashed line</strong> is the
-    weight an investor with perfect knowledge would hold — the Markowitz optimum given full certainty
-    that \(\varepsilon > 0\). The vertical distance between the two is the
-    <span class="em">ignorance cost</span>: the drag on portfolio utility caused by incomplete
-    convergence. Under Bayes (full trust), this gap closes quickly. Under Jeffrey with high mistrust,
-    it may never close — the portfolio remains chronically underweight in the better asset.
+    <strong>Gold curve</strong>: aggregate (mean) portfolio weight in B. <strong>Green dashed</strong>:
+    optimal weight under perfect knowledge. The vertical gap is <span class="em">ignorance cost</span> —
+    allocation drag from incomplete convergence. Under Bayes: closes quickly. Under high mistrust: may never close.
   </p>
 </div>
 
@@ -871,13 +824,9 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
   <div class="reading-guide" style="margin-top:20px;">
     <div class="guide-title">Reading the comparison</div>
     <p>
-      Each card shows one topology's average performance. <strong>Mean steps</strong> is how long
-      convergence took (lower = faster knowledge diffusion = the portfolio reaches optimal allocation sooner).
-      <strong>Reliability</strong> is the percentage of runs that converged to the correct belief
-      (higher = the network more reliably finds the truth). The mini-chart shows one sample run's
-      mean credence over time. The paper's key finding — that shape matters independent of density —
-      shows up here as significant differences in convergence speed between topologies with similar
-      numbers of edges.
+      <strong>Mean steps</strong>: convergence time (lower = faster). <strong>Reliability</strong>:
+      percentage converging to truth. Mini-chart: one sample run's mean credence. Differences between
+      topologies at similar density demonstrate that shape matters independently of connectivity.
     </p>
   </div>
 </div>
@@ -887,32 +836,27 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <!-- ════════════════════════════════════════════ -->
 <div class="prose" style="margin-top: 48px;">
 
-<h2>V. What This Means for Portfolio Theory</h2>
+<h2>V. Implications</h2>
 
 <p>
-  The standard Markowitz framework takes expected returns as inputs — exogenous numbers fed
-  into the optimiser. But in practice, those numbers are the output of a social process:
-  analysts estimating, sharing, debating, and discounting each other's research. This
-  simulation shows that the <span class="em">structure of that social process</span> — who
-  talks to whom, and how much they trust each other — materially affects how quickly the
-  portfolio converges from equal-weight ignorance to informed allocation.
+  The Markowitz framework takes expected returns as exogenous inputs. In practice, those numbers are
+  outputs of a social process whose structure — who talks to whom, and how much they trust each
+  other — materially affects convergence from ignorance to informed allocation.
 </p>
 
 <p>
-  The implication for <strong>technical analysis</strong> is also visible here. Technical analysis
-  bypasses fundamental evidence entirely, updating beliefs based solely on other agents' revealed
-  positions (price action). In this framework, that's equivalent to agents who never run their
-  own experiments — they only observe neighbours' credences. The simulation predicts this is
-  maximally susceptible to herding and false consensus, because there's no independent evidence
-  generation to anchor beliefs to ground truth. The \(\varepsilon\) never gets discovered; the
-  network just amplifies its own noise.
+  <strong>Technical analysis</strong> bypasses fundamental evidence, updating beliefs from other
+  agents' revealed positions. In this framework: agents who never run experiments, observing only
+  neighbours' credences. No independent evidence generation, no mechanism for truth discovery.
+  The \(\varepsilon\) is never found. The network amplifies its own noise.
+  Fibonacci retracements and moving average crossovers are coordination artefacts: they work when
+  enough agents act on them, not because they reveal anything about the return structure.
 </p>
 
 <p>
-  More broadly, these results suggest that the <span class="em">geometry of information flow</span>
-  deserves a place alongside covariance matrices and return estimates in any serious account of
-  portfolio dynamics. The invisible hand moves at the speed of trust — and trust, it turns out,
-  has a topology.
+  The formal treatment of these results, including the \(\lambda_{\text{eff}} = \lambda/\alpha\)
+  isomorphism and the endogenous risk aversion specification, is in the accompanying paper:
+  <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold)">Networked Belief Formation and Portfolio Allocation</a>.
 </p>
 
 </div>
@@ -921,8 +865,9 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <div class="prose" style="margin-bottom:60px; font-size:14px; color: var(--text-dim);">
   <p>
     Based on: <em>Ignorance in Social Networks: Discounting Delays and Shape Matters</em>.
-    Simulation implements the Zollman (2007) and O'Connor & Weatherall (2018) models with
-    Markowitz portfolio weight mapping.
+    Simulation implements the Zollman (2007) and O'Connor &amp; Weatherall (2018) models with
+    Markowitz portfolio weight mapping. Full paper:
+    <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold-dim)">networked-belief-portfolio-allocation.pdf</a>.
   </p>
 </div>
 
@@ -1507,3 +1452,4 @@ window.addEventListener('resize', () => {
 </script>
 </body>
 </html>
+
