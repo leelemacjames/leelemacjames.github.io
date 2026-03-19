@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplication, Norm & Structure — Across the Quadratic Rings</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fira+Code:wght@400;500&family=Cormorant+Garamond:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f3ed;
+  --bg-warm: #eee9df;
+  --bg-card: #fff;
+  --text: #2c2416;
+  --text-dim: #7a6f5f;
+  --text-mid: #554a3a;
+  --accent: #b5432a;
+  --accent-dim: #d4836f;
+  --elliptic: #1a6b4e;
+  --elliptic-bg: rgba(26,107,78,0.07);
+  --parabolic: #8a6e1e;
+  --parabolic-bg: rgba(138,110,30,0.07);
+  --hyperbolic: #2a4fb5;
+  --hyperbolic-bg: rgba(42,79,181,0.07);
+  --border: #d5cfc3;
+  --border-light: #e5e0d6;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.78;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--accent); color: #fff; }
+
+.container { max-width: 760px; margin: 0 auto; padding: 0 28px; }
+
+/* ── Header ── */
+header {
+  padding: 80px 0 40px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+header h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.epigraph {
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 1rem;
+  max-width: 480px;
+  margin: 16px auto 0;
+}
+
+/* ── Sections ── */
+section { padding: 44px 0; }
+
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: var(--text);
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--accent);
+  margin: 28px 0 12px;
+}
+
+p { margin-bottom: 16px; }
+
+.math {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--accent);
+  background: rgba(181,67,42,0.06);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.aside-box {
+  background: var(--bg-warm);
+  border-left: 3px solid var(--accent);
+  padding: 18px 22px;
+  margin: 22px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.95rem;
+}
+
+.aside-box p:last-child { margin-bottom: 0; }
+
+hr.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 10px 0;
+}
+
+/* ── Matrix Display ── */
+.matrix-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.matrix {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-left: 2.5px solid var(--text);
+  border-right: 2.5px solid var(--text);
+  padding: 8px 14px;
+  border-radius: 2px;
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.matrix::before, .matrix::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  border-top: 2.5px solid var(--text);
+  border-bottom: 2.5px solid var(--text);
+  top: 0; bottom: 0;
+}
+.matrix::before { left: -1px; border-left: none; }
+.matrix::after { right: -1px; border-right: none; }
+
+.matrix span {
+  padding: 4px 10px;
+  text-align: center;
+  min-width: 48px;
+}
+
+.matrix-label {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.arrow-eq {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+}
+
+/* ── Step-through boxes ── */
+.step {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  position: relative;
+}
+
+.step-number {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.step p { margin-bottom: 10px; }
+.step p:last-child { margin-bottom: 0; }
+
+/* ── Interactive Controls ── */
+.controls {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.control-row:last-child { margin-bottom: 0; }
+
+label.ctrl-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+select {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.ring-pills {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.ring-pill {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right-width: 0;
+}
+
+.ring-pill:first-child { border-radius: 5px 0 0 5px; }
+.ring-pill:last-child { border-radius: 0 5px 5px 0; border-right-width: 1px; }
+
+.ring-pill:hover { background: var(--bg-warm); }
+
+.ring-pill.active.elliptic { background: var(--elliptic-bg); border-color: var(--elliptic); color: var(--elliptic); }
+.ring-pill.active.parabolic { background: var(--parabolic-bg); border-color: var(--parabolic); color: var(--parabolic); }
+.ring-pill.active.hyperbolic { background: var(--hyperbolic-bg); border-color: var(--hyperbolic); color: var(--hyperbolic); }
+
+/* ── Canvas area ── */
+.canvas-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+@media (max-width: 640px) {
+  .canvas-row { grid-template-columns: 1fr; }
+}
+
+.canvas-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.canvas-panel h4 {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+/* ── Info cards ── */
+.info-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.info-card {
+  flex: 1;
+  min-width: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.info-card .val {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.info-card .lbl {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.info-card.elliptic .val { color: var(--elliptic); }
+.info-card.parabolic .val { color: var(--parabolic); }
+.info-card.hyperbolic .val { color: var(--hyperbolic); }
+
+/* ── Summary table ── */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.88rem;
+}
+
+.summary-table th {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.summary-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border-light);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.summary-table tr:hover td { background: var(--bg-warm); }
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.type-badge.e { background: var(--elliptic-bg); color: var(--elliptic); }
+.type-badge.p { background: var(--parabolic-bg); color: var(--parabolic); }
+.type-badge.h { background: var(--hyperbolic-bg); color: var(--hyperbolic); }
+
+/* ── Toggle sections ── */
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--accent);
+  background: rgba(181,67,42,0.05);
+  border: 1px solid rgba(181,67,42,0.2);
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 4px 4px 4px 0;
+}
+
+.toggle-btn:hover { background: rgba(181,67,42,0.1); border-color: var(--accent); }
+.toggle-btn .arr { display: inline-block; transition: transform 0.3s; font-size: 0.7em; }
+.toggle-btn.open .arr { transform: rotate(90deg); }
+
+.toggle-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+
+.toggle-panel.open { max-height: 4000px; opacity: 1; }
+
+.toggle-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 22px 24px;
+  margin: 10px 0 18px;
+}
+
+.toggle-content h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* ── Sliders ── */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.slider-row label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  min-width: 30px;
+}
+
+.slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.slider-row .slider-val {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Footer ── */
+footer {
+  padding: 40px 0 60px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-light);
+}
+
+footer a { color: var(--accent); text-decoration: none; }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header { padding: 50px 0 30px; }
+  .ring-pills { flex-wrap: wrap; }
+  .info-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Multiplication, Norm <em>&</em> Structure</h1>
+    <p class="epigraph">How the multiplication map of a quadratic ring encodes its norm, its geometry, and its complex structure — all in a 2×2 matrix.</p>
+  </div>
+</header>
+
+<main class="container">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §1  BUILDING THE MULTIPLICATION MATRIX    -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s1">
+<h2>§1 — Building the Multiplication Matrix</h2>
+
+<p>Every quadratic ring is built from the ordinary integers by adjoining a single new element θ — a "square root" of something. The integers of the ring are expressions a + bθ, with a and b ordinary integers. Addition works component-wise. Multiplication almost does, except that whenever θ² appears, we need a rule to replace it.</p>
+
+<p>That replacement rule — the equation θ² = pθ + q for some fixed integers p and q — is the entire DNA of the ring. Everything that follows comes from it.</p>
+
+<h3>The Gaussian case in detail</h3>
+
+<p>Start with the most familiar example. Adjoin θ = i to ℤ, with the rule i² = −1. So p = 0 and q = −1. Elements look like a + bi.</p>
+
+<p>To multiply <em>every</em> element of the ring by a fixed element a + bi, we need to know where the two basis elements 1 and i are sent:</p>
+
+<div class="step">
+  <span class="step-number">Multiply by 1</span>
+  <p>(a + bi) × 1 = a + bi</p>
+  <p>In coordinates: (1, 0) goes to (a, b). This is the <strong>first column</strong> of our matrix.</p>
+</div>
+
+<div class="step">
+  <span class="step-number">Multiply by θ = i</span>
+  <p>(a + bi) × i = ai + bi² = ai + b(−1) = −b + ai</p>
+  <p>In coordinates: (0, 1) goes to (−b, a). This is the <strong>second column</strong> of our matrix.</p>
+</div>
+
+<div class="matrix-block">
+  <span class="matrix-label">M(a, b) =</span>
+  <div class="matrix">
+    <span>a</span><span>−b</span>
+    <span>b</span><span>a</span>
+  </div>
+  <span class="matrix-label">det = a² + b²</span>
+</div>
+
+<p>This is a rotation-dilation matrix. It rotates the plane by arg(a + bi) and scales distances by |a + bi| = √(a² + b²). Its determinant — the area scaling factor — is a² + b², the Gaussian norm.</p>
+
+<h3>The general recipe</h3>
+
+<p>The same procedure works for any quadratic ring. Given θ² = pθ + q:</p>
+
+<div class="step">
+  <span class="step-number">Multiply by θ</span>
+  <p>(a + bθ) × θ = aθ + bθ² = aθ + b(pθ + q) = bq + (a + bp)θ</p>
+  <p>Coordinates: (0, 1) goes to (bq, a + bp). Second column.</p>
+</div>
+
+<div class="matrix-block">
+  <span class="matrix-label">M(a, b) =</span>
+  <div class="matrix">
+    <span>a</span><span>bq</span>
+    <span>b</span><span>a + bp</span>
+  </div>
+  <span class="matrix-label">det = a² + abp − b²q</span>
+</div>
+
+<p>That determinant — a² + abp − b²q — is the <strong>norm form</strong> of the ring. It captures everything: the area distortion of the multiplication map, the geometry of the lattice, and the arithmetic of the ring. Two parameters, p and q, determine everything.</p>
+
+<div class="aside-box">
+  <p><strong>The discriminant</strong> of the quadratic equation t² − pt − q = 0 is Δ = p² + 4q. This same number is the discriminant of the norm form as a binary quadratic. It governs the entire character of the ring.</p>
+</div>
+
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §2  THE SIX RINGS                         -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s2">
+<h2>§2 — Six Rings, One Construction</h2>
+
+<p>Here are six quadratic rings — three elliptic, one parabolic, two hyperbolic — all produced by the same recipe. Select one to see its multiplication matrix and norm form:</p>
+
+<div class="controls" id="ring-controls">
+  <div class="control-row">
+    <label class="ctrl-label">Ring:</label>
+    <div class="ring-pills" id="ring-pills">
+      <button class="ring-pill active elliptic" data-ring="gauss">ℤ[i]</button>
+      <button class="ring-pill elliptic" data-ring="eisen">ℤ[ω]</button>
+      <button class="ring-pill elliptic" data-ring="h7">ℤ[α₇]</button>
+      <button class="ring-pill parabolic" data-ring="dual">ℤ[ε]</button>
+      <button class="ring-pill hyperbolic" data-ring="golden">ℤ[φ]</button>
+      <button class="ring-pill hyperbolic" data-ring="split">ℤ[j]</button>
+    </div>
+  </div>
+</div>
+
+<div id="ring-info"></div>
+
+<div class="info-row" id="ring-stats"></div>
+
+<div class="matrix-block" id="ring-matrix-display"></div>
+
+<p id="ring-description"></p>
+
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §3  DETERMINANT AS NORM                   -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s3">
+<h2>§3 — The Determinant is the Norm</h2>
+
+<p>The determinant of the multiplication matrix M(a, b) is the <strong>signed area distortion</strong> when you multiply the entire lattice by the element a + bθ. This is precisely the norm N(a + bθ). The two notions are the same object:</p>
+
+<div class="aside-box">
+  <p><strong>N(z) = det(M<sub>z</sub>)</strong> — the norm of a ring element is the determinant of its multiplication map. Multiplicativity of the norm (N(z₁z₂) = N(z₁)N(z₂)) is just the fact that det(AB) = det(A)det(B).</p>
+</div>
+
+<p>The <em>character</em> of the determinant depends on whether the off-diagonal entries create rotation (elliptic), shear (parabolic), or boost (hyperbolic):</p>
+
+<table class="summary-table">
+  <thead>
+    <tr><th>Ring</th><th>θ² = pθ + q</th><th>Δ</th><th>det = Norm</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ℤ[i]</td><td>p=0, q=−1</td><td>−4</td><td>a² + b²</td><td><span class="type-badge e">elliptic</span></td></tr>
+    <tr><td>ℤ[ω]</td><td>p=−1, q=−1</td><td>−3</td><td>a² − ab + b²</td><td><span class="type-badge e">elliptic</span></td></tr>
+    <tr><td>ℤ[α₇]</td><td>p=1, q=−2</td><td>−7</td><td>a² + ab + 2b²</td><td><span class="type-badge e">elliptic</span></td></tr>
+    <tr><td>ℤ[ε]</td><td>p=0, q=0</td><td>0</td><td>a²</td><td><span class="type-badge p">parabolic</span></td></tr>
+    <tr><td>ℤ[φ]</td><td>p=1, q=1</td><td>+5</td><td>a² + ab − b²</td><td><span class="type-badge h">hyperbolic</span></td></tr>
+    <tr><td>ℤ[j]</td><td>p=0, q=1</td><td>+4</td><td>a² − b²</td><td><span class="type-badge h">hyperbolic</span></td></tr>
+  </tbody>
+</table>
+
+<p>The elliptic norms are <strong>positive definite</strong> — they're always positive (for nonzero elements), which means the multiplication map always preserves orientation and never degenerates. The Gaussian a² + b² is the sum of two squares; the Eisenstein a² − ab + b² is its hexagonal cousin. These are the "circular" forms.</p>
+
+<p>The hyperbolic norm a² − b² is the classical <strong>difference of two squares</strong>. It takes both positive and negative values, orientation can flip, and the norm-zero locus is a pair of real lines (the "light cone"). The golden-ratio norm a² + ab − b² is its tilted cousin. These are the "hyperbolic" forms — and the Fibonacci connection lives here.</p>
+
+<p>The parabolic norm a² is <strong>degenerate</strong> — it's blind to the b direction entirely. The multiplication map is a shear: it moves things along one direction without stretching or rotating. This is the transitional case between elliptic and hyperbolic.</p>
+
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §4  VISUALISING THE LATTICE & UNIT CURVE  -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s4">
+<h2>§4 — The Lattice and the Unit Curve</h2>
+
+<p>The unit equation N(z) = 1 defines a curve in the (a, b) plane. For elliptic rings it's an ellipse (compact, finitely many integer points). For hyperbolic rings it's a hyperbola (non-compact, infinitely many). For the parabolic ring it degenerates to two vertical lines.</p>
+
+<p>Select a ring, then use the sliders to choose an element z = a + bθ to multiply by. The <strong>left panel</strong> shows the original lattice with z circled in red. The <strong>right panel</strong> shows the image sublattice zℤ[θ] — where every lattice point lands after multiplication by z. The original lattice is ghosted behind for comparison. The coloured parallelogram is the fundamental domain of the image sublattice, and its area equals |det(M)| = |N(z)| times the original. Units on the original lattice (green dots) stay highlighted in the image.</p>
+
+<div class="controls">
+  <div class="control-row">
+    <label class="ctrl-label">Ring:</label>
+    <div class="ring-pills" id="vis-pills">
+      <button class="ring-pill active elliptic" data-ring="gauss">ℤ[i]</button>
+      <button class="ring-pill elliptic" data-ring="eisen">ℤ[ω]</button>
+      <button class="ring-pill elliptic" data-ring="h7">ℤ[α₇]</button>
+      <button class="ring-pill parabolic" data-ring="dual">ℤ[ε]</button>
+      <button class="ring-pill hyperbolic" data-ring="golden">ℤ[φ]</button>
+      <button class="ring-pill hyperbolic" data-ring="split">ℤ[j]</button>
+    </div>
+  </div>
+  <div class="control-row">
+    <label class="ctrl-label">Multiply by:</label>
+    <div class="slider-row">
+      <label>a:</label>
+      <input type="range" id="slider-a" min="-4" max="4" value="1">
+      <span class="slider-val" id="val-a">1</span>
+    </div>
+    <div class="slider-row">
+      <label>b:</label>
+      <input type="range" id="slider-b" min="-4" max="4" value="0">
+      <span class="slider-val" id="val-b">0</span>
+    </div>
+  </div>
+</div>
+
+<div class="canvas-row">
+  <div class="canvas-panel">
+    <h4>Lattice & Unit Curve</h4>
+    <canvas id="lattice-canvas" width="340" height="340"></canvas>
+  </div>
+  <div class="canvas-panel">
+    <h4>After Multiplication</h4>
+    <canvas id="mult-canvas" width="340" height="340"></canvas>
+  </div>
+</div>
+
+<div class="info-row" id="mult-info"></div>
+
+<h3>Things to try</h3>
+<p>Each preset below sets the ring and the element z. Watch the right panel — the image sublattice, the parallelogram area, and the orientation indicator all respond. The determinant of the multiplication matrix is doing everything: it <em>is</em> the norm, it <em>is</em> the signed area distortion, and its sign <em>is</em> the orientation.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin:16px 0;">
+  <button class="toggle-btn" onclick="setPreset('gauss',1,2)">ℤ[i], z = 1+2i</button>
+  <button class="toggle-btn" onclick="setPreset('gauss',0,1)">ℤ[i], z = i</button>
+  <button class="toggle-btn" onclick="setPreset('eisen',1,1)">ℤ[ω], z = 1+ω</button>
+  <button class="toggle-btn" onclick="setPreset('golden',1,1)">ℤ[φ], z = φ</button>
+  <button class="toggle-btn" onclick="setPreset('split',2,1)">ℤ[j], z = 2+j</button>
+  <button class="toggle-btn" onclick="setPreset('split',1,2)">ℤ[j], z = 1+2j</button>
+  <button class="toggle-btn" onclick="setPreset('dual',3,4)">ℤ[ε], z = 3+4ε</button>
+</div>
+
+<div id="preset-commentary" class="aside-box" style="display:none;"></div>
+
+<div class="aside-box" style="margin-top:20px;">
+  <p><strong>The full circle:</strong> the determinant of the multiplication matrix M(a, b) is simultaneously three things — the <em>algebraic norm</em> N(a + bθ), the <em>signed area distortion</em> of the map on the lattice, and the <em>orientation indicator</em> (positive = preserved, negative = flipped, zero = collapsed). These aren't three separate facts. They're three readings of a single geometric quantity: how the lattice deforms when you multiply every element by z.</p>
+</div>
+
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §5  THE ALMOST-COMPLEX STRUCTURE          -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s5">
+<h2>§5 — J² and the Three Structures</h2>
+
+<p>The multiplication-by-θ map, with a = 0 and b = 1, gives us the matrix J = M(0, 1). This is the "structure map" of the ring — it tells you what θ does geometrically. Since θ satisfies θ² = pθ + q, the matrix J satisfies:</p>
+
+<div class="matrix-block">
+  <span class="matrix-label">J² = pJ + qI</span>
+</div>
+
+<p>For the Gaussian case, p = 0 and q = −1, so <strong>J² = −I</strong>. This is an <em>almost-complex structure</em>: a real-linear map that squares to minus the identity. It's the algebraic expression of the fact that multiplying by i twice gives you multiplication by −1. Geometrically, J rotates by 90° — apply it twice and you've rotated 180°, which is −I.</p>
+
+<p>But only the Gaussian ring has J² = −I on the nose. For the others, J² has extra terms. We can always extract a <em>normalised</em> structure J̃ = (2J − pI)/√|Δ|, and the character of J̃² depends on the sign of Δ:</p>
+
+<div id="j-display"></div>
+
+<div class="controls">
+  <div class="control-row">
+    <label class="ctrl-label">Ring:</label>
+    <div class="ring-pills" id="j-pills">
+      <button class="ring-pill active elliptic" data-ring="gauss">ℤ[i]</button>
+      <button class="ring-pill elliptic" data-ring="eisen">ℤ[ω]</button>
+      <button class="ring-pill elliptic" data-ring="h7">ℤ[α₇]</button>
+      <button class="ring-pill parabolic" data-ring="dual">ℤ[ε]</button>
+      <button class="ring-pill hyperbolic" data-ring="golden">ℤ[φ]</button>
+      <button class="ring-pill hyperbolic" data-ring="split">ℤ[j]</button>
+    </div>
+  </div>
+</div>
+
+<div class="canvas-row">
+  <div class="canvas-panel">
+    <h4>J acting on the unit circle</h4>
+    <canvas id="j-canvas" width="340" height="340"></canvas>
+  </div>
+  <div class="canvas-panel">
+    <h4>J² acting on the unit circle</h4>
+    <canvas id="j2-canvas" width="340" height="340"></canvas>
+  </div>
+</div>
+
+<div class="info-row" id="j-info"></div>
+
+<div class="aside-box">
+  <p><strong>The trichotomy:</strong> Δ &lt; 0 gives J̃² = −I (almost-complex, rotation) — the eigenvalues of J̃ are ±i, splitting ℂ into holomorphic and anti-holomorphic halves. Δ &gt; 0 gives J̃² = +I (para-complex, boost) — the eigenvalues are ±1, splitting ℝ² into two real eigenlines (the null directions). Δ = 0 gives J̃² = 0 (nilpotent, shear) — the single degenerate direction where the two null lines have collapsed together.</p>
+</div>
+
+<table class="summary-table">
+  <thead>
+    <tr><th>Δ</th><th>J̃²</th><th>Name</th><th>Eigenvalues</th><th>Unit curve</th><th>Units</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>&lt; 0</td><td>−I</td><td>Almost-complex</td><td>±i</td><td>Ellipse</td><td>Finite</td></tr>
+    <tr><td>= 0</td><td>0</td><td>Nilpotent</td><td>0, 0</td><td>Vertical lines</td><td>Additive ℤ</td></tr>
+    <tr><td>&gt; 0</td><td>+I</td><td>Para-complex</td><td>±1</td><td>Hyperbola</td><td>Infinite cyclic</td></tr>
+  </tbody>
+</table>
+
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- §6  THE GEOMETRIC PICTURE                 -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s6">
+<h2>§6 — Pulling it Together</h2>
+
+<p>A quadratic ring ℤ[θ] is completely determined by two integers p and q (from θ² = pθ + q). From these:</p>
+
+<p>The <strong>multiplication matrix</strong> M(a, b) = [[a, bq], [b, a + bp]] encodes ring multiplication as a linear map on ℝ².</p>
+
+<p>Its <strong>determinant</strong> a² + abp − b²q is the norm form — simultaneously the area distortion of the map, the arithmetic norm of the element a + bθ, and a binary quadratic form of discriminant Δ = p² + 4q.</p>
+
+<p>The <strong>structure map</strong> J = M(0, 1) satisfies J² = pJ + qI, and its normalised version J̃ = (2J − pI)/√|Δ| squares to −I (elliptic), 0 (parabolic), or +I (hyperbolic), classifying the ring's geometry.</p>
+
+<p>The <strong>unit curve</strong> N(z) = 1 is an ellipse, a degenerate pair of lines, or a hyperbola — compact with finitely many lattice points, or non-compact with infinitely many.</p>
+
+<div class="aside-box">
+  <p>The sign of q in the matrix — whether the top-right entry bq pulls against b (when q &lt; 0, elliptic) or with it (when q &gt; 0, hyperbolic) — is the single structural choice that determines everything. It's the difference between rotation and boost, between finite and infinite unit groups, between J² = −I and J² = +I. Between circles and hyperbolas. Between Pythagoras and Fibonacci.</p>
+</div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    Norm forms and quadratic rings · An interactive essay<br>
+    Background: <a href="https://pi.math.cornell.edu/~hatcher/TN/TNbook.pdf" target="_blank">Hatcher, <em>The Topology of Numbers</em></a>
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════
+//  RING DATA
+// ════════════════════════════════════════════
+const RINGS = {
+  gauss:  { name:'ℤ[i]',   sym:'i',   p:0,  q:-1, delta:-4, thetaLabel:'i',   rule:'i² = −1',     type:'elliptic',   desc:'The Gaussian integers. θ = i with i² = −1. The multiplication matrix is a rotation-dilation — pure rotation when |z| = 1. The norm a² + b² is the sum of two squares, and the unit curve is the circle a² + b² = 1 with four lattice points: ±1, ±i.' },
+  eisen:  { name:'ℤ[ω]',   sym:'ω',   p:-1, q:-1, delta:-3, thetaLabel:'ω',   rule:'ω² = −ω − 1', type:'elliptic',   desc:'The Eisenstein integers. θ = ω = e^{2πi/3} with ω² + ω + 1 = 0. The lattice is hexagonal, the norm a² − ab + b² has six units (the sixth roots of unity), and the multiplication matrix is a skewed rotation-dilation.' },
+  h7:     { name:'ℤ[α₇]',  sym:'α',   p:1,  q:-2, delta:-7, thetaLabel:'(1+√−7)/2', rule:'α² = α − 2',  type:'elliptic',   desc:'The ring of integers of ℚ(√−7). θ = (1+√−7)/2, satisfying θ² = θ − 2. A parallelogram lattice with only two units (±1). Class number 1, so unique factorisation holds — and the associated polynomial x² + x + 2 generates primes (briefly).' },
+  dual:   { name:'ℤ[ε]',   sym:'ε',   p:0,  q:0,  delta:0,  thetaLabel:'ε',   rule:'ε² = 0',      type:'parabolic',  desc:'The dual numbers. θ = ε with ε² = 0 — a nilpotent element. The multiplication matrix is lower-triangular (a shear), the norm a² is blind to the ε-component, and the "unit curve" degenerates to the pair of lines a = ±1. Every element 1 + bε is a unit.' },
+  golden: { name:'ℤ[φ]',   sym:'φ',   p:1,  q:1,  delta:5,  thetaLabel:'(1+√5)/2', rule:'φ² = φ + 1',  type:'hyperbolic', desc:'The golden ratio ring. θ = φ = (1+√5)/2 with φ² = φ + 1. The norm a² + ab − b² is indefinite, taking both positive and negative values. The unit curve is a hyperbola, and the Fibonacci matrix [[1,1],[1,0]] iterates along it, generating the Cassini identity F(n−1)F(n+1) − F(n)² = (−1)ⁿ.' },
+  split:  { name:'ℤ[j]',   sym:'j',   p:0,  q:1,  delta:4,  thetaLabel:'j',   rule:'j² = 1',      type:'hyperbolic', desc:'The split-complex numbers. θ = j with j² = +1 (not −1). The norm a² − b² is the difference of two squares, the classic hyperbolic form. The null directions are the lines a = ±b, and the unit curve a² − b² = 1 is the standard hyperbola.' },
+};
+
+// ════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════
+function norm(ring, a, b) {
+  const {p, q} = ring;
+  return a*a + a*b*p - b*b*q;
+}
+
+function matMul(ring, a, b) {
+  // Returns the 2x2 multiplication matrix entries as [m00, m01, m10, m11]
+  const {p, q} = ring;
+  return [a, b*q, b, a + b*p];
+}
+
+function applyMat(m, x, y) {
+  return [m[0]*x + m[1]*y, m[2]*x + m[3]*y];
+}
+
+// ════════════════════════════════════════════
+//  §2: RING INFO DISPLAY
+// ════════════════════════════════════════════
+function renderRingInfo(ringKey) {
+  const r = RINGS[ringKey];
+  const {p, q} = r;
+  const typeClass = r.type[0]; // 'e', 'p', or 'h'
+
+  // Matrix display
+  const matDiv = document.getElementById('ring-matrix-display');
+  const topRight = q === 0 ? '0' : (q === -1 ? '−b' : (q === -2 ? '−2b' : (q === 1 ? 'b' : q+'b')));
+  const botRight = p === 0 ? 'a' : (p === -1 ? 'a − b' : (p === 1 ? 'a + b' : 'a+'+p+'b'));
+  matDiv.innerHTML = `
+    <span class="matrix-label">M(a, b) =</span>
+    <div class="matrix">
+      <span>a</span><span>${topRight}</span>
+      <span>b</span><span>${botRight}</span>
+    </div>
+    <span class="arrow-eq">→</span>
+    <span class="matrix-label">det = ${normLabel(r)}</span>
+  `;
+
+  // Stats
+  const statsDiv = document.getElementById('ring-stats');
+  statsDiv.innerHTML = `
+    <div class="info-card ${r.type}"><div class="val">${r.name}</div><div class="lbl">Ring</div></div>
+    <div class="info-card ${r.type}"><div class="val">${r.rule}</div><div class="lbl">θ rule</div></div>
+    <div class="info-card ${r.type}"><div class="val">Δ = ${r.delta}</div><div class="lbl">Discriminant</div></div>
+    <div class="info-card ${r.type}"><div class="val"><span class="type-badge ${typeClass}">${r.type}</span></div><div class="lbl">Type</div></div>
+  `;
+
+  // Description
+  document.getElementById('ring-description').textContent = r.desc;
+}
+
+function normLabel(r) {
+  const {p, q} = r;
+  let s = 'a²';
+  if (p === 1) s += ' + ab';
+  else if (p === -1) s += ' − ab';
+  else if (p !== 0) s += ` + ${p}ab`;
+  if (q === 0) {} // nothing
+  else if (-q === 1) s += ' + b²';
+  else if (-q === -1) s += ' − b²';
+  else if (-q > 0) s += ` + ${-q}b²`;
+  else s += ` − ${q}b²`;  // -q is negative => minus
+  return s;
+}
+
+// Pill click handler factory
+function setupPills(containerId, callback) {
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.ring-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.ring-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      callback(btn.dataset.ring);
+    });
+  });
+}
+
+setupPills('ring-pills', (key) => renderRingInfo(key));
+renderRingInfo('gauss');
+
+// ════════════════════════════════════════════
+//  §4: LATTICE & MULTIPLICATION VISUALISATION
+// ════════════════════════════════════════════
+let currentVisRing = 'gauss';
+
+// Draw the unit curve for a ring (norm = target)
+function drawNormCurve(ctx, r, toScreen, target, color, alpha, lineWidth, dashed) {
+  const step = 0.015;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.globalAlpha = alpha;
+  if (dashed) ctx.setLineDash([5, 4]); else ctx.setLineDash([]);
+
+  if (r.delta === 0) {
+    // Parabolic: a² = target => a = ±√target
+    const aVal = Math.sqrt(Math.abs(target));
+    if (target > 0) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(aVal, -8)); ctx.lineTo(...toScreen(aVal, 8)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...toScreen(-aVal, -8)); ctx.lineTo(...toScreen(-aVal, 8)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  // General: -q b² + ap b + (a² - target) = 0
+  const denom = -2 * r.q;
+  if (Math.abs(denom) < 1e-10) { ctx.setLineDash([]); ctx.globalAlpha = 1; return; }
+
+  for (let t = -8; t < 8; t += step) {
+    const a = t;
+    const disc = a*a*r.p*r.p + 4*r.q*(a*a - target);
+    if (disc < 0) continue;
+    const sqrtDisc = Math.sqrt(disc);
+    const b1 = (-a*r.p + sqrtDisc) / denom;
+    const b2 = (-a*r.p - sqrtDisc) / denom;
+
+    const aNext = t + step;
+    const discNext = aNext*aNext*r.p*r.p + 4*r.q*(aNext*aNext - target);
+    if (discNext < 0) continue;
+    const sqrtDiscNext = Math.sqrt(discNext);
+    const b1Next = (-aNext*r.p + sqrtDiscNext) / denom;
+    const b2Next = (-aNext*r.p - sqrtDiscNext) / denom;
+
+    if (Math.abs(b1) < 8 && Math.abs(b1Next) < 8) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(a, b1)); ctx.lineTo(...toScreen(aNext, b1Next)); ctx.stroke();
+    }
+    if (Math.abs(b2) < 8 && Math.abs(b2Next) < 8 && Math.abs(b1 - b2) > 0.005) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(a, b2)); ctx.lineTo(...toScreen(aNext, b2Next)); ctx.stroke();
+    }
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
+
+// Draw null directions for hyperbolic
+function drawNullDirs(ctx, r, toScreen, color) {
+  if (r.type !== 'hyperbolic') return;
+  const sqD = Math.sqrt(r.delta);
+  const slope1 = (-r.p + sqD) / 2;
+  const slope2 = (-r.p - sqD) / 2;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.18;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  // norm(a,b) = 0 means a/b = slope => b = a/slope
+  if (Math.abs(slope1) > 0.001) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(-7, -7/slope1)); ctx.lineTo(...toScreen(7, 7/slope1)); ctx.stroke();
+  }
+  if (Math.abs(slope2) > 0.001) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(-7, -7/slope2)); ctx.lineTo(...toScreen(7, 7/slope2)); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
+
+// Draw grid and axes
+function drawGrid(ctx, W, H, toScreen) {
+  ctx.fillStyle = '#faf8f4';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#e8e4da';
+  ctx.lineWidth = 0.5;
+  for (let i = -8; i <= 8; i++) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(i, -8)); ctx.lineTo(...toScreen(i, 8)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...toScreen(-8, i)); ctx.lineTo(...toScreen(8, i)); ctx.stroke();
+  }
+  ctx.strokeStyle = '#ccc5b8';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(...toScreen(-8,0)); ctx.lineTo(...toScreen(8,0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...toScreen(0,-8)); ctx.lineTo(...toScreen(0,8)); ctx.stroke();
+}
+
+// Draw lattice points with norm-based colouring
+function drawLatticePoints(ctx, r, toScreen, points, curveColor, W, H) {
+  points.forEach(({a, b, origA, origB}) => {
+    const [sx, sy] = toScreen(a, b);
+    if (sx < -15 || sx > W+15 || sy < -15 || sy > H+15) return;
+
+    const n = norm(r, origA, origB); // norm of the ORIGINAL element
+    let color = '#aaa';
+    let radius = 2.5;
+    if (origA === 0 && origB === 0) {
+      color = '#333'; radius = 4;
+    } else if (Math.abs(Math.abs(n) - 1) < 0.01) {
+      color = curveColor; radius = 5; // unit
+    } else if (Math.abs(n) < 0.01) {
+      color = '#cc3333'; radius = 4; // null norm (hyperbolic)
+    }
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+}
+
+function drawPanel(canvasId, ringKey, multA, multB, isRightPanel) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const scale = 34;
+  const r = RINGS[ringKey];
+  const colors = { elliptic: '#1a6b4e', parabolic: '#8a6e1e', hyperbolic: '#2a4fb5' };
+  const curveColor = colors[r.type];
+
+  function toScreen(a, b) { return [cx + a * scale, cy - b * scale]; }
+
+  ctx.clearRect(0, 0, W, H);
+  drawGrid(ctx, W, H, toScreen);
+
+  const mat = matMul(r, multA, multB);
+  const det = norm(r, multA, multB);
+
+  if (isRightPanel) {
+    // RIGHT PANEL: show original lattice faded, image sublattice bold
+    // Also show the image of the unit curve under the multiplication map
+
+    // Original lattice (faded)
+    const origPts = [];
+    for (let ai = -8; ai <= 8; ai++) {
+      for (let bi = -8; bi <= 8; bi++) {
+        origPts.push({a: ai, b: bi, origA: ai, origB: bi});
+      }
+    }
+    ctx.globalAlpha = 0.15;
+    origPts.forEach(({a, b}) => {
+      const [sx, sy] = toScreen(a, b);
+      if (sx < -10 || sx > W+10 || sy < -10 || sy > H+10) return;
+      ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI*2);
+      ctx.fillStyle = '#bbb'; ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // Image sublattice: apply M to each lattice point
+    // The image of (ai, bi) under multiplication by z = multA + multB*θ
+    // is the ring element z * (ai + bi*θ), whose coordinates come from matrix multiplication
+    const imgPts = [];
+    for (let ai = -12; ai <= 12; ai++) {
+      for (let bi = -12; bi <= 12; bi++) {
+        const [ia, ib] = applyMat(mat, ai, bi);
+        imgPts.push({a: ia, b: ib, origA: ai, origB: bi});
+      }
+    }
+    drawLatticePoints(ctx, r, toScreen, imgPts, curveColor, W, H);
+
+    // Draw the fundamental parallelogram of the image sublattice
+    // Basis vectors of image: M applied to (1,0) and (0,1)
+    const [e1a, e1b] = applyMat(mat, 1, 0); // image of "1"
+    const [e2a, e2b] = applyMat(mat, 0, 1); // image of "θ"
+
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 1.8;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(...toScreen(0, 0));
+    ctx.lineTo(...toScreen(e1a, e1b));
+    ctx.lineTo(...toScreen(e1a + e2a, e1b + e2b));
+    ctx.lineTo(...toScreen(e2a, e2b));
+    ctx.closePath();
+    ctx.stroke();
+
+    // Fill the parallelogram lightly
+    ctx.fillStyle = curveColor;
+    ctx.globalAlpha = 0.06;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Draw basis vectors as arrows
+    ctx.globalAlpha = 0.7;
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 2;
+    // Arrow for e1
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(e1a, e1b)); ctx.stroke();
+    ctx.beginPath();
+    const [t1x, t1y] = toScreen(e1a, e1b);
+    ctx.arc(t1x, t1y, 4, 0, Math.PI*2);
+    ctx.fillStyle = curveColor; ctx.fill();
+    // Arrow for e2
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(e2a, e2b)); ctx.stroke();
+    ctx.beginPath();
+    const [t2x, t2y] = toScreen(e2a, e2b);
+    ctx.arc(t2x, t2y, 4, 0, Math.PI*2);
+    ctx.fillStyle = curveColor; ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Label
+    ctx.fillStyle = '#888';
+    ctx.font = '10px "Fira Code"';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Image sublattice · det(M) = ${det} · area ×${Math.abs(det)}`, W/2, H - 6);
+
+  } else {
+    // LEFT PANEL: original lattice with unit curve
+
+    // Unit curve N = 1
+    drawNormCurve(ctx, r, toScreen, 1, curveColor, 0.5, 2, false);
+
+    // N = -1 for hyperbolic (dashed)
+    if (r.type === 'hyperbolic') {
+      drawNormCurve(ctx, r, toScreen, -1, curveColor, 0.3, 1.5, true);
+    }
+
+    // Null directions
+    drawNullDirs(ctx, r, toScreen, curveColor);
+
+    // Lattice points
+    const pts = [];
+    for (let ai = -8; ai <= 8; ai++) {
+      for (let bi = -8; bi <= 8; bi++) {
+        pts.push({a: ai, b: bi, origA: ai, origB: bi});
+      }
+    }
+    drawLatticePoints(ctx, r, toScreen, pts, curveColor, W, H);
+
+    // Draw basis vectors
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(1,0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(0,1)); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Highlight the element we'll multiply by
+    if (multA !== 0 || multB !== 0) {
+      const [zx, zy] = toScreen(multA, multB);
+      ctx.beginPath();
+      ctx.arc(zx, zy, 7, 0, Math.PI*2);
+      ctx.strokeStyle = '#b5432a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#b5432a';
+      ctx.font = 'bold 10px "Fira Code"';
+      ctx.textAlign = 'left';
+      ctx.fillText(`z`, zx + 10, zy - 4);
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#999';
+    ctx.font = '11px "Fira Code"';
+    ctx.textAlign = 'left';
+    ctx.fillText('a', W - 16, cy - 6);
+    ctx.fillText('b', cx + 6, 14);
+  }
+}
+
+function updateVis() {
+  const a = parseInt(document.getElementById('slider-a').value);
+  const b = parseInt(document.getElementById('slider-b').value);
+  document.getElementById('val-a').textContent = a;
+  document.getElementById('val-b').textContent = b;
+
+  drawPanel('lattice-canvas', currentVisRing, a, b, false);
+  drawPanel('mult-canvas', currentVisRing, a, b, true);
+
+  const r = RINGS[currentVisRing];
+  const n = norm(r, a, b);
+  const infoDiv = document.getElementById('mult-info');
+  const typeClass = r.type;
+
+  let orientLabel;
+  if (n > 0) orientLabel = 'Preserved (+)';
+  else if (n < 0) orientLabel = 'Reversed (−)';
+  else orientLabel = 'Degenerate (0)';
+
+  infoDiv.innerHTML = `
+    <div class="info-card ${typeClass}"><div class="val">${a} + ${b}${r.sym}</div><div class="lbl">Element z</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${n}</div><div class="lbl">N(z) = det(M)</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${orientLabel}</div><div class="lbl">Orientation</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${Math.abs(n)}×</div><div class="lbl">Area scaling</div></div>
+  `;
+}
+
+setupPills('vis-pills', (key) => { currentVisRing = key; updateVis(); });
+document.getElementById('slider-a').addEventListener('input', updateVis);
+document.getElementById('slider-b').addEventListener('input', updateVis);
+
+const PRESET_COMMENTS = {
+  'gauss_1_2': '<strong>Rotation-dilation.</strong> N(1+2i) = 1² + 2² = 5. The lattice rotates by arctan(2) ≈ 63° and scales by √5. The parallelogram has area 5 — exactly 5 original lattice cells fit inside one image cell. Every lattice point maps somewhere; none vanish. The four unit points (±1, ±i) map to their images at (1,2), (−2,1), (−1,−2), (2,−1).',
+  'gauss_0_1': '<strong>Pure rotation (unit).</strong> N(i) = 0² + 1² = 1. Multiplying by i rotates everything 90° counterclockwise. Area ×1 — the sublattice is the original lattice, just rotated. This is the J map itself: the almost-complex structure in action.',
+  'eisen_1_1': '<strong>Hexagonal rotation-dilation.</strong> N(1+ω) = 1² − 1·1 + 1² = 1. This is a unit! The Eisenstein lattice maps to itself under multiplication by 1+ω = −ω², a sixth root of unity. The parallelogram has area 1 and the lattice is unchanged — just rotated by 60°.',
+  'golden_1_1': '<strong>Hyperbolic boost (unit).</strong> N(φ) = 1² + 1·1 − 1² = 1. The golden ratio is a unit — area is preserved. But unlike the elliptic cases, the lattice doesn\'t rotate; it <em>boosts</em> along the hyperbola. Points stretch along one null direction and compress along the other. This is the para-complex structure J̃² = +I at work. The Fibonacci matrix [[1,1],[1,0]] iterates this boost, stepping along the Pell hyperbola.',
+  'split_2_1': '<strong>Area ×3, orientation preserved.</strong> N(2+j) = 4 − 1 = 3. The lattice spreads out, with 3 original cells per image cell. det > 0, so orientation is preserved — the parallelogram has the same handedness as the original.',
+  'split_1_2': '<strong>Area ×3, orientation REVERSED.</strong> N(1+2j) = 1 − 4 = −3. Same absolute area distortion as 2+j, but now det < 0: the parallelogram has <em>flipped</em>. The multiplication map has crossed a null direction, reversing the handedness of the lattice. This is the orientation flip that never happens in elliptic rings — the hyperbolic signature makes it possible.',
+  'dual_3_4': '<strong>Pure shear.</strong> N(3+4ε) = 3² = 9. The norm is completely blind to the ε-component — changing b from 0 to 4 changes nothing about the area. The matrix [[3, 0], [4, 3]] is lower-triangular: a shear. It stretches the a-direction by 3 and slides the b-direction sideways, but the b-axis contributes zero area. This is the degenerate/parabolic case: ε is an infinitesimal that the norm cannot see.',
+};
+
+function setPreset(ringKey, a, b) {
+  // Update ring pill
+  const visPills = document.getElementById('vis-pills');
+  visPills.querySelectorAll('.ring-pill').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.ring === ringKey) btn.classList.add('active');
+  });
+  currentVisRing = ringKey;
+
+  // Update sliders
+  document.getElementById('slider-a').value = a;
+  document.getElementById('slider-b').value = b;
+
+  // Show commentary
+  const key = ringKey + '_' + a + '_' + b;
+  const commentDiv = document.getElementById('preset-commentary');
+  if (PRESET_COMMENTS[key]) {
+    commentDiv.innerHTML = PRESET_COMMENTS[key];
+    commentDiv.style.display = 'block';
+  } else {
+    commentDiv.style.display = 'none';
+  }
+
+  updateVis();
+}
+
+updateVis();
+
+// ════════════════════════════════════════════
+//  §5: J and J² VISUALISATION
+// ════════════════════════════════════════════
+let currentJRing = 'gauss';
+
+function drawJAction(canvasId, ringKey, squared) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const scale = 60;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#faf8f4';
+  ctx.fillRect(0, 0, W, H);
+
+  const r = RINGS[ringKey];
+
+  function toScreen(x, y) { return [cx + x*scale, cy - y*scale]; }
+
+  // Grid
+  ctx.strokeStyle = '#e8e4da';
+  ctx.lineWidth = 0.5;
+  for (let i = -4; i <= 4; i++) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(i, -4)); ctx.lineTo(...toScreen(i, 4)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...toScreen(-4, i)); ctx.lineTo(...toScreen(4, i)); ctx.stroke();
+  }
+  ctx.strokeStyle = '#ccc5b8';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(...toScreen(-4,0)); ctx.lineTo(...toScreen(4,0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...toScreen(0,-4)); ctx.lineTo(...toScreen(0,4)); ctx.stroke();
+
+  // J matrix: M(0, 1)
+  const J = matMul(r, 0, 1); // [0, q, 1, p]
+
+  // J²: multiply J by J
+  const J2 = [
+    J[0]*J[0] + J[1]*J[2], J[0]*J[1] + J[1]*J[3],
+    J[2]*J[0] + J[3]*J[2], J[2]*J[1] + J[3]*J[3]
+  ];
+
+  const M = squared ? J2 : J;
+
+  // Draw unit circle, then its image under M
+  const nPts = 120;
+  const colors = { elliptic: '#1a6b4e', parabolic: '#8a6e1e', hyperbolic: '#2a4fb5' };
+  const col = colors[r.type];
+
+  // Original unit circle (faded)
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i <= nPts; i++) {
+    const t = (i / nPts) * Math.PI * 2;
+    const [sx, sy] = toScreen(Math.cos(t), Math.sin(t));
+    if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  // Image of unit circle under M
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  let first = true;
+  for (let i = 0; i <= nPts; i++) {
+    const t = (i / nPts) * Math.PI * 2;
+    const x = Math.cos(t), y = Math.sin(t);
+    const [mx, my] = applyMat(M, x, y);
+    const [sx, sy] = toScreen(mx, my);
+    if (sx < -20 || sx > W+20 || sy < -20 || sy > H+20) { first = true; continue; }
+    if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
+  }
+  ctx.stroke();
+
+  // Draw a few vectors showing the action
+  ctx.globalAlpha = 0.6;
+  const arrows = [[1,0], [0,1], [0.707,0.707], [-0.707,0.707]];
+  arrows.forEach(([x,y]) => {
+    const [mx, my] = applyMat(M, x, y);
+
+    // Original (grey)
+    ctx.strokeStyle = '#bbb';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(...toScreen(0,0));
+    ctx.lineTo(...toScreen(x, y));
+    ctx.stroke();
+
+    // Image (colored)
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(...toScreen(0,0));
+    ctx.lineTo(...toScreen(mx, my));
+    ctx.stroke();
+
+    // Arrow tip
+    const [tipX, tipY] = toScreen(mx, my);
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, 3, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // Label
+  ctx.fillStyle = '#666';
+  ctx.font = '11px "Fira Code"';
+  ctx.textAlign = 'center';
+  const label = squared ? 'J²' : 'J';
+  ctx.fillText(`Grey: input · Color: ${label}(input)`, W/2, H - 8);
+}
+
+function updateJ() {
+  drawJAction('j-canvas', currentJRing, false);
+  drawJAction('j2-canvas', currentJRing, true);
+
+  const r = RINGS[currentJRing];
+  const J = matMul(r, 0, 1);
+  const J2 = [
+    J[0]*J[0] + J[1]*J[2], J[0]*J[1] + J[1]*J[3],
+    J[2]*J[0] + J[3]*J[2], J[2]*J[1] + J[3]*J[3]
+  ];
+
+  const infoDiv = document.getElementById('j-info');
+  const typeClass = r.type;
+
+  let j2Label, j2Meaning;
+  if (r.delta < 0) {
+    j2Label = '−I (after normalisation)';
+    j2Meaning = 'Almost-complex: rotation by 2×arg(θ)';
+  } else if (r.delta === 0) {
+    j2Label = '0';
+    j2Meaning = 'Nilpotent: collapses to zero';
+  } else {
+    j2Label = '+I (after normalisation)';
+    j2Meaning = 'Para-complex: boost doubling';
+  }
+
+  infoDiv.innerHTML = `
+    <div class="info-card ${typeClass}"><div class="val">[[${J[0]}, ${J[1]}], [${J[2]}, ${J[3]}]]</div><div class="lbl">J = M(0, 1)</div></div>
+    <div class="info-card ${typeClass}"><div class="val">[[${J2[0]}, ${J2[1]}], [${J2[2]}, ${J2[3]}]]</div><div class="lbl">J²</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${j2Label}</div><div class="lbl">J̃² type</div></div>
+  `;
+
+  // Verify: J² = pJ + qI
+  const check = `${r.p}·J + ${r.q}·I = [[${r.p*J[0]+r.q}, ${r.p*J[1]}], [${r.p*J[2]}, ${r.p*J[3]+r.q}]]`;
+  // Could display this too
+}
+
+setupPills('j-pills', (key) => { currentJRing = key; updateJ(); });
+updateJ();
+
+</script>
+
+</body>
+</html>
