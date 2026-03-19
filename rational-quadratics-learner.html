@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rational Points on Quadratic Curves — A Guided Ascent</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a2e;
+  --paper: #f5f0e8;
+  --accent: #8b4513;
+  --accent-light: #d4a574;
+  --correct: #2d6a4f;
+  --correct-bg: #d8f3dc;
+  --wrong: #9b2226;
+  --wrong-bg: #fde8e8;
+  --hint-bg: #fff3cd;
+  --hint-border: #c9a227;
+  --section-locked: #bbb;
+  --shadow: rgba(26, 26, 46, 0.08);
+  --radius: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 19px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--accent-light);
+}
+
+header h1 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
+}
+
+header .subtitle {
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #666;
+  font-weight: 300;
+}
+
+/* Progress bar */
+.progress-strip {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid #ddd;
+  padding: 8px 0;
+}
+
+.progress-bar-outer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.progress-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 2.5rem;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.section.locked {
+  opacity: 0.25;
+  pointer-events: none;
+  filter: blur(1.5px);
+}
+
+.section-num {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.section h2 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #e0d8cc;
+}
+
+.section p {
+  margin-bottom: 1rem;
+}
+
+.math-block {
+  background: #fff;
+  border-left: 3px solid var(--accent-light);
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.math-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  background: #f0ebe3;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.key-idea {
+  background: linear-gradient(135deg, #fff9f0, #fff5e6);
+  border: 1px solid var(--accent-light);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  position: relative;
+}
+
+.key-idea::before {
+  content: '💡';
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  font-size: 1.1rem;
+  background: var(--paper);
+  padding: 0 4px;
+}
+
+em.term {
+  color: var(--accent);
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Q&A Gates */
+.qa-gate {
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.8rem 0;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.qa-gate.completed {
+  border-color: var(--correct);
+  background: #f8fdf9;
+}
+
+.qa-gate .gate-label {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+}
+
+.qa-gate .question {
+  font-weight: 400;
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0.8rem;
+}
+
+.option-btn {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  text-align: left;
+  padding: 10px 14px;
+  border: 1.5px solid #d0c8bc;
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.option-btn:hover:not(.chosen) {
+  background: #f5efe5;
+  border-color: var(--accent-light);
+}
+
+.option-btn.chosen.correct-choice {
+  background: var(--correct-bg);
+  border-color: var(--correct);
+  color: var(--correct);
+  font-weight: 600;
+}
+
+.option-btn.chosen.wrong-choice {
+  background: var(--wrong-bg);
+  border-color: var(--wrong);
+  color: var(--wrong);
+}
+
+.option-btn.reveal-correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+}
+
+.option-btn:disabled {
+  cursor: default;
+}
+
+.feedback {
+  margin-top: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: none;
+}
+
+.feedback.show { display: block; }
+
+.feedback.correct-fb {
+  background: var(--correct-bg);
+  border-left: 3px solid var(--correct);
+  color: var(--correct);
+}
+
+.feedback.wrong-fb {
+  background: var(--wrong-bg);
+  border-left: 3px solid var(--wrong);
+  color: var(--wrong);
+}
+
+.hint-toggle {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.85rem;
+  color: var(--hint-border);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 0.5rem;
+}
+
+.hint-box {
+  background: var(--hint-bg);
+  border-left: 3px solid var(--hint-border);
+  padding: 0.7rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 0.92rem;
+  display: none;
+}
+
+.hint-box.show { display: block; }
+
+/* Free-response */
+.free-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+.free-input-row input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  border: 1.5px solid #d0c8bc;
+  border-radius: var(--radius);
+  background: #fff;
+  flex: 1;
+  min-width: 120px;
+}
+
+.free-input-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.submit-btn {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover { background: #6d3710; }
+.submit-btn:disabled { background: #bbb; cursor: default; }
+
+/* Unlock animation */
+@keyframes unlockFade {
+  from { opacity: 0.25; filter: blur(1.5px); transform: translateY(10px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+.section.just-unlocked {
+  animation: unlockFade 0.6s ease forwards;
+}
+
+/* Completion banner */
+.completion-banner {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #fff9f0, #f0ebe3);
+  border: 2px solid var(--accent-light);
+  border-radius: var(--radius);
+  margin-top: 2rem;
+  display: none;
+}
+
+.completion-banner.show { display: block; }
+
+.completion-banner h2 {
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--accent);
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  border: none;
+}
+
+.score-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--correct);
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header h1 { font-size: 1.5rem; }
+  .container { padding: 2rem 1rem 4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-strip">
+  <div class="progress-bar-outer">
+    <span id="progressLabel">0 / 10</span>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<header>
+  <h1>Rational Points on Quadratic Curves</h1>
+  <div class="subtitle">A guided ascent through Legendre's Theorem and its proof</div>
+</header>
+
+<!-- ═══════════════ SECTION 1 ═══════════════ -->
+<div class="section" id="sec1">
+  <div class="section-num">Stage 1</div>
+  <h2>The Starting Question</h2>
+  <p>We begin with a natural question: given a quadratic curve like 2x² + 7y² = 1, does it pass through any <em class="term">rational points</em> — points (x, y) where both coordinates are rational numbers?</p>
+  <p>More generally, when does a curve of the form <strong>ax² + bxy + cy² = d</strong> contain rational points? We may assume a, b, c, d are integers (if they're rational, just multiply through by a common denominator).</p>
+
+  <div class="key-idea">
+    The first simplification: eliminate the cross-term <strong>bxy</strong>. If a ≠ 0, complete the square in x to rewrite the left side as a(x + (b/2a)y)² + (c − b²/4a)y². Then substitute X = x + (b/2a)y, Y = y — this is invertible, so rational (x,y) correspond bijectively to rational (X,Y).
+  </div>
+
+  <p>After this change of variables, any quadratic curve reduces to the <em class="term">diagonal form</em>: <strong>aX² + c′Y² = d</strong>, with no cross-term.</p>
+
+  <div class="qa-gate" id="q1">
+    <div class="gate-label">Checkpoint 1</div>
+    <div class="question">Why does completing the square preserve the existence of rational points? What property of the substitution X = x + (b/2a)y matters?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">It preserves integer points, which is what we need</button>
+      <button class="option-btn" data-idx="1">The substitution is invertible over ℚ, so rational solutions map bijectively</button>
+      <button class="option-btn" data-idx="2">It only works when b is even</button>
+      <button class="option-btn" data-idx="3">It reduces the degree of the equation</button>
+    </div>
+    <div class="feedback correct-fb" id="q1-correct">Exactly. The substitution x = X − (b/2a)Y, y = Y is linear with rational coefficients and invertible — so rational (x,y) ↔ rational (X,Y) one-to-one. The degree stays at 2; we've only removed the cross-term.</div>
+    <div class="feedback wrong-fb" id="q1-wrong">Not quite. The key is that X = x + (b/2a)y is an <em>invertible linear map over ℚ</em>. We can always undo it: x = X − (b/2a)Y. So rational solutions of one form correspond exactly to rational solutions of the other. Integer points aren't preserved in general — and the degree doesn't change.</div>
+    <button class="hint-toggle" onclick="toggleHint('q1-hint')">Hint</button>
+    <div class="hint-box" id="q1-hint">Think about what "invertible over ℚ" means. Can you go back from (X, Y) to (x, y) using only rational arithmetic?</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 2 ═══════════════ -->
+<div class="section locked" id="sec2">
+  <div class="section-num">Stage 2</div>
+  <h2>Homogenising: Two Variables to Three</h2>
+  <p>So we've reduced to asking: does <strong>ax² + by² = c</strong> have rational solutions? Here's a clever move. Write rational x = X/Z and y = Y/Z for integers X, Y, Z. Then the equation becomes:</p>
+
+  <div class="math-block">aX² + bY² = cZ²</div>
+
+  <p>We've gone from 2 rational unknowns to 3 integer unknowns. This looks worse — but the new equation is <em class="term">homogeneous</em> (every term has degree 2). That means if (X, Y, Z) is a solution, so is (kX, kY, kZ) for any scalar k. This is a powerful structural property.</p>
+
+  <p>We exclude the trivial solution (0, 0, 0) and require Z ≠ 0 (to recover actual points on the original curve).</p>
+
+  <div class="qa-gate" id="q2">
+    <div class="gate-label">Checkpoint 2</div>
+    <div class="question">Suppose (X, Y, Z) = (6, 10, 4) solves aX² + bY² = cZ². What simpler solution can you extract, and why?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">Divide by gcd(6,10,4) = 2 to get (3, 5, 2) — homogeneity lets us scale freely</button>
+      <button class="option-btn" data-idx="1">No simpler solution exists since the numbers are already small</button>
+      <button class="option-btn" data-idx="2">Set Z = 1 to get (6, 10, 1)</button>
+    </div>
+    <div class="feedback correct-fb" id="q2-correct">Right. Homogeneity means (kX, kY, kZ) is a solution for any k — including k = 1/2. So (3, 5, 2) works too. We can always divide out common factors to get a <em>primitive</em> solution where gcd(X, Y, Z) = 1.</div>
+    <div class="feedback wrong-fb" id="q2-wrong">Since the equation is homogeneous, we can scale solutions freely. Dividing (6, 10, 4) by gcd = 2 gives (3, 5, 2), which is also a solution. You can't just set Z = 1 — that changes the equation's balance.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 3 ═══════════════ -->
+<div class="section locked" id="sec3">
+  <div class="section-num">Stage 3</div>
+  <h2>Stripping the Coefficients</h2>
+  <p>Before tackling the hard question (when do solutions exist?), we simplify the coefficients of <strong>ax² + by² = cz²</strong>. Three reductions:</p>
+  <p><strong>1. Make each coefficient squarefree.</strong> If a = a′d² for d > 1, replace x with dx to absorb the square — the equation becomes a′x² + by² = cz² with smaller |a|. Repeat for b and c.</p>
+  <p><strong>2. Remove common prime factors from all three.</strong> If p | a, b, c, divide through by p.</p>
+  <p><strong>3. Remove common prime factors from any pair.</strong> If p | a and p | b (but p ∤ c), multiply the equation by p and absorb p into x and y. This decreases |abc| by a factor of p. Iterate until a, b, c are pairwise coprime.</p>
+
+  <div class="key-idea">
+    After these reductions: a, b, c are <em class="term">squarefree</em> and <em class="term">pairwise coprime</em>. This is the "cleaned up" form that Legendre's Theorem addresses.
+  </div>
+
+  <div class="qa-gate" id="q3">
+    <div class="gate-label">Checkpoint 3</div>
+    <div class="question">Consider the equation 12x² + 18y² = 6z². After the full simplification procedure, what equation do we end up with?</div>
+    <div class="free-input-row">
+      <input type="text" id="q3-input" placeholder="e.g. 2x² + 3y² = z²">
+      <button class="submit-btn" id="q3-submit">Check</button>
+    </div>
+    <div class="feedback correct-fb" id="q3-correct">That's it. 12 = 4·3, 18 = 2·9, 6 = 2·3. First divide all three by 6 → 2x² + 3y² = z². Now 2, 3, 1 are squarefree and pairwise coprime. Done.</div>
+    <div class="feedback wrong-fb" id="q3-wrong">Let's work through it: first divide 12, 18, 6 by their gcd (6) to get 2x² + 3y² = z². Check: 2, 3, 1 are squarefree and pairwise coprime — so we're done. The answer is <strong>2x² + 3y² = z²</strong>.</div>
+    <button class="hint-toggle" onclick="toggleHint('q3-hint')">Hint</button>
+    <div class="hint-box" id="q3-hint">Start by dividing all three coefficients by their gcd. Then check if any coefficient still has a square factor.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 4 ═══════════════ -->
+<div class="section locked" id="sec4">
+  <div class="section-num">Stage 4</div>
+  <h2>Legendre's Theorem — The Statement</h2>
+  <p>Now the main result. With a, b, c squarefree, pairwise coprime, and nonzero:</p>
+
+  <div class="math-block">
+    <strong>Theorem (Legendre).</strong> The equation ax² + by² = cz² has a nontrivial integer solution if and only if:<br><br>
+    (i) ac is a square mod b,<br>
+    (ii) bc is a square mod a,<br>
+    (iii) −ab is a square mod c,<br>
+    (iv) a and b do not both have the opposite sign from c.
+  </div>
+
+  <p>Condition (iv) is just the sign constraint — if a, b > 0 and c < 0, the left side is positive and the right side is negative, so no solution. The deep content is in conditions (i)–(iii): three <em class="term">modular square</em> conditions, one for each coefficient.</p>
+
+  <p>Note the symmetry: rewrite as ax² + by² + (−c)z² = 0, and the conditions become "−ac is a square mod b", "−bc is a square mod a", "ab is a square mod c", with no three coefficients sharing a sign. Each condition involves the other two coefficients, modulo the third.</p>
+
+  <div class="qa-gate" id="q4">
+    <div class="gate-label">Checkpoint 4</div>
+    <div class="question">For the equation x² + y² = 3z², we have a=1, b=1, c=3. Check condition (iii): is −ab = −1 a square mod 3?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">Yes — since −1 ≡ 2 mod 3, and 2 is not a perfect square, but we only need a square mod 3</button>
+      <button class="option-btn" data-idx="1">No — the squares mod 3 are 0 and 1, and −1 ≡ 2 mod 3 is neither</button>
+      <button class="option-btn" data-idx="2">Yes — (−1)² = 1 is a square</button>
+    </div>
+    <div class="feedback correct-fb" id="q4-correct">Correct. The squares mod 3 are 0² ≡ 0 and 1² ≡ 1 (and 2² ≡ 1), so the only quadratic residues mod 3 are {0, 1}. Since −1 ≡ 2 mod 3 is not among them, condition (iii) fails. This tells us x² + y² = 3z² has no nontrivial solution — which you can verify by trying small values!</div>
+    <div class="feedback wrong-fb" id="q4-wrong">Careful: we need to check whether 2 (since −1 ≡ 2 mod 3) is a <em>quadratic residue mod 3</em>. The squares mod 3 are: 0² = 0, 1² = 1, 2² = 4 ≡ 1. So the quadratic residues mod 3 are just {0, 1}. Since 2 ∉ {0,1}, condition (iii) <strong>fails</strong>. The equation has no nontrivial solution.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 5 ═══════════════ -->
+<div class="section locked" id="sec5">
+  <div class="section-num">Stage 5</div>
+  <h2>The Forward Direction — Why the Conditions Are Necessary</h2>
+  <p>Suppose (x, y, z) ≠ (0,0,0) satisfies ax² + by² = cz². First, we may assume gcd(x,y) = gcd(x,z) = gcd(y,z) = 1 — any shared prime factor can be divided out (using squarefreeness of the coefficients to ensure this works cleanly).</p>
+
+  <p>Now, working mod b: the equation gives ax² ≡ cz² mod b. Multiply both sides by c:</p>
+
+  <div class="math-block">
+    acx² ≡ c²z² (mod b)
+  </div>
+
+  <p>Since x and b are coprime (why? any prime dividing both x and b would force it to divide cz², hence c or z — contradicting coprimality of b,c and coprimality of x,z), x has a multiplicative inverse mod b. Multiplying by (x⁻¹)²:</p>
+
+  <div class="math-block">
+    ac ≡ (cz · x⁻¹)² (mod b)
+  </div>
+
+  <p>So ac is a square mod b. The same argument, permuting roles, gives the other two conditions.</p>
+
+  <div class="qa-gate" id="q5">
+    <div class="gate-label">Checkpoint 5</div>
+    <div class="question">In the step "any prime dividing both x and b would divide cz²" — why does this lead to a contradiction?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">Because c is squarefree</button>
+      <button class="option-btn" data-idx="1">Because if p | b and p | cz², then p | c or p | z. But gcd(b,c)=1 and gcd(x,z)=1, so neither is possible</button>
+      <button class="option-btn" data-idx="2">Because a prime can't divide three things at once</button>
+    </div>
+    <div class="feedback correct-fb" id="q5-correct">Exactly. Since p divides cz², either p | c or p | z (p is prime). But b and c are coprime, ruling out p | c. And if p | x and p | z, that contradicts pairwise coprimality of the solution. Both escape routes are blocked.</div>
+    <div class="feedback wrong-fb" id="q5-wrong">The argument is more specific: if p | b and p | cz², then (since p is prime) p | c or p | z. The first contradicts gcd(b,c) = 1; the second contradicts gcd(x,z) = 1 (since we assumed p | x too). Two separate coprimality conditions each block one possibility.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 6 ═══════════════ -->
+<div class="section locked" id="sec6">
+  <div class="section-num">Stage 6</div>
+  <h2>The Converse Strategy — Factoring mod abc</h2>
+  <p>The converse is the hard part: assuming the three quadratic residue conditions, <em>construct</em> a solution. The strategy is beautiful.</p>
+
+  <p>If we could factor ax² + by² + cz² = (a₁x + b₁y + c₁z)(a₂x + b₂y + c₂z) over ℤ, we'd just solve one linear factor = 0. This almost never works over ℤ. But the quadratic residue conditions guarantee a factorisation <strong>modulo abc</strong>.</p>
+
+  <p>Here's the idea for the mod-a piece. We need to factor by² + cz² mod a. Multiply by b to get b²y² + bcz². Since −bc ≡ r² mod a for some r (this is one of our conditions!), we get b²y² − r²z² ≡ (by + rz)(by − rz) mod a. Dividing by b (which is coprime to a, hence invertible mod a) gives the factorisation.</p>
+
+  <p>Do the same mod b and mod c, then glue the three factorisations together using the <em class="term">Chinese Remainder Theorem</em> to get a single factorisation mod abc.</p>
+
+  <div class="qa-gate" id="q6">
+    <div class="gate-label">Checkpoint 6</div>
+    <div class="question">Why can we "divide by b" when factoring mod a? What algebraic property is being used?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">b divides a, so division is exact</button>
+      <button class="option-btn" data-idx="1">Since gcd(a,b) = 1, b has a multiplicative inverse mod a — "dividing by b" means multiplying by b⁻¹</button>
+      <button class="option-btn" data-idx="2">We're working in ℚ so division is always possible</button>
+    </div>
+    <div class="feedback correct-fb" id="q6-correct">Exactly right. In modular arithmetic, "dividing by b mod a" means multiplying by b⁻¹ mod a. This inverse exists precisely because gcd(a,b) = 1 — which we arranged in the coefficient simplification stage. Every reduction we made earlier is paying off here.</div>
+    <div class="feedback wrong-fb" id="q6-wrong">We're working in ℤ/aℤ, not in ℚ. Division in modular arithmetic requires a <em>multiplicative inverse</em>: b⁻¹ mod a exists if and only if gcd(a,b) = 1. Since a and b are coprime (we made sure of that!), b has an inverse mod a.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 7 ═══════════════ -->
+<div class="section locked" id="sec7">
+  <div class="section-num">Stage 7</div>
+  <h2>The Pigeonhole Step — Bounding the Solution</h2>
+  <p>We now have a linear congruence a₁x + b₁y + c₁z ≡ 0 mod abc coming from the factorisation. We need an actual integer solution where ax² + by² + cz² is small.</p>
+
+  <p>Consider all integer triples (x, y, z) with 0 ≤ x < α, 0 ≤ y < β, 0 ≤ z < γ. The number of such triples is λ(α)λ(β)λ(γ), where λ(t) counts integers in [0, t). If t is not an integer, λ(t) = 1 + ⌊t⌋ > t.</p>
+
+  <p>If λ(α)λ(β)λ(γ) > |abc|, the <em class="term">Pigeonhole Principle</em> guarantees two triples give the same residue mod abc for the linear form. Their difference (x, y, z) ≠ (0,0,0) satisfies our congruence, with |x| < α, |y| < β, |z| < γ.</p>
+
+  <p>Choose α = √|bc|, β = √|ac|, γ = √|ab|. Then αβγ = |abc|, and the bound gives:</p>
+
+  <div class="math-block">
+    −|abc| < ax² + by² + cz² < 2|abc|
+  </div>
+
+  <p>Combined with ax² + by² + cz² ≡ 0 mod |abc|, we get either <strong>ax² + by² + cz² = 0</strong> (done!) or <strong>ax² + by² + cz² = ±abc</strong>.</p>
+
+  <div class="qa-gate" id="q7">
+    <div class="gate-label">Checkpoint 7</div>
+    <div class="question">The pigeonhole argument requires λ(α)λ(β)λ(γ) > αβγ = |abc|. When does λ(t) > t hold?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">Always — λ(t) ≥ t + 1 for any positive t</button>
+      <button class="option-btn" data-idx="1">When t is not an integer — then λ(t) = 1 + ⌊t⌋ > t</button>
+      <button class="option-btn" data-idx="2">When t is irrational</button>
+    </div>
+    <div class="feedback correct-fb" id="q7-correct">Precisely. If t is an integer, λ(t) = t (the integers 0, 1, …, t−1). If t is not an integer, we get the "bonus": λ(t) = ⌊t⌋ + 1 > t. So we need at least one of α, β, γ to be non-integer. Since a, b, c are coprime and squarefree, √|bc| etc. are integers only when a, b, c are all ±1 — which gives the trivial case x² + y² = z².</div>
+    <div class="feedback wrong-fb" id="q7-wrong">Not quite. λ(t) counts integers in [0, t). If t is an integer, there are exactly t such integers, so λ(t) = t. If t is <em>not</em> an integer, then λ(t) = ⌊t⌋ + 1 > t — we get one extra integer. The condition "t is irrational" is stronger than needed; any non-integer suffices.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 8 ═══════════════ -->
+<div class="section locked" id="sec8">
+  <div class="section-num">Stage 8</div>
+  <h2>The Final Trick — From ±abc to Zero</h2>
+  <p>If we're unlucky, the pigeonhole step gives ax² + by² + cz² = −abc rather than 0 (rewriting with the sign convention a, b > 0, c < 0). We need to convert this into a genuine solution of ax² + by² + cz² = 0.</p>
+
+  <p>Rewrite ax² + by² + cz² = −abc as ax² + by² + c(z² + ab) = 0. We want aX² + bY² + cZ² = 0 with Z² = (z² + ab)². So multiply ax² + by² by z² + ab:</p>
+
+  <div class="math-block">
+    (ax² + by²)(z² + ab) = ax²z² + a²bx² + by²z² + ab²y²<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;= a(xz + by)² + b(yz − ax)²
+  </div>
+
+  <p>This is a <em class="term">Brahmagupta–style identity</em>: products of sums-of-forms are themselves sums-of-forms. Setting X = xz + by, Y = yz − ax, Z = z² + ab gives a genuine solution, and Z > 0 ensures it's nontrivial.</p>
+
+  <div class="qa-gate" id="q8">
+    <div class="gate-label">Checkpoint 8</div>
+    <div class="question">Why is the new solution nontrivial? Specifically, why is Z = z² + ab > 0?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">Because z ≥ 1 and a, b > 0</button>
+      <button class="option-btn" data-idx="1">Because z² ≥ 0 and ab > 0 (since a and b have the same sign), so z² + ab ≥ ab > 0</button>
+      <button class="option-btn" data-idx="2">Because we chose a, b > 0 and c < 0, ensuring ab > 0 — and since z² ≥ 0, their sum is strictly positive</button>
+    </div>
+    <div class="feedback correct-fb" id="q8-correct">Right — and both options B and C capture this. Since we arranged a, b > 0 (and c < 0), the product ab is strictly positive. Adding z² ≥ 0 gives Z = z² + ab ≥ ab > 0. So (X, Y, Z) can't be (0, 0, 0).</div>
+    <div class="feedback wrong-fb" id="q8-wrong">The core point: we arranged a, b > 0 in the sign convention step, so ab > 0. Since z² ≥ 0, we get Z = z² + ab ≥ ab > 0 unconditionally — no assumption on z is needed beyond z being an integer. Option A is too strong (z could be 0).</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 9 ═══════════════ -->
+<div class="section locked" id="sec9">
+  <div class="section-num">Stage 9</div>
+  <h2>Applying the Theorem — Quadratic Residue Checks</h2>
+  <p>To use Legendre's Theorem in practice, you need to determine which numbers are squares mod n. For small n, brute force: compute k² mod n for k = 0, 1, …, ⌊n/2⌋.</p>
+
+  <p>For example, squares mod 5: 0² = 0, 1² = 1, 2² = 4. So the quadratic residues mod 5 are {0, 1, 4}. The non-residues are {2, 3}.</p>
+
+  <div class="qa-gate" id="q9">
+    <div class="gate-label">Checkpoint 9</div>
+    <div class="question">Does the equation 2x² + 3y² = 5z² have a nontrivial integer solution? Check all three Legendre conditions (a=2, b=3, c=5).</div>
+    <div class="free-input-row">
+      <input type="text" id="q9-input" placeholder="yes or no">
+      <button class="submit-btn" id="q9-submit">Check</button>
+    </div>
+    <div class="feedback correct-fb" id="q9-correct">Yes! Let's verify: (i) ac = 10 mod 3: 10 ≡ 1 mod 3, and 1 is a square mod 3. ✓ (ii) bc = 15 mod 2: 15 ≡ 1 mod 2, and 1 is a square mod 2. ✓ (iii) −ab = −6 mod 5: −6 ≡ 4 mod 5, and 4 = 2² is a square mod 5. ✓ (iv) a=2, b=3 are positive and c=5 is positive — consistent signs. ✓ All conditions met! Indeed (1, 1, 1) is a solution.</div>
+    <div class="feedback wrong-fb" id="q9-wrong">Let's check: (i) ac = 10 ≡ 1 mod 3 — yes, 1 is a square. (ii) bc = 15 ≡ 1 mod 2 — yes, 1 is a square. (iii) −ab = −6 ≡ 4 mod 5 — yes, 4 = 2². (iv) Signs are all positive — fine. All conditions pass, so <strong>yes</strong>, solutions exist. In fact (1, 1, 1) works: 2 + 3 = 5.</div>
+    <button class="hint-toggle" onclick="toggleHint('q9-hint')">Hint</button>
+    <div class="hint-box" id="q9-hint">Compute ac mod b, bc mod a, and −ab mod c. Check each against the quadratic residues of the respective modulus. Also check signs.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 10 ═══════════════ -->
+<div class="section locked" id="sec10">
+  <div class="section-num">Stage 10</div>
+  <h2>The Big Picture</h2>
+  <p>Let's trace the full logical arc:</p>
+
+  <p><strong>Reduce:</strong> complete the square → diagonal form → homogenise → strip square factors → make coefficients coprime. Each step is reversible or equivalent for the existence question.</p>
+
+  <p><strong>Characterise:</strong> Legendre's Theorem gives a clean, checkable criterion — three modular conditions plus a sign condition.</p>
+
+  <p><strong>Prove:</strong> the forward direction uses coprimality to extract quadratic residue information. The converse factors the form mod abc (using the residue conditions), applies pigeonhole to get a small solution, and uses an algebraic identity to reach exact zero.</p>
+
+  <div class="key-idea">
+    This is a prototype of a <em>local-to-global</em> principle: conditions modulo each prime (the quadratic residue checks) and a sign condition (the "real place") together determine a global arithmetic fact. This idea matures into the Hasse–Minkowski theorem for quadratic forms.
+  </div>
+
+  <div class="qa-gate" id="q10">
+    <div class="gate-label">Final Checkpoint</div>
+    <div class="question">Which tool from the proof specifically required the coefficients to be pairwise coprime (not just squarefree)?</div>
+    <div class="options">
+      <button class="option-btn" data-idx="0">The pigeonhole argument for bounding the solution size</button>
+      <button class="option-btn" data-idx="1">The Chinese Remainder Theorem — gluing factorisations mod a, b, c into one mod abc</button>
+      <button class="option-btn" data-idx="2">The completing-the-square step at the very beginning</button>
+      <button class="option-btn" data-idx="3">The Brahmagupta identity in the final trick</button>
+    </div>
+    <div class="feedback correct-fb" id="q10-correct">Exactly. CRT requires the moduli to be pairwise coprime. Without that, we can't combine three separate factorisations (mod a, mod b, mod c) into a single factorisation mod abc. Every simplification step at the beginning was setting up this moment.</div>
+    <div class="feedback wrong-fb" id="q10-wrong">The Chinese Remainder Theorem is the step that directly needs pairwise coprimality. CRT says: if gcd(a,b) = gcd(a,c) = gcd(b,c) = 1, then systems of congruences mod a, b, c can be combined into one mod abc. This is exactly how the three separate factorisations get glued together.</div>
+  </div>
+</div>
+
+<!-- Completion -->
+<div class="completion-banner" id="completionBanner">
+  <h2>Ascent Complete</h2>
+  <div class="score-display" id="scoreDisplay"></div>
+  <p style="margin-top:0.5rem; font-size:0.95rem; color:#666;">You've traced the full arc from quadratic curves to Legendre's Theorem.</p>
+</div>
+
+</div><!-- end container -->
+
+<script>
+const TOTAL_QUESTIONS = 10;
+let answered = 0;
+let correctCount = 0;
+const answeredSet = new Set();
+
+// Answer keys: MC questions map idx -> correct index; free-response handled separately
+const mcAnswers = {
+  q1: 1, q2: 0, q4: 1, q5: 1, q6: 1, q7: 1, q8: 2, q10: 1
+};
+
+function updateProgress() {
+  const pct = (answered / TOTAL_QUESTIONS) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = answered + ' / ' + TOTAL_QUESTIONS;
+}
+
+function unlockNext(currentQ) {
+  const num = parseInt(currentQ.replace('q', ''));
+  const nextSec = document.getElementById('sec' + (num + 1));
+  if (nextSec && nextSec.classList.contains('locked')) {
+    nextSec.classList.remove('locked');
+    nextSec.classList.add('just-unlocked');
+    setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+  }
+  if (answered === TOTAL_QUESTIONS) {
+    const banner = document.getElementById('completionBanner');
+    banner.classList.add('show');
+    document.getElementById('scoreDisplay').textContent = correctCount + ' / ' + TOTAL_QUESTIONS + ' correct';
+    setTimeout(() => banner.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
+  }
+}
+
+function handleMC(qId) {
+  const gate = document.getElementById(qId);
+  const buttons = gate.querySelectorAll('.option-btn');
+  const correctIdx = mcAnswers[qId];
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (answeredSet.has(qId)) return;
+      answeredSet.add(qId);
+      answered++;
+
+      const chosen = parseInt(btn.dataset.idx);
+      const isCorrect = chosen === correctIdx;
+      if (isCorrect) correctCount++;
+
+      buttons.forEach(b => {
+        b.disabled = true;
+        const idx = parseInt(b.dataset.idx);
+        if (idx === chosen) {
+          b.classList.add('chosen', isCorrect ? 'correct-choice' : 'wrong-choice');
+        }
+        if (idx === correctIdx && !isCorrect) {
+          b.classList.add('reveal-correct');
+        }
+      });
+
+      const fbId = qId + (isCorrect ? '-correct' : '-wrong');
+      document.getElementById(fbId).classList.add('show');
+      gate.classList.add('completed');
+      updateProgress();
+      setTimeout(() => unlockNext(qId), 800);
+    });
+  });
+}
+
+function handleFree(qId, acceptFn) {
+  const input = document.getElementById(qId + '-input');
+  const submitBtn = document.getElementById(qId + '-submit');
+
+  const doSubmit = () => {
+    if (answeredSet.has(qId)) return;
+    const val = input.value.trim().toLowerCase();
+    if (!val) return;
+    answeredSet.add(qId);
+    answered++;
+
+    const isCorrect = acceptFn(val);
+    if (isCorrect) correctCount++;
+
+    input.disabled = true;
+    submitBtn.disabled = true;
+
+    const fbId = qId + (isCorrect ? '-correct' : '-wrong');
+    document.getElementById(fbId).classList.add('show');
+    document.getElementById(qId).classList.add('completed');
+    updateProgress();
+    setTimeout(() => unlockNext(qId), 800);
+  };
+
+  submitBtn.addEventListener('click', doSubmit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') doSubmit(); });
+}
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+
+// Wire up MC questions
+Object.keys(mcAnswers).forEach(qId => handleMC(qId));
+
+// Wire up free-response Q3
+handleFree('q3', val => {
+  const cleaned = val.replace(/\s+/g, '').replace(/\*/g, '');
+  return cleaned.includes('2x') && cleaned.includes('3y') && cleaned.includes('=z')
+    || cleaned.includes('2x²+3y²=z²')
+    || cleaned.includes('2x^2+3y^2=z^2');
+});
+
+// Wire up free-response Q9
+handleFree('q9', val => {
+  return val === 'yes' || val === 'y' || val.includes('yes');
+});
+
+updateProgress();
+</script>
+
+</body>
+</html>
