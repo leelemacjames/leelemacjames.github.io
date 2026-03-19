@@ -625,7 +625,9 @@ footer a { color: var(--accent); text-decoration: none; }
 <section id="s4">
 <h2>§4 — The Lattice and the Unit Curve</h2>
 
-<p>The unit equation N(z) = 1 defines a curve in the (a, b) plane. For elliptic rings it's an ellipse (compact, finitely many integer points). For hyperbolic rings it's a hyperbola (non-compact, infinitely many). For the parabolic ring it degenerates to two vertical lines. Select a ring and watch:</p>
+<p>The unit equation N(z) = 1 defines a curve in the (a, b) plane. For elliptic rings it's an ellipse (compact, finitely many integer points). For hyperbolic rings it's a hyperbola (non-compact, infinitely many). For the parabolic ring it degenerates to two vertical lines.</p>
+
+<p>Select a ring, then use the sliders to choose an element z = a + bθ to multiply by. The <strong>left panel</strong> shows the original lattice with z circled in red. The <strong>right panel</strong> shows the image sublattice zℤ[θ] — where every lattice point lands after multiplication by z. The original lattice is ghosted behind for comparison. The coloured parallelogram is the fundamental domain of the image sublattice, and its area equals |det(M)| = |N(z)| times the original. Units on the original lattice (green dots) stay highlighted in the image.</p>
 
 <div class="controls">
   <div class="control-row">
@@ -666,6 +668,25 @@ footer a { color: var(--accent); text-decoration: none; }
 </div>
 
 <div class="info-row" id="mult-info"></div>
+
+<h3>Things to try</h3>
+<p>Each preset below sets the ring and the element z. Watch the right panel — the image sublattice, the parallelogram area, and the orientation indicator all respond. The determinant of the multiplication matrix is doing everything: it <em>is</em> the norm, it <em>is</em> the signed area distortion, and its sign <em>is</em> the orientation.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin:16px 0;">
+  <button class="toggle-btn" onclick="setPreset('gauss',1,2)">ℤ[i], z = 1+2i</button>
+  <button class="toggle-btn" onclick="setPreset('gauss',0,1)">ℤ[i], z = i</button>
+  <button class="toggle-btn" onclick="setPreset('eisen',1,1)">ℤ[ω], z = 1+ω</button>
+  <button class="toggle-btn" onclick="setPreset('golden',1,1)">ℤ[φ], z = φ</button>
+  <button class="toggle-btn" onclick="setPreset('split',2,1)">ℤ[j], z = 2+j</button>
+  <button class="toggle-btn" onclick="setPreset('split',1,2)">ℤ[j], z = 1+2j</button>
+  <button class="toggle-btn" onclick="setPreset('dual',3,4)">ℤ[ε], z = 3+4ε</button>
+</div>
+
+<div id="preset-commentary" class="aside-box" style="display:none;"></div>
+
+<div class="aside-box" style="margin-top:20px;">
+  <p><strong>The full circle:</strong> the determinant of the multiplication matrix M(a, b) is simultaneously three things — the <em>algebraic norm</em> N(a + bθ), the <em>signed area distortion</em> of the map on the lattice, and the <em>orientation indicator</em> (positive = preserved, negative = flipped, zero = collapsed). These aren't three separate facts. They're three readings of a single geometric quantity: how the lattice deforms when you multiply every element by z.</p>
+</div>
 
 </section>
 
@@ -866,213 +887,266 @@ renderRingInfo('gauss');
 // ════════════════════════════════════════════
 let currentVisRing = 'gauss';
 
-function drawLattice(canvasId, ringKey, multA, multB, showMult) {
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const cx = W/2, cy = H/2;
-  const scale = 36;
+// Draw the unit curve for a ring (norm = target)
+function drawNormCurve(ctx, r, toScreen, target, color, alpha, lineWidth, dashed) {
+  const step = 0.015;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.globalAlpha = alpha;
+  if (dashed) ctx.setLineDash([5, 4]); else ctx.setLineDash([]);
 
-  ctx.clearRect(0, 0, W, H);
-
-  // Background
-  ctx.fillStyle = '#faf8f4';
-  ctx.fillRect(0, 0, W, H);
-
-  const r = RINGS[ringKey];
-
-  // Basis vectors in ℝ²: {1, θ}
-  // 1 → (1, 0)
-  // θ → depends on the ring's embedding in ℂ
-  // For visualisation, embed θ as (Re(θ), Im(θ))
-  let basisTheta;
-  switch(ringKey) {
-    case 'gauss':  basisTheta = [0, 1]; break;
-    case 'eisen':  basisTheta = [-0.5, Math.sqrt(3)/2]; break;
-    case 'h7':     basisTheta = [0.5, Math.sqrt(7)/2]; break;
-    case 'dual':   basisTheta = [0, 0.8]; break; // ε has no imaginary part; use vertical for visualisation
-    case 'golden': basisTheta = [1.618, 0]; break; // φ is real
-    case 'split':  basisTheta = [1, 0]; break; // j is "real" too — use slightly off for vis
-  }
-
-  // For hyperbolic/real cases, we need a 2D embedding.
-  // Use the matrix columns themselves as basis vectors for the lattice visualisation
-  // Basis 1 = (1, 0), Basis θ in the abstract (a,b) plane
-  // Actually: let's just plot in the (a, b) coefficient plane
-
-  function toScreen(a, b) {
-    return [cx + a * scale, cy - b * scale];
-  }
-
-  // Grid lines
-  ctx.strokeStyle = '#e8e4da';
-  ctx.lineWidth = 0.5;
-  for (let i = -6; i <= 6; i++) {
-    ctx.beginPath();
-    ctx.moveTo(...toScreen(i, -6));
-    ctx.lineTo(...toScreen(i, 6));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(...toScreen(-6, i));
-    ctx.lineTo(...toScreen(6, i));
-    ctx.stroke();
-  }
-
-  // Axes
-  ctx.strokeStyle = '#ccc5b8';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath(); ctx.moveTo(...toScreen(-6,0)); ctx.lineTo(...toScreen(6,0)); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(...toScreen(0,-6)); ctx.lineTo(...toScreen(0,6)); ctx.stroke();
-
-  // Unit curve: norm(a,b) = 1
-  // Plot implicitly by sampling
-  const colors = { elliptic: '#1a6b4e', parabolic: '#8a6e1e', hyperbolic: '#2a4fb5' };
-  const curveColor = colors[r.type];
-
-  ctx.strokeStyle = curveColor;
-  ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.5;
-
-  // Sample the curve
-  const step = 0.02;
-  for (let t = -7; t < 7; t += step) {
-    // For each a = t, solve norm(a, b) = 1 => a² + abp - b²q = 1
-    // This is: -q b² + ap b + (a² - 1) = 0
-    // b = [-ap ± sqrt(a²p² + 4q(a²-1))] / (-2q)
-    const a = t;
-    if (r.delta === 0) {
-      // Parabolic: a² = 1 => a = ±1, any b
-      // Draw vertical lines
-      if (Math.abs(Math.abs(a) - 1) < step) {
-        ctx.beginPath();
-        ctx.moveTo(...toScreen(a > 0 ? 1 : -1, -6));
-        ctx.lineTo(...toScreen(a > 0 ? 1 : -1, 6));
-        ctx.stroke();
-      }
-      continue;
+  if (r.delta === 0) {
+    // Parabolic: a² = target => a = ±√target
+    const aVal = Math.sqrt(Math.abs(target));
+    if (target > 0) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(aVal, -8)); ctx.lineTo(...toScreen(aVal, 8)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...toScreen(-aVal, -8)); ctx.lineTo(...toScreen(-aVal, 8)); ctx.stroke();
     }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    return;
+  }
 
-    const disc = a*a*r.p*r.p + 4*r.q*(a*a - 1);
+  // General: -q b² + ap b + (a² - target) = 0
+  const denom = -2 * r.q;
+  if (Math.abs(denom) < 1e-10) { ctx.setLineDash([]); ctx.globalAlpha = 1; return; }
+
+  for (let t = -8; t < 8; t += step) {
+    const a = t;
+    const disc = a*a*r.p*r.p + 4*r.q*(a*a - target);
     if (disc < 0) continue;
     const sqrtDisc = Math.sqrt(disc);
-    const denom = -2*r.q;
-    if (Math.abs(denom) < 1e-10) continue;
     const b1 = (-a*r.p + sqrtDisc) / denom;
     const b2 = (-a*r.p - sqrtDisc) / denom;
 
-    // Draw small segments
     const aNext = t + step;
-    const discNext = aNext*aNext*r.p*r.p + 4*r.q*(aNext*aNext - 1);
+    const discNext = aNext*aNext*r.p*r.p + 4*r.q*(aNext*aNext - target);
     if (discNext < 0) continue;
     const sqrtDiscNext = Math.sqrt(discNext);
     const b1Next = (-aNext*r.p + sqrtDiscNext) / denom;
     const b2Next = (-aNext*r.p - sqrtDiscNext) / denom;
 
-    if (Math.abs(b1) < 7 && Math.abs(b1Next) < 7) {
-      ctx.beginPath();
-      ctx.moveTo(...toScreen(a, b1));
-      ctx.lineTo(...toScreen(aNext, b1Next));
-      ctx.stroke();
+    if (Math.abs(b1) < 8 && Math.abs(b1Next) < 8) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(a, b1)); ctx.lineTo(...toScreen(aNext, b1Next)); ctx.stroke();
     }
-    if (Math.abs(b2) < 7 && Math.abs(b2Next) < 7 && Math.abs(b1 - b2) > 0.01) {
-      ctx.beginPath();
-      ctx.moveTo(...toScreen(a, b2));
-      ctx.lineTo(...toScreen(aNext, b2Next));
-      ctx.stroke();
+    if (Math.abs(b2) < 8 && Math.abs(b2Next) < 8 && Math.abs(b1 - b2) > 0.005) {
+      ctx.beginPath(); ctx.moveTo(...toScreen(a, b2)); ctx.lineTo(...toScreen(aNext, b2Next)); ctx.stroke();
     }
   }
-
-  // Also draw norm = -1 for hyperbolic (dashed)
-  if (r.type === 'hyperbolic') {
-    ctx.setLineDash([4, 4]);
-    ctx.globalAlpha = 0.3;
-    for (let t = -7; t < 7; t += step) {
-      const a = t;
-      const disc = a*a*r.p*r.p + 4*r.q*(a*a + 1); // norm = -1
-      if (disc < 0) continue;
-      const sqrtDisc = Math.sqrt(disc);
-      const denom = -2*r.q;
-      if (Math.abs(denom) < 1e-10) continue;
-      const b1 = (-a*r.p + sqrtDisc) / denom;
-      const b2 = (-a*r.p - sqrtDisc) / denom;
-      const aNext = t + step;
-      const discNext = aNext*aNext*r.p*r.p + 4*r.q*(aNext*aNext + 1);
-      if (discNext < 0) continue;
-      const sqrtDiscNext = Math.sqrt(discNext);
-      const b1Next = (-aNext*r.p + sqrtDiscNext) / denom;
-      const b2Next = (-aNext*r.p - sqrtDiscNext) / denom;
-      if (Math.abs(b1) < 7 && Math.abs(b1Next) < 7) {
-        ctx.beginPath();
-        ctx.moveTo(...toScreen(a, b1));
-        ctx.lineTo(...toScreen(aNext, b1Next));
-        ctx.stroke();
-      }
-      if (Math.abs(b2) < 7 && Math.abs(b2Next) < 7 && Math.abs(b1-b2) > 0.01) {
-        ctx.beginPath();
-        ctx.moveTo(...toScreen(a, b2));
-        ctx.lineTo(...toScreen(aNext, b2Next));
-        ctx.stroke();
-      }
-    }
-    ctx.setLineDash([]);
-  }
-
-  // Null directions for hyperbolic
-  if (r.type === 'hyperbolic') {
-    ctx.strokeStyle = curveColor;
-    ctx.globalAlpha = 0.15;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([6, 4]);
-    // norm(a,b) = 0: a² + abp - b²q = 0 => a/b = (−p ± √(p²+4q)) / 2
-    const sqD = Math.sqrt(r.delta);
-    const slope1 = (-r.p + sqD) / 2;
-    const slope2 = (-r.p - sqD) / 2;
-    ctx.beginPath(); ctx.moveTo(...toScreen(-6, -6/slope1)); ctx.lineTo(...toScreen(6, 6/slope1)); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(...toScreen(-6, -6/slope2)); ctx.lineTo(...toScreen(6, 6/slope2)); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
+  ctx.setLineDash([]);
   ctx.globalAlpha = 1;
+}
 
-  // Lattice points
-  const mat = showMult ? matMul(r, multA, multB) : null;
-
-  for (let ai = -5; ai <= 5; ai++) {
-    for (let bi = -5; bi <= 5; bi++) {
-      let pa, pb;
-      if (showMult && mat) {
-        [pa, pb] = applyMat(mat, ai, bi);
-      } else {
-        pa = ai; pb = bi;
-      }
-
-      const [sx, sy] = toScreen(pa, pb);
-      if (sx < -10 || sx > W+10 || sy < -10 || sy > H+10) continue;
-
-      const n = norm(r, pa, pb);
-      let color = '#999';
-      let radius = 2.5;
-      if (Math.abs(n) < 0.01 && (Math.abs(pa) > 0.01 || Math.abs(pb) > 0.01)) {
-        color = '#cc3333'; radius = 4; // null
-      } else if (Math.abs(Math.abs(n) - 1) < 0.01) {
-        color = curveColor; radius = 4.5; // unit
-      } else if (pa === 0 && pb === 0) {
-        color = '#333'; radius = 4;
-      }
-
-      ctx.beginPath();
-      ctx.arc(sx, sy, radius, 0, Math.PI*2);
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
+// Draw null directions for hyperbolic
+function drawNullDirs(ctx, r, toScreen, color) {
+  if (r.type !== 'hyperbolic') return;
+  const sqD = Math.sqrt(r.delta);
+  const slope1 = (-r.p + sqD) / 2;
+  const slope2 = (-r.p - sqD) / 2;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.18;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  // norm(a,b) = 0 means a/b = slope => b = a/slope
+  if (Math.abs(slope1) > 0.001) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(-7, -7/slope1)); ctx.lineTo(...toScreen(7, 7/slope1)); ctx.stroke();
   }
+  if (Math.abs(slope2) > 0.001) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(-7, -7/slope2)); ctx.lineTo(...toScreen(7, 7/slope2)); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
 
-  // Axis labels
-  ctx.fillStyle = '#999';
-  ctx.font = '11px "Fira Code"';
-  ctx.textAlign = 'left';
-  ctx.fillText('a', W - 16, cy - 6);
-  ctx.fillText('b', cx + 6, 14);
+// Draw grid and axes
+function drawGrid(ctx, W, H, toScreen) {
+  ctx.fillStyle = '#faf8f4';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#e8e4da';
+  ctx.lineWidth = 0.5;
+  for (let i = -8; i <= 8; i++) {
+    ctx.beginPath(); ctx.moveTo(...toScreen(i, -8)); ctx.lineTo(...toScreen(i, 8)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...toScreen(-8, i)); ctx.lineTo(...toScreen(8, i)); ctx.stroke();
+  }
+  ctx.strokeStyle = '#ccc5b8';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(...toScreen(-8,0)); ctx.lineTo(...toScreen(8,0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...toScreen(0,-8)); ctx.lineTo(...toScreen(0,8)); ctx.stroke();
+}
+
+// Draw lattice points with norm-based colouring
+function drawLatticePoints(ctx, r, toScreen, points, curveColor, W, H) {
+  points.forEach(({a, b, origA, origB}) => {
+    const [sx, sy] = toScreen(a, b);
+    if (sx < -15 || sx > W+15 || sy < -15 || sy > H+15) return;
+
+    const n = norm(r, origA, origB); // norm of the ORIGINAL element
+    let color = '#aaa';
+    let radius = 2.5;
+    if (origA === 0 && origB === 0) {
+      color = '#333'; radius = 4;
+    } else if (Math.abs(Math.abs(n) - 1) < 0.01) {
+      color = curveColor; radius = 5; // unit
+    } else if (Math.abs(n) < 0.01) {
+      color = '#cc3333'; radius = 4; // null norm (hyperbolic)
+    }
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+}
+
+function drawPanel(canvasId, ringKey, multA, multB, isRightPanel) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const scale = 34;
+  const r = RINGS[ringKey];
+  const colors = { elliptic: '#1a6b4e', parabolic: '#8a6e1e', hyperbolic: '#2a4fb5' };
+  const curveColor = colors[r.type];
+
+  function toScreen(a, b) { return [cx + a * scale, cy - b * scale]; }
+
+  ctx.clearRect(0, 0, W, H);
+  drawGrid(ctx, W, H, toScreen);
+
+  const mat = matMul(r, multA, multB);
+  const det = norm(r, multA, multB);
+
+  if (isRightPanel) {
+    // RIGHT PANEL: show original lattice faded, image sublattice bold
+    // Also show the image of the unit curve under the multiplication map
+
+    // Original lattice (faded)
+    const origPts = [];
+    for (let ai = -8; ai <= 8; ai++) {
+      for (let bi = -8; bi <= 8; bi++) {
+        origPts.push({a: ai, b: bi, origA: ai, origB: bi});
+      }
+    }
+    ctx.globalAlpha = 0.15;
+    origPts.forEach(({a, b}) => {
+      const [sx, sy] = toScreen(a, b);
+      if (sx < -10 || sx > W+10 || sy < -10 || sy > H+10) return;
+      ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI*2);
+      ctx.fillStyle = '#bbb'; ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // Image sublattice: apply M to each lattice point
+    // The image of (ai, bi) under multiplication by z = multA + multB*θ
+    // is the ring element z * (ai + bi*θ), whose coordinates come from matrix multiplication
+    const imgPts = [];
+    for (let ai = -12; ai <= 12; ai++) {
+      for (let bi = -12; bi <= 12; bi++) {
+        const [ia, ib] = applyMat(mat, ai, bi);
+        imgPts.push({a: ia, b: ib, origA: ai, origB: bi});
+      }
+    }
+    drawLatticePoints(ctx, r, toScreen, imgPts, curveColor, W, H);
+
+    // Draw the fundamental parallelogram of the image sublattice
+    // Basis vectors of image: M applied to (1,0) and (0,1)
+    const [e1a, e1b] = applyMat(mat, 1, 0); // image of "1"
+    const [e2a, e2b] = applyMat(mat, 0, 1); // image of "θ"
+
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 1.8;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(...toScreen(0, 0));
+    ctx.lineTo(...toScreen(e1a, e1b));
+    ctx.lineTo(...toScreen(e1a + e2a, e1b + e2b));
+    ctx.lineTo(...toScreen(e2a, e2b));
+    ctx.closePath();
+    ctx.stroke();
+
+    // Fill the parallelogram lightly
+    ctx.fillStyle = curveColor;
+    ctx.globalAlpha = 0.06;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Draw basis vectors as arrows
+    ctx.globalAlpha = 0.7;
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 2;
+    // Arrow for e1
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(e1a, e1b)); ctx.stroke();
+    ctx.beginPath();
+    const [t1x, t1y] = toScreen(e1a, e1b);
+    ctx.arc(t1x, t1y, 4, 0, Math.PI*2);
+    ctx.fillStyle = curveColor; ctx.fill();
+    // Arrow for e2
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(e2a, e2b)); ctx.stroke();
+    ctx.beginPath();
+    const [t2x, t2y] = toScreen(e2a, e2b);
+    ctx.arc(t2x, t2y, 4, 0, Math.PI*2);
+    ctx.fillStyle = curveColor; ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Label
+    ctx.fillStyle = '#888';
+    ctx.font = '10px "Fira Code"';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Image sublattice · det(M) = ${det} · area ×${Math.abs(det)}`, W/2, H - 6);
+
+  } else {
+    // LEFT PANEL: original lattice with unit curve
+
+    // Unit curve N = 1
+    drawNormCurve(ctx, r, toScreen, 1, curveColor, 0.5, 2, false);
+
+    // N = -1 for hyperbolic (dashed)
+    if (r.type === 'hyperbolic') {
+      drawNormCurve(ctx, r, toScreen, -1, curveColor, 0.3, 1.5, true);
+    }
+
+    // Null directions
+    drawNullDirs(ctx, r, toScreen, curveColor);
+
+    // Lattice points
+    const pts = [];
+    for (let ai = -8; ai <= 8; ai++) {
+      for (let bi = -8; bi <= 8; bi++) {
+        pts.push({a: ai, b: bi, origA: ai, origB: bi});
+      }
+    }
+    drawLatticePoints(ctx, r, toScreen, pts, curveColor, W, H);
+
+    // Draw basis vectors
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(1,0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...toScreen(0,0)); ctx.lineTo(...toScreen(0,1)); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Highlight the element we'll multiply by
+    if (multA !== 0 || multB !== 0) {
+      const [zx, zy] = toScreen(multA, multB);
+      ctx.beginPath();
+      ctx.arc(zx, zy, 7, 0, Math.PI*2);
+      ctx.strokeStyle = '#b5432a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#b5432a';
+      ctx.font = 'bold 10px "Fira Code"';
+      ctx.textAlign = 'left';
+      ctx.fillText(`z`, zx + 10, zy - 4);
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#999';
+    ctx.font = '11px "Fira Code"';
+    ctx.textAlign = 'left';
+    ctx.fillText('a', W - 16, cy - 6);
+    ctx.fillText('b', cx + 6, 14);
+  }
 }
 
 function updateVis() {
@@ -1081,25 +1155,67 @@ function updateVis() {
   document.getElementById('val-a').textContent = a;
   document.getElementById('val-b').textContent = b;
 
-  drawLattice('lattice-canvas', currentVisRing, 0, 0, false);
-  drawLattice('mult-canvas', currentVisRing, a, b, true);
+  drawPanel('lattice-canvas', currentVisRing, a, b, false);
+  drawPanel('mult-canvas', currentVisRing, a, b, true);
 
   const r = RINGS[currentVisRing];
   const n = norm(r, a, b);
-  const m = matMul(r, a, b);
   const infoDiv = document.getElementById('mult-info');
   const typeClass = r.type;
+
+  let orientLabel;
+  if (n > 0) orientLabel = 'Preserved (+)';
+  else if (n < 0) orientLabel = 'Reversed (−)';
+  else orientLabel = 'Degenerate (0)';
+
   infoDiv.innerHTML = `
     <div class="info-card ${typeClass}"><div class="val">${a} + ${b}${r.sym}</div><div class="lbl">Element z</div></div>
     <div class="info-card ${typeClass}"><div class="val">${n}</div><div class="lbl">N(z) = det(M)</div></div>
-    <div class="info-card ${typeClass}"><div class="val">${n >= 0 ? '+' : '−'}</div><div class="lbl">Orientation</div></div>
-    <div class="info-card ${typeClass}"><div class="val">|${n}|×</div><div class="lbl">Area scaling</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${orientLabel}</div><div class="lbl">Orientation</div></div>
+    <div class="info-card ${typeClass}"><div class="val">${Math.abs(n)}×</div><div class="lbl">Area scaling</div></div>
   `;
 }
 
 setupPills('vis-pills', (key) => { currentVisRing = key; updateVis(); });
 document.getElementById('slider-a').addEventListener('input', updateVis);
 document.getElementById('slider-b').addEventListener('input', updateVis);
+
+const PRESET_COMMENTS = {
+  'gauss_1_2': '<strong>Rotation-dilation.</strong> N(1+2i) = 1² + 2² = 5. The lattice rotates by arctan(2) ≈ 63° and scales by √5. The parallelogram has area 5 — exactly 5 original lattice cells fit inside one image cell. Every lattice point maps somewhere; none vanish. The four unit points (±1, ±i) map to their images at (1,2), (−2,1), (−1,−2), (2,−1).',
+  'gauss_0_1': '<strong>Pure rotation (unit).</strong> N(i) = 0² + 1² = 1. Multiplying by i rotates everything 90° counterclockwise. Area ×1 — the sublattice is the original lattice, just rotated. This is the J map itself: the almost-complex structure in action.',
+  'eisen_1_1': '<strong>Hexagonal rotation-dilation.</strong> N(1+ω) = 1² − 1·1 + 1² = 1. This is a unit! The Eisenstein lattice maps to itself under multiplication by 1+ω = −ω², a sixth root of unity. The parallelogram has area 1 and the lattice is unchanged — just rotated by 60°.',
+  'golden_1_1': '<strong>Hyperbolic boost (unit).</strong> N(φ) = 1² + 1·1 − 1² = 1. The golden ratio is a unit — area is preserved. But unlike the elliptic cases, the lattice doesn\'t rotate; it <em>boosts</em> along the hyperbola. Points stretch along one null direction and compress along the other. This is the para-complex structure J̃² = +I at work. The Fibonacci matrix [[1,1],[1,0]] iterates this boost, stepping along the Pell hyperbola.',
+  'split_2_1': '<strong>Area ×3, orientation preserved.</strong> N(2+j) = 4 − 1 = 3. The lattice spreads out, with 3 original cells per image cell. det > 0, so orientation is preserved — the parallelogram has the same handedness as the original.',
+  'split_1_2': '<strong>Area ×3, orientation REVERSED.</strong> N(1+2j) = 1 − 4 = −3. Same absolute area distortion as 2+j, but now det < 0: the parallelogram has <em>flipped</em>. The multiplication map has crossed a null direction, reversing the handedness of the lattice. This is the orientation flip that never happens in elliptic rings — the hyperbolic signature makes it possible.',
+  'dual_3_4': '<strong>Pure shear.</strong> N(3+4ε) = 3² = 9. The norm is completely blind to the ε-component — changing b from 0 to 4 changes nothing about the area. The matrix [[3, 0], [4, 3]] is lower-triangular: a shear. It stretches the a-direction by 3 and slides the b-direction sideways, but the b-axis contributes zero area. This is the degenerate/parabolic case: ε is an infinitesimal that the norm cannot see.',
+};
+
+function setPreset(ringKey, a, b) {
+  // Update ring pill
+  const visPills = document.getElementById('vis-pills');
+  visPills.querySelectorAll('.ring-pill').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.ring === ringKey) btn.classList.add('active');
+  });
+  currentVisRing = ringKey;
+
+  // Update sliders
+  document.getElementById('slider-a').value = a;
+  document.getElementById('slider-b').value = b;
+
+  // Show commentary
+  const key = ringKey + '_' + a + '_' + b;
+  const commentDiv = document.getElementById('preset-commentary');
+  if (PRESET_COMMENTS[key]) {
+    commentDiv.innerHTML = PRESET_COMMENTS[key];
+    commentDiv.style.display = 'block';
+  } else {
+    commentDiv.style.display = 'none';
+  }
+
+  updateVis();
+}
+
 updateVis();
 
 // ════════════════════════════════════════════
