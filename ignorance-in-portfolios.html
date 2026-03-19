@@ -472,6 +472,7 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
   .comparison-grid { grid-template-columns: 1fr 1fr; }
   .chart-grid-2 { grid-template-columns: 1fr; }
   body { font-size: 16px; }
+  [style*="grid-template-columns: 1fr 260px"] { grid-template-columns: 1fr !important; }
 }
 </style>
 </head>
@@ -754,40 +755,37 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
   </p>
 </div>
 
-<!-- Charts 2 & 3 side by side -->
-<div class="chart-grid-2">
+<!-- Combined credence + portfolio chart with parameter panel -->
+<div style="display:grid; grid-template-columns: 1fr 260px; gap: 20px; align-items: start;">
   <div class="chart-panel">
-    <div class="chart-title">Credence Trajectories</div>
-    <div class="chart-subtitle">Each agent's p(B is better) over time</div>
-    <canvas id="credenceCanvas" width="440" height="360"></canvas>
+    <div class="chart-title">Credence &amp; Portfolio Weight Trajectories</div>
+    <div class="chart-subtitle">Left axis: p(B is better) · Right axis: derived w_B (Markowitz mapping)</div>
+    <canvas id="credenceCanvas" width="640" height="400"></canvas>
     <div class="stats-row" id="credenceStats"></div>
   </div>
 
-  <div class="chart-panel">
-    <div class="chart-title">Portfolio Weights</div>
-    <div class="chart-subtitle">Derived w_B for each agent (Markowitz mapping)</div>
-    <canvas id="portfolioCanvas" width="440" height="360"></canvas>
-    <div class="stats-row" id="portfolioStats"></div>
+  <div id="paramPanel" style="background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:18px; margin-top:36px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-body); line-height:2;">
+    <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--gold-dim); margin-bottom:10px;">Active Parameters</div>
+    <div id="paramDisplay"></div>
   </div>
 </div>
 
 <div class="legend-row" style="margin-bottom: 12px;">
-  <div class="legend-item"><div class="legend-line" style="background: rgba(200,169,110,0.5);"></div> Individual agent trajectories</div>
-  <div class="legend-item"><div class="legend-line" style="background: #fff; height:3px;"></div> Mean across all agents</div>
-  <div class="legend-item"><div class="legend-line" style="background: rgba(200,169,110,0.3); height:1px; border-top: 1px dashed rgba(200,169,110,0.4); width:18px;"></div> 0.5 reference (equal-weight / no conviction)</div>
+  <div class="legend-item"><div class="legend-line" style="background: rgba(200,169,110,0.5);"></div> Individual agent credences</div>
+  <div class="legend-item"><div class="legend-line" style="background: #fff; height:3px;"></div> Mean credence</div>
+  <div class="legend-item"><div class="legend-line" style="background: rgba(200,169,110,0.3); height:1px; border-top: 1px dashed rgba(200,169,110,0.4); width:18px;"></div> 0.5 (equal-weight / no conviction)</div>
+  <div class="legend-item"><div class="legend-line" style="background: rgba(91,196,120,0.5);"></div> Right axis: portfolio weight scale</div>
 </div>
 
 <div class="reading-guide">
-  <div class="guide-title">Reading the trajectory charts</div>
+  <div class="guide-title">Reading the chart</div>
   <p>
-    <strong>Left (Credence):</strong> Thin coloured lines: individual agents. <strong>White line</strong>:
-    network mean. Dashed line at 0.5: total uncertainty. Rising above 0.5 = growing conviction in B.
-    Two bands = <span class="em">polarisation</span>.
-  </p>
-  <p>
-    <strong>Right (Portfolio weights):</strong> Same trajectories through the Markowitz map. The 0.5 line
-    is <span class="em">equal-weighting</span>. The delay before the white line lifts off is the allocation
-    cost of network structure and mistrust.
+    Thin coloured lines: individual agent credences (left axis, 0–1). <strong>White line</strong>:
+    network mean credence. Dashed line at 0.5: total uncertainty = equal-weight. Rising above 0.5 = growing
+    conviction in B. Two bands = <span class="em">polarisation</span>. The <strong>right axis</strong>
+    (green scale) shows the corresponding Markowitz portfolio weight \(w_B\) — the allocation each credence
+    level implies given the current \(\lambda\) and \(\varepsilon\). The parameter panel shows the
+    active simulation configuration.
   </p>
 </div>
 
@@ -864,7 +862,7 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <hr class="section-divider">
 <div class="prose" style="margin-bottom:60px; font-size:14px; color: var(--text-dim);">
   <p>
-    Based on: <em>Ignorance in Social Networks: Discounting Delays and Shape Matters</em>.
+    Based on: Brian Ball, <em>Ignorance in Social Networks: Discounting Delays and Shape Matters</em> (under review).
     Simulation implements the Zollman (2007) and O'Connor &amp; Weatherall (2018) models with
     Markowitz portfolio weight mapping. Full paper:
     <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold-dim)">networked-belief-portfolio-allocation.pdf</a>.
@@ -1135,17 +1133,17 @@ function drawMiniNetwork(canvas, type, n) {
   }
 }
 
-function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1) {
-  const W = canvas.parentElement ? Math.min(canvas.parentElement.clientWidth - 2, 900) : 440;
-  const H = 360;
+function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1, lambda=2, epsilon=0.01) {
+  const W = canvas.parentElement ? Math.min(canvas.parentElement.clientWidth - 2, 900) : 640;
+  const H = 400;
   const ctx = setupCanvas(canvas, W, H);
   ctx.clearRect(0, 0, W, H);
 
-  const pad = {l: 52, r: 16, t: 16, b: 32};
+  const pad = {l: 52, r: 58, t: 16, b: 32};
   const pw = W - pad.l - pad.r;
   const ph = H - pad.t - pad.b;
 
-  // Grid lines
+  // Left axis grid (credence 0–1)
   ctx.strokeStyle = 'rgba(200,169,110,0.06)';
   ctx.lineWidth = 0.5;
   ctx.font = '11px "IBM Plex Mono", monospace';
@@ -1156,6 +1154,28 @@ function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1) {
     ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l+pw, yy); ctx.stroke();
     ctx.fillText((yMin + (yMax-yMin)*y/4).toFixed(2), pad.l - 8, yy + 4);
   }
+
+  // Right axis (portfolio weight scale)
+  const wMin = credenceToWeight(0, lambda, epsilon);
+  const wMax = credenceToWeight(1, lambda, epsilon);
+  ctx.fillStyle = 'rgba(91,196,120,0.35)';
+  ctx.textAlign = 'left';
+  for (let y = 0; y <= 4; y++) {
+    const yy = pad.t + ph * (1 - y/4);
+    const credVal = yMin + (yMax - yMin) * y / 4;
+    const wVal = credenceToWeight(credVal, lambda, epsilon);
+    ctx.fillText(wVal.toFixed(3), pad.l + pw + 8, yy + 4);
+  }
+
+  // Right axis label
+  ctx.save();
+  ctx.translate(W - 6, pad.t + ph/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillStyle = 'rgba(91,196,120,0.3)';
+  ctx.font = '10px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('w_B', 0, 0);
+  ctx.restore();
 
   // 0.5 reference
   if (yMin <= 0.5 && yMax >= 0.5) {
@@ -1204,6 +1224,16 @@ function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1) {
   ctx.font = '11px "IBM Plex Mono", monospace';
   ctx.textAlign = 'center';
   ctx.fillText(`${steps-1} steps`, pad.l + pw/2, H - 6);
+
+  // Left axis label
+  ctx.save();
+  ctx.translate(10, pad.t + ph/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillStyle = 'rgba(200,169,110,0.3)';
+  ctx.font = '10px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('p(B)', 0, 0);
+  ctx.restore();
 }
 
 function drawAggregateChart(canvas, history, lambda, epsilon) {
@@ -1313,31 +1343,42 @@ function runSimulation() {
 
   // Draw
   drawNetwork(document.getElementById('networkCanvas'), network, history[history.length-1]);
-  drawTimeSeries(document.getElementById('credenceCanvas'), history, (p) => p);
-  drawTimeSeries(document.getElementById('portfolioCanvas'), history, (p) => credenceToWeight(p, lambda, epsilon));
+  drawTimeSeries(document.getElementById('credenceCanvas'), history, (p) => p, 0, 1, lambda, epsilon);
   drawAggregateChart(document.getElementById('utilityCanvas'), history, lambda, epsilon);
+
+  // Parameter panel
+  const trustLabel = updateRule === 'bayes' ? 'Bayes (full trust)' : updateRule === 'jeffrey' ? 'Jeffrey (m = 1)' : 'Jeffrey (m = 2)';
+  const topoLabels = {complete:'Complete',cycle:'Cycle',star:'Star',barabasi:'Barabási-Albert'};
+  document.getElementById('paramDisplay').innerHTML = `
+    <div><span style="color:var(--text-dim)">Topology</span> <span style="color:var(--gold-bright);float:right">${topoLabels[type]}</span></div>
+    <div><span style="color:var(--text-dim)">Agents N</span> <span style="color:var(--gold-bright);float:right">${n}</span></div>
+    <div><span style="color:var(--text-dim)">Density</span> <span style="color:var(--gold-bright);float:right">${network.density.toFixed(3)}</span></div>
+    <div><span style="color:var(--text-dim)">ε (excess return)</span> <span style="color:var(--gold-bright);float:right">${epsilon}</span></div>
+    <div><span style="color:var(--text-dim)">Trials / step</span> <span style="color:var(--gold-bright);float:right">${trials}</span></div>
+    <div><span style="color:var(--text-dim)">Update rule</span> <span style="color:var(--gold-bright);float:right">${trustLabel}</span></div>
+    <div><span style="color:var(--text-dim)">λ (risk aversion)</span> <span style="color:var(--gold-bright);float:right">${lambda}</span></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+      <span style="color:var(--text-dim)">w_B at p=0</span> <span style="color:rgba(91,196,120,0.7);float:right">${credenceToWeight(0, lambda, epsilon).toFixed(3)}</span></div>
+    <div><span style="color:var(--text-dim)">w_B at p=0.5</span> <span style="color:rgba(91,196,120,0.7);float:right">${credenceToWeight(0.5, lambda, epsilon).toFixed(3)}</span></div>
+    <div><span style="color:var(--text-dim)">w_B at p=1</span> <span style="color:rgba(91,196,120,0.7);float:right">${credenceToWeight(1.0, lambda, epsilon).toFixed(3)}</span></div>
+  `;
 
   // Stats
   const finalCredences = history[history.length-1];
   const meanCred = finalCredences.reduce((a,b) => a+b, 0) / n;
   const convergedB = finalCredences.filter(c => c > 0.99).length;
-
-  document.getElementById('credenceStats').innerHTML = `
-    <div class="stat"><span class="val">${history.length-1}</span><span class="lbl">Steps to converge</span></div>
-    <div class="stat"><span class="val">${meanCred.toFixed(3)}</span><span class="lbl">Final mean credence</span></div>
-    <div class="stat"><span class="val">${convergedB} / ${n}</span><span class="lbl">Agents converged to B</span></div>
-    <div class="stat"><span class="val">${network.density.toFixed(3)}</span><span class="lbl">Network density</span></div>
-  `;
-
   const finalWB = credenceToWeight(meanCred, lambda, epsilon);
   const optWB = credenceToWeight(1.0, lambda, epsilon);
-  document.getElementById('portfolioStats').innerHTML = `
-    <div class="stat"><span class="val">${finalWB.toFixed(3)}</span><span class="lbl">Final mean w_B</span></div>
+
+  document.getElementById('credenceStats').innerHTML = `
+    <div class="stat"><span class="val">${history.length-1}</span><span class="lbl">Steps</span></div>
+    <div class="stat"><span class="val">${meanCred.toFixed(3)}</span><span class="lbl">Mean credence</span></div>
+    <div class="stat"><span class="val">${convergedB} / ${n}</span><span class="lbl">Converged to B</span></div>
+    <div class="stat"><span class="val">${finalWB.toFixed(3)}</span><span class="lbl">Final w_B</span></div>
     <div class="stat"><span class="val">${optWB.toFixed(3)}</span><span class="lbl">Optimal w_B</span></div>
     <div class="stat"><span class="val">${(Math.abs(finalWB - optWB)).toFixed(4)}</span><span class="lbl">Allocation drag</span></div>
   `;
 
-  const trustLabel = updateRule === 'bayes' ? 'Full trust (Bayes)' : updateRule === 'jeffrey' ? 'Mistrust m=1' : 'Mistrust m=2';
   document.getElementById('utilityStats').innerHTML = `
     <div class="stat"><span class="val">${computeUtility(finalWB, epsilon, lambda).toFixed(5)}</span><span class="lbl">Final utility</span></div>
     <div class="stat"><span class="val">${computeUtility(optWB, epsilon, lambda).toFixed(5)}</span><span class="lbl">Optimal utility</span></div>
@@ -1452,5 +1493,6 @@ window.addEventListener('resize', () => {
 </script>
 </body>
 </html>
+
 
 
