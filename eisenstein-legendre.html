@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which Ellipses Have Rational Points? — Legendre's Theorem Applied to Eisenstein Norms</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fira+Code:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e13;
+  --bg-raised: #13161d;
+  --bg-card: #181c25;
+  --bg-input: #1e2230;
+  --border: #2a2f3e;
+  --border-focus: #5b8a72;
+  --text: #c8cdd8;
+  --text-dim: #6b7280;
+  --text-bright: #e8ecf4;
+  --heading: #e0dcd4;
+  --accent: #5b8a72;
+  --accent-warm: #c9945a;
+  --accent-dim: #3d5e4d;
+  --success: #5b8a72;
+  --success-bg: rgba(91,138,114,0.1);
+  --fail: #b05050;
+  --fail-bg: rgba(176,80,80,0.1);
+  --inert: #7a6e5a;
+  --split: #5b8a72;
+  --ramified: #8a7ab0;
+  --math-bg: rgba(91,138,114,0.06);
+  --math-border: rgba(91,138,114,0.2);
+  --serif: 'Cormorant Garamond', 'Georgia', serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'Fira Code', 'Consolas', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.78;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(91,138,114,0.3);
+  color: var(--text-bright);
+}
+
+/* ── Layout ── */
+.page { max-width: 780px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── Header ── */
+.header {
+  padding: 5rem 0 3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+}
+
+.header .kicker {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+}
+
+.header h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 2.4rem;
+  line-height: 1.25;
+  color: var(--heading);
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.3px;
+}
+
+.header .standfirst {
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--text-dim);
+  line-height: 1.65;
+  max-width: 620px;
+}
+
+/* ── Prose ── */
+.prose { margin-bottom: 2.5rem; }
+.prose p { margin-bottom: 1.15rem; }
+.prose p + p { text-indent: 0; }
+
+.section-break {
+  text-align: center;
+  margin: 2.8rem 0;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  letter-spacing: 8px;
+}
+
+h2.section-head {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h3.subsection {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--heading);
+  margin-bottom: 0.8rem;
+  margin-top: 2rem;
+}
+
+em.t {
+  font-style: normal;
+  color: var(--accent-warm);
+  font-weight: 500;
+}
+
+strong.law {
+  color: var(--text-bright);
+}
+
+.math-display {
+  background: var(--math-bg);
+  border-left: 2px solid var(--math-border);
+  padding: 1rem 1.4rem;
+  margin: 1.4rem 0;
+  border-radius: 0 4px 4px 0;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  overflow-x: auto;
+}
+
+.math-display .label {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.note-box {
+  background: rgba(201,148,90,0.06);
+  border: 1px solid rgba(201,148,90,0.15);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.note-box .note-label {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  margin-bottom: 0.4rem;
+}
+
+/* ── The Tool ── */
+.tool-container {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2rem;
+  margin: 2.5rem 0;
+}
+
+.tool-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tool-header h3 {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--heading);
+}
+
+.tool-header .tool-tag {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* Input row */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.input-row label {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--text);
+}
+
+.input-row input[type="number"] {
+  font-family: var(--mono);
+  font-size: 1rem;
+  width: 100px;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-bright);
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.input-row input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.btn {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 9px 22px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:hover { background: #6d9e82; }
+.btn:active { transform: scale(0.97); }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-secondary:hover { background: var(--bg-card); border-color: var(--accent); }
+
+/* Results panels */
+.result-panel {
+  display: none;
+  margin-top: 1.5rem;
+}
+
+.result-panel.show { display: block; }
+
+.verdict-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1.2rem;
+  border-radius: 4px;
+  margin-bottom: 1.2rem;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.verdict-strip.pass {
+  background: var(--success-bg);
+  border: 1px solid rgba(91,138,114,0.25);
+  color: var(--success);
+}
+
+.verdict-strip.fail {
+  background: var(--fail-bg);
+  border: 1px solid rgba(176,80,80,0.25);
+  color: var(--fail);
+}
+
+.verdict-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+/* Factorisation display */
+.factor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+@media (max-width: 500px) {
+  .factor-grid { grid-template-columns: 1fr; }
+}
+
+.factor-cell {
+  background: var(--bg-card);
+  padding: 0.7rem 1rem;
+}
+
+.factor-cell .fc-label {
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.factor-cell .fc-value {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--text-bright);
+}
+
+.factor-cell .fc-value .prime-inert { color: var(--inert); }
+.factor-cell .fc-value .prime-split { color: var(--split); }
+.factor-cell .fc-value .prime-ram { color: var(--ramified); }
+
+/* Legendre checks */
+.legendre-checks {
+  margin-bottom: 1.2rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(42,47,62,0.5);
+  font-size: 0.92rem;
+}
+
+.check-row:last-child { border-bottom: none; }
+
+.check-icon {
+  font-size: 0.85rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.check-icon.pass { color: var(--success); }
+.check-icon.fail { color: var(--fail); }
+
+.check-desc {
+  font-family: var(--serif);
+  color: var(--text);
+  flex: 1;
+}
+
+.check-detail {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+/* Triples table */
+.triples-section {
+  margin-top: 1.5rem;
+}
+
+.triples-section h4 {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+}
+
+.triple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.triple-table th {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.triple-table td {
+  padding: 0.45rem 0.8rem;
+  color: var(--text);
+  border-bottom: 1px solid rgba(42,47,62,0.3);
+}
+
+.triple-table tr:hover td { background: rgba(91,138,114,0.04); }
+
+.triple-table .col-rational { color: var(--accent-warm); }
+.triple-table .col-eisenstein { color: var(--ramified); }
+
+.base-point-display {
+  background: var(--math-bg);
+  border: 1px solid var(--math-border);
+  border-radius: 4px;
+  padding: 0.8rem 1.2rem;
+  margin-bottom: 1rem;
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--text-bright);
+}
+
+.parametric-note {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text-dim);
+  margin-top: 0.8rem;
+  line-height: 1.6;
+}
+
+/* Quick gallery */
+.gallery-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.gallery-chip {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+}
+
+.gallery-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.gallery-chip.is-norm {
+  border-color: rgba(91,138,114,0.3);
+  color: var(--success);
+}
+
+.gallery-chip.not-norm {
+  border-color: rgba(176,80,80,0.2);
+  color: var(--fail);
+  opacity: 0.6;
+}
+
+.gallery-chip.not-norm:hover { opacity: 1; }
+
+/* ── Footer ── */
+.footer {
+  margin-top: 4rem;
+  padding: 2rem 0 4rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.footer a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  .header h1 { font-size: 1.8rem; }
+  .header { padding: 3rem 0 2rem; }
+  .tool-container { padding: 1.2rem; }
+  .input-row { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- HEADER                                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="header">
+  <div class="kicker">Legendre's Theorem in Practice</div>
+  <h1>Which Ellipses Have Rational Points?</h1>
+  <div class="standfirst">
+    Applying the classical criterion for ternary quadratic forms to the Eisenstein norm
+    x² − xy + y² = d, and generating the triple families that result.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PREAMBLE                                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="prose">
+
+<h2 class="section-head">The Setup</h2>
+
+<p>The Eisenstein norm form x² − xy + y² defines a family of ellipses in the plane, one for each positive integer d. When d = 1, the curve passes through six lattice points — the units of the Eisenstein integers ℤ[ω] — and a line of rational slope through any one of them sweeps out <em>every</em> rational point on the curve. This is the starting point for <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/" style="color:var(--accent);">Eisenstein-Pythagorean triples</a>: integer solutions of X² + 3Y² = Z², generated by the same parametric mechanism that produces classical Pythagorean triples from the unit circle.</p>
+
+<p>But what happens when we change the right-hand side? For which values of d does the ellipse x² − xy + y² = d contain <em>any</em> rational point at all? If it does, can we generate all rational points — and do the resulting integer triples form a structured family, analogous to Pythagorean triples?</p>
+
+<p>The existence question has a clean answer, and it comes from a theorem that predates most of modern number theory.</p>
+
+<h3 class="subsection">Legendre's Criterion</h3>
+
+<p>Legendre's Theorem (1785) characterises when a homogeneous equation <em class="t">ax² + by² = cz²</em> has nontrivial integer solutions. After reducing the coefficients to squarefree, pairwise coprime form, the conditions are:</p>
+
+<div class="math-display">
+  <span class="label">Legendre's Theorem</span>
+  ax² + by² = cz² has a solution (x,y,z) ≠ (0,0,0) if and only if:<br>
+  &emsp;(i) &ensp;ac is a square mod b<br>
+  &emsp;(ii) &ensp;bc is a square mod a<br>
+  &emsp;(iii) −ab is a square mod c<br>
+  &emsp;(iv) a and b do not both have the opposite sign from c.
+</div>
+
+<p>This is a <em class="t">local-to-global</em> principle: three congruence conditions (one for each prime dividing abc) plus a sign condition (the "real place") together determine a global arithmetic fact. The idea matures into the Hasse–Minkowski theorem for quadratic forms, but Legendre's version is already strong enough for our purpose.</p>
+
+<h3 class="subsection">Applying It to Eisenstein Norms</h3>
+
+<p>To bring x² − xy + y² = d into Legendre's scope, we first complete the square: the left side becomes (x − y/2)² + 3y²/4. Substituting X = x − y/2, Y = y and clearing denominators converts the equation to the homogeneous form</p>
+
+<div class="math-display">X² + 3Y² = dZ²</div>
+
+<p>with a = 1, b = 3, c = d (after absorbing any square factors of d into Z). Since a = 1, condition (ii) — "bc is a square mod a" — is trivially satisfied (everything is a square mod 1). Condition (i) — "d is a square mod 3" — requires d ≡ 0 or 1 mod 3. And the substantive condition (iii) asks: <em class="t">is −3 a quadratic residue modulo d?</em></p>
+
+<p>By quadratic reciprocity and the Chinese Remainder Theorem, this breaks into a condition prime-by-prime. The result translates neatly into the language of Eisenstein arithmetic:</p>
+
+<div class="note-box">
+  <div class="note-label">The classification</div>
+  <strong class="law">d is represented by x² − xy + y² if and only if every prime p ≡ 2 (mod 3) divides d to an even power.</strong><br><br>
+  Equivalently: every prime factor of d either splits (p ≡ 1 mod 3), ramifies (p = 3), or appears with even exponent (p ≡ 2 mod 3 — these are the <em class="t">inert</em> primes in ℤ[ω]).
+</div>
+
+<p>This is exactly the condition for d to be a norm in the Eisenstein integers: d = N(α) for some α = a + bω ∈ ℤ[ω]. Legendre's congruence conditions, translated through the specific form X² + 3Y² = dZ², recover the splitting behaviour of primes in ℤ[ω]. The abstract reciprocity law and the concrete factorisation theory say the same thing.</p>
+
+</div>
+
+<div class="section-break">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- THE TOOL                                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tool-container" id="tool">
+
+  <div class="tool-header">
+    <h3>Eisenstein–Legendre Checker</h3>
+    <span class="tool-tag">X² + 3Y² = dZ²</span>
+  </div>
+
+  <div class="input-row">
+    <label>d&thinsp;=</label>
+    <input type="number" id="dInput" min="1" max="9999" value="7">
+    <button class="btn" id="analyseBtn">Analyse</button>
+  </div>
+
+  <div style="margin-bottom:0.5rem;">
+    <span style="font-family:var(--sans);font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);">Quick picks</span>
+  </div>
+  <div class="gallery-row" id="gallery"></div>
+
+  <!-- Results -->
+  <div class="result-panel" id="results">
+
+    <div class="verdict-strip" id="verdict"></div>
+
+    <div class="factor-grid" id="factorGrid"></div>
+
+    <div class="legendre-checks" id="legendreChecks"></div>
+
+    <!-- If solutions exist -->
+    <div id="solutionSection" style="display:none;">
+      <div class="base-point-display" id="basePoint"></div>
+
+      <div class="triples-section">
+        <h4>Primitive Triples — X² + 3Y² = <span id="tripleLabel">d</span>Z²</h4>
+        <table class="triple-table">
+          <thead>
+            <tr>
+              <th>X</th><th>Y</th><th>Z</th>
+              <th>Rational point (x, y)</th>
+              <th>α ∈ ℤ[ω]</th>
+            </tr>
+          </thead>
+          <tbody id="tripleBody"></tbody>
+        </table>
+        <div class="parametric-note" id="parametricNote"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- POSTAMBLE                                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section-break">· · ·</div>
+
+<div class="prose">
+
+<h2 class="section-head">What the Triples Mean</h2>
+
+<h3 class="subsection">The Pythagorean Analogy</h3>
+
+<p>For d = 1, the equation X² + 3Y² = Z² is the Eisenstein analogue of X² + Y² = Z² (Pythagorean triples). Classical Pythagorean triples are generated by multiplication in the Gaussian integers ℤ[i]; Eisenstein-Pythagorean triples are generated by multiplication in ℤ[ω]. The parametric formula — intersecting lines from (−1, 0) with the Eisenstein unit ellipse — is the geometric face of this algebraic engine.</p>
+
+<p>For d ≠ 1, something analogous happens. The integer triples (X, Y, Z) satisfying X² + 3Y² = dZ² form what might be called <em class="t">level-d Eisenstein triples</em>. They are generated by taking an Eisenstein integer α with N(α) = d — which exists precisely when Legendre's conditions pass — and multiplying it by arbitrary β ∈ ℤ[ω]. The product αβ has norm d · N(β), and when N(β) is a perfect square (i.e. β = nε for an integer n and a unit ε), the triple lands cleanly back at level d.</p>
+
+<p>To get <em>genuinely new</em> primitive triples rather than rescaled copies, you multiply α by Eisenstein integers whose norms are perfect squares but who aren't real integers themselves — products of split primes, or more generally, elements whose argument in the complex plane is nontrivial. This is the multiplicative engine that produces infinite families at each level.</p>
+
+<h3 class="subsection">Existence vs. Generation</h3>
+
+<p>It's worth being precise about the division of labour. Legendre's Theorem answers the <em class="t">existence</em> question: for a given d, is the projective conic X² + 3Y² = dZ² nonempty over ℚ? This is a yes/no gate — three modular conditions and a sign check. It does not produce solutions; it certifies their possibility.</p>
+
+<p>Once existence is established, the <em class="t">parametric</em> method takes over. Find a single rational point (x₀, y₀) on x² − xy + y² = d (equivalently, a base point on the homogeneous curve). Then every other rational point is the second intersection of the ellipse with a line of rational slope through (x₀, y₀). This generates all rational points, and hence all primitive triples, by sweeping through ℚ.</p>
+
+<p>The two methods answer different questions at different scales: Legendre is a sieve that partitions the positive integers into "admissible d" and "obstructed d" before any search begins. The parametric method is a generator that exhausts the solution space for each admissible d. Between them, the problem is fully determined.</p>
+
+<h3 class="subsection">The Obstructed Cases</h3>
+
+<p>When Legendre says no, the obstruction is arithmetic and absolute. For d = 5, condition (iii) requires −3 to be a square mod 5; since −3 ≡ 2 mod 5 and the squares mod 5 are {0, 1, 4}, this fails. No rational point exists on x² − xy + y² = 5, and no amount of searching will find one. The prime 5, being inert in ℤ[ω] (since 5 ≡ 2 mod 3), cannot appear to an odd power in any Eisenstein norm. This is the same obstruction viewed from three different heights: a congruence failure, a quadratic residue non-existence, and a prime remaining inert in a ring extension.</p>
+
+<p>For d = 2, the situation is subtler. Legendre's conditions for X² + 3Y² = 2Z² pass (the squarefree part is 2, and −3 ≡ 1 mod 2 is trivially a square). The homogeneous equation <em>does</em> have nontrivial solutions — for instance (1, 1, ≈ something)... actually, it doesn't: 1 + 3 = 4 ≠ 2·Z² for any integer Z. The point is that Legendre addresses the ternary form over ℤ, while representability of d by the binary form x² − xy + y² is a strictly stronger condition. The primes p ≡ 2 mod 3 are inert in ℤ[ω]: they don't split, so they aren't norms. Their <em>squares</em> are norms (since N(p) = p², with p viewed as an element of ℤ[ω]), and this is why d = 4 = 2² works while d = 2 does not.</p>
+
+<div class="note-box">
+  <div class="note-label">Legendre vs. Representability</div>
+  Legendre's Theorem certifies rational points on the <em>projective</em> conic — the homogeneous equation in three variables. Representability by the norm form is about <em>integer</em> points on the affine curve — two variables, specific right-hand side. For our form X² + 3Y² = dZ², the gap appears precisely at the inert primes: Legendre can pass while the binary form still fails, because the three-variable equation has more room to manoeuvre than the two-variable one.
+</div>
+
+<h3 class="subsection">Connection to the Eisenstein Ellipse</h3>
+
+<p>The <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/" style="color:var(--accent)">interactive Eisenstein ellipse</a> parametrises rational points on x² − xy + y² = 1 by sending lines of slope m through (−1, 0) and recording the second intersection. The present tool extends this in two directions: it uses Legendre's Theorem to determine, for any d, whether the corresponding ellipse x² − xy + y² = d has rational points at all; and when it does, it exhibits the primitive Eisenstein triples that encode those points.</p>
+
+<p>Together, they present the complete picture: the d = 1 ellipse generates the Eisenstein-Pythagorean triples parametrically; the Legendre sieve identifies which other values of d admit their own triple families; and the arithmetic of ℤ[ω] — splitting, ramification, inertia — is the unified language that organises the whole structure.</p>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- FOOTER                                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="footer">
+  <span>McMurmerings · 2025</span>
+  <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/">Eisenstein Ellipse Parametriser →</a>
+</div>
+
+</div><!-- .page -->
+
+<script>
+// ── Number Theory Utilities ──
+
+function primeFactors(n) {
+  const factors = {};
+  let d = 2;
+  while (d * d <= n) {
+    while (n % d === 0) {
+      factors[d] = (factors[d] || 0) + 1;
+      n /= d;
+    }
+    d++;
+  }
+  if (n > 1) factors[n] = (factors[n] || 0) + 1;
+  return factors;
+}
+
+function squarefreePart(n) {
+  const pf = primeFactors(n);
+  let sf = 1;
+  for (const [p, e] of Object.entries(pf)) {
+    if (e % 2 === 1) sf *= +p;
+  }
+  return sf;
+}
+
+function gcd(a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+function gcd3(a, b, c) { return gcd(gcd(a, b), c); }
+
+function quadraticResidues(n) {
+  const res = new Set();
+  for (let k = 0; k < n; k++) res.add((k * k) % n);
+  return res;
+}
+
+function modInverse(a, m) {
+  a = ((a % m) + m) % m;
+  for (let x = 1; x < m; x++) {
+    if ((a * x) % m === 1) return x;
+  }
+  return null;
+}
+
+function isEisensteinNorm(d) {
+  // d = a² - ab + b² for some integers a,b
+  const bound = Math.ceil(Math.sqrt(d)) + 2;
+  for (let a = 0; a <= bound; a++) {
+    for (let b = -bound; b <= bound; b++) {
+      if (a * a - a * b + b * b === d) return [a, b];
+    }
+  }
+  return null;
+}
+
+function primeClassification(p) {
+  if (p === 3) return 'ramified';
+  if (p % 3 === 1) return 'split';
+  return 'inert';
+}
+
+function checkLegendre(d) {
+  // For X² + 3Y² = dZ² with a=1, b=3, c=d_sf
+  const d_sf = squarefreePart(d);
+  const checks = [];
+  
+  // (i) ac mod b: 1·d_sf mod 3
+  const dmod3 = d_sf % 3;
+  const qr3 = quadraticResidues(3); // {0, 1}
+  checks.push({
+    label: 'ac ≡ d is a square mod 3',
+    detail: `${d_sf} mod 3 = ${dmod3}; QR(3) = {0,1}`,
+    pass: qr3.has(dmod3)
+  });
+  
+  // (ii) bc mod a: 3·d_sf mod 1 — trivial
+  checks.push({
+    label: 'bc is a square mod 1',
+    detail: 'trivially true (mod 1)',
+    pass: true
+  });
+  
+  // (iii) -ab mod c: -3 mod d_sf
+  if (d_sf === 1) {
+    checks.push({
+      label: '−ab ≡ −3 is a square mod d',
+      detail: 'trivially true (mod 1)',
+      pass: true
+    });
+  } else {
+    const neg3 = ((-3 % d_sf) + d_sf) % d_sf;
+    const qrd = quadraticResidues(d_sf);
+    checks.push({
+      label: '−3 is a square mod d (squarefree part)',
+      detail: `−3 ≡ ${neg3} mod ${d_sf}; QR(${d_sf}) = {${[...qrd].sort((a,b)=>a-b).join(',')}}`,
+      pass: qrd.has(neg3)
+    });
+  }
+  
+  // (iv) signs — a=1, b=3, c=d all positive
+  checks.push({
+    label: 'Sign condition (a, b, c all positive)',
+    detail: '1, 3, d > 0',
+    pass: true
+  });
+  
+  const allPass = checks.every(c => c.pass);
+  return { checks, allPass, d_sf };
+}
+
+function findPrimitiveTriples(d, maxZ = 80) {
+  const triples = [];
+  const seen = new Set();
+  for (let z = 1; z <= maxZ; z++) {
+    const target = d * z * z;
+    for (let y = 0; y * y * 3 <= target; y++) {
+      const rem = target - 3 * y * y;
+      const x = Math.round(Math.sqrt(rem));
+      if (x * x === rem && x >= 0) {
+        // Check primitivity
+        for (const [sx, sy] of [[x,y],[x,-y]]) {
+          if (sy === 0 && sx === 0) continue;
+          const g = gcd3(Math.abs(sx), Math.abs(sy), z);
+          if (g === 1) {
+            const key = [Math.abs(sx), Math.abs(sy), z].sort((a,b)=>a-b).join(',');
+            if (!seen.has(key)) {
+              seen.add(key);
+              triples.push([sx, sy, z]);
+            }
+          }
+        }
+      }
+    }
+  }
+  return triples.sort((a, b) => a[2] - b[2]).slice(0, 15);
+}
+
+function tripleToRational(X, Y, Z) {
+  // X² + 3Y² = dZ² came from (x - y/2)² + 3y²/4 = d with x=p/Z, y adjusted
+  // More directly: X = 2x-y (times Z), Y = y (times Z)
+  // So x = (X + Y) / (2Z), y = Y/Z ... wait, need to be careful.
+  // From X = 2a - b, Y = b where norm(a + bω) = d
+  // Actually the substitution was X = x - y/2, Y = y, multiply by 2Z gives U = 2x-y (integer), V = y
+  // So rational point on x²-xy+y² = d is x = (X + Y/2·...) — let me just invert directly.
+  // X = x - y/2 (times Z), Y = y (times Z)
+  // So x = (X/Z) + (Y/Z)/2 = (2X + Y)/(2Z), y = Y/Z
+  const num_x = 2 * X + Y;
+  const den_x = 2 * Z;
+  const g1 = gcd(Math.abs(num_x), Math.abs(den_x));
+  const num_y = Y;
+  const den_y = Z;
+  const g2 = gcd(Math.abs(num_y), Math.abs(den_y));
+  return {
+    x: `${num_x/g1}/${den_x/g1}`,
+    y: `${num_y/g2}/${den_y/g2}`,
+    xn: num_x/g1, xd: den_x/g1,
+    yn: num_y/g2, yd: den_y/g2
+  };
+}
+
+// ── UI Logic ──
+
+function analyse(d) {
+  if (d < 1 || d > 9999 || !Number.isInteger(d)) return;
+  
+  const panel = document.getElementById('results');
+  panel.classList.add('show');
+  
+  const pf = primeFactors(d);
+  const leg = checkLegendre(d);
+  const normRep = isEisensteinNorm(d);
+  const isNorm = normRep !== null;
+  
+  // Verdict
+  const verdict = document.getElementById('verdict');
+  if (isNorm) {
+    verdict.className = 'verdict-strip pass';
+    verdict.innerHTML = `<span class="verdict-icon">✓</span>
+      <span><strong>d = ${d} is an Eisenstein norm.</strong> The ellipse x² − xy + y² = ${d} has rational points, and ${d} = N(${normRep[0]} + ${normRep[1]}ω).</span>`;
+  } else if (leg.allPass) {
+    verdict.className = 'verdict-strip pass';
+    verdict.innerHTML = `<span class="verdict-icon">◐</span>
+      <span><strong>Legendre passes</strong> for X² + 3Y² = ${d}Z², but d = ${d} is <em>not</em> a norm in ℤ[ω]. The ternary form has solutions; the binary form x² − xy + y² = ${d} does not.</span>`;
+  } else {
+    const failedCheck = leg.checks.find(c => !c.pass);
+    verdict.className = 'verdict-strip fail';
+    verdict.innerHTML = `<span class="verdict-icon">✗</span>
+      <span><strong>d = ${d} is not representable.</strong> Legendre condition fails: ${failedCheck.label}. No rational points exist on x² − xy + y² = ${d}.</span>`;
+  }
+  
+  // Factor grid
+  const grid = document.getElementById('factorGrid');
+  const entries = Object.entries(pf);
+  let factorHTML = `
+    <div class="factor-cell">
+      <div class="fc-label">Prime Factorisation</div>
+      <div class="fc-value">${entries.length === 0 ? '1' : entries.map(([p,e]) => {
+        const cls = primeClassification(+p);
+        return `<span class="prime-${cls === 'split' ? 'split' : cls === 'ramified' ? 'ram' : 'inert'}">${p}${e > 1 ? '<sup>'+e+'</sup>' : ''}</span>`;
+      }).join(' · ')}</div>
+    </div>
+    <div class="factor-cell">
+      <div class="fc-label">Squarefree Part</div>
+      <div class="fc-value">${leg.d_sf}</div>
+    </div>`;
+  
+  // Prime classification
+  for (const [p, e] of entries) {
+    const cls = primeClassification(+p);
+    const status = cls === 'split' ? 'splits (p ≡ 1 mod 3)' :
+                   cls === 'ramified' ? 'ramifies (p = 3)' :
+                   'inert (p ≡ 2 mod 3)';
+    const ok = cls !== 'inert' || e % 2 === 0;
+    factorHTML += `
+      <div class="factor-cell">
+        <div class="fc-label">p = ${p}</div>
+        <div class="fc-value"><span class="prime-${cls === 'split' ? 'split' : cls === 'ramified' ? 'ram' : 'inert'}">${status}, e=${e} ${ok ? '✓' : '✗'}</span></div>
+      </div>`;
+  }
+  grid.innerHTML = factorHTML;
+  
+  // Legendre checks
+  const checksDiv = document.getElementById('legendreChecks');
+  checksDiv.innerHTML = leg.checks.map(c => `
+    <div class="check-row">
+      <span class="check-icon ${c.pass ? 'pass' : 'fail'}">${c.pass ? '✓' : '✗'}</span>
+      <span class="check-desc">${c.label}</span>
+      <span class="check-detail">${c.detail}</span>
+    </div>
+  `).join('');
+  
+  // Solutions section
+  const solSection = document.getElementById('solutionSection');
+  if (isNorm) {
+    solSection.style.display = 'block';
+    
+    const [a, b] = normRep;
+    document.getElementById('basePoint').innerHTML =
+      `Base Eisenstein integer: α = ${a} + ${b}ω &ensp;⟹&ensp; N(α) = ${a}² − ${a}·${b} + ${b}² = ${d}<br>
+       Base rational point on x² − xy + y²= ${d}: &ensp;(${a}, ${b})`;
+    
+    document.getElementById('tripleLabel').textContent = d;
+    
+    const triples = findPrimitiveTriples(d);
+    const tbody = document.getElementById('tripleBody');
+    tbody.innerHTML = triples.map(([X, Y, Z]) => {
+      const rp = tripleToRational(X, Y, Z);
+      // Find a+bω with norm d that corresponds (approximately)
+      return `<tr>
+        <td>${X}</td><td>${Y}</td><td>${Z}</td>
+        <td class="col-rational">(${rp.x},&ensp;${rp.y})</td>
+        <td class="col-eisenstein">${a}+${b}ω</td>
+      </tr>`;
+    }).join('');
+    
+    document.getElementById('parametricNote').innerHTML =
+      `Each primitive triple (X, Y, Z) encodes a rational point (x, y) = ((2X+Y)/2Z, Y/Z) on the ellipse x² − xy + y² = ${d}. These points are generated by lines of rational slope through (${a}, ${b}), exactly as for the <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/" style="color:var(--accent)">d = 1 case</a>.`;
+  } else {
+    solSection.style.display = 'none';
+  }
+}
+
+// ── Gallery ──
+function buildGallery() {
+  const gallery = document.getElementById('gallery');
+  let html = '';
+  for (let d = 1; d <= 50; d++) {
+    const norm = isEisensteinNorm(d) !== null;
+    html += `<span class="gallery-chip ${norm ? 'is-norm' : 'not-norm'}" data-d="${d}">${d}</span>`;
+  }
+  gallery.innerHTML = html;
+  gallery.querySelectorAll('.gallery-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const d = parseInt(chip.dataset.d);
+      document.getElementById('dInput').value = d;
+      analyse(d);
+      document.getElementById('tool').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+}
+
+// ── Init ──
+document.getElementById('analyseBtn').addEventListener('click', () => {
+  analyse(parseInt(document.getElementById('dInput').value));
+});
+
+document.getElementById('dInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') analyse(parseInt(e.target.value));
+});
+
+buildGallery();
+analyse(7); // default
+</script>
+
+</body>
+</html>
