@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linearisation — IB Physics</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #141720;
+  --surface2: #1c2030;
+  --border: #2a2f42;
+  --gold: #c9a84c;
+  --gold-dim: #8a6f30;
+  --amber: #e8b04b;
+  --text: #d4cfc4;
+  --text-dim: #7a7568;
+  --text-bright: #f0ece0;
+  --green: #5a9e6f;
+  --red: #c0503a;
+  --blue: #4a88c0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+#progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--amber));
+  width: 0%;
+  z-index: 100;
+  transition: width 0.15s;
+}
+
+.container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 60px 32px 100px;
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 32px;
+  margin-bottom: 48px;
+}
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+header .subtitle {
+  font-size: 1.1rem;
+  color: var(--gold);
+  font-style: italic;
+}
+
+header .context {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--amber);
+  margin: 48px 0 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--gold-dim);
+  margin-right: 10px;
+}
+
+.qa {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.qa:hover { border-color: var(--gold-dim); }
+
+.qa-q {
+  padding: 18px 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  user-select: none;
+}
+
+.qa-q::before {
+  content: 'Q';
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.qa-q .arrow {
+  margin-left: auto;
+  color: var(--text-dim);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.qa.open .qa-q .arrow { transform: rotate(180deg); }
+
+.qa-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s ease, padding 0.3s ease;
+  padding: 0 22px;
+}
+
+.qa.open .qa-a {
+  max-height: 4000px;
+  padding: 0 22px 24px;
+}
+
+.qa-a p { margin-bottom: 12px; }
+
+.eq {
+  background: var(--surface2);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 1.05rem;
+  overflow-x: auto;
+}
+
+.insight {
+  background: rgba(90, 158, 111, 0.1);
+  border-left: 3px solid var(--green);
+  padding: 12px 18px;
+  margin: 16px 0;
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+  color: var(--text-bright);
+}
+
+.warning {
+  background: rgba(192, 80, 58, 0.1);
+  border-left: 3px solid var(--red);
+  padding: 12px 18px;
+  margin: 16px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+th {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--gold-dim);
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+@media (max-width: 600px) {
+  .container { padding: 32px 18px 60px; }
+  header h1 { font-size: 1.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="container">
+  <header>
+    <h1>Linearisation</h1>
+    <div class="subtitle">Making curved relationships confess their secrets</div>
+    <div class="context">IB Physics SL/HL — Measurement, Data Processing &amp; Experimental Technique</div>
+  </header>
+
+  <!-- §1: Why Linearise? -->
+  <div class="section-title"><span>§1</span> Why Linearise?</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Why not just draw the curve and be done with it?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Because a straight line is the only graph you can fully characterise by eye. You can:</p>
+      <p>• Judge whether data fits it (deviations from a straight line are obvious; deviations from a curve are ambiguous).</p>
+      <p>• Read off two numbers — gradient and intercept — that encode the physics.</p>
+      <p>• Estimate uncertainties by drawing max/min lines of best fit.</p>
+      <p>A curve tells you "something is happening". A straight line tells you <em>exactly what</em>.</p>
+      <div class="insight">Linearisation is not a mathematical trick — it is an experimental strategy. You reshape the data so that the physics falls out of the gradient and intercept of \(y = mx + c\).</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is the general strategy for linearising a relationship?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Start with the theoretical equation. Rearrange it into the form:</p>
+      <div class="eq">
+        \(\underbrace{(\text{plot on } y\text{-axis})}_{y} = \underbrace{(\text{physics constant})}_{m} \times \underbrace{(\text{plot on } x\text{-axis})}_{x} + \underbrace{(\text{maybe zero})}_{c}\)
+      </div>
+      <p>The variables you <em>measure</em> appear as \(y\) and \(x\). The constants you want to <em>find</em> appear as \(m\) (gradient) or \(c\) (intercept).</p>
+      <p><strong>The key decision</strong> is what to plot on each axis. You might need to square a variable, take its reciprocal, or take its logarithm — whatever turns the equation into \(y = mx + c\).</p>
+    </div>
+  </div>
+
+  <!-- §2: Power Laws -->
+  <div class="section-title"><span>§2</span> Power Laws: \(y = kx^n\)</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do you linearise a power law like \(T = k\ell^{1/2}\) (pendulum period)?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>The pendulum period is \(T = 2\pi\sqrt{\ell/g}\), which has the form \(T \propto \ell^{1/2}\). There are two approaches:</p>
+      <p><strong>Approach 1 — Square it:</strong></p>
+      <div class="eq">
+        \(T^2 = \frac{4\pi^2}{g}\,\ell\)
+      </div>
+      <p>Plot \(T^2\) vs \(\ell\). Gradient \(= 4\pi^2/g\). Intercept \(= 0\).</p>
+      <p><strong>Approach 2 — Log both sides:</strong></p>
+      <div class="eq">
+        \(\ln T = \tfrac{1}{2}\ln\ell + \ln\!\left(\frac{2\pi}{\sqrt{g}}\right)\)
+      </div>
+      <p>Plot \(\ln T\) vs \(\ln\ell\). Gradient \(= \tfrac{1}{2}\) (confirms the power law). Intercept gives \(g\).</p>
+      <div class="insight">Approach 1 is cleaner when you already know the power. Approach 2 is better when you're <em>testing</em> what the power is — the gradient tells you the exponent directly.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Intensity follows an inverse-square law: \(I = \frac{P}{4\pi d^2}\). How would you verify this experimentally?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Rearrange:</p>
+      <div class="eq">
+        \(I = \frac{P}{4\pi}\cdot\frac{1}{d^2}\)
+      </div>
+      <p>Plot \(I\) vs \(1/d^2\). If the law holds, you get a straight line through the origin with gradient \(P/(4\pi)\).</p>
+      <p><strong>Alternatively</strong>, take logs:</p>
+      <div class="eq">
+        \(\ln I = -2\ln d + \ln\!\left(\frac{P}{4\pi}\right)\)
+      </div>
+      <p>Plot \(\ln I\) vs \(\ln d\). Gradient should be \(-2\). If you get \(-1.87\) or \(-2.15\), you've found evidence that the law isn't perfectly inverse-square — perhaps absorption or reflection is at play.</p>
+      <div class="warning">The log-log approach is more powerful here: it tests the exponent rather than assuming it. IB examiners love asking "what would you plot to verify the relationship?" — the answer is nearly always a log-log graph when the power is under investigation.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Boyle's Law says \(pV = \text{const}\). What are the linearisation options?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>\(pV = k\) is a power law with exponent \(-1\): \(p = k \cdot V^{-1}\).</p>
+      <p><strong>Option 1:</strong> Plot \(p\) vs \(1/V\). Gradient \(= k = nRT\). Intercept \(= 0\).</p>
+      <p><strong>Option 2:</strong> Plot \(pV\) vs \(V\) (or vs \(p\)). If Boyle's law holds, the graph is a horizontal line at height \(k\). Deviations from horizontal reveal non-ideal behaviour.</p>
+      <p><strong>Option 3:</strong> \(\ln p = -\ln V + \ln k\). Plot \(\ln p\) vs \(\ln V\). Gradient \(= -1\).</p>
+      <div class="insight">Option 2 is under-used but elegant — it amplifies deviations. A curve on a \(p\) vs \(1/V\) graph might look straight; the same data on a \(pV\) vs \(V\) graph will show the wobble clearly.</div>
+    </div>
+  </div>
+
+  <!-- §3: Exponential Relationships -->
+  <div class="section-title"><span>§3</span> Exponential Relationships: \(y = Ae^{kx}\)</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do you linearise an exponential decay like \(N = N_0 e^{-\lambda t}\)?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Take the natural log of both sides:</p>
+      <div class="eq">
+        \(\ln N = \ln N_0 - \lambda t\)
+      </div>
+      <p>This is \(y = c + mx\) with:</p>
+      <table>
+        <tr><th>Role</th><th>Expression</th><th>What it tells you</th></tr>
+        <tr><td>\(y\)</td><td>\(\ln N\)</td><td>Plot this on the vertical axis</td></tr>
+        <tr><td>\(x\)</td><td>\(t\)</td><td>Plot this on the horizontal axis</td></tr>
+        <tr><td>\(m\)</td><td>\(-\lambda\)</td><td>Gradient gives the decay constant</td></tr>
+        <tr><td>\(c\)</td><td>\(\ln N_0\)</td><td>Intercept gives the initial count (after taking \(e^c\))</td></tr>
+      </table>
+      <p>From \(\lambda\), the half-life follows: \(t_{1/2} = \ln 2 / \lambda\).</p>
+      <div class="insight">This is the single most common linearisation in IB Physics. It appears in radioactive decay, capacitor discharge, Beer-Lambert attenuation, and cooling curves. Learn this one cold.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      A capacitor discharges through a resistor: \(V = V_0 e^{-t/RC}\). How do you extract \(RC\) from experimental data?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Take logs:</p>
+      <div class="eq">
+        \(\ln V = \ln V_0 - \frac{1}{RC}\,t\)
+      </div>
+      <p>Plot \(\ln V\) vs \(t\). The gradient is \(-1/RC\), so:</p>
+      <div class="eq">
+        \(RC = -\frac{1}{\text{gradient}}\)
+      </div>
+      <p><strong>Worked example:</strong> Your ln-V vs t graph gives a gradient of \(-0.25\) s⁻¹. Then \(RC = 1/0.25 = 4.0\) s. If \(R = 10\) kΩ, then \(C = 4.0/10{,}000 = 400\) μF.</p>
+      <div class="warning">Common mistake: plotting \(\log_{10} V\) instead of \(\ln V\). The gradient becomes \(-1/(RC \cdot \ln 10)\) — an unnecessary factor of 2.303. Stick to natural logs for exponential relationships.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What about relationships like \(y = A(1 - e^{-t/\tau})\) — exponential approach to a limit?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>This appears in capacitor charging and terminal velocity. You can't take the log directly because of the \((1 - \cdots)\) structure. Rearrange first:</p>
+      <div class="eq">
+        \(A - y = Ae^{-t/\tau} \implies \ln(A - y) = \ln A - \frac{t}{\tau}\)
+      </div>
+      <p>Plot \(\ln(A - y)\) vs \(t\). Gradient \(= -1/\tau\).</p>
+      <p>For terminal velocity: \(v = v_{\text{term}}(1 - e^{-t/\tau})\), so plot \(\ln(v_{\text{term}} - v)\) vs \(t\). You need to know (or estimate) \(v_{\text{term}}\) first — read it off as the plateau value from the raw \(v\) vs \(t\) graph.</p>
+      <div class="insight">The trick is always: isolate the exponential, <em>then</em> take the log. Don't try to take the log of a sum.</div>
+    </div>
+  </div>
+
+  <!-- §4: The Log-Log and Ln-Linear Toolkit -->
+  <div class="section-title"><span>§4</span> The Two Master Plots</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      When do I use log-log, and when do I use ln-linear?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>This is the single most important decision in linearisation:</p>
+      <table>
+        <tr><th>Relationship</th><th>Plot type</th><th>What gradient gives</th></tr>
+        <tr><td>\(y = kx^n\) (power law)</td><td>\(\ln y\) vs \(\ln x\)</td><td>The exponent \(n\)</td></tr>
+        <tr><td>\(y = Ae^{kx}\) (exponential)</td><td>\(\ln y\) vs \(x\)</td><td>The rate constant \(k\)</td></tr>
+      </table>
+      <p><strong>How to tell them apart from raw data:</strong></p>
+      <p>• If the curve passes through the origin and bends — try a power law (log-log).</p>
+      <p>• If the curve has a non-zero intercept and bends — try an exponential (ln-linear).</p>
+      <p>• If in doubt, try both. Only one will give a straight line.</p>
+      <div class="insight">Log-log says "the variables are related by a power". Ln-linear says "one variable is in the exponent". These are fundamentally different physics — log-log is geometry (\(A \propto r^2\)), ln-linear is process (\(N \propto e^{-\lambda t}\)).</div>
+    </div>
+  </div>
+
+  <!-- §5: Reading Gradients & Intercepts -->
+  <div class="section-title"><span>§5</span> Extracting Physics from the Graph</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do you correctly read a gradient and intercept — with units?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>The gradient has units of \([\text{y-axis}] / [\text{x-axis}]\). The intercept has units of \([\text{y-axis}]\).</p>
+      <p><strong>Example:</strong> You plot \(T^2\) (s²) vs \(\ell\) (m) for a pendulum. Gradient has units s²/m. You know gradient \(= 4\pi^2/g\), so:</p>
+      <div class="eq">
+        \(g = \frac{4\pi^2}{\text{gradient}} \quad [\text{m s}^{-2}] \quad \checkmark\)
+      </div>
+      <p><strong>On a log graph:</strong> both axes are dimensionless (you're plotting \(\ln(\text{number})\)), so the gradient is a pure number. But it <em>represents</em> a physical quantity — the exponent, the decay constant, etc. Be explicit about what it means.</p>
+      <div class="warning">IB examiners penalise gradients calculated from data points rather than from the line of best fit. Use two points <strong>on the line</strong>, as far apart as possible. Never use your original data points unless they happen to lie exactly on the line.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do you handle uncertainties on a linearised graph?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>The IB method:</p>
+      <p>1. Plot the data with error bars. (For \(\ln y\), the error bar is \(\Delta(\ln y) \approx \Delta y / y\) — from the fractional uncertainty.)</p>
+      <p>2. Draw the <strong>best-fit line</strong> through the error bars.</p>
+      <p>3. Draw the <strong>steepest</strong> and <strong>shallowest</strong> lines that still pass through most error bars.</p>
+      <p>4. The uncertainty in the gradient is:</p>
+      <div class="eq">
+        \(\Delta m = \frac{m_{\max} - m_{\min}}{2}\)
+      </div>
+      <p>5. Propagate this into your final answer. If gradient \(= -\lambda\), then \(\Delta\lambda = |\Delta m|\), and:</p>
+      <div class="eq">
+        \(\Delta t_{1/2} = t_{1/2} \times \frac{\Delta\lambda}{\lambda}\)
+      </div>
+      <div class="insight">Error bars on a \(\ln y\) axis are asymmetric in raw units but symmetric in log units. This is a feature, not a bug — it correctly represents the fact that multiplicative uncertainties become additive after taking logs.</div>
+    </div>
+  </div>
+
+  <!-- §6: Common IB Linearisations -->
+  <div class="section-title"><span>§6</span> The IB Cheat Sheet</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Can you give me a reference table of the most common IB linearisations?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <table>
+        <tr><th>Physics</th><th>Equation</th><th>Plot</th><th>Gradient</th><th>Intercept</th></tr>
+        <tr><td>Pendulum</td><td>\(T = 2\pi\sqrt{\ell/g}\)</td><td>\(T^2\) vs \(\ell\)</td><td>\(4\pi^2/g\)</td><td>0</td></tr>
+        <tr><td>Radioactive decay</td><td>\(N = N_0 e^{-\lambda t}\)</td><td>\(\ln N\) vs \(t\)</td><td>\(-\lambda\)</td><td>\(\ln N_0\)</td></tr>
+        <tr><td>Capacitor discharge</td><td>\(V = V_0 e^{-t/RC}\)</td><td>\(\ln V\) vs \(t\)</td><td>\(-1/RC\)</td><td>\(\ln V_0\)</td></tr>
+        <tr><td>Inverse square law</td><td>\(I = P/(4\pi d^2)\)</td><td>\(I\) vs \(1/d^2\)</td><td>\(P/(4\pi)\)</td><td>0</td></tr>
+        <tr><td>Boyle's law</td><td>\(pV = \text{const}\)</td><td>\(p\) vs \(1/V\)</td><td>\(nRT\)</td><td>0</td></tr>
+        <tr><td>Stefan-Boltzmann</td><td>\(P = \sigma AT^4\)</td><td>\(\ln P\) vs \(\ln T\)</td><td>4</td><td>\(\ln(\sigma A)\)</td></tr>
+        <tr><td>Kinetic energy</td><td>\(E = \tfrac{1}{2}mv^2\)</td><td>\(E\) vs \(v^2\)</td><td>\(m/2\)</td><td>0</td></tr>
+        <tr><td>Spring constant</td><td>\(T = 2\pi\sqrt{m/k}\)</td><td>\(T^2\) vs \(m\)</td><td>\(4\pi^2/k\)</td><td>0</td></tr>
+        <tr><td>Beer-Lambert</td><td>\(I = I_0 e^{-\mu x}\)</td><td>\(\ln I\) vs \(x\)</td><td>\(-\mu\)</td><td>\(\ln I_0\)</td></tr>
+      </table>
+      <div class="insight">Nine relationships, two strategies: either transform a variable (\(T^2\), \(1/d^2\), \(v^2\)) or take logs. That's the entire toolkit.</div>
+    </div>
+  </div>
+
+  <!-- §7: Pitfalls -->
+  <div class="section-title"><span>§7</span> Common Pitfalls</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What are the mistakes that lose marks?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>1. Forgetting to transform the units.</strong> If you plot \(T^2\), the y-axis unit is s², not s. If you plot \(\ln V\), the axis is dimensionless — label it "\(\ln(V/\text{V})\)" or just "\(\ln V\)" with a note.</p>
+      <p><strong>2. Using data points instead of the line.</strong> The gradient comes from the best-fit line, not from \(\Delta y / \Delta x\) between two data points.</p>
+      <p><strong>3. Confusing \(\ln\) and \(\log_{10}\).</strong> For exponentials, use \(\ln\) (base \(e\)). If you use \(\log_{10}\), your gradient is off by a factor of \(\ln 10 \approx 2.303\). The IB expects \(\ln\).</p>
+      <p><strong>4. Not checking the intercept.</strong> If your theory predicts a zero intercept (e.g. \(T^2\) vs \(\ell\)), a non-zero intercept reveals systematic error — perhaps a timing offset or a non-zero effective length at the pivot.</p>
+      <p><strong>5. Plotting \(\ln y\) vs \(\ln x\) when you should plot \(\ln y\) vs \(x\).</strong> The first tests a power law; the second tests an exponential. They are different hypotheses about the physics.</p>
+      <div class="warning">The most devastating mistake is plotting the wrong variables. Before touching a ruler, write down the theoretical equation, identify the form (\(y = mx + c\)), and label your axes. Then plot.</div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section-title"><span>Σ</span> The Method</div>
+
+  <div style="padding: 20px 0;">
+    <p><strong>Step 1.</strong> Write down the theoretical equation.</p>
+    <p><strong>Step 2.</strong> Identify the form: power law (\(y = kx^n\)) or exponential (\(y = Ae^{kx}\)).</p>
+    <p><strong>Step 3.</strong> Transform: square, reciprocal, or \(\ln\) — whatever produces \(y = mx + c\).</p>
+    <p><strong>Step 4.</strong> Calculate your transformed data in a table.</p>
+    <p><strong>Step 5.</strong> Plot with error bars. Draw best-fit, max, and min lines.</p>
+    <p><strong>Step 6.</strong> Read gradient and intercept from the line (not from data points).</p>
+    <p><strong>Step 7.</strong> Extract the physics. State the result with uncertainty and units.</p>
+  </div>
+
+  <div class="insight">
+    Linearisation is the physicist's confession: we only trust straight lines. Everything else — exponentials, power laws, oscillations — must be rewritten until a straight line appears. The line is the interface between theory and measurement.
+  </div>
+
+  <footer>
+    <p>Dwight School London · Department of Natural Sciences · IB Physics</p>
+  </footer>
+</div>
+
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+}
+
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrolled = (doc.scrollTop) / (doc.scrollHeight - doc.clientHeight) * 100;
+  document.getElementById('progress').style.width = scrolled + '%';
+});
+
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+</body>
+</html>
