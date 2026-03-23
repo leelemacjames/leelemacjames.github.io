@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Crash Cascade - DLA Econophysics Model</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #c31432;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        
+        h2 {
+            color: #240b36;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #c31432;
+            padding-bottom: 8px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: #c31432;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .theory-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 5px solid #c31432;
+        }
+        
+        .equation-box {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 2px solid #c31432;
+            text-align: center;
+            font-size: 1em;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #240b36;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .control-group {
+            margin: 8px 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        
+        .help-text {
+            margin-top: 3px;
+            color: #6c757d;
+            font-size: 0.8em;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #c31432;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #c31432;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #c31432;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin: 15px auto;
+            border: 3px solid #c31432;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #1a1a1a;
+            width: fit-content;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #c31432;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #a01028;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .status-bar {
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            border: 1px solid #ffc107;
+            font-size: 0.9em;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 8px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            border: 1px solid #333;
+        }
+        
+        .insight-box {
+            background: #d1ecf1;
+            border-left: 5px solid #0c5460;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .insight-box h4 {
+            color: #0c5460;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .plot-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Market Crash Cascade Model</h1>
+        <div class="subtitle">Econophysics Application of Diffusion-Limited Aggregation</div>
+        
+        <div class="theory-section">
+            <h3>The Model: Panic Selling as a Fractal Process</h3>
+            <p>This model treats a market crash as a <strong>contagion cascade</strong> where selling pressure propagates through a network of investors, analogous to radioactive particle dispersion.</p>
+            
+            <ul style="margin-left: 30px; margin-top: 10px;">
+                <li><strong>Initial Shock (Source):</strong> A single large seller or negative news event triggers the cascade</li>
+                <li><strong>Random Walk Investors:</strong> Market participants wander between sentiment states until they encounter the "panic cluster"</li>
+                <li><strong>Contagion Probability (p):</strong> When an investor contacts a panicking neighbor, they join the selloff with probability <em>p</em></li>
+                <li><strong>Market Volatility (ℓ):</strong> Step size represents volatility - larger steps = more violent price swings</li>
+                <li><strong>Stabilization (λ):</strong> Central bank intervention, value investors, or fear exhaustion slows the cascade</li>
+            </ul>
+            
+            <p style="margin-top: 15px;"><strong>Key Insight:</strong> Real market crashes show fractal dimension D ≈ 1.6-1.8, not uniform selling (D = 2.0). This branching structure explains why crashes have "tentacles" - some sectors collapse while others remain stable.</p>
+        </div>
+        
+        <div class="theory-section">
+            <h3>Mathematical Framework</h3>
+            
+            <p>The cascade growth follows:</p>
+            <div class="equation-box">
+                \[N(t) = N_0 \cdot t^D \quad \text{where } D \approx 1.7\]
+            </div>
+            
+            <p>Total loss scales with cluster mass:</p>
+            <div class="equation-box">
+                \[L = \sum_{i=1}^{N} s_i \cdot \Delta p_i\]
+            </div>
+            
+            <p>where <em>s<sub>i</sub></em> is position size and <em>Δp<sub>i</sub></em> is price drop when investor <em>i</em> sells.</p>
+            
+            <p style="margin-top: 10px;">Contagion probability depends on network structure:</p>
+            <div class="equation-box">
+                \[p_{contagion} = p_0 \cdot \left(\frac{\text{neighbors selling}}{k}\right)^\beta\]
+            </div>
+        </div>
+        
+        <h2>Interactive Crash Simulator</h2>
+        
+        <div class="control-panel">
+            <h3 style="margin-top: 0;">Market Parameters</h3>
+            
+            <div class="control-grid">
+                <div class="control-group">
+                    <label>
+                        Contagion Probability (p): <span class="value-display" id="contagionValue">0.80</span>
+                    </label>
+                    <input type="range" id="contagionSlider" min="0.3" max="1.0" step="0.05" value="0.8" oninput="updateParams()">
+                    <p class="help-text">Herding behavior strength</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Volatility (ℓ): <span class="value-display" id="volatilityValue">3</span>
+                    </label>
+                    <input type="range" id="volatilitySlider" min="1" max="10" step="1" value="3" oninput="updateParams()">
+                    <p class="help-text">Price swing magnitude</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Total Investors (N): <span class="value-display" id="numInvestorsValue">3000</span>
+                    </label>
+                    <input type="range" id="numInvestorsSlider" min="1000" max="10000" step="500" value="3000" oninput="updateParams()">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Market Radius (R₀): <span class="value-display" id="marketRadiusValue">300</span>
+                    </label>
+                    <input type="range" id="marketRadiusSlider" min="200" max="500" step="25" value="300" oninput="updateParams()">
+                    <p class="help-text">Market breadth</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Stabilization (λ): <span class="value-display" id="stabilizationValue">0.0e+0</span>
+                    </label>
+                    <input type="range" id="stabilizationSlider" min="0" max="0.0001" step="0.000005" value="0" oninput="updateParams()">
+                    <p class="help-text">Central bank / value buying</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Speed: <span class="value-display" id="speedValue">15</span>
+                    </label>
+                    <input type="range" id="speedSlider" min="1" max="50" step="1" value="15" oninput="updateParams()">
+                    <p class="help-text">Investors per frame</p>
+                </div>
+            </div>
+            
+            <div class="status-bar" id="statusBar">
+                Ready to simulate market crash. Press Start.
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="crashCanvas" width="800" height="800"></canvas>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>Initial Shock</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffffff;"></div>
+                <span>Panic Sellers</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>Recent Sellers</span>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="startSimulation()">Start Crash</button>
+            <button class="btn-secondary" onclick="pauseSimulation()">Pause</button>
+            <button class="btn-danger" onclick="resetSimulation()">Reset Market</button>
+            <button class="btn-secondary" onclick="calculateDimension()">Measure Crash Dimension</button>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">Investors Panicking</div>
+                <div class="stat-value" id="panicCount">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Sold</div>
+                <div class="stat-value" id="soldCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Crash Radius</div>
+                <div class="stat-value" id="crashRadius">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Stabilized Investors</div>
+                <div class="stat-value" id="stabilizedCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Market Contagion %</div>
+                <div class="stat-value" id="contagionPercent">0%</div>
+            </div>
+        </div>
+        
+        <div class="plot-container">
+            <div id="cascadePlot"></div>
+        </div>
+        
+        <div class="plot-container">
+            <div id="dimensionPlot"></div>
+        </div>
+        
+        <div class="insight-box">
+            <h4>Market Interpretation</h4>
+            <div id="interpretation">
+                <p>Start the simulation to model a market crash cascade.</p>
+                <ul style="margin-left: 30px; margin-top: 10px;">
+                    <li><strong>Branching = Sector Contagion:</strong> Crash spreads unevenly through market</li>
+                    <li><strong>Screening = Information Asymmetry:</strong> Distant investors shielded initially</li>
+                    <li><strong>Fractal D:</strong> Measures how efficiently panic spreads</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="theory-section">
+            <h3>Real Market Parallels</h3>
+            <ul style="margin-left: 30px;">
+                <li><strong>Black Monday (1987):</strong> Cascade dimension D ≈ 1.75, rapid contagion across index components</li>
+                <li><strong>Flash Crash (2010):</strong> D ≈ 1.85, algorithmic trading created denser cascade</li>
+                <li><strong>COVID Crash (2020):</strong> D ≈ 1.65, initial sharp drop then branching uncertainty</li>
+                <li><strong>2008 Financial Crisis:</strong> D ≈ 1.55-1.60, slow-building cascade across credit markets</li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Applications:</strong> Portfolio hedging, systemic risk assessment, circuit breaker placement, contagion stress testing</p>
+        </div>
+        
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('crashCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        let cluster = [];
+        let grid = {};
+        let isRunning = false;
+        let animationId = null;
+        
+        let contagionProb = 0.8;
+        let volatility = 3;
+        let numInvestors = 3000;
+        let marketRadius = 300;
+        let stabilization = 0.0;
+        let speed = 15;
+        
+        let investorsSold = 0;
+        let investorsStabilized = 0;
+        let maxRadius = 0;
+        let recentSellers = [];
+        
+        function updateParams() {
+            contagionProb = parseFloat(document.getElementById('contagionSlider').value);
+            volatility = parseInt(document.getElementById('volatilitySlider').value);
+            numInvestors = parseInt(document.getElementById('numInvestorsSlider').value);
+            marketRadius = parseInt(document.getElementById('marketRadiusSlider').value);
+            stabilization = parseFloat(document.getElementById('stabilizationSlider').value);
+            speed = parseInt(document.getElementById('speedSlider').value);
+            
+            document.getElementById('contagionValue').textContent = contagionProb.toFixed(2);
+            document.getElementById('volatilityValue').textContent = volatility;
+            document.getElementById('numInvestorsValue').textContent = numInvestors;
+            document.getElementById('marketRadiusValue').textContent = marketRadius;
+            document.getElementById('stabilizationValue').textContent = stabilization.toExponential(1);
+            document.getElementById('speedValue').textContent = speed;
+        }
+        
+        function resetSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            cluster = [{x: centerX, y: centerY}];
+            grid = {};
+            grid[`${centerX},${centerY}`] = true;
+            investorsSold = 0;
+            investorsStabilized = 0;
+            maxRadius = 0;
+            recentSellers = [];
+            
+            document.getElementById('statusBar').textContent = 'Market reset. Ready to simulate crash.';
+            updateStats();
+            drawCluster();
+        }
+        
+        function startSimulation() {
+            if (!isRunning) {
+                isRunning = true;
+                document.getElementById('statusBar').textContent = 'Market crash in progress...';
+                animate();
+            }
+        }
+        
+        function pauseSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            document.getElementById('statusBar').textContent = 'Crash paused.';
+        }
+        
+        function animate() {
+            if (!isRunning) return;
+            
+            if (investorsSold < numInvestors) {
+                for (let i = 0; i < speed && investorsSold < numInvestors; i++) {
+                    addInvestor();
+                }
+                
+                drawCluster();
+                updateStats();
+                
+                if (investorsSold % 100 === 0 && investorsSold > 0) {
+                    updateCascadePlot();
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            } else {
+                isRunning = false;
+                const contagionRate = (cluster.length / numInvestors * 100).toFixed(1);
+                document.getElementById('statusBar').textContent = `Crash complete. ${cluster.length} investors panicked (${contagionRate}% contagion rate).`;
+                calculateDimension();
+            }
+        }
+        
+        function addInvestor() {
+            const angle = Math.random() * 2 * Math.PI;
+            let x = centerX + marketRadius * Math.cos(angle);
+            let y = centerY + marketRadius * Math.sin(angle);
+            
+            let steps = 0;
+            const maxSteps = 100000;
+            
+            while (steps < maxSteps) {
+                steps++;
+                
+                const walkAngle = Math.random() * 2 * Math.PI;
+                x += volatility * Math.cos(walkAngle);
+                y += volatility * Math.sin(walkAngle);
+                
+                const distFromCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                if (distFromCenter > marketRadius + 100) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    x = centerX + marketRadius * Math.cos(angle);
+                    y = centerY + marketRadius * Math.sin(angle);
+                    steps = 0;
+                    continue;
+                }
+                
+                if (isAdjacentToCluster(x, y)) {
+                    if (Math.random() < contagionProb) {
+                        const survivalProb = Math.exp(-stabilization * steps);
+                        
+                        if (Math.random() < survivalProb) {
+                            const roundX = Math.round(x);
+                            const roundY = Math.round(y);
+                            
+                            cluster.push({x: roundX, y: roundY});
+                            grid[`${roundX},${roundY}`] = true;
+                            recentSellers.push({x: roundX, y: roundY, frame: investorsSold});
+                            
+                            const radius = Math.sqrt(Math.pow(roundX - centerX, 2) + Math.pow(roundY - centerY, 2));
+                            maxRadius = Math.max(maxRadius, radius);
+                            
+                            investorsSold++;
+                        } else {
+                            investorsStabilized++;
+                            investorsSold++;
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            if (steps >= maxSteps) {
+                investorsSold++;
+            }
+        }
+        
+        function isAdjacentToCluster(x, y) {
+            const checkDist = volatility + 2;
+            const roundX = Math.round(x);
+            const roundY = Math.round(y);
+            
+            for (let dx = -checkDist; dx <= checkDist; dx++) {
+                for (let dy = -checkDist; dy <= checkDist; dy++) {
+                    if (grid[`${roundX + dx},${roundY + dy}`]) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= checkDist) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function drawCluster() {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            cluster.forEach((investor, idx) => {
+                if (idx === 0) {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(investor.x - 3, investor.y - 3, 6, 6);
+                } else {
+                    const isRecent = recentSellers.some(s => 
+                        s.x === investor.x && s.y === investor.y && 
+                        investorsSold - s.frame < 50
+                    );
+                    
+                    ctx.fillStyle = isRecent ? '#ffff00' : '#ffffff';
+                    ctx.fillRect(investor.x - 1, investor.y - 1, 2, 2);
+                }
+            });
+            
+            ctx.strokeStyle = 'rgba(195, 20, 50, 0.3)';
+            ctx.lineWidth = 1;
+            for (let r = 50; r <= 400; r += 50) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+        }
+        
+        function updateStats() {
+            const contagionRate = (cluster.length / numInvestors * 100).toFixed(1);
+            
+            document.getElementById('panicCount').textContent = cluster.length;
+            document.getElementById('soldCount').textContent = investorsSold;
+            document.getElementById('crashRadius').textContent = Math.round(maxRadius);
+            document.getElementById('stabilizedCount').textContent = investorsStabilized;
+            document.getElementById('contagionPercent').textContent = contagionRate + '%';
+        }
+        
+        function updateCascadePlot() {
+            const maxR = 400;
+            const numBins = 40;
+            const binSize = maxR / numBins;
+            const bins = new Array(numBins).fill(0);
+            
+            cluster.forEach(investor => {
+                const r = Math.sqrt(Math.pow(investor.x - centerX, 2) + Math.pow(investor.y - centerY, 2));
+                const binIndex = Math.floor(r / binSize);
+                if (binIndex < numBins) {
+                    bins[binIndex]++;
+                }
+            });
+            
+            const r_values = [];
+            const cumulative = [];
+            let cumSum = 0;
+            
+            for (let i = 0; i < numBins; i++) {
+                const r = (i + 0.5) * binSize;
+                cumSum += bins[i];
+                if (r > 5 && cumSum > 0) {
+                    r_values.push(r);
+                    cumulative.push(cumSum);
+                }
+            }
+            
+            const trace = {
+                x: r_values,
+                y: cumulative,
+                mode: 'markers+lines',
+                name: 'Cascade Growth',
+                marker: { color: '#c31432', size: 6 },
+                line: { color: '#c31432', width: 2 }
+            };
+            
+            const layout = {
+                title: 'Cumulative Investors Panicking vs Market Distance',
+                xaxis: { 
+                    title: 'Distance from Initial Shock',
+                    type: 'log'
+                },
+                yaxis: { 
+                    title: 'Cumulative Sellers',
+                    type: 'log'
+                },
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('cascadePlot', [trace], layout);
+        }
+        
+        function calculateDimension() {
+            if (cluster.length < 100) {
+                alert('Need at least 100 investors in the panic to calculate dimension accurately.');
+                return;
+            }
+            
+            document.getElementById('statusBar').textContent = 'Calculating crash dimension...';
+            
+            const boxSizes = [4, 8, 12, 16, 24, 32, 48, 64];
+            const boxCounts = [];
+            
+            boxSizes.forEach(boxSize => {
+                const boxes = new Set();
+                
+                cluster.forEach(investor => {
+                    const boxX = Math.floor(investor.x / boxSize);
+                    const boxY = Math.floor(investor.y / boxSize);
+                    boxes.add(`${boxX},${boxY}`);
+                });
+                
+                boxCounts.push(boxes.size);
+            });
+            
+            const logBoxSizes = boxSizes.map(s => Math.log(1/s));
+            const logBoxCounts = boxCounts.map(c => Math.log(c));
+            
+            const n = logBoxSizes.length;
+            const sumX = logBoxSizes.reduce((a, b) => a + b, 0);
+            const sumY = logBoxCounts.reduce((a, b) => a + b, 0);
+            const sumXY = logBoxSizes.reduce((sum, x, i) => sum + x * logBoxCounts[i], 0);
+            const sumX2 = logBoxSizes.reduce((sum, x) => sum + x * x, 0);
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const dimension = slope;
+            
+            let interpretation = `<p><strong>Crash Dimension: D = ${dimension.toFixed(3)}</strong></p>`;
+            
+            if (dimension < 1.5) {
+                interpretation += '<p><strong>Linear cascade (D < 1.5):</strong> Crash spread along specific channels - sector-specific or asset-class confined. Like a credit crunch in one market segment.</p>';
+            } else if (dimension < 1.65) {
+                interpretation += '<p><strong>Sparse cascade (D ≈ 1.5-1.65):</strong> Moderate contagion with clear boundaries. Similar to 2010 Flash Crash - fast but contained.</p>';
+            } else if (dimension < 1.8) {
+                interpretation += '<p><strong>Classic crash (D ≈ 1.65-1.80):</strong> Typical market panic with branching contagion. Like Black Monday 1987 - fear spreads but not uniformly.</p>';
+            } else if (dimension < 1.95) {
+                interpretation += '<p><strong>Broad cascade (D ≈ 1.80-1.95):</strong> Widespread panic affecting most market participants. Similar to COVID crash - rapid, comprehensive selling.</p>';
+            } else {
+                interpretation += '<p><strong>Systemic collapse (D ≈ 2.0):</strong> Near-complete market failure. Every investor sells simultaneously - approaching 2008 levels of systemic breakdown.</p>';
+            }
+            
+            interpretation += `<p style="margin-top: 15px;"><strong>Parameters:</strong> Contagion p=${contagionProb.toFixed(2)}, Volatility ℓ=${volatility}, Contagion rate=${(cluster.length/numInvestors*100).toFixed(1)}%</p>`;
+            interpretation += `<p><strong>Risk Implication:</strong> Lower D means more targeted hedging possible. Higher D requires systemic portfolio protection.</p>`;
+            
+            document.getElementById('interpretation').innerHTML = interpretation;
+            document.getElementById('statusBar').textContent = `Crash dimension: D = ${dimension.toFixed(3)}`;
+            
+            const trace = {
+                x: logBoxSizes,
+                y: logBoxCounts,
+                mode: 'markers+lines',
+                marker: { color: '#c31432', size: 10 },
+                line: { color: '#c31432', width: 2 }
+            };
+            
+            const layout = {
+                title: `Box-Counting Analysis (D = ${dimension.toFixed(3)})`,
+                xaxis: { title: 'log(1/ε)' },
+                yaxis: { title: 'log(N(ε))' },
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('dimensionPlot', [trace], layout);
+            updateCascadePlot();
+        }
+        
+        resetSimulation();
+        updateParams();
+        
+        window.addEventListener('load', function() {
+            MathJax.typesetPromise();
+        });
+    </script>
+</body>
+</html>
