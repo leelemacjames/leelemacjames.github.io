@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelling a Gas — IB Physics</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--border:#2a2f42;--gold:#c9a84c;--gold-dim:#8a6f30;--amber:#e8b04b;--text:#d4cfc4;--text-dim:#7a7568;--text-bright:#f0ece0;--green:#5a9e6f;--red:#c0503a;--blue:#4a88c0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.75;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.6;}
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--amber));width:0%;z-index:100;transition:width .15s;}
+.container{max-width:820px;margin:0 auto;padding:60px 32px 100px;position:relative;z-index:1;}
+header{border-bottom:1px solid var(--border);padding-bottom:32px;margin-bottom:48px;}
+header h1{font-family:'Playfair Display',serif;font-size:2.6rem;color:var(--text-bright);letter-spacing:-0.02em;line-height:1.15;margin-bottom:12px;}
+header .subtitle{font-size:1.1rem;color:var(--gold);font-style:italic;}
+header .context{margin-top:12px;font-size:0.95rem;color:var(--text-dim);}
+.preamble{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:28px 26px;margin-bottom:40px;}
+.preamble h2{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--amber);margin-bottom:16px;}
+.preamble p{margin-bottom:14px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--amber);margin:48px 0 20px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.section-title span{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--gold-dim);margin-right:10px;}
+.qa{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;overflow:hidden;transition:border-color .3s;}
+.qa:hover{border-color:var(--gold-dim);}
+.qa-q{padding:18px 22px;cursor:pointer;display:flex;align-items:baseline;gap:14px;user-select:none;}
+.qa-q::before{content:'Q';font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem;color:var(--gold);flex-shrink:0;}
+.qa-q .arrow{margin-left:auto;color:var(--text-dim);transition:transform .3s;flex-shrink:0;}
+.qa.open .qa-q .arrow{transform:rotate(180deg);}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .45s ease,padding .3s ease;padding:0 22px;}
+.qa.open .qa-a{max-height:8000px;padding:0 22px 24px;}
+.qa-a p{margin-bottom:12px;}
+.eq{background:var(--surface2);border-left:3px solid var(--gold);padding:14px 18px;margin:16px 0;border-radius:0 4px 4px 0;font-size:1.05rem;overflow-x:auto;}
+.insight{background:rgba(90,158,111,0.1);border-left:3px solid var(--green);padding:12px 18px;margin:16px 0;border-radius:0 4px 4px 0;font-style:italic;color:var(--text-bright);}
+.warning{background:rgba(192,80,58,0.1);border-left:3px solid var(--red);padding:12px 18px;margin:16px 0;border-radius:0 4px 4px 0;}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.95rem;}
+th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--gold-dim);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;}
+td{padding:10px 14px;border-bottom:1px solid var(--border);}
+svg.diagram{display:block;margin:20px auto;max-width:100%;}
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:0.85rem;color:var(--text-dim);text-align:center;}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:var(--surface2);padding:2px 6px;border-radius:3px;}
+@media(max-width:600px){.container{padding:32px 18px 60px;}header h1{font-size:1.8rem;}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="container">
+<header>
+  <h1>Modelling a Gas</h1>
+  <div class="subtitle">From bouncing molecules to engines — the ideal gas and its laws</div>
+  <div class="context">IB Physics SL/HL — Topic 3.2 (Legacy) / Topic B.3 (2025+)</div>
+</header>
+
+<div class="preamble">
+  <h2>Two levels of description</h2>
+  <p>A gas is made of an enormous number of molecules (\(\sim 10^{23}\)) each with its own position and velocity. Tracking every molecule is impossible and unnecessary. Instead, physics offers two complementary descriptions:</p>
+  <p><strong>Microscopic (kinetic theory):</strong> Model the molecules as tiny elastic billiard balls and derive bulk properties from their average behaviour. This gives you the <em>why</em> — why pressure exists, why temperature means kinetic energy.</p>
+  <p><strong>Macroscopic (thermodynamics):</strong> Describe the gas using just four state variables — pressure \(p\), volume \(V\), temperature \(T\), and amount \(n\) — linked by an equation of state: \(pV = nRT\). This gives you the <em>what</em> — what happens when you heat, compress, or expand a gas.</p>
+  <p>The bridge between the two is the <strong>ideal gas model</strong>: a set of assumptions about molecules that makes the microscopic description tractable and the macroscopic law exact.</p>
+</div>
+
+<!-- ═══════════ §1: PRESSURE ═══════════ -->
+<div class="section-title"><span>§1</span> Pressure</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is pressure, and where does it come from at the molecular level?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>Pressure is force per unit area:</p>
+    <div class="eq">\(p = \dfrac{F}{A}\)</div>
+    <p>Units: pascal (Pa) = N m⁻². Standard atmospheric pressure ≈ \(1.01 \times 10^5\) Pa.</p>
+    <p>At the molecular level: gas molecules bounce off the walls of their container. Each collision delivers a tiny impulse. The combined effect of billions of collisions per second per cm² is a smooth, measurable force — which, divided by the wall area, gives pressure.</p>
+    <div class="insight">Pressure is not caused by molecules "pushing" against each other — it's caused by molecules hitting the walls. More collisions per second (higher temperature) or more collisions per unit area (smaller volume) → higher pressure.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">A 150 kg person stands on one foot (9.0 cm × 10 cm). Find the pressure on the ground. Then find the snowshoe area needed to stay below \(1.0 \times 10^5\) Pa.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p><strong>Part 1 — Pressure on ground:</strong></p>
+    <div class="eq">\(F = mg = 150 \times 10 = 1500\text{ N}\)<br>\(A = 0.090 \times 0.10 = 0.0090\text{ m}^2\)<br>\(p = F/A = 1500/0.0090 = 1.7 \times 10^5\text{ Pa}\)</div>
+    <p><strong>Part 2 — Snowshoe area:</strong></p>
+    <div class="eq">\(A = F/p = 1500 / (1.0 \times 10^5) = 0.015\text{ m}^2 = 150\text{ cm}^2\)</div>
+    <div class="insight">The snowshoe is only about 70% larger in area than the bare foot, but it drops the pressure below atmospheric — enough to prevent breaking through thin ice. Pressure depends on area, not weight.</div>
+  </div>
+</div>
+
+<!-- ═══════════ §2: IDEAL GAS ASSUMPTIONS ═══════════ -->
+<div class="section-title"><span>§2</span> The Ideal Gas Model</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What are the assumptions of the kinetic theory of an ideal gas?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>The molecules of an ideal gas:</p>
+    <p><strong>1.</strong> Are <strong>identical perfect spheres</strong> (no internal structure or rotation).</p>
+    <p><strong>2.</strong> Undergo <strong>perfectly elastic collisions</strong> with each other and with the walls — no kinetic energy is lost.</p>
+    <p><strong>3.</strong> Have <strong>no intermolecular forces</strong> — they don't attract or repel each other. Consequently, their potential energy is zero; all internal energy is kinetic.</p>
+    <p><strong>4.</strong> Are <strong>so small</strong> that their total volume is negligible compared to the container volume.</p>
+    <p><strong>5.</strong> Move <strong>randomly</strong> in all directions — no preferred direction of motion.</p>
+    <div class="warning"><strong>IB exam phrasing:</strong> You need to state these assumptions precisely. "Molecules are small" is not enough — say "the volume of the molecules is negligible compared to the volume of the container." "No forces" must specify "no intermolecular forces except during collisions."</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">How does the kinetic model explain the relationships between \(p\), \(V\), and \(T\)?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p><strong>Temperature ↑ → Pressure ↑</strong> (at constant volume): Higher temperature means higher average molecular speed → molecules hit walls harder and more often → more force per unit area.</p>
+    <p><strong>Volume ↓ → Pressure ↑</strong> (at constant temperature): Smaller container means less distance between walls → molecules hit each wall more frequently → more force per unit area.</p>
+    <p><strong>Volume ↓ (rapidly) → Temperature ↑:</strong> If you compress a gas quickly (push a piston), you do work on it. By the work-energy theorem, the gas gains kinetic energy → its temperature rises. This is adiabatic heating — it's why a bicycle pump gets hot.</p>
+    <svg class="diagram" viewBox="0 0 450 110" width="450" height="110">
+      <defs><marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5z" fill="var(--gold)"/></marker></defs>
+      <!-- Low T box -->
+      <rect x="10" y="15" width="100" height="80" rx="4" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="35" cy="45" r="3" fill="var(--blue)"/><line x1="35" y1="45" x2="42" y2="40" stroke="var(--blue)" stroke-width="1"/>
+      <circle cx="70" cy="60" r="3" fill="var(--blue)"/><line x1="70" y1="60" x2="64" y2="55" stroke="var(--blue)" stroke-width="1"/>
+      <circle cx="55" cy="35" r="3" fill="var(--blue)"/><line x1="55" y1="35" x2="60" y2="40" stroke="var(--blue)" stroke-width="1"/>
+      <circle cx="85" cy="75" r="3" fill="var(--blue)"/><line x1="85" y1="75" x2="80" y2="80" stroke="var(--blue)" stroke-width="1"/>
+      <text x="60" y="108" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="JetBrains Mono,monospace">Low T, Low p</text>
+      <!-- Arrow -->
+      <line x1="125" y1="55" x2="165" y2="55" stroke="var(--gold)" stroke-width="1.5" marker-end="url(#a1)"/>
+      <text x="145" y="48" text-anchor="middle" fill="var(--gold)" font-size="9" font-family="JetBrains Mono,monospace">heat</text>
+      <!-- High T box -->
+      <rect x="175" y="15" width="100" height="80" rx="4" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="195" cy="40" r="3" fill="var(--red)"/><line x1="195" y1="40" x2="208" y2="28" stroke="var(--red)" stroke-width="1.5"/>
+      <circle cx="240" cy="65" r="3" fill="var(--red)"/><line x1="240" y1="65" x2="225" y2="52" stroke="var(--red)" stroke-width="1.5"/>
+      <circle cx="215" cy="78" r="3" fill="var(--red)"/><line x1="215" y1="78" x2="228" y2="88" stroke="var(--red)" stroke-width="1.5"/>
+      <circle cx="258" cy="35" r="3" fill="var(--red)"/><line x1="258" y1="35" x2="248" y2="22" stroke="var(--red)" stroke-width="1.5"/>
+      <text x="225" y="108" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="JetBrains Mono,monospace">High T, High p</text>
+      <!-- Arrow 2 -->
+      <line x1="290" y1="55" x2="330" y2="55" stroke="var(--gold)" stroke-width="1.5" marker-end="url(#a1)"/>
+      <text x="310" y="48" text-anchor="middle" fill="var(--gold)" font-size="9" font-family="JetBrains Mono,monospace">compress</text>
+      <!-- Small V box -->
+      <rect x="340" y="25" width="65" height="60" rx="4" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="355" cy="45" r="3" fill="var(--amber)"/><line x1="355" y1="45" x2="365" y2="35" stroke="var(--amber)" stroke-width="1.5"/>
+      <circle cx="380" cy="60" r="3" fill="var(--amber)"/><line x1="380" y1="60" x2="370" y2="50" stroke="var(--amber)" stroke-width="1.5"/>
+      <circle cx="365" cy="72" r="3" fill="var(--amber)"/><line x1="365" y1="72" x2="375" y2="78" stroke="var(--amber)" stroke-width="1.5"/>
+      <text x="372" y="108" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="JetBrains Mono,monospace">Small V, High p</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════ §3: MOLES & AVOGADRO ═══════════ -->
+<div class="section-title"><span>§3</span> Moles, Molar Mass &amp; the Avogadro Constant</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is a mole, and what is \(N_A\)?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>One <strong>mole</strong> of any substance contains exactly \(N_A = 6.02 \times 10^{23}\) particles (atoms or molecules). This is the <strong>Avogadro constant</strong>.</p>
+    <p>The <strong>molar mass</strong> \(M\) of an element is its gram atomic weight — the mass of one mole, in grams. Carbon: \(M = 12.0\) g mol⁻¹. Oxygen: \(M = 16.0\) g mol⁻¹. Water (H₂O): \(M = 2(1.0) + 16.0 = 18.0\) g mol⁻¹.</p>
+    <p>The number of moles \(n\) in a sample of \(N\) particles:</p>
+    <div class="eq">\(n = \dfrac{N}{N_A}\)</div>
+    <p><strong>Worked example:</strong> How many molecules in 12.25 g of water?</p>
+    <div class="eq">\(n = \dfrac{12.25}{18.0} = 0.680\text{ mol}\)<br>\(N = nN_A = 0.680 \times 6.02 \times 10^{23} = 4.10 \times 10^{23}\text{ molecules}\)</div>
+    <div class="insight">The mole is the bridge between the lab scale (grams, litres) and the molecular scale (individual atoms). Every gas law calculation passes through it: mass → moles → use \(pV = nRT\).</div>
+  </div>
+</div>
+
+<!-- ═══════════ §4: EQUATION OF STATE ═══════════ -->
+<div class="section-title"><span>§4</span> The Equation of State: \(pV = nRT\)</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is the ideal gas law, and what does each symbol mean?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <div class="eq">\(pV = nRT\)</div>
+    <table>
+      <tr><th>Symbol</th><th>Quantity</th><th>SI unit</th></tr>
+      <tr><td>\(p\)</td><td>Pressure</td><td>Pa (= N m⁻²)</td></tr>
+      <tr><td>\(V\)</td><td>Volume</td><td>m³</td></tr>
+      <tr><td>\(n\)</td><td>Number of moles</td><td>mol</td></tr>
+      <tr><td>\(R\)</td><td>Universal gas constant</td><td>8.31 J mol⁻¹ K⁻¹</td></tr>
+      <tr><td>\(T\)</td><td>Absolute temperature</td><td>K (kelvin)</td></tr>
+    </table>
+    <div class="warning"><strong>Temperature must be in kelvin.</strong> Convert from Celsius: \(T(\text{K}) = T(°\text{C}) + 273\). Forgetting this is the single most common gas law error.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is the difference between an equation of state and a dynamical law?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>\(pV = nRT\) is an <strong>equation of state</strong> — a thermodynamic constraint that says which combinations of \(p\), \(V\), \(T\), \(n\) are physically possible at equilibrium. It tells you <em>what</em> states exist, but not <em>how</em> the system moves between them.</p>
+    <p>\(F = ma\) is a <strong>dynamical law</strong> — a time-evolution rule. Given the current state and forces, it tells you the future state.</p>
+    <p>Thermodynamics describes the macroscopic world (\(p, V, T, n\)). Dynamics describes the microscopic world (\(x_i, v_i, m_i\) for each molecule). The equation of state is the summary that emerges when you average over \(10^{23}\) molecules.</p>
+    <div class="insight">Many different microscopic configurations (positions and velocities of all molecules) give rise to the same macroscopic state (\(p, V, T\)). The thermodynamic state is an <em>ensemble</em> — a summary of the dynamics, not a replacement for it.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">A gas cylinder (volume \(2.0 \times 10^{-2}\) m³) is filled to a pressure of 20 MPa at 17°C. Find (a) the number of moles, (b) the number of atoms.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>\(T = 17 + 273 = 290\) K. \(p = 20 \times 10^6\) Pa.</p>
+    <p><strong>(a)</strong></p>
+    <div class="eq">\(n = \dfrac{pV}{RT} = \dfrac{20 \times 10^6 \times 2.0 \times 10^{-2}}{8.31 \times 290} = \dfrac{4.0 \times 10^5}{2410} = 170\text{ mol}\)</div>
+    <p><strong>(b)</strong></p>
+    <div class="eq">\(N = nN_A = 170 \times 6.02 \times 10^{23} = 1.0 \times 10^{26}\text{ atoms}\)</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">An ideal gas at 30°C and 6.0 atm is heated at constant volume to 330°C. Find the new pressure.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>Constant volume and fixed mass: \(n\) and \(V\) are constant. So \(p_1V = nRT_1\) and \(p_2V = nRT_2\). Dividing:</p>
+    <div class="eq">\(\dfrac{p_2}{p_1} = \dfrac{T_2}{T_1}\)</div>
+    <p>\(T_1 = 30 + 273 = 303\) K. \(T_2 = 330 + 273 = 603\) K.</p>
+    <div class="eq">\(p_2 = p_1 \times \dfrac{T_2}{T_1} = 6.0 \times \dfrac{603}{303} = 12\text{ atm}\)</div>
+    <div class="insight">The temperature doubled (in kelvin), so the pressure doubled. This only works because we used kelvin — in Celsius the ratio 330/30 = 11, which gives nonsense. Always convert first.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">Two containers (6 dm³ at 12 atm and 3 dm³ at 6 atm) are connected by a valve at the same temperature. The valve is opened. Find the final pressure.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>Total moles are conserved. At constant \(T\), \(n = pV/(RT)\), so:</p>
+    <div class="eq">\(n_1 + n_2 = \dfrac{p_1 V_1}{RT} + \dfrac{p_2 V_2}{RT} = \dfrac{p_f(V_1 + V_2)}{RT}\)</div>
+    <p>The \(RT\) cancels:</p>
+    <div class="eq">\(p_f = \dfrac{p_1 V_1 + p_2 V_2}{V_1 + V_2} = \dfrac{12 \times 6 + 6 \times 3}{6 + 3} = \dfrac{72 + 18}{9} = 10\text{ atm}\)</div>
+    <div class="warning">This is a weighted average of pressures, weighted by volume. It's not simply \((12+6)/2 = 9\) because the containers have different volumes.</div>
+  </div>
+</div>
+
+<!-- ═══════════ §5: REAL vs IDEAL ═══════════ -->
+<div class="section-title"><span>§5</span> Real Gases vs Ideal Gases</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">How does a real gas differ from an ideal gas, and when does the ideal model break down?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <table>
+      <tr><th>Property</th><th>Ideal gas</th><th>Real gas</th></tr>
+      <tr><td>Molecular shape</td><td>Identical perfect spheres</td><td>Various shapes (N₂, H₂O, NH₃...)</td></tr>
+      <tr><td>Collisions</td><td>Perfectly elastic</td><td>Not perfectly elastic</td></tr>
+      <tr><td>Intermolecular forces</td><td>None</td><td>Attractive and repulsive</td></tr>
+      <tr><td>Molecular volume</td><td>Negligible</td><td>Non-negligible at high density</td></tr>
+      <tr><td>Liquefaction</td><td>Impossible</td><td>Possible</td></tr>
+    </table>
+    <p>Real gases approximate ideal behaviour when:</p>
+    <p>• <strong>Low pressure</strong> (molecules far apart → forces negligible, molecular volume small compared to container).</p>
+    <p>• <strong>High temperature</strong> (high KE → intermolecular forces are a small fraction of kinetic energy).</p>
+    <p>• <strong>Low density</strong> (same physical reasoning as low pressure).</p>
+    <div class="insight">Ideal gas behaviour fails dramatically near the liquefaction point — where molecules are close together and moving slowly. Helium at 4 K is as non-ideal as it gets. Nitrogen at room temperature and 1 atm is nearly ideal.</div>
+  </div>
+</div>
+
+<!-- ═══════════ §6: GAS PROCESSES ═══════════ -->
+<div class="section-title"><span>§6</span> Gas Processes: Isobaric, Isochoric &amp; Isothermal</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What are the three named gas processes, and what does each hold constant?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <table>
+      <tr><th>Process</th><th>Held constant</th><th>Resulting law</th><th>Graph shape (p-V)</th></tr>
+      <tr><td><strong>Isobaric</strong></td><td>Pressure \(p\)</td><td>\(V \propto T\) (Charles's law)</td><td>Horizontal line</td></tr>
+      <tr><td><strong>Isochoric</strong> (isovolumetric)</td><td>Volume \(V\)</td><td>\(p \propto T\) (Gay-Lussac's law)</td><td>Vertical line</td></tr>
+      <tr><td><strong>Isothermal</strong></td><td>Temperature \(T\)</td><td>\(p_1V_1 = p_2V_2\) (Boyle's law)</td><td>Hyperbola (\(p \propto 1/V\))</td></tr>
+    </table>
+    <p>All three are special cases of \(pV = nRT\) with one variable frozen and \(n\) fixed.</p>
+    <div class="insight">The names are Greek: <em>iso</em> = equal; <em>baros</em> = weight/pressure; <em>choros</em> = space/volume; <em>thermos</em> = heat. If you know the Greek roots, the names decode themselves.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">Show that \(V \propto T\) for an isobaric process with a fixed amount of gas.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>Start from \(pV = nRT\). Rearrange: \(V = \dfrac{nR}{p} \cdot T\).</p>
+    <p>If \(n\) and \(p\) are constant, then \(nR/p\) is a constant. So:</p>
+    <div class="eq">\(V = (\text{const}) \times T \implies V \propto T\)</div>
+    <p>This is Charles's law. On a \(V\)-\(T\) graph (kelvin), it's a straight line through the origin. On a \(V\)-\(t\) graph (Celsius), it's a straight line with a negative \(x\)-intercept at \(-273°\)C — absolute zero.</p>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">Show that \(p \propto T\) for an isochoric process, and explain the graphical significance.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>From \(pV = nRT\): \(p = \dfrac{nR}{V} \cdot T\).</p>
+    <p>If \(n\) and \(V\) are constant: \(p = (\text{const}) \times T \implies p \propto T\).</p>
+    <p>On a \(p\) vs \(T\) graph (kelvin): straight line through the origin with gradient \(nR/V\). On a \(p\) vs \(t\) graph (Celsius): straight line hitting the \(t\)-axis at \(-273°\)C.</p>
+    <div class="insight">This is how absolute zero was first estimated experimentally — by extrapolating a pressure-vs-Celsius graph for a gas at constant volume until \(p = 0\). Every gas gives the same intercept: \(-273.15°\)C.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">A graduated syringe in an ice bath shows \(p_1 = 15\), \(V_1 = 10\). After compression at constant temperature: \(p_2 = 30\), \(V_2 = 5\). Verify Boyle's law.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <div class="eq">\(p_1 V_1 = 15 \times 10 = 150\)<br>\(p_2 V_2 = 30 \times 5 = 150\)<br>\(p_1 V_1 = p_2 V_2 \quad \checkmark\)</div>
+    <p><strong>Why we wait before recording:</strong> The compression heats the gas (work done on it). We wait for it to cool back to the ice-bath temperature so the process is truly isothermal.</p>
+  </div>
+</div>
+
+<!-- ═══════════ §7: p-V DIAGRAMS & WORK ═══════════ -->
+<div class="section-title"><span>§7</span> p-V Diagrams, Work &amp; Thermodynamic Cycles</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">How do you read a p-V diagram — what do the axes, curves, and areas mean?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>A p-V diagram is the fundamental tool of thermodynamics. Each point is a state (\(p, V\)). A curve is a process — a sequence of states.</p>
+    <svg class="diagram" viewBox="0 0 300 200" width="300" height="200">
+      <defs><marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs>
+      <!-- axes -->
+      <line x1="40" y1="170" x2="280" y2="170" stroke="var(--text-dim)" stroke-width="1.5" marker-end="url(#a2)"/>
+      <line x1="40" y1="170" x2="40" y2="20" stroke="var(--text-dim)" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="285" y="175" fill="var(--text-dim)" font-size="12" font-family="Source Serif 4,serif" font-style="italic">V</text>
+      <text x="30" y="18" fill="var(--text-dim)" font-size="12" font-family="Source Serif 4,serif" font-style="italic">p</text>
+      <!-- isochoric (vertical) -->
+      <line x1="100" y1="140" x2="100" y2="60" stroke="var(--blue)" stroke-width="2"/>
+      <text x="100" y="52" text-anchor="middle" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">isochoric</text>
+      <!-- isobaric (horizontal) -->
+      <line x1="100" y1="60" x2="220" y2="60" stroke="var(--green)" stroke-width="2"/>
+      <text x="160" y="52" text-anchor="middle" fill="var(--green)" font-size="9" font-family="JetBrains Mono,monospace">isobaric</text>
+      <!-- isothermal (curve) -->
+      <path d="M220,60 Q180,100 100,140" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <text x="175" y="118" fill="var(--amber)" font-size="9" font-family="JetBrains Mono,monospace">isothermal</text>
+      <!-- labels -->
+      <circle cx="100" cy="140" r="4" fill="var(--gold)"/><text x="88" y="152" fill="var(--gold)" font-size="11" font-family="Source Serif 4,serif" font-weight="700">A</text>
+      <circle cx="100" cy="60" r="4" fill="var(--gold)"/><text x="88" y="55" fill="var(--gold)" font-size="11" font-family="Source Serif 4,serif" font-weight="700">B</text>
+      <circle cx="220" cy="60" r="4" fill="var(--gold)"/><text x="228" y="55" fill="var(--gold)" font-size="11" font-family="Source Serif 4,serif" font-weight="700">C</text>
+    </svg>
+    <p>• <strong>Vertical line</strong> = isochoric (constant \(V\), no work done).</p>
+    <p>• <strong>Horizontal line</strong> = isobaric (constant \(p\)).</p>
+    <p>• <strong>Hyperbola</strong> = isothermal (constant \(T\)).</p>
+    <p>• <strong>Area under the curve</strong> = work done by the gas during that process.</p>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">How do you calculate the work done by a gas?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>For a constant-pressure process:</p>
+    <div class="eq">\(W = p\Delta V\)</div>
+    <p>If \(\Delta V > 0\) (gas expands), \(W > 0\) — the gas does work on the surroundings. If \(\Delta V < 0\) (gas is compressed), \(W < 0\) — the surroundings do work on the gas.</p>
+    <p>For a process where \(p\) changes, the work is the <strong>area under the p-V curve</strong>. This must be calculated geometrically (rectangles + triangles) or by integration.</p>
+    <p>For an isochoric process (\(\Delta V = 0\)): \(W = 0\). No volume change → no work.</p>
+    <div class="insight">Work = area under the curve is a general principle. For a straight-line process from \((V_1, p_1)\) to \((V_2, p_2)\), the area is a trapezium: \(W = \tfrac{1}{2}(p_1 + p_2)(V_2 - V_1)\).</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">A gas undergoes the cycle A→B→C→A where A = (10 m³, 2 Pa), B = (10 m³, 8 Pa), C = (25 m³, 8 Pa). Find the work done in each leg and the total cycle work.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p><strong>A→B:</strong> Isochoric (\(\Delta V = 0\)): \(W = 0\).</p>
+    <p><strong>B→C:</strong> Isobaric (\(p = 8\) Pa): \(W = p\Delta V = 8 \times (25 - 10) = +120\) J.</p>
+    <p><strong>C→A:</strong> \(p\) changes along a straight line from (25, 8) to (10, 2). The area under this line is a trapezium:</p>
+    <div class="eq">\(W = \tfrac{1}{2}(8 + 2)(10 - 25) = \tfrac{1}{2}(10)(-15) = -75\text{ J}\)</div>
+    <p>(Negative because the gas is compressed.)</p>
+    <p><strong>Total cycle work:</strong></p>
+    <div class="eq">\(W_{\text{cycle}} = 0 + 120 + (-75) = +45\text{ J}\)</div>
+    <div class="insight">The net work done in a closed cycle is the <em>area enclosed</em> by the cycle on the p-V diagram. Clockwise cycle → positive work (gas does net work on surroundings = heat engine). Anticlockwise → negative (surroundings do net work on gas = heat pump/refrigerator). Reversing the cycle gives \(W = -45\) J.</div>
+  </div>
+</div>
+
+<!-- ═══════════ §8: KINETIC ENERGY ═══════════ -->
+<div class="section-title"><span>§8</span> Average Kinetic Energy &amp; Internal Energy</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is the average kinetic energy of an ideal gas molecule, and what does it depend on?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <div class="eq">\(\bar{E}_K = \tfrac{3}{2}k_B T = \dfrac{3RT}{2N_A}\)</div>
+    <p>where \(k_B = 1.38 \times 10^{-23}\) J K⁻¹ is the <strong>Boltzmann constant</strong> and \(T\) is in kelvin.</p>
+    <p>Key observations:</p>
+    <p>• The average KE depends <strong>only on temperature</strong> — not on the type of gas, not on its mass, not on the pressure.</p>
+    <p>• Heavier molecules move more slowly at the same temperature (to have the same average KE).</p>
+    <p>• At \(T = 0\) K, \(\bar{E}_K = 0\) — all molecular motion stops. This is the microscopic meaning of absolute zero.</p>
+    <div class="insight">\(k_B\) is "the gas constant per molecule" — literally \(k_B = R/N_A\). The equation \(\bar{E}_K = \tfrac{3}{2}k_B T\) is the most direct statement of what temperature <em>is</em>: a measure of average molecular kinetic energy.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">2.50 mol of hydrogen gas at 175°C. Find (a) the average KE per atom, (b) the total internal energy, (c) the pressure if the volume is 1.25 m³.<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <p>\(T = 175 + 273 = 448\) K.</p>
+    <p><strong>(a) Average KE per atom:</strong></p>
+    <div class="eq">\(\bar{E}_K = \tfrac{3}{2}k_B T = \tfrac{3}{2}(1.38 \times 10^{-23})(448) = 9.27 \times 10^{-21}\text{ J}\)</div>
+    <p><strong>(b) Total internal energy:</strong> For an ideal gas, all internal energy is kinetic. Number of atoms:</p>
+    <div class="eq">\(N = nN_A = 2.50 \times 6.02 \times 10^{23} = 1.51 \times 10^{24}\)</div>
+    <div class="eq">\(U = N\bar{E}_K = 1.51 \times 10^{24} \times 9.27 \times 10^{-21} = 14\,000\text{ J} = 14\text{ kJ}\)</div>
+    <p><strong>(c) Pressure:</strong></p>
+    <div class="eq">\(p = \dfrac{nRT}{V} = \dfrac{2.50 \times 8.31 \times 448}{1.25} = 7450\text{ Pa}\)</div>
+    <div class="warning">Note: hydrogen gas is H₂ (diatomic), but the Boltzmann KE formula gives the energy per <em>molecule</em>, not per atom. For monoatomic gases the distinction doesn't arise. For diatomic gases in IB, the formula is still applied per molecule — the \(\tfrac{3}{2}\) factor counts translational degrees of freedom only.</div>
+  </div>
+</div>
+
+<div class="qa" onclick="toggle(this)">
+  <div class="qa-q">What is the relationship between \(R\), \(k_B\), and \(N_A\)?<span class="arrow">▾</span></div>
+  <div class="qa-a">
+    <div class="eq">\(R = k_B N_A\)</div>
+    <p>The gas constant \(R = 8.31\) J mol⁻¹ K⁻¹ is for one <em>mole</em> of particles. The Boltzmann constant \(k_B = 1.38 \times 10^{-23}\) J K⁻¹ is for one <em>particle</em>. They are the same quantity, just scaled by Avogadro's number.</p>
+    <p>This means \(pV = nRT\) and \(pV = Nk_B T\) are the same equation written in different units — moles vs molecules.</p>
+    <div class="insight">Every gas law equation has a "molar" version (using \(n\) and \(R\)) and a "molecular" version (using \(N\) and \(k_B\)). Use whichever matches what the question gives you.</div>
+  </div>
+</div>
+
+<!-- ═══════════ SUMMARY ═══════════ -->
+<div class="section-title"><span>Σ</span> The Equation Sheet</div>
+
+<table>
+  <tr><th>Equation</th><th>Name / Use</th></tr>
+  <tr><td>\(p = F/A\)</td><td>Pressure definition</td></tr>
+  <tr><td>\(n = N/N_A\)</td><td>Moles ↔ molecules</td></tr>
+  <tr><td>\(pV = nRT\)</td><td>Ideal gas law (molar)</td></tr>
+  <tr><td>\(pV = Nk_BT\)</td><td>Ideal gas law (molecular)</td></tr>
+  <tr><td>\(p_1V_1/T_1 = p_2V_2/T_2\)</td><td>Combined gas law (fixed \(n\))</td></tr>
+  <tr><td>\(\bar{E}_K = \tfrac{3}{2}k_BT\)</td><td>Average KE per molecule</td></tr>
+  <tr><td>\(U = \tfrac{3}{2}nRT = \tfrac{3}{2}Nk_BT\)</td><td>Total internal energy (ideal monatomic gas)</td></tr>
+  <tr><td>\(W = p\Delta V\)</td><td>Work done at constant pressure</td></tr>
+  <tr><td>\(R = k_B N_A\)</td><td>Bridge between molar and molecular scales</td></tr>
+</table>
+
+<div class="insight" style="margin-top:24px;">
+  The entire subject is a negotiation between two descriptions of the same reality. Kinetic theory tells you that pressure is molecules hitting walls and temperature is average kinetic energy. Thermodynamics tells you that \(pV = nRT\) and that processes on a p-V diagram encode the work a gas can do. Neither description is complete without the other — and the ideal gas model is the bridge that connects them.
+</div>
+
+<footer>
+  <p>Dwight School London · Department of Natural Sciences · IB Physics</p>
+</footer>
+</div>
+
+<script>
+function toggle(el){el.classList.toggle('open');}
+window.addEventListener('scroll',()=>{const d=document.documentElement;document.getElementById('progress').style.width=(d.scrollTop/(d.scrollHeight-d.clientHeight)*100)+'%';});
+window.MathJax={tex:{inlineMath:[['\\(','\\)']], displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}};
+</script>
+</body>
+</html>
