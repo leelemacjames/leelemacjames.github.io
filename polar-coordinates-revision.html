@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polar Coordinates — Y13 A-Level Revision</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style>
+  :root {
+    --bg: #0c0e13;
+    --surface: #13161d;
+    --surface2: #1a1e28;
+    --border: #252a36;
+    --border-hover: #3a4156;
+    --text: #d4d8e3;
+    --text-dim: #7a8199;
+    --text-bright: #eef0f6;
+    --accent: #5b8af5;
+    --accent-glow: rgba(91, 138, 245, 0.15);
+    --accent-dim: #3d6ad4;
+    --gold: #e8b84b;
+    --gold-glow: rgba(232, 184, 75, 0.12);
+    --green: #4ecb8d;
+    --green-glow: rgba(78, 203, 141, 0.12);
+    --red: #e85d5d;
+    --red-glow: rgba(232, 93, 93, 0.10);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(91, 138, 245, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(232, 184, 75, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 3rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  header .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 300;
+    font-size: 2.8rem;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 0.8rem;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* PREAMBLE */
+  .preamble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem 2rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preamble::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--accent), var(--gold));
+  }
+
+  .preamble h2 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+  }
+
+  .preamble p, .preamble li {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .preamble ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .preamble li::before {
+    content: '→';
+    color: var(--accent);
+    margin-right: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    color: var(--text-bright);
+    margin: 2.5rem 0 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .section-title .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    background: var(--gold-glow);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 0;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* Q&A CARDS */
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+  .qa-card:hover {
+    border-color: var(--border-hover);
+  }
+
+  .qa-card.revealed {
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .qa-card.correct {
+    border-color: #3a8a5e;
+    box-shadow: 0 0 20px var(--green-glow);
+  }
+
+  .qa-question {
+    padding: 1.3rem 1.6rem;
+    cursor: default;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .qa-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    background: var(--gold-glow);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .qa-text {
+    flex: 1;
+    font-size: 0.92rem;
+    color: var(--text-bright);
+  }
+
+  .qa-text p { margin-bottom: 0.4rem; }
+
+  .qa-difficulty {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .diff-core { color: var(--green); background: var(--green-glow); }
+  .diff-apply { color: var(--gold); background: var(--gold-glow); }
+  .diff-exam { color: var(--red); background: var(--red-glow); }
+
+  /* REVEAL BUTTON */
+  .reveal-btn {
+    display: block;
+    width: calc(100% - 3.2rem);
+    margin: 0 1.6rem 1rem;
+    padding: 0.55rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+
+  .reveal-btn:hover {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-color: var(--accent-dim);
+  }
+
+  .reveal-btn.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-color: var(--accent-dim);
+  }
+
+  /* ANSWER PANEL */
+  .qa-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  .qa-answer.show {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .qa-answer-inner {
+    padding: 0 1.6rem 1.4rem;
+    padding-left: calc(1.6rem + 2.2rem);
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+    padding-top: 1.2rem;
+  }
+
+  .qa-answer-inner p {
+    font-size: 0.88rem;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+
+  .qa-answer-inner .math-block {
+    background: var(--surface2);
+    border-left: 2px solid var(--accent);
+    padding: 0.8rem 1.2rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.6rem 0;
+    overflow-x: auto;
+  }
+
+  .qa-answer-inner .key-point {
+    background: var(--gold-glow);
+    border-left: 2px solid var(--gold);
+    padding: 0.6rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.6rem 0;
+    font-size: 0.85rem;
+    color: var(--gold);
+  }
+
+  .qa-answer-inner .step {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .qa-answer-inner .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .ctrl-btn {
+    padding: 0.45rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ctrl-btn:hover, .ctrl-btn.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-color: var(--accent-dim);
+  }
+
+  .ctrl-btn.gold:hover, .ctrl-btn.gold.active {
+    background: var(--gold-glow);
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  /* FORMULA REFERENCE PANEL */
+  .formula-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 2rem;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+    padding: 0 1.8rem;
+    margin-bottom: 0;
+  }
+
+  .formula-panel.show {
+    max-height: 3000px;
+    opacity: 1;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .formula-panel h3 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+  }
+
+  .formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .formula-item {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .formula-label {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    h1 { font-size: 2rem; }
+    .container { padding: 1rem; }
+    .formula-grid { grid-template-columns: 1fr; }
+    .qa-answer-inner { padding-left: 1.6rem; }
+    .qa-question { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <div class="tag">A-Level Further Maths / A-Level Maths — Year 13</div>
+  <h1>Polar Coordinates</h1>
+  <p>Interactive revision covering conversions, standard curves, areas, and tangent problems. Work through each question, then reveal the solution.</p>
+</header>
+
+<div class="preamble">
+  <h2>How to use this resource</h2>
+  <p>Each question is tagged by difficulty. Try each one on paper first — the struggle is where the learning happens. Click <em>Reveal</em> to check your working.</p>
+  <ul>
+    <li><strong style="color:var(--green)">Core</strong> — fundamental definitions and conversions you must know cold</li>
+    <li><strong style="color:var(--gold)">Apply</strong> — standard techniques: area integrals, tangent conditions, curve identification</li>
+    <li><strong style="color:var(--red)">Exam</strong> — multi-step problems at the level of past A-level papers</li>
+  </ul>
+  <p style="margin-top:0.6rem; color:var(--text-dim); font-size:0.82rem;">Tip: the formula sheet toggle above the questions gives you the key identities if you get stuck.</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText">0 / 0 revealed</div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn active" onclick="filterCards('all')">All</button>
+  <button class="ctrl-btn" onclick="filterCards('core')">Core</button>
+  <button class="ctrl-btn" onclick="filterCards('apply')">Apply</button>
+  <button class="ctrl-btn" onclick="filterCards('exam')">Exam</button>
+  <button class="ctrl-btn gold" onclick="toggleFormulas()">Toggle Formula Sheet</button>
+  <button class="ctrl-btn" onclick="revealAll()">Reveal All</button>
+  <button class="ctrl-btn" onclick="hideAll()">Hide All</button>
+</div>
+
+<div class="formula-panel" id="formulaPanel">
+  <h3>Key Formulae</h3>
+  <div class="formula-grid">
+    <div class="formula-item">
+      <div class="formula-label">Polar → Cartesian</div>
+      <div>$x = r\cos\theta, \quad y = r\sin\theta$</div>
+    </div>
+    <div class="formula-item">
+      <div class="formula-label">Cartesian → Polar</div>
+      <div>$r^2 = x^2 + y^2, \quad \theta = \arctan\!\left(\frac{y}{x}\right)$</div>
+    </div>
+    <div class="formula-item">
+      <div class="formula-label">Sector Area</div>
+      <div>$A = \frac{1}{2}\displaystyle\int_\alpha^\beta r^2\,\mathrm{d}\theta$</div>
+    </div>
+    <div class="formula-item">
+      <div class="formula-label">Tangent ∥ initial line</div>
+      <div>$\dfrac{\mathrm{d}y}{\mathrm{d}\theta} = 0$</div>
+    </div>
+    <div class="formula-item">
+      <div class="formula-label">Tangent ⊥ initial line</div>
+      <div>$\dfrac{\mathrm{d}x}{\mathrm{d}\theta} = 0$</div>
+    </div>
+    <div class="formula-item">
+      <div class="formula-label">Double angle</div>
+      <div>$\cos^2\theta = \frac{1}{2}(1+\cos 2\theta)$</div>
+    </div>
+  </div>
+</div>
+
+<div id="cardContainer">
+
+<!-- ===== SECTION 1: CONVERSIONS ===== -->
+<div class="section-title"><span class="num">01</span> Coordinate Conversions</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q1</span>
+    <div class="qa-text"><p>State the relationships between polar coordinates $(r, \theta)$ and Cartesian coordinates $(x, y)$. Why must care be taken with $\theta = \arctan(y/x)$?</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="math-block">$$x = r\cos\theta, \qquad y = r\sin\theta$$</div>
+      <div class="math-block">$$r^2 = x^2 + y^2, \qquad \theta = \arctan\!\left(\frac{y}{x}\right)$$</div>
+      <p>The issue with $\arctan(y/x)$ is that it only returns values in $\left(-\frac{\pi}{2}, \frac{\pi}{2}\right)$, so it can't distinguish between a point in the first quadrant and one diametrically opposite in the third — the ratio $y/x$ is the same for both. You need to check which quadrant $(x,y)$ sits in and adjust $\theta$ accordingly (typically by adding $\pi$). In Python, <code>math.atan2(y, x)</code> handles this for you.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q2</span>
+    <div class="qa-text"><p>Convert the polar equation $r = \cos\theta + \sin\theta$ into Cartesian form. Hence show it represents a circle, and find its centre and radius.</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>Start with $r = \cos\theta + \sin\theta$. Multiply both sides by $r$:</p></div>
+      <div class="math-block">$$r^2 = r\cos\theta + r\sin\theta$$</div>
+      <div class="step"><span class="step-num">02</span><p>Substitute $r^2 = x^2+y^2$, $r\cos\theta = x$, $r\sin\theta = y$:</p></div>
+      <div class="math-block">$$x^2 + y^2 = x + y$$</div>
+      <div class="step"><span class="step-num">03</span><p>Complete the square in both variables:</p></div>
+      <div class="math-block">$$\left(x - \tfrac{1}{2}\right)^2 + \left(y - \tfrac{1}{2}\right)^2 = \tfrac{1}{2}$$</div>
+      <p>This is a circle with centre $\left(\frac{1}{2}, \frac{1}{2}\right)$ and radius $\frac{\sqrt{2}}{2}$.</p>
+      <div class="key-point">The "multiply both sides by $r$" trick is the standard opening move for converting polar equations to Cartesian form. Memorise it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: STANDARD CURVES ===== -->
+<div class="section-title"><span class="num">02</span> Recognising Standard Curves</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q3</span>
+    <div class="qa-text"><p>What curve does $r = a$ represent? What about $\theta = \alpha$ and $r = a\theta$?</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>$r = a$ is a <strong>circle</strong> of radius $a$ centred at the pole.</p>
+      <p>$\theta = \alpha$ is a <strong>half-line</strong> (ray) from the pole at angle $\alpha$ to the initial line.</p>
+      <p>$r = a\theta$ is an <strong>Archimedean spiral</strong> — the radius grows linearly with angle, so successive windings are equally spaced.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q4</span>
+    <div class="qa-text"><p>Describe the curves given by $r = \sin(n\theta)$ and $r = \cos(n\theta)$ for positive integer $n$. How many petals does each rose have?</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>These are <strong>rose curves</strong>. The number of petals depends on whether $n$ is odd or even:</p>
+      <p>If $n$ is <strong>odd</strong>, the curve has exactly $n$ petals.</p>
+      <p>If $n$ is <strong>even</strong>, the curve has $2n$ petals.</p>
+      <p>For example, $r = \cos 3\theta$ gives a 3-petal rose, while $r = \sin 4\theta$ gives an 8-petal rose. The $\sin$ vs $\cos$ choice just rotates the figure.</p>
+      <p>The special cases $r = \sin\theta$ and $r = \cos\theta$ (i.e. $n=1$) each give a single circle — technically a "1-petal rose."</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q5</span>
+    <div class="qa-text"><p>What are lemniscates? Give the general form and describe the shape.</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>Lemniscates have the form $r^2 = a^2\sin(n\theta)$ or $r^2 = a^2\cos(n\theta)$. They look like figure-of-eight curves (for $n=2$), similar to the symbol $\infty$.</p>
+      <p>Because $r^2$ must be non-negative, these curves only exist where $\sin(n\theta) \geq 0$ (or $\cos(n\theta) \geq 0$), so they have natural gaps — the curve doesn't trace out for all $\theta$.</p>
+      <div class="key-point">If you see $r^2 = \ldots$ in a polar equation, think lemniscate. The $r^2$ form also means you'll need to take care with signs when computing $r$.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q6</span>
+    <div class="qa-text"><p>For curves of the form $r = p + q\cos\theta$, describe how the shape changes depending on the relative sizes of $p$ and $q$.</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>These are <strong>limaçons</strong>. Three cases:</p>
+      <p><strong>$p \geq 2q$:</strong> A convex, roughly oval shape (no dimple, no loop).</p>
+      <p><strong>$q < p < 2q$:</strong> A "dimpled" limaçon — there's an inward dent but no self-intersection.</p>
+      <p><strong>$p = q$:</strong> A <strong>cardioid</strong> — the curve passes through the pole and has a cusp there.</p>
+      <p>If $p < q$, the curve has an inner loop that passes through the pole.</p>
+      <div class="key-point">The exam problem $r = a(4 + 3\cos\theta)$ has $p=4a$, $q=3a$, so $q < p < 2q$. That's a dimpled limaçon — the dimple appears at $\theta = \pi$.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q7</span>
+    <div class="qa-text"><p>Sketch and describe the curve $r = 2\sec\!\left(\theta - \frac{\pi}{3}\right)$. What does it look like in Cartesian coordinates?</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>Rewrite: $r = \frac{2}{\cos(\theta - \pi/3)}$, so $r\cos(\theta - \pi/3) = 2$.</p></div>
+      <div class="step"><span class="step-num">02</span><p>Expand using the compound angle formula:</p></div>
+      <div class="math-block">$$r\left(\cos\theta\cos\frac{\pi}{3} + \sin\theta\sin\frac{\pi}{3}\right) = 2$$</div>
+      <div class="math-block">$$\frac{1}{2}x + \frac{\sqrt{3}}{2}y = 2$$</div>
+      <p>This is a <strong>straight line</strong>. Any polar equation of the form $r = a\sec(\theta - \alpha)$ represents a line perpendicular to the direction $\theta = \alpha$, at distance $a$ from the pole.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: AREA ===== -->
+<div class="section-title"><span class="num">03</span> Area of a Polar Region</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q8</span>
+    <div class="qa-text"><p>State the formula for the area of a sector bounded by a polar curve $r = f(\theta)$ between $\theta = \alpha$ and $\theta = \beta$. Where does the $\frac{1}{2}$ come from?</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="math-block">$$A = \frac{1}{2}\int_\alpha^\beta r^2\,\mathrm{d}\theta$$</div>
+      <p>The $\frac{1}{2}$ comes from the area of a thin circular sector: a sector of radius $r$ and infinitesimal angle $\mathrm{d}\theta$ has area $\frac{1}{2}r^2\,\mathrm{d}\theta$, just as a full circle of radius $r$ has area $\frac{1}{2}r^2 \cdot 2\pi = \pi r^2$. We're summing up infinitely many such thin wedges.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q9</span>
+    <div class="qa-text"><p>Find the area enclosed by the curve $r = 2\cos\theta + 2\sin\theta$ between $\theta = \frac{\pi}{6}$ and $\theta = \frac{\pi}{2}$.</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>Set up the integral. We need $\frac{1}{2}\int_{\pi/6}^{\pi/2}(2\cos\theta+2\sin\theta)^2\,\mathrm{d}\theta$.</p></div>
+      <div class="step"><span class="step-num">02</span><p>Expand the square: $(2\cos\theta+2\sin\theta)^2 = 4(\cos\theta+\sin\theta)^2 = 4(1+2\sin\theta\cos\theta) = 4(1+\sin 2\theta)$.</p></div>
+      <div class="math-block">$$A = \frac{1}{2}\int_{\pi/6}^{\pi/2}4(1+\sin 2\theta)\,\mathrm{d}\theta = 2\int_{\pi/6}^{\pi/2}(1+\sin 2\theta)\,\mathrm{d}\theta$$</div>
+      <div class="step"><span class="step-num">03</span><p>Integrate:</p></div>
+      <div class="math-block">$$= 2\left[\theta - \frac{\cos 2\theta}{2}\right]_{\pi/6}^{\pi/2} = 2\left[\left(\frac{\pi}{2} - \frac{\cos\pi}{2}\right) - \left(\frac{\pi}{6} - \frac{\cos(\pi/3)}{2}\right)\right]$$</div>
+      <div class="math-block">$$= 2\left[\left(\frac{\pi}{2}+\frac{1}{2}\right)-\left(\frac{\pi}{6}-\frac{1}{4}\right)\right] = 2\left(\frac{\pi}{3}+\frac{3}{4}\right) = \frac{2\pi}{3}+\frac{3}{2} \approx 3.59$$</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q10</span>
+    <div class="qa-text"><p>The curves $r = a\sin 4\theta$ and $r = a\sin 2\theta$ are given for $0 \leq \theta \leq \frac{\pi}{2}$. The region $R$ is contained within both curves. Find the area of $R$ in terms of $a$.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p><strong>Find intersection points.</strong> Set $a\sin 4\theta = a\sin 2\theta$, so $\sin 4\theta = \sin 2\theta$.</p></div>
+      <p>This gives $4\theta = 2\theta + 2k\pi$ or $4\theta = \pi - 2\theta + 2k\pi$, yielding $\theta = k\pi$ or $\theta = \frac{\pi}{6}(1+2k)$. In our range: $\theta = 0$, $\theta = \frac{\pi}{6}$, $\theta = \frac{\pi}{2}$.</p>
+      <div class="step"><span class="step-num">02</span><p><strong>Determine which curve is "inner"</strong> on each sub-interval. Checking a test point shows $a\sin 2\theta$ is the inner (smaller $r$) curve for $0 \leq \theta \leq \frac{\pi}{6}$, and $a\sin 4\theta$ is inner for $\frac{\pi}{6} \leq \theta \leq \frac{\pi}{4}$ (beyond $\frac{\pi}{4}$, $\sin 4\theta < 0$ so that loop doesn't contribute).</p></div>
+      <div class="step"><span class="step-num">03</span><p><strong>Set up the area</strong> as the sum of two half-integrals of $r^2$ over the inner curve on each piece:</p></div>
+      <div class="math-block">$$A = \frac{1}{2}\int_0^{\pi/6}(a\sin 2\theta)^2\,\mathrm{d}\theta + \frac{1}{2}\int_{\pi/6}^{\pi/4}(a\sin 4\theta)^2\,\mathrm{d}\theta$$</div>
+      <div class="step"><span class="step-num">04</span><p>Use $\sin^2 u = \frac{1}{2}(1-\cos 2u)$ on each piece, integrate, and evaluate:</p></div>
+      <div class="math-block">$$A = \frac{a^2}{4}\left(\frac{\pi}{6} - \frac{\sqrt{3}}{8}\right) + \frac{a^2}{4}\left(\frac{\pi}{4} - \frac{\pi}{6} - \frac{\sqrt{3}}{16}\right)$$</div>
+      <p>Combining:</p>
+      <div class="math-block">$$A = \frac{a^2}{4}\left(\frac{\pi}{4} - \frac{3\sqrt{3}}{16}\right)$$</div>
+      <div class="key-point">The trick with "area inside both curves" is that you're integrating the <em>smaller</em> of the two $r$-values on each sub-interval. Sketch first to see which curve is inner where.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: TANGENTS ===== -->
+<div class="section-title"><span class="num">04</span> Tangent Lines — Parallel & Perpendicular to the Initial Line</div>
+
+<div class="qa-card" data-diff="core">
+  <div class="qa-question">
+    <span class="qa-number">Q11</span>
+    <div class="qa-text"><p>State the conditions for the tangent to a polar curve to be (i) parallel to the initial line, and (ii) perpendicular to it. Why do we use $x = r\cos\theta$ and $y = r\sin\theta$ rather than $\frac{\mathrm{d}r}{\mathrm{d}\theta}$?</p></div>
+    <span class="qa-difficulty diff-core">Core</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p><strong>(i) Tangent parallel to initial line</strong> (horizontal tangent): set $\frac{\mathrm{d}y}{\mathrm{d}\theta} = 0$.</p>
+      <p><strong>(ii) Tangent perpendicular to initial line</strong> (vertical tangent): set $\frac{\mathrm{d}x}{\mathrm{d}\theta} = 0$.</p>
+      <p>We can't just use $\frac{\mathrm{d}r}{\mathrm{d}\theta} = 0$ because that gives turning points in the radial direction (where $r$ is locally max or min), which is a different geometric condition. The tangent direction in the Cartesian plane is governed by $\frac{\mathrm{d}y}{\mathrm{d}x}$, and the chain rule gives $\frac{\mathrm{d}y}{\mathrm{d}x} = \frac{\mathrm{d}y/\mathrm{d}\theta}{\mathrm{d}x/\mathrm{d}\theta}$.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q12</span>
+    <div class="qa-text"><p>Find the point on the curve $r = a(1 + \tan\theta)$, $0 \leq \theta < \frac{\pi}{2}$, where the tangent is perpendicular to the initial line.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>Perpendicular to the initial line means a vertical tangent, so we need $\frac{\mathrm{d}x}{\mathrm{d}\theta} = 0$.</p></div>
+      <div class="step"><span class="step-num">02</span><p>Write $x = r\cos\theta = a(1+\tan\theta)\cos\theta = a(\cos\theta + \sin\theta)$.</p></div>
+      <div class="step"><span class="step-num">03</span><p>Differentiate: $\frac{\mathrm{d}x}{\mathrm{d}\theta} = a(-\sin\theta + \cos\theta)$.</p></div>
+      <div class="step"><span class="step-num">04</span><p>Set equal to zero: $\cos\theta = \sin\theta$, so $\tan\theta = 1$, giving $\theta = \frac{\pi}{4}$.</p></div>
+      <div class="step"><span class="step-num">05</span><p>Substitute back: $r = a(1 + \tan\frac{\pi}{4}) = a(1+1) = 2a$.</p></div>
+      <div class="math-block">$$\text{The point is } \left(2a,\; \frac{\pi}{4}\right)$$</div>
+      <div class="key-point">Notice how $a(1+\tan\theta)\cos\theta$ simplifies beautifully to $a(\cos\theta+\sin\theta)$ — always simplify before differentiating.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q13</span>
+    <div class="qa-text"><p>The curve $C$ has polar equation $r = 1 + 3\cos\theta$, $0 \leq \theta \leq \frac{\pi}{2}$. The tangent at a point $A$ on $C$ is parallel to the initial line. Point $O$ is the pole. Find the exact length $OA$.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>Parallel to the initial line means $\frac{\mathrm{d}y}{\mathrm{d}\theta} = 0$. Write $y = r\sin\theta = (1+3\cos\theta)\sin\theta = \sin\theta + 3\cos\theta\sin\theta$.</p></div>
+      <div class="step"><span class="step-num">02</span><p>Differentiate: $\frac{\mathrm{d}y}{\mathrm{d}\theta} = \cos\theta + 3(\cos^2\theta - \sin^2\theta) = \cos\theta + 3\cos 2\theta$.</p></div>
+      <p>Rewrite using $\cos 2\theta = 2\cos^2\theta - 1$:</p>
+      <div class="math-block">$$\cos\theta + 6\cos^2\theta - 3 = 0$$</div>
+      <div class="step"><span class="step-num">03</span><p>This is a quadratic in $\cos\theta$. Let $c = \cos\theta$: $6c^2 + c - 3 = 0$.</p></div>
+      <div class="math-block">$$c = \frac{-1 \pm \sqrt{1 + 72}}{12} = \frac{-1 \pm \sqrt{73}}{12}$$</div>
+      <div class="step"><span class="step-num">04</span><p>Since $0 \leq \theta \leq \frac{\pi}{2}$, we need $c \geq 0$, so $\cos\theta = \frac{-1+\sqrt{73}}{12}$.</p></div>
+      <div class="step"><span class="step-num">05</span><p>The length $OA$ is just $r$ at this $\theta$:</p></div>
+      <div class="math-block">$$r = 1 + 3\cdot\frac{-1+\sqrt{73}}{12} = 1 + \frac{-3+3\sqrt{73}}{12} = \frac{12-3+3\sqrt{73}}{12} = \frac{9+3\sqrt{73}}{12} = \frac{3+\sqrt{73}}{4}$$</div>
+      <div class="key-point">The quadratic-in-$\cos\theta$ pattern appears constantly in tangent problems. Get comfortable with it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: MIXED EXAM PROBLEMS ===== -->
+<div class="section-title"><span class="num">05</span> Mixed Exam Problems</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q14</span>
+    <div class="qa-text"><p>Show that the locus $|z - 1 - \mathrm{i}| = \sqrt{2}$ on the Argand diagram can be represented by the polar curve $r = 2\cos\theta + 2\sin\theta$.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p>$|z-1-\mathrm{i}|=\sqrt{2}$ is a circle centred at $(1,1)$ with radius $\sqrt{2}$. In Cartesian form: $(x-1)^2+(y-1)^2=2$.</p></div>
+      <div class="step"><span class="step-num">02</span><p>Expand: $x^2 - 2x + 1 + y^2 - 2y + 1 = 2$, so $x^2 + y^2 = 2x + 2y$.</p></div>
+      <div class="step"><span class="step-num">03</span><p>Substitute $x^2+y^2 = r^2$, $x = r\cos\theta$, $y = r\sin\theta$:</p></div>
+      <div class="math-block">$$r^2 = 2r\cos\theta + 2r\sin\theta$$</div>
+      <p>Divide by $r$ (valid for $r \neq 0$):</p>
+      <div class="math-block">$$r = 2\cos\theta + 2\sin\theta \qquad \square$$</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q15</span>
+    <div class="qa-text"><p>The set $A = \left\{z : \frac{\pi}{6} \leq \arg z \leq \frac{\pi}{2}\right\} \cap \left\{z : |z-1-\mathrm{i}| \leq \sqrt{2}\right\}$. Find, correct to 3 s.f., the area of the region defined by $A$.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>From Q14, the circle in polar form is $r = 2\cos\theta + 2\sin\theta$. The set $A$ is the portion of the disk where $\frac{\pi}{6} \leq \theta \leq \frac{\pi}{2}$.</p>
+      <div class="step"><span class="step-num">01</span><p>Use the polar area formula with the result from Q9:</p></div>
+      <div class="math-block">$$A = \frac{1}{2}\int_{\pi/6}^{\pi/2}(2\cos\theta+2\sin\theta)^2\,\mathrm{d}\theta = 2\left(\frac{\pi}{3}+\frac{3}{4}\right) \approx 3.59 \text{ (3 s.f.)}$$</div>
+      <div class="key-point">This question is a classic combo: complex numbers → Cartesian circle → polar form → polar area integral. The examiners love linking these topics.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q16</span>
+    <div class="qa-text"><p>The curve $C$ has polar equation $r = 1 + \cos 3\theta$, $0 \leq \theta \leq \frac{\pi}{3}$. At points $A$ and $B$, $r = \frac{2+\sqrt{2}}{2}$. Point $A$ lies on $C$ and point $B$ lies on the initial line. Find, correct to 3 s.f., the finite area bounded by the curve, the line segment $AB$, and the initial line.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <div class="step"><span class="step-num">01</span><p><strong>Find $\theta_A$:</strong> Solve $1+\cos 3\theta = \frac{2+\sqrt{2}}{2}$, giving $\cos 3\theta = \frac{\sqrt{2}}{2}$, so $3\theta = \frac{\pi}{4}$ and $\theta_A = \frac{\pi}{12}$.</p></div>
+      <div class="step"><span class="step-num">02</span><p><strong>Sector area</strong> (from $\theta=0$ to $\theta=\frac{\pi}{12}$, bounded by curve and line $OA$):</p></div>
+      <div class="math-block">$$A_{\text{sector}} = \frac{1}{2}\int_0^{\pi/12}(1+\cos 3\theta)^2\,\mathrm{d}\theta$$</div>
+      <p>Expand: $(1+\cos 3\theta)^2 = 1 + 2\cos 3\theta + \cos^2 3\theta = 1 + 2\cos 3\theta + \frac{1}{2}(1+\cos 6\theta)$.</p>
+      <div class="math-block">$$= \frac{1}{2}\left[\frac{3}{2}\theta + \frac{2}{3}\sin 3\theta + \frac{1}{12}\sin 6\theta\right]_0^{\pi/12}$$</div>
+      <div class="math-block">$$= \frac{1}{2}\left(\frac{\pi}{8} + \frac{\sqrt{2}}{3} + \frac{1}{12}\right) \approx 0.4737$$</div>
+      <div class="step"><span class="step-num">03</span><p><strong>Triangle $OAB$ area:</strong> Both $OA$ and $OB$ have length $\frac{2+\sqrt{2}}{2}$, with angle $\frac{\pi}{12}$ between them.</p></div>
+      <div class="math-block">$$A_{\triangle} = \frac{1}{2}\left(\frac{2+\sqrt{2}}{2}\right)^2\sin\frac{\pi}{12} \approx 0.3771$$</div>
+      <div class="step"><span class="step-num">04</span><p><strong>Shaded area</strong> = sector area − triangle area $\approx 0.4737 - 0.3771 = 0.0966$ (3 s.f.).</p></div>
+      <div class="key-point">"Area between curve and chord" problems always decompose as: polar sector area minus triangle area. The triangle uses the $\frac{1}{2}ab\sin C$ formula with the two radii and the angle between them.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q17</span>
+    <div class="qa-text"><p>Describe the curve $\theta = -\frac{\pi}{4}$. Sketch it, and explain its relationship to the Cartesian equation $y = -x$.</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>$\theta = -\frac{\pi}{4}$ is a <strong>half-line</strong> from the pole in the direction $-45°$ (i.e. into the fourth quadrant). It is <em>not</em> the full line $y = -x$ — only the ray from the origin going towards the bottom-right.</p>
+      <p>The full line $y = -x$ would require both $\theta = -\frac{\pi}{4}$ and $\theta = \frac{3\pi}{4}$ (or equivalently, allowing negative $r$). This is a common subtlety: a single $\theta = \alpha$ equation only gives a half-line, not a full line.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q18</span>
+    <div class="qa-text"><p>The curve $r = a\cos 3\theta$ is a 3-petalled rose. For what range of $\theta$ does the first petal (the one along the initial line) trace out? What is the area of this single petal?</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>The first petal lies along $\theta = 0$ and is traced for $-\frac{\pi}{6} \leq \theta \leq \frac{\pi}{6}$ (where $\cos 3\theta \geq 0$, so $r \geq 0$).</p>
+      <div class="math-block">$$A = \frac{1}{2}\int_{-\pi/6}^{\pi/6}a^2\cos^2 3\theta\,\mathrm{d}\theta = \frac{a^2}{2}\int_{-\pi/6}^{\pi/6}\frac{1+\cos 6\theta}{2}\,\mathrm{d}\theta$$</div>
+      <div class="math-block">$$= \frac{a^2}{4}\left[\theta + \frac{\sin 6\theta}{6}\right]_{-\pi/6}^{\pi/6} = \frac{a^2}{4}\cdot\frac{\pi}{3} = \frac{\pi a^2}{12}$$</div>
+      <p>The total area of all three petals is $\frac{\pi a^2}{4}$.</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="apply">
+  <div class="qa-question">
+    <span class="qa-number">Q19</span>
+    <div class="qa-text"><p>For the lemniscate $r^2 = a^2\sin 2\theta$, explain why the curve only exists for $0 \leq \theta \leq \frac{\pi}{2}$ and $\pi \leq \theta \leq \frac{3\pi}{2}$. What does the full curve look like?</p></div>
+    <span class="qa-difficulty diff-apply">Apply</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>Since $r^2 = a^2\sin 2\theta$ and $r^2 \geq 0$, we need $\sin 2\theta \geq 0$. This holds when $2\theta \in [0, \pi] \cup [2\pi, 3\pi]$, i.e. $\theta \in [0, \pi/2] \cup [\pi, 3\pi/2]$.</p>
+      <p>The curve is a figure-of-eight with two lobes: one in the first quadrant, one in the third. It passes through the origin at $\theta = 0$ and $\theta = \pi/2$.</p>
+      <div class="key-point">For lemniscate area problems, the area of one lobe is $\frac{1}{2}\int_0^{\pi/2}a^2\sin 2\theta\,\mathrm{d}\theta = \frac{a^2}{2}$, so both lobes together give $a^2$.</div>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-diff="exam">
+  <div class="qa-question">
+    <span class="qa-number">Q20</span>
+    <div class="qa-text"><p>A student claims that $r = a(4+3\sin\theta)$ is "the same shape as $r = a(4+3\cos\theta)$ but rotated by $90°$." Justify or refute this claim, and describe the key features of the curve $r = a(4+3\sin\theta)$.</p></div>
+    <span class="qa-difficulty diff-exam">Exam</span>
+  </div>
+  <button class="reveal-btn" onclick="toggleReveal(this)">Reveal Answer</button>
+  <div class="qa-answer">
+    <div class="qa-answer-inner">
+      <p>The student is correct. Replacing $\cos\theta$ with $\sin\theta$ is equivalent to replacing $\theta$ with $\theta - \frac{\pi}{2}$ (since $\sin\theta = \cos(\theta - \pi/2)$). This rotates the curve by $\frac{\pi}{2}$ anticlockwise.</p>
+      <p>Both curves are <strong>dimpled limaçons</strong> (since $3a < 4a < 2\times 3a$, i.e. $q < p < 2q$).</p>
+      <p>Key features of $r = a(4+3\sin\theta)$:</p>
+      <p>Maximum $r = 7a$ at $\theta = \frac{\pi}{2}$ (top of curve). Minimum $r = a$ at $\theta = \frac{3\pi}{2}$ (bottom). The dimple appears at the bottom. The axis of symmetry is now the line $\theta = \frac{\pi}{2}$ (the $y$-axis) rather than the initial line.</p>
+      <div class="key-point">$\cos\theta \to \sin\theta$ is always a $90°$ rotation. Similarly, $\cos n\theta \to \sin n\theta$ rotates the curve by $\frac{\pi}{2n}$.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end cardContainer -->
+
+</div><!-- end container -->
+
+<script>
+function toggleReveal(btn) {
+  const card = btn.closest('.qa-card');
+  const answer = card.querySelector('.qa-answer');
+  const isShowing = answer.classList.contains('show');
+
+  if (isShowing) {
+    answer.classList.remove('show');
+    card.classList.remove('revealed');
+    btn.classList.remove('active');
+    btn.textContent = 'Reveal Answer';
+  } else {
+    answer.classList.add('show');
+    card.classList.add('revealed');
+    btn.classList.add('active');
+    btn.textContent = 'Hide Answer';
+    // Re-typeset MathJax in the revealed area
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([answer]);
+    }
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const visible = document.querySelectorAll('.qa-card:not([style*="display: none"])');
+  const revealed = document.querySelectorAll('.qa-card:not([style*="display: none"]) .qa-answer.show');
+  const pct = visible.length ? (revealed.length / visible.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = revealed.length + ' / ' + visible.length + ' revealed';
+}
+
+function filterCards(diff) {
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  document.querySelectorAll('.qa-card').forEach(card => {
+    if (diff === 'all' || card.dataset.diff === diff) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  // Show/hide section titles based on whether they have visible cards after them
+  document.querySelectorAll('.section-title').forEach(title => {
+    let next = title.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains('section-title')) {
+      if (next.classList.contains('qa-card') && next.style.display !== 'none') {
+        hasVisible = true;
+        break;
+      }
+      next = next.nextElementSibling;
+    }
+    title.style.display = hasVisible ? '' : 'none';
+  });
+  updateProgress();
+}
+
+function toggleFormulas() {
+  const panel = document.getElementById('formulaPanel');
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show') && window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([panel]);
+  }
+}
+
+function revealAll() {
+  document.querySelectorAll('.qa-card:not([style*="display: none"])').forEach(card => {
+    const answer = card.querySelector('.qa-answer');
+    const btn = card.querySelector('.reveal-btn');
+    answer.classList.add('show');
+    card.classList.add('revealed');
+    btn.classList.add('active');
+    btn.textContent = 'Hide Answer';
+  });
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise();
+  }
+  updateProgress();
+}
+
+function hideAll() {
+  document.querySelectorAll('.qa-card').forEach(card => {
+    const answer = card.querySelector('.qa-answer');
+    const btn = card.querySelector('.reveal-btn');
+    answer.classList.remove('show');
+    card.classList.remove('revealed');
+    btn.classList.remove('active');
+    btn.textContent = 'Reveal Answer';
+  });
+  updateProgress();
+}
+
+// Initial typeset and progress
+document.addEventListener('DOMContentLoaded', () => {
+  updateProgress();
+});
+</script>
+
+</body>
+</html>
