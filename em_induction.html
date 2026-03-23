@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electromagnetic Induction — IB Physics</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #141720;
+  --surface2: #1c2030;
+  --border: #2a2f42;
+  --gold: #c9a84c;
+  --gold-dim: #8a6f30;
+  --amber: #e8b04b;
+  --text: #d4cfc4;
+  --text-dim: #7a7568;
+  --text-bright: #f0ece0;
+  --green: #5a9e6f;
+  --red: #c0503a;
+  --blue: #4a88c0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 17px; line-height: 1.75; min-height: 100vh;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0; opacity:0.6;
+}
+#progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--gold),var(--amber)); width:0%; z-index:100; transition:width .15s; }
+.container { max-width:820px; margin:0 auto; padding:60px 32px 100px; position:relative; z-index:1; }
+header { border-bottom:1px solid var(--border); padding-bottom:32px; margin-bottom:48px; }
+header h1 { font-family:'Playfair Display',serif; font-size:2.6rem; color:var(--text-bright); letter-spacing:-0.02em; line-height:1.15; margin-bottom:12px; }
+header .subtitle { font-size:1.1rem; color:var(--gold); font-style:italic; }
+header .context { margin-top:12px; font-size:0.95rem; color:var(--text-dim); }
+.preamble { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:28px 26px; margin-bottom:40px; }
+.preamble h2 { font-family:'Playfair Display',serif; font-size:1.35rem; color:var(--amber); margin-bottom:16px; }
+.preamble p { margin-bottom:14px; }
+.section-title { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--amber); margin:48px 0 20px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.section-title span { font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--gold-dim); margin-right:10px; }
+.qa { background:var(--surface); border:1px solid var(--border); border-radius:6px; margin-bottom:14px; overflow:hidden; transition:border-color .3s; }
+.qa:hover { border-color:var(--gold-dim); }
+.qa-q { padding:18px 22px; cursor:pointer; display:flex; align-items:baseline; gap:14px; user-select:none; }
+.qa-q::before { content:'Q'; font-family:'Playfair Display',serif; font-weight:700; font-size:1.1rem; color:var(--gold); flex-shrink:0; }
+.qa-q .arrow { margin-left:auto; color:var(--text-dim); transition:transform .3s; flex-shrink:0; }
+.qa.open .qa-q .arrow { transform:rotate(180deg); }
+.qa-a { max-height:0; overflow:hidden; transition:max-height .45s ease, padding .3s ease; padding:0 22px; }
+.qa.open .qa-a { max-height:6000px; padding:0 22px 24px; }
+.qa-a p { margin-bottom:12px; }
+.eq { background:var(--surface2); border-left:3px solid var(--gold); padding:14px 18px; margin:16px 0; border-radius:0 4px 4px 0; font-size:1.05rem; overflow-x:auto; }
+.insight { background:rgba(90,158,111,0.1); border-left:3px solid var(--green); padding:12px 18px; margin:16px 0; border-radius:0 4px 4px 0; font-style:italic; color:var(--text-bright); }
+.warning { background:rgba(192,80,58,0.1); border-left:3px solid var(--red); padding:12px 18px; margin:16px 0; border-radius:0 4px 4px 0; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.95rem; }
+th { text-align:left; padding:10px 14px; border-bottom:2px solid var(--gold-dim); color:var(--gold); font-family:'JetBrains Mono',monospace; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; }
+td { padding:10px 14px; border-bottom:1px solid var(--border); }
+footer { margin-top:60px; padding-top:20px; border-top:1px solid var(--border); font-size:0.85rem; color:var(--text-dim); text-align:center; }
+code { font-family:'JetBrains Mono',monospace; font-size:0.88em; background:var(--surface2); padding:2px 6px; border-radius:3px; }
+@media(max-width:600px){ .container{padding:32px 18px 60px;} header h1{font-size:1.8rem;} }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="container">
+  <header>
+    <h1>Electromagnetic Induction</h1>
+    <div class="subtitle">From moving charges to moving fields — and back again</div>
+    <div class="context">IB Physics HL — Topic D.3: Motion in Electromagnetic Fields &amp; D.4: Induction</div>
+  </header>
+
+  <div class="preamble">
+    <h2>The conceptual chain</h2>
+    <p>The story of electromagnetism in IB Physics runs in a single logical thread:</p>
+    <p><strong>Moving charges create magnetic fields</strong> (Oersted, 1820). A current-carrying wire produces a \(\vec{B}\) field that curls around it. Direction: right-hand rule.</p>
+    <p><strong>Magnetic fields exert forces on moving charges</strong> (the motor effect). A charge \(q\) moving at velocity \(v\) through a field \(B\) feels a force \(F = qvB\sin\theta\), always perpendicular to both \(\vec{v}\) and \(\vec{B}\). This gives us electric motors, mass spectrometers, and circular orbits.</p>
+    <p><strong>Changing magnetic flux induces an emf</strong> (Faraday, 1831). If the magnetic flux \(\Phi\) through a circuit changes — by moving a wire, changing the field, or rotating a coil — an electromotive force appears: \(\varepsilon = -d\Phi/dt\). This gives us generators, transformers, and the entire electrical grid.</p>
+    <p>These three ideas — and the minus sign in Faraday's law (Lenz's law) — are the whole of electromagnetic induction at IB level. Everything below is detail.</p>
+  </div>
+
+  <!-- §1: Magnetic Fields & Direction Rules -->
+  <div class="section-title"><span>§1</span> Magnetic Fields &amp; Direction Rules</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is a magnetic field, and how is field strength \(B\) defined?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>A magnetic field is a region of space where a moving charge experiences a force. The magnetic field strength (also called <em>magnetic flux density</em>) \(B\) is defined operationally:</p>
+      <div class="eq">
+        \(B = \frac{F}{qv\sin\theta}\)
+      </div>
+      <p>where \(F\) is the force on a charge \(q\) moving at speed \(v\) at angle \(\theta\) to the field. Units: tesla (T) = kg s⁻² A⁻¹.</p>
+      <p>For a charge moving perpendicular to the field (\(\theta = 90°\), \(\sin\theta = 1\)):</p>
+      <div class="eq">
+        \(B = \frac{F}{qv}\)
+      </div>
+      <div class="insight">Notice: if a charge is stationary (\(v = 0\)) or moving parallel to \(\vec{B}\) (\(\theta = 0\)), the magnetic force is zero. Magnetic fields only act on <em>moving</em> charges, and only on the component of motion perpendicular to the field. This is fundamentally different from electric fields, which act on all charges regardless of motion.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do you find the direction of the magnetic field produced by a current?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Three configurations, one underlying rule:</p>
+      <p><strong>1. Straight wire — Right-hand grip rule:</strong> Point your right thumb in the direction of conventional current. Your curled fingers show the direction the \(\vec{B}\) field loops around the wire (concentric circles).</p>
+      <p><strong>2. Circular coil — Same rule applied:</strong> Curl your right-hand fingers in the direction of current flow around the loop. Your thumb points in the direction of \(\vec{B}\) through the centre. Viewed from above: clockwise current → field points away from you; anticlockwise → field points toward you.</p>
+      <p><strong>3. Solenoid — Right-hand corkscrew rule:</strong> Imagine turning a right-handed corkscrew in the direction of current flow through the coil. The direction the corkscrew advances is the direction of \(\vec{B}\) inside the solenoid.</p>
+      <div class="warning">All three are the same rule seen from different angles. If you can remember the straight-wire version, the others follow. The field always curls around the current in a right-handed sense.</div>
+    </div>
+  </div>
+
+  <!-- §2: Motor Effect -->
+  <div class="section-title"><span>§2</span> The Motor Effect</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is the force on a current-carrying conductor in a magnetic field?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>A wire carrying current \(I\) over a length \(L\) in a magnetic field \(B\) experiences a force:</p>
+      <div class="eq">
+        \(F = BIL\sin\theta\)
+      </div>
+      <p>where \(\theta\) is the angle between the wire and the field lines. Maximum force when perpendicular (\(\theta = 90°\)); zero force when parallel (\(\theta = 0°\)).</p>
+      <p>Direction: <strong>Fleming's left-hand rule</strong> (the motor rule). Point your left-hand index finger along \(\vec{B}\) (field), your middle finger along \(I\) (current), and your thumb gives the direction of \(\vec{F}\) (force/motion).</p>
+      <div class="insight">This is the operating principle of every electric motor: a current-carrying coil in a magnetic field experiences a torque because the forces on opposite sides of the coil act in opposite directions.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How does the force on a wire become the force on a single moving charge?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Current is moving charge: \(I = q/t\). The length \(L\) a charge travels in time \(t\) is \(L = vt\). Substituting into \(F = BIL\):</p>
+      <div class="eq">
+        \(F = B \cdot \frac{q}{t} \cdot vt = qvB\)
+      </div>
+      <p>With angle dependence:</p>
+      <div class="eq">
+        \(F = qvB\sin\theta\)
+      </div>
+      <p>This is the magnetic part of the <strong>Lorentz force</strong>. The full Lorentz force including the electric field is \(\vec{F} = q(\vec{E} + \vec{v} \times \vec{B})\).</p>
+      <p>Key property: the magnetic force is always perpendicular to the velocity. It therefore does <strong>no work</strong> — it changes the direction of motion but never the speed.</p>
+      <div class="insight">This is why a magnetic field alone cannot accelerate a particle (increase its KE). You need an electric field for that. In a cyclotron, the magnetic field bends the path; the electric field between the dees provides the energy.</div>
+    </div>
+  </div>
+
+  <!-- §3: Force Between Parallel Wires -->
+  <div class="section-title"><span>§3</span> Force Between Parallel Wires</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Two long parallel wires carry currents \(I_1\) and \(I_2\), separated by distance \(r\). What is the force per unit length between them?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Wire 1 creates a magnetic field at the location of wire 2. Wire 2 sits in that field and feels a force. The result:</p>
+      <div class="eq">
+        \(\frac{F}{L} = \frac{\mu_0 I_1 I_2}{2\pi r}\)
+      </div>
+      <p>where \(\mu_0 = 4\pi \times 10^{-7}\) T m A⁻¹ is the permeability of free space.</p>
+      <p><strong>Direction:</strong></p>
+      <p>• Currents in the <strong>same direction</strong> → wires <strong>attract</strong>.</p>
+      <p>• Currents in <strong>opposite directions</strong> → wires <strong>repel</strong>.</p>
+      <div class="insight">This formula was historically used to <em>define</em> the ampere: one ampere is the current that, flowing in two infinite parallel wires one metre apart, produces a force of exactly \(2 \times 10^{-7}\) N per metre of length. (The SI was redefined in 2019 to fix the elementary charge instead, but the physics is unchanged.)</div>
+    </div>
+  </div>
+
+  <!-- §4: Inverse-Law Comparison -->
+  <div class="section-title"><span>§4</span> How Fields Fall Off with Distance</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How do the different field strengths depend on distance — and why?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <table>
+        <tr><th>Source</th><th>Field</th><th>Law</th><th>Why</th></tr>
+        <tr><td>Point charge</td><td>Electric field \(E\)</td><td>\(\propto 1/r^2\)</td><td>Field lines spread over a sphere (\(4\pi r^2\))</td></tr>
+        <tr><td>Point mass</td><td>Gravitational field \(g\)</td><td>\(\propto 1/r^2\)</td><td>Same geometry — isotropic source</td></tr>
+        <tr><td>Long straight wire</td><td>Magnetic field \(B\)</td><td>\(\propto 1/r\)</td><td>Field lines spread over a cylinder (\(2\pi r L\))</td></tr>
+        <tr><td>Magnetic dipole</td><td>Magnetic field \(B\)</td><td>\(\propto 1/r^3\)</td><td>Dipole field — cancellation at distance</td></tr>
+      </table>
+      <p>The pattern: the power of \(r\) in the denominator reflects the <em>geometry</em> of the source. A point source radiates in 3D → \(1/r^2\). A line source radiates in 2D (cylindrically) → \(1/r\). A dipole's two poles partially cancel → \(1/r^3\).</p>
+      <div class="insight">You can read the geometry of the source from the power law. If an exam asks "how does the force between two parallel wires vary with separation?", the answer is \(1/r\) — because each wire is a line source, not a point source.</div>
+    </div>
+  </div>
+
+  <!-- §5: Charged Particles in B Fields -->
+  <div class="section-title"><span>§5</span> Charged Particles in Magnetic Fields</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      Why does a charged particle move in a circle in a uniform magnetic field?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>The magnetic force \(F = qvB\) is always perpendicular to \(\vec{v}\). A constant-magnitude force that is always perpendicular to the velocity is exactly the definition of centripetal force. So:</p>
+      <div class="eq">
+        \(qvB = \frac{mv^2}{r}\)
+      </div>
+      <p>Solving for the radius of the circular orbit:</p>
+      <div class="eq">
+        \(r = \frac{mv}{qB}\)
+      </div>
+      <p>This can also be written in terms of momentum \(p = mv\) or kinetic energy \(E_k = p^2/(2m)\):</p>
+      <div class="eq">
+        \(r = \frac{p}{qB} = \frac{\sqrt{2mE_k}}{qB}\)
+      </div>
+      <p><strong>Key observations:</strong></p>
+      <p>• Larger momentum → larger radius. Fast particles curve less.</p>
+      <p>• Larger charge or stronger field → smaller radius. Tighter curve.</p>
+      <p>• KE is constant — the magnetic force does no work (force ⊥ displacement).</p>
+      <div class="warning">If the particle also has a velocity component <em>parallel</em> to \(\vec{B}\), that component is unaffected (no force along \(\vec{B}\)). The result is a <strong>helical</strong> path — circular motion in the perpendicular plane combined with uniform motion along the field.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      How does a mass spectrometer use this to measure \(e/m\)?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>A mass spectrometer has two stages:</p>
+      <p><strong>Stage 1 — Acceleration:</strong> Ions are accelerated through a potential difference \(V\). The KE gained is:</p>
+      <div class="eq">
+        \(qV = \tfrac{1}{2}mv^2 \implies v = \sqrt{\frac{2qV}{m}}\)
+      </div>
+      <p><strong>Stage 2 — Deflection:</strong> The ions enter a uniform magnetic field \(B\) and follow a semicircular path of radius \(r\):</p>
+      <div class="eq">
+        \(r = \frac{mv}{qB}\)
+      </div>
+      <p>Substituting the expression for \(v\):</p>
+      <div class="eq">
+        \(r = \frac{m}{qB}\sqrt{\frac{2qV}{m}} = \frac{1}{B}\sqrt{\frac{2mV}{q}}\)
+      </div>
+      <p>Rearranging for the charge-to-mass ratio:</p>
+      <div class="eq">
+        \(\frac{q}{m} = \frac{2V}{B^2 r^2}\)
+      </div>
+      <p>You measure \(r\) (where the ions land on the detector), you know \(V\) and \(B\), and you get \(q/m\). Different isotopes have different masses → different radii → separated spots on the detector.</p>
+      <div class="insight">Thomson used exactly this principle in 1897 to measure \(e/m\) for the electron, proving that cathode rays were particles with a specific charge-to-mass ratio — about 1800 times larger than for hydrogen ions, meaning the electron was far lighter than any atom.</div>
+    </div>
+  </div>
+
+  <!-- §6: Magnetic Flux & Faraday's Law -->
+  <div class="section-title"><span>§6</span> Magnetic Flux &amp; Faraday's Law</div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is magnetic flux, and how does it differ from magnetic field strength?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>Magnetic flux density</strong> \(B\) is the field strength at a point — "how many field lines per unit area pass through here." Units: T (tesla) = Wb m⁻².</p>
+      <p><strong>Magnetic flux</strong> \(\Phi\) is the total field threading through a given area — "how many field lines pass through this loop." It depends on \(B\), the area \(A\), and the angle \(\theta\) between the field and the area's normal vector:</p>
+      <div class="eq">
+        \(\Phi = BA\cos\theta\)
+      </div>
+      <p>Units: weber (Wb) = T·m² = V·s.</p>
+      <p>When \(\theta = 0°\) (field perpendicular to the loop's plane, i.e. parallel to the normal): \(\Phi = BA\) — maximum flux. When \(\theta = 90°\) (field parallel to the loop's plane): \(\Phi = 0\) — no flux.</p>
+      <div class="warning"><strong>Angle convention:</strong> \(\theta\) is the angle between \(\vec{B}\) and the <em>normal to the surface</em>, not between \(\vec{B}\) and the plane itself. If the field is "face-on" to the loop, \(\theta = 0\) and \(\cos\theta = 1\). This catches many students.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is Faraday's law, and where does the motional emf \(\varepsilon = BvL\) come from?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Faraday's law of electromagnetic induction states:</p>
+      <div class="eq">
+        \(\varepsilon = -\frac{d\Phi}{dt}\)
+      </div>
+      <p>An emf is induced in a circuit whenever the magnetic flux through it changes. The magnitude of the emf equals the rate of change of flux. The minus sign is Lenz's law (see below).</p>
+      <p>For a coil of \(N\) turns, the flux linkage is \(N\Phi\), so:</p>
+      <div class="eq">
+        \(\varepsilon = -N\frac{d\Phi}{dt}\)
+      </div>
+      <p><strong>Deriving motional emf:</strong> A straight conductor of length \(L\) moves at velocity \(v\) perpendicular to a uniform field \(B\). In time \(dt\), it sweeps out an area \(dA = Lv\,dt\). The change in flux is \(d\Phi = B\,dA = BLv\,dt\). Therefore:</p>
+      <div class="eq">
+        \(\varepsilon = \frac{d\Phi}{dt} = BLv\)
+      </div>
+      <p>(We drop the minus sign when calculating magnitude.)</p>
+      <div class="insight">Motional emf is not a separate law — it <em>is</em> Faraday's law applied to the special case where the flux changes because the circuit area changes (a wire moves). Every generator works on this principle: rotating a coil changes \(\theta\), which changes \(\cos\theta\), which changes \(\Phi\), which induces \(\varepsilon\).</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What are the three ways to change the flux through a loop?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Since \(\Phi = BA\cos\theta\), flux changes if you change any of the three factors:</p>
+      <table>
+        <tr><th>Change</th><th>Example</th><th>How it appears</th></tr>
+        <tr><td>Change \(B\)</td><td>Push a magnet toward a coil</td><td>\(d\Phi/dt = A\cos\theta \cdot dB/dt\)</td></tr>
+        <tr><td>Change \(A\)</td><td>Stretch or move a wire through a field</td><td>\(d\Phi/dt = B\cos\theta \cdot dA/dt\) → gives \(\varepsilon = BLv\)</td></tr>
+        <tr><td>Change \(\theta\)</td><td>Rotate a coil in a uniform field</td><td>\(d\Phi/dt = BA \cdot d(\cos\theta)/dt\) → gives AC generator</td></tr>
+      </table>
+      <p>In an AC generator, \(\theta = \omega t\), so \(\Phi = BA\cos(\omega t)\) and:</p>
+      <div class="eq">
+        \(\varepsilon = NBA\omega\sin(\omega t)\)
+      </div>
+      <p>Peak emf \(\varepsilon_0 = NBA\omega\). The output is sinusoidal — this is where AC comes from.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      What is Lenz's law, and why is it just conservation of energy?
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>Lenz's law is the minus sign in Faraday's law. It states: <strong>the induced current flows in a direction that opposes the change in flux that caused it.</strong></p>
+      <p>If you push a north pole toward a coil, the induced current creates its own north pole <em>facing the incoming magnet</em> — opposing the approach. If you pull the magnet away, the coil becomes a south pole facing the retreating magnet — opposing the departure.</p>
+      <p><strong>Why this must be true:</strong> If the induced current <em>aided</em> the change instead of opposing it, the flux would increase further, inducing more current, increasing flux more — an ever-growing current from nothing. This violates conservation of energy. The opposition guarantees that you must do work to change the flux, and that work is where the electrical energy comes from.</p>
+      <div class="insight">Lenz's law is not an independent postulate — it is conservation of energy applied to electromagnetic induction. The minus sign in \(\varepsilon = -d\Phi/dt\) is doing the same job as the minus sign in \(F = -kx\) for a spring: it ensures a restoring tendency.</div>
+    </div>
+  </div>
+
+  <div class="qa" onclick="toggle(this)">
+    <div class="qa-q">
+      A coil of 200 turns and area 0.05 m² is in a field that drops uniformly from 0.8 T to 0.2 T in 0.1 s. Find the induced emf.
+      <span class="arrow">▾</span>
+    </div>
+    <div class="qa-a">
+      <p>The field is perpendicular to the coil (\(\theta = 0\), \(\cos\theta = 1\)).</p>
+      <div class="eq">
+        \(\Delta\Phi = \Delta B \cdot A = (0.8 - 0.2) \times 0.05 = 0.03 \;\text{Wb}\)
+      </div>
+      <div class="eq">
+        \(|\varepsilon| = N\frac{|\Delta\Phi|}{\Delta t} = 200 \times \frac{0.03}{0.1} = 60 \;\text{V}\)
+      </div>
+      <p>By Lenz's law, the induced current opposes the <em>decrease</em> in flux, so it flows in a direction that tries to maintain the original field — i.e., in the same sense as the original field would require (use the right-hand rule to find the current direction).</p>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section-title"><span>Σ</span> The Key Equations</div>
+
+  <table>
+    <tr><th>Equation</th><th>What it describes</th><th>When to use</th></tr>
+    <tr><td>\(F = qvB\sin\theta\)</td><td>Force on a moving charge</td><td>Charged particle in a field</td></tr>
+    <tr><td>\(F = BIL\sin\theta\)</td><td>Force on a current-carrying wire</td><td>Motor effect problems</td></tr>
+    <tr><td>\(r = mv/(qB)\)</td><td>Radius of circular orbit</td><td>Mass spectrometer, electron orbits</td></tr>
+    <tr><td>\(q/m = 2V/(B^2r^2)\)</td><td>Charge-to-mass ratio</td><td>Thomson/mass spec derivation</td></tr>
+    <tr><td>\(F/L = \mu_0 I_1 I_2/(2\pi r)\)</td><td>Force between parallel wires</td><td>Two wires, definition of ampere</td></tr>
+    <tr><td>\(\Phi = BA\cos\theta\)</td><td>Magnetic flux</td><td>Flux through a loop at angle \(\theta\)</td></tr>
+    <tr><td>\(\varepsilon = -N\,d\Phi/dt\)</td><td>Faraday's law</td><td>Any induction problem</td></tr>
+    <tr><td>\(\varepsilon = BLv\)</td><td>Motional emf</td><td>Wire moving through a field</td></tr>
+    <tr><td>\(\varepsilon_0 = NBA\omega\)</td><td>Peak emf of AC generator</td><td>Rotating coil in uniform field</td></tr>
+  </table>
+
+  <div class="insight" style="margin-top:24px;">
+    The entire subject rests on two reciprocal facts: currents make fields, and changing fields make currents. Maxwell unified them into one theory; the IB gives you the two halves separately. But every motor is a generator waiting to spin, and every generator is a motor waiting to be plugged in. The physics is one thing, seen from two directions.
+  </div>
+
+  <footer>
+    <p>Dwight School London · Department of Natural Sciences · IB Physics</p>
+  </footer>
+</div>
+
+<script>
+function toggle(el) { el.classList.toggle('open'); }
+window.addEventListener('scroll', () => {
+  const d = document.documentElement;
+  document.getElementById('progress').style.width = (d.scrollTop/(d.scrollHeight-d.clientHeight)*100)+'%';
+});
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+</body>
+</html>
