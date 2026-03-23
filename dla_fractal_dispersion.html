@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffusion-Limited Aggregation - Radioactive Particle Dispersion</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        
+        h2 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .theory-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        
+        .equation-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #667eea;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .control-panel {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .control-group {
+            margin: 8px 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        
+        .help-text {
+            margin-top: 3px;
+            color: #6c757d;
+            font-size: 0.8em;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin: 15px auto;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            width: fit-content;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .insight-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .insight-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .dimension-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .dimension-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .plot-container {
+            margin: 30px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            border: 1px solid #dee2e6;
+            font-size: 0.9em;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 8px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diffusion-Limited Aggregation</h1>
+        <div class="subtitle">Modeling Radioactive Particle Dispersion with Fractal Geometry</div>
+        
+        <div class="theory-section">
+            <h3>What is Diffusion-Limited Aggregation (DLA)?</h3>
+            <p>DLA models how particles disperse when they undergo random walks until they encounter a cluster and stick to it. The key parameters that control the fractal structure are:</p>
+            
+            <ul style="margin-left: 30px; margin-top: 10px;">
+                <li><strong>p (Sticking Probability):</strong> When a particle contacts the cluster, it sticks with probability <em>p</em>. Lower <em>p</em> means particles "explore" more before sticking, creating denser clusters (higher D). Higher <em>p</em> creates more branching (lower D, typically D ≈ 1.71).</li>
+                
+                <li><strong>ℓ (Step Size):</strong> The distance a particle moves in each random walk step. Larger ℓ simulates stronger turbulence, creating more ballistic trajectories and affecting the screening effect that produces fractality.</li>
+                
+                <li><strong>N (Number of Particles):</strong> Total particles to add. More particles give better statistical measurement of the fractal dimension D.</li>
+                
+                <li><strong>R₀ (Launch Radius):</strong> Distance from the source where particles begin their random walk. Must be larger than the cluster radius to allow proper diffusion.</li>
+                
+                <li><strong>λ (Decay Constant):</strong> Probability per step that a radioactive particle decays. The survival probability after <em>n</em> steps is e<sup>-λn</sup>. Models real nuclear decay during dispersion. Set to 0 to disable decay, or use small values like 0.0001 for realistic effects.</li>
+            </ul>
+            
+            <p style="margin-top: 15px;">Unlike uniform circular dispersion (D = 2.0), DLA produces clusters with a fractal dimension of approximately <strong>D ≈ 1.71</strong> in 2D, creating the irregular, branching patterns observed in real contamination events like Chernobyl and Fukushima.</p>
+        </div>
+        
+        <div class="theory-section">
+            <h3>The Mathematics</h3>
+            <p>The fractal dimension is measured using the box-counting method:</p>
+            
+            <div class="equation-box">
+                \[D = \lim_{\epsilon \to 0} \frac{\log N(\epsilon)}{\log(1/\epsilon)}\]
+            </div>
+            
+            <p>where N(ε) is the number of boxes of size ε needed to cover the cluster.</p>
+            
+            <p style="margin-top: 15px;">For DLA clusters, the mass scales with radius as:</p>
+            
+            <div class="equation-box">
+                \[M(r) \propto r^D \quad \text{where } D \approx 1.71\]
+            </div>
+            
+            <p>This means particles are distributed much more sparsely than in a filled circle (D = 2), creating the characteristic "feathery" branching structure.</p>
+        </div>
+        
+        <h2>Interactive DLA Simulator</h2>
+        
+        <div class="control-panel">
+            <h3 style="margin-top: 0;">Simulation Parameters</h3>
+            
+            <div class="control-grid">
+                <div class="control-group">
+                    <label>
+                        Sticking Probability (p): <span class="value-display" id="stickProbValue">1.00</span>
+                    </label>
+                    <input type="range" id="stickProbSlider" min="0.1" max="1.0" step="0.05" value="1.0" oninput="updateParams()">
+                    <p class="help-text">Lower → denser clusters</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Step Size (ℓ): <span class="value-display" id="stepSizeValue">2</span>
+                    </label>
+                    <input type="range" id="stepSizeSlider" min="1" max="10" step="1" value="2" oninput="updateParams()">
+                    <p class="help-text">Larger → stronger turbulence</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Particles (N): <span class="value-display" id="numParticlesValue">2000</span>
+                    </label>
+                    <input type="range" id="numParticlesSlider" min="500" max="10000" step="500" value="2000" oninput="updateParams()">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Launch Radius (R₀): <span class="value-display" id="launchRadiusValue">300</span>
+                    </label>
+                    <input type="range" id="launchRadiusSlider" min="200" max="500" step="25" value="300" oninput="updateParams()">
+                    <p class="help-text">Start distance for random walks</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Decay Constant (λ): <span class="value-display" id="decayConstValue">0.00000</span>
+                    </label>
+                    <input type="range" id="decayConstSlider" min="0" max="0.0001" step="0.000001" value="0" oninput="updateParams()">
+                    <p class="help-text">Survival = e<sup>-λn</sup> after n steps</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Speed: <span class="value-display" id="speedValue">10</span>
+                    </label>
+                    <input type="range" id="speedSlider" min="1" max="100" step="1" value="10" oninput="updateParams()">
+                    <p class="help-text">Particles per frame</p>
+                </div>
+            </div>
+            
+            <div class="status-bar" id="statusBar">
+                Ready to simulate. Press Start.
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="dlaCanvas" width="800" height="800"></canvas>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>Source</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffffff;"></div>
+                <span>Cluster</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>Recent</span>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="startSimulation()">Start</button>
+            <button class="btn-secondary" onclick="pauseSimulation()">Pause</button>
+            <button class="btn-danger" onclick="resetSimulation()">Reset</button>
+            <button class="btn-secondary" onclick="calculateDimension()">Calculate Dimension</button>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">Particles in Cluster</div>
+                <div class="stat-value" id="clusterCount">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Particles Added</div>
+                <div class="stat-value" id="addedCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Cluster Radius</div>
+                <div class="stat-value" id="clusterRadius">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Particles Decayed</div>
+                <div class="stat-value" id="decayedCount">0</div>
+            </div>
+        </div>
+        
+        <div class="dimension-display" id="dimensionDisplay" style="display: none;">
+            <h3 style="color: white; margin: 0;">Measured Fractal Dimension</h3>
+            <div class="dimension-value" id="dimensionValue">—</div>
+            <p style="margin: 0; opacity: 0.9;">Theoretical DLA: D ≈ 1.71</p>
+        </div>
+        
+        <div class="plot-container">
+            <div id="radialPlot"></div>
+        </div>
+        
+        <div class="plot-container">
+            <div id="boxCountPlot"></div>
+        </div>
+        
+        <div class="insight-box">
+            <h4>Understanding the Results</h4>
+            <div id="interpretation">
+                <p>Start the simulation to see DLA in action. The cluster will grow as particles stick upon contact.</p>
+                <ul style="margin-left: 30px; margin-top: 10px;">
+                    <li><strong>Branching structure:</strong> Creates the irregular patterns seen in real contamination</li>
+                    <li><strong>Screening effect:</strong> Outer branches "shield" inner regions, creating fractal dimension &lt; 2</li>
+                    <li><strong>Scale invariance:</strong> Pattern looks similar at different magnifications</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="theory-section">
+            <h3>Real-World Applications</h3>
+            <ul style="margin-left: 30px;">
+                <li><strong>Chernobyl (1986):</strong> Atmospheric plume showed fractal clustering with D ≈ 1.7-1.9 due to turbulent mixing and particle aggregation</li>
+                <li><strong>Fukushima (2011):</strong> Ocean dispersion exhibited branching patterns along current boundaries with D ≈ 1.6-1.8</li>
+                <li><strong>Nuclear weapons testing:</strong> Stratospheric fallout created DLA-like patterns as particles aggregated during descent</li>
+                <li><strong>Groundwater contamination:</strong> Flow through heterogeneous porous media produces fractal concentration patterns</li>
+            </ul>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Global variables
+        const canvas = document.getElementById('dlaCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        let cluster = [];
+        let grid = {};
+        let isRunning = false;
+        let animationId = null;
+        
+        // Parameters
+        let stickProb = 1.0;
+        let stepSize = 2;
+        let numParticles = 2000;
+        let launchRadius = 300;
+        let decayConst = 0.0;
+        let speed = 10;
+        
+        // Statistics
+        let particlesAdded = 0;
+        let particlesDecayed = 0;
+        let maxRadius = 0;
+        let recentParticles = [];
+        
+        function updateParams() {
+            stickProb = parseFloat(document.getElementById('stickProbSlider').value);
+            stepSize = parseInt(document.getElementById('stepSizeSlider').value);
+            numParticles = parseInt(document.getElementById('numParticlesSlider').value);
+            launchRadius = parseInt(document.getElementById('launchRadiusSlider').value);
+            decayConst = parseFloat(document.getElementById('decayConstSlider').value);
+            speed = parseInt(document.getElementById('speedSlider').value);
+            
+            document.getElementById('stickProbValue').textContent = stickProb.toFixed(2);
+            document.getElementById('stepSizeValue').textContent = stepSize;
+            document.getElementById('numParticlesValue').textContent = numParticles;
+            document.getElementById('launchRadiusValue').textContent = launchRadius;
+            document.getElementById('decayConstValue').textContent = decayConst.toExponential(2);
+            document.getElementById('speedValue').textContent = speed;
+        }
+        
+        function resetSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            cluster = [{x: centerX, y: centerY}];
+            grid = {};
+            grid[`${centerX},${centerY}`] = true;
+            particlesAdded = 0;
+            particlesDecayed = 0;
+            maxRadius = 0;
+            recentParticles = [];
+            
+            document.getElementById('dimensionDisplay').style.display = 'none';
+            document.getElementById('statusBar').textContent = 'Reset complete. Ready to simulate.';
+            
+            updateStats();
+            drawCluster();
+        }
+        
+        function startSimulation() {
+            if (!isRunning) {
+                isRunning = true;
+                document.getElementById('statusBar').textContent = 'Simulation running...';
+                animate();
+            }
+        }
+        
+        function pauseSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            document.getElementById('statusBar').textContent = 'Simulation paused.';
+        }
+        
+        function animate() {
+            if (!isRunning) return;
+            
+            if (particlesAdded < numParticles) {
+                // Add multiple particles per frame based on speed
+                for (let i = 0; i < speed && particlesAdded < numParticles; i++) {
+                    addParticle();
+                }
+                
+                drawCluster();
+                updateStats();
+                animationId = requestAnimationFrame(animate);
+            } else {
+                isRunning = false;
+                document.getElementById('statusBar').textContent = `Simulation complete! ${cluster.length} particles in cluster, ${particlesDecayed} decayed.`;
+                calculateDimension();
+            }
+        }
+        
+        function addParticle() {
+            // Launch particle from random point on circle at launchRadius
+            const angle = Math.random() * 2 * Math.PI;
+            let x = centerX + launchRadius * Math.cos(angle);
+            let y = centerY + launchRadius * Math.sin(angle);
+            
+            let steps = 0;
+            const maxSteps = 100000;
+            
+            // Random walk until stick or decay or escape
+            while (steps < maxSteps) {
+                steps++;
+                
+                // Random walk
+                const walkAngle = Math.random() * 2 * Math.PI;
+                x += stepSize * Math.cos(walkAngle);
+                y += stepSize * Math.sin(walkAngle);
+                
+                // Check if escaped (too far from origin)
+                const distFromCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                if (distFromCenter > launchRadius + 100) {
+                    // Relaunch
+                    const angle = Math.random() * 2 * Math.PI;
+                    x = centerX + launchRadius * Math.cos(angle);
+                    y = centerY + launchRadius * Math.sin(angle);
+                    steps = 0; // Reset step counter on relaunch
+                    continue;
+                }
+                
+                // Check if adjacent to cluster
+                if (isAdjacentToCluster(x, y)) {
+                    // Sticking probability
+                    if (Math.random() < stickProb) {
+                        // Check for decay at time of sticking based on total steps taken
+                        // Survival probability = e^(-λ*steps)
+                        const survivalProb = Math.exp(-decayConst * steps);
+                        
+                        if (Math.random() < survivalProb) {
+                            // Particle survived and sticks
+                            const roundX = Math.round(x);
+                            const roundY = Math.round(y);
+                            
+                            cluster.push({x: roundX, y: roundY});
+                            grid[`${roundX},${roundY}`] = true;
+                            recentParticles.push({x: roundX, y: roundY, frame: particlesAdded});
+                            
+                            const radius = Math.sqrt(Math.pow(roundX - centerX, 2) + Math.pow(roundY - centerY, 2));
+                            maxRadius = Math.max(maxRadius, radius);
+                            
+                            particlesAdded++;
+                        } else {
+                            // Particle decayed before sticking
+                            particlesDecayed++;
+                            particlesAdded++;
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            // If we hit maxSteps, count as escaped/lost
+            if (steps >= maxSteps) {
+                particlesAdded++;
+            }
+        }
+        
+        function isAdjacentToCluster(x, y) {
+            const checkDist = stepSize + 2;
+            const roundX = Math.round(x);
+            const roundY = Math.round(y);
+            
+            // Check 8 neighbors plus nearby points
+            for (let dx = -checkDist; dx <= checkDist; dx++) {
+                for (let dy = -checkDist; dy <= checkDist; dy++) {
+                    if (grid[`${roundX + dx},${roundY + dy}`]) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= checkDist) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function drawCluster() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw cluster particles
+            cluster.forEach((particle, idx) => {
+                if (idx === 0) {
+                    // Seed particle (source)
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(particle.x - 3, particle.y - 3, 6, 6);
+                } else {
+                    // Check if recently added
+                    const isRecent = recentParticles.some(p => 
+                        p.x === particle.x && p.y === particle.y && 
+                        particlesAdded - p.frame < 50
+                    );
+                    
+                    ctx.fillStyle = isRecent ? '#ffff00' : '#ffffff';
+                    ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+                }
+            });
+            
+            // Draw concentric circles to show scale
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 1;
+            for (let r = 50; r <= 400; r += 50) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('clusterCount').textContent = cluster.length;
+            document.getElementById('addedCount').textContent = particlesAdded;
+            document.getElementById('clusterRadius').textContent = Math.round(maxRadius);
+            document.getElementById('decayedCount').textContent = particlesDecayed;
+            
+            // Update radial distribution plot periodically
+            if (particlesAdded % 100 === 0 && particlesAdded > 0) {
+                updateRadialPlot();
+            }
+        }
+        
+        function updateRadialPlot() {
+            const maxR = 400;
+            const numBins = 40;
+            const binSize = maxR / numBins;
+            const bins = new Array(numBins).fill(0);
+            
+            cluster.forEach(p => {
+                const r = Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2));
+                const binIndex = Math.floor(r / binSize);
+                if (binIndex < numBins) {
+                    bins[binIndex]++;
+                }
+            });
+            
+            // Calculate cumulative mass
+            const r_values = [];
+            const mass_values = [];
+            let cumMass = 0;
+            
+            for (let i = 0; i < numBins; i++) {
+                const r = (i + 0.5) * binSize;
+                cumMass += bins[i];
+                if (r > 5 && cumMass > 0) {
+                    r_values.push(r);
+                    mass_values.push(cumMass);
+                }
+            }
+            
+            const trace = {
+                x: r_values,
+                y: mass_values,
+                mode: 'markers',
+                name: 'Cumulative Mass',
+                marker: { color: '#667eea', size: 6 }
+            };
+            
+            const layout = {
+                title: 'Cumulative Mass vs Radius (M ∝ r^D)',
+                xaxis: { 
+                    title: 'Radius',
+                    type: 'log'
+                },
+                yaxis: { 
+                    title: 'Cumulative Mass (particles)',
+                    type: 'log'
+                },
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('radialPlot', [trace], layout);
+        }
+        
+        function calculateDimension() {
+            if (cluster.length < 100) {
+                alert('Need at least 100 particles to calculate dimension accurately.');
+                return;
+            }
+            
+            document.getElementById('statusBar').textContent = 'Calculating fractal dimension...';
+            
+            // Box-counting method
+            const boxSizes = [4, 8, 12, 16, 24, 32, 48, 64];
+            const boxCounts = [];
+            
+            boxSizes.forEach(boxSize => {
+                const boxes = new Set();
+                
+                cluster.forEach(p => {
+                    const boxX = Math.floor(p.x / boxSize);
+                    const boxY = Math.floor(p.y / boxSize);
+                    boxes.add(`${boxX},${boxY}`);
+                });
+                
+                boxCounts.push(boxes.size);
+            });
+            
+            // Linear regression on log-log plot
+            const logBoxSizes = boxSizes.map(s => Math.log(1/s));
+            const logBoxCounts = boxCounts.map(c => Math.log(c));
+            
+            const n = logBoxSizes.length;
+            const sumX = logBoxSizes.reduce((a, b) => a + b, 0);
+            const sumY = logBoxCounts.reduce((a, b) => a + b, 0);
+            const sumXY = logBoxSizes.reduce((sum, x, i) => sum + x * logBoxCounts[i], 0);
+            const sumX2 = logBoxSizes.reduce((sum, x) => sum + x * x, 0);
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const dimension = slope;
+            
+            // Display result
+            document.getElementById('dimensionDisplay').style.display = 'block';
+            document.getElementById('dimensionValue').textContent = dimension.toFixed(3);
+            
+            // Update interpretation
+            let interpretation = '';
+            if (dimension < 1.5) {
+                interpretation = '<p><strong>Highly linear structure (D < 1.5):</strong> The cluster is very sparse and elongated, similar to contamination along a narrow corridor or river.</p>';
+            } else if (dimension < 1.65) {
+                interpretation = '<p><strong>Sparse DLA structure (D ≈ 1.5-1.65):</strong> Lower sticking probability or larger step sizes created a more open, ballistic-like structure.</p>';
+            } else if (dimension < 1.8) {
+                interpretation = '<p><strong>Classic DLA (D ≈ 1.65-1.80):</strong> This matches the theoretical prediction of D ≈ 1.71 for 2D DLA. The branching fractal pattern represents realistic turbulent atmospheric dispersion.</p>';
+            } else if (dimension < 1.95) {
+                interpretation = '<p><strong>Dense DLA (D ≈ 1.80-1.95):</strong> Higher sticking probability created a more compact cluster, approaching planar dispersion.</p>';
+            } else {
+                interpretation = '<p><strong>Nearly planar (D ≈ 2.0):</strong> The cluster is almost space-filling, like uniform surface contamination with minimal aggregation effects.</p>';
+            }
+            
+            interpretation += `<p style="margin-top: 15px;"><strong>Current parameters:</strong></p>`;
+            interpretation += `<ul style="margin-left: 30px;"><li>Sticking probability: ${stickProb.toFixed(2)}</li><li>Step size: ${stepSize}</li><li>Measured D: ${dimension.toFixed(3)}</li></ul>`;
+            
+            document.getElementById('interpretation').innerHTML = interpretation;
+            document.getElementById('statusBar').textContent = `Fractal dimension calculated: D = ${dimension.toFixed(3)}`;
+            
+            // Create box-counting plot
+            const trace = {
+                x: logBoxSizes,
+                y: logBoxCounts,
+                mode: 'markers+lines',
+                marker: { color: '#667eea', size: 10 },
+                line: { color: '#667eea', width: 2 }
+            };
+            
+            const layout = {
+                title: `Box-Counting Analysis (D = ${dimension.toFixed(3)})`,
+                xaxis: { title: 'log(1/ε)' },
+                yaxis: { title: 'log(N(ε))' },
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('boxCountPlot', [trace], layout);
+            
+            updateRadialPlot();
+        }
+        
+        // Initialize
+        resetSimulation();
+        updateParams();
+        
+        // Handle window resize for responsiveness
+        window.addEventListener('load', function() {
+            MathJax.typesetPromise();
+        });
+    </script>
+</body>
+</html>
