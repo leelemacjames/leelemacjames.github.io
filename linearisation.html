@@ -5,539 +5,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Linearisation — IB Physics</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
-<style>
-:root {
-  --bg: #0d0f14;
-  --surface: #141720;
-  --surface2: #1c2030;
-  --border: #2a2f42;
-  --gold: #c9a84c;
-  --gold-dim: #8a6f30;
-  --amber: #e8b04b;
-  --text: #d4cfc4;
-  --text-dim: #7a7568;
-  --text-bright: #f0ece0;
-  --green: #5a9e6f;
-  --red: #c0503a;
-  --blue: #4a88c0;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 17px;
-  line-height: 1.75;
-  min-height: 100vh;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-}
-
-#progress {
-  position: fixed;
-  top: 0; left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--amber));
-  width: 0%;
-  z-index: 100;
-  transition: width 0.15s;
-}
-
-.container {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 60px 32px 100px;
-  position: relative;
-  z-index: 1;
-}
-
-header {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 32px;
-  margin-bottom: 48px;
-}
-
-header h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 2.6rem;
-  color: var(--text-bright);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 12px;
-}
-
-header .subtitle {
-  font-size: 1.1rem;
-  color: var(--gold);
-  font-style: italic;
-}
-
-header .context {
-  margin-top: 12px;
-  font-size: 0.95rem;
-  color: var(--text-dim);
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  color: var(--amber);
-  margin: 48px 0 20px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.section-title span {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  color: var(--gold-dim);
-  margin-right: 10px;
-}
-
-.qa {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 14px;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.qa:hover { border-color: var(--gold-dim); }
-
-.qa-q {
-  padding: 18px 22px;
-  cursor: pointer;
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  user-select: none;
-}
-
-.qa-q::before {
-  content: 'Q';
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-
-.qa-q .arrow {
-  margin-left: auto;
-  color: var(--text-dim);
-  transition: transform 0.3s;
-  flex-shrink: 0;
-}
-
-.qa.open .qa-q .arrow { transform: rotate(180deg); }
-
-.qa-a {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.45s ease, padding 0.3s ease;
-  padding: 0 22px;
-}
-
-.qa.open .qa-a {
-  max-height: 4000px;
-  padding: 0 22px 24px;
-}
-
-.qa-a p { margin-bottom: 12px; }
-
-.eq {
-  background: var(--surface2);
-  border-left: 3px solid var(--gold);
-  padding: 14px 18px;
-  margin: 16px 0;
-  border-radius: 0 4px 4px 0;
-  font-size: 1.05rem;
-  overflow-x: auto;
-}
-
-.insight {
-  background: rgba(90, 158, 111, 0.1);
-  border-left: 3px solid var(--green);
-  padding: 12px 18px;
-  margin: 16px 0;
-  border-radius: 0 4px 4px 0;
-  font-style: italic;
-  color: var(--text-bright);
-}
-
-.warning {
-  background: rgba(192, 80, 58, 0.1);
-  border-left: 3px solid var(--red);
-  padding: 12px 18px;
-  margin: 16px 0;
-  border-radius: 0 4px 4px 0;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 0.95rem;
-}
-
-th {
-  text-align: left;
-  padding: 10px 14px;
-  border-bottom: 2px solid var(--gold-dim);
-  color: var(--gold);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-footer {
-  margin-top: 60px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  text-align: center;
-}
-
-code {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88em;
-  background: var(--surface2);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-@media (max-width: 600px) {
-  .container { padding: 32px 18px 60px; }
-  header h1 { font-size: 1.8rem; }
-}
-</style>
-</head>
-<body>
-
-<div id="progress"></div>
-
-<div class="container">
-  <header>
-    <h1>Linearisation</h1>
-    <div class="subtitle">Making curved relationships confess their secrets</div>
-    <div class="context">IB Physics SL/HL — Measurement, Data Processing &amp; Experimental Technique</div>
-  </header>
-
-  <!-- §1: Why Linearise? -->
-  <div class="section-title"><span>§1</span> Why Linearise?</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      Why not just draw the curve and be done with it?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>Because a straight line is the only graph you can fully characterise by eye. You can:</p>
-      <p>• Judge whether data fits it (deviations from a straight line are obvious; deviations from a curve are ambiguous).</p>
-      <p>• Read off two numbers — gradient and intercept — that encode the physics.</p>
-      <p>• Estimate uncertainties by drawing max/min lines of best fit.</p>
-      <p>A curve tells you "something is happening". A straight line tells you <em>exactly what</em>.</p>
-      <div class="insight">Linearisation is not a mathematical trick — it is an experimental strategy. You reshape the data so that the physics falls out of the gradient and intercept of \(y = mx + c\).</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      What is the general strategy for linearising a relationship?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>Start with the theoretical equation. Rearrange it into the form:</p>
-      <div class="eq">
-        \(\underbrace{(\text{plot on } y\text{-axis})}_{y} = \underbrace{(\text{physics constant})}_{m} \times \underbrace{(\text{plot on } x\text{-axis})}_{x} + \underbrace{(\text{maybe zero})}_{c}\)
-      </div>
-      <p>The variables you <em>measure</em> appear as \(y\) and \(x\). The constants you want to <em>find</em> appear as \(m\) (gradient) or \(c\) (intercept).</p>
-      <p><strong>The key decision</strong> is what to plot on each axis. You might need to square a variable, take its reciprocal, or take its logarithm — whatever turns the equation into \(y = mx + c\).</p>
-    </div>
-  </div>
-
-  <!-- §2: Power Laws -->
-  <div class="section-title"><span>§2</span> Power Laws: \(y = kx^n\)</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      How do you linearise a power law like \(T = k\ell^{1/2}\) (pendulum period)?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>The pendulum period is \(T = 2\pi\sqrt{\ell/g}\), which has the form \(T \propto \ell^{1/2}\). There are two approaches:</p>
-      <p><strong>Approach 1 — Square it:</strong></p>
-      <div class="eq">
-        \(T^2 = \frac{4\pi^2}{g}\,\ell\)
-      </div>
-      <p>Plot \(T^2\) vs \(\ell\). Gradient \(= 4\pi^2/g\). Intercept \(= 0\).</p>
-      <p><strong>Approach 2 — Log both sides:</strong></p>
-      <div class="eq">
-        \(\ln T = \tfrac{1}{2}\ln\ell + \ln\!\left(\frac{2\pi}{\sqrt{g}}\right)\)
-      </div>
-      <p>Plot \(\ln T\) vs \(\ln\ell\). Gradient \(= \tfrac{1}{2}\) (confirms the power law). Intercept gives \(g\).</p>
-      <div class="insight">Approach 1 is cleaner when you already know the power. Approach 2 is better when you're <em>testing</em> what the power is — the gradient tells you the exponent directly.</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      Intensity follows an inverse-square law: \(I = \frac{P}{4\pi d^2}\). How would you verify this experimentally?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>Rearrange:</p>
-      <div class="eq">
-        \(I = \frac{P}{4\pi}\cdot\frac{1}{d^2}\)
-      </div>
-      <p>Plot \(I\) vs \(1/d^2\). If the law holds, you get a straight line through the origin with gradient \(P/(4\pi)\).</p>
-      <p><strong>Alternatively</strong>, take logs:</p>
-      <div class="eq">
-        \(\ln I = -2\ln d + \ln\!\left(\frac{P}{4\pi}\right)\)
-      </div>
-      <p>Plot \(\ln I\) vs \(\ln d\). Gradient should be \(-2\). If you get \(-1.87\) or \(-2.15\), you've found evidence that the law isn't perfectly inverse-square — perhaps absorption or reflection is at play.</p>
-      <div class="warning">The log-log approach is more powerful here: it tests the exponent rather than assuming it. IB examiners love asking "what would you plot to verify the relationship?" — the answer is nearly always a log-log graph when the power is under investigation.</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      Boyle's Law says \(pV = \text{const}\). What are the linearisation options?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>\(pV = k\) is a power law with exponent \(-1\): \(p = k \cdot V^{-1}\).</p>
-      <p><strong>Option 1:</strong> Plot \(p\) vs \(1/V\). Gradient \(= k = nRT\). Intercept \(= 0\).</p>
-      <p><strong>Option 2:</strong> Plot \(pV\) vs \(V\) (or vs \(p\)). If Boyle's law holds, the graph is a horizontal line at height \(k\). Deviations from horizontal reveal non-ideal behaviour.</p>
-      <p><strong>Option 3:</strong> \(\ln p = -\ln V + \ln k\). Plot \(\ln p\) vs \(\ln V\). Gradient \(= -1\).</p>
-      <div class="insight">Option 2 is under-used but elegant — it amplifies deviations. A curve on a \(p\) vs \(1/V\) graph might look straight; the same data on a \(pV\) vs \(V\) graph will show the wobble clearly.</div>
-    </div>
-  </div>
-
-  <!-- §3: Exponential Relationships -->
-  <div class="section-title"><span>§3</span> Exponential Relationships: \(y = Ae^{kx}\)</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      How do you linearise an exponential decay like \(N = N_0 e^{-\lambda t}\)?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>Take the natural log of both sides:</p>
-      <div class="eq">
-        \(\ln N = \ln N_0 - \lambda t\)
-      </div>
-      <p>This is \(y = c + mx\) with:</p>
-      <table>
-        <tr><th>Role</th><th>Expression</th><th>What it tells you</th></tr>
-        <tr><td>\(y\)</td><td>\(\ln N\)</td><td>Plot this on the vertical axis</td></tr>
-        <tr><td>\(x\)</td><td>\(t\)</td><td>Plot this on the horizontal axis</td></tr>
-        <tr><td>\(m\)</td><td>\(-\lambda\)</td><td>Gradient gives the decay constant</td></tr>
-        <tr><td>\(c\)</td><td>\(\ln N_0\)</td><td>Intercept gives the initial count (after taking \(e^c\))</td></tr>
-      </table>
-      <p>From \(\lambda\), the half-life follows: \(t_{1/2} = \ln 2 / \lambda\).</p>
-      <div class="insight">This is the single most common linearisation in IB Physics. It appears in radioactive decay, capacitor discharge, Beer-Lambert attenuation, and cooling curves. Learn this one cold.</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      A capacitor discharges through a resistor: \(V = V_0 e^{-t/RC}\). How do you extract \(RC\) from experimental data?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>Take logs:</p>
-      <div class="eq">
-        \(\ln V = \ln V_0 - \frac{1}{RC}\,t\)
-      </div>
-      <p>Plot \(\ln V\) vs \(t\). The gradient is \(-1/RC\), so:</p>
-      <div class="eq">
-        \(RC = -\frac{1}{\text{gradient}}\)
-      </div>
-      <p><strong>Worked example:</strong> Your ln-V vs t graph gives a gradient of \(-0.25\) s⁻¹. Then \(RC = 1/0.25 = 4.0\) s. If \(R = 10\) kΩ, then \(C = 4.0/10{,}000 = 400\) μF.</p>
-      <div class="warning">Common mistake: plotting \(\log_{10} V\) instead of \(\ln V\). The gradient becomes \(-1/(RC \cdot \ln 10)\) — an unnecessary factor of 2.303. Stick to natural logs for exponential relationships.</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      What about relationships like \(y = A(1 - e^{-t/\tau})\) — exponential approach to a limit?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>This appears in capacitor charging and terminal velocity. You can't take the log directly because of the \((1 - \cdots)\) structure. Rearrange first:</p>
-      <div class="eq">
-        \(A - y = Ae^{-t/\tau} \implies \ln(A - y) = \ln A - \frac{t}{\tau}\)
-      </div>
-      <p>Plot \(\ln(A - y)\) vs \(t\). Gradient \(= -1/\tau\).</p>
-      <p>For terminal velocity: \(v = v_{\text{term}}(1 - e^{-t/\tau})\), so plot \(\ln(v_{\text{term}} - v)\) vs \(t\). You need to know (or estimate) \(v_{\text{term}}\) first — read it off as the plateau value from the raw \(v\) vs \(t\) graph.</p>
-      <div class="insight">The trick is always: isolate the exponential, <em>then</em> take the log. Don't try to take the log of a sum.</div>
-    </div>
-  </div>
-
-  <!-- §4: The Log-Log and Ln-Linear Toolkit -->
-  <div class="section-title"><span>§4</span> The Two Master Plots</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      When do I use log-log, and when do I use ln-linear?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>This is the single most important decision in linearisation:</p>
-      <table>
-        <tr><th>Relationship</th><th>Plot type</th><th>What gradient gives</th></tr>
-        <tr><td>\(y = kx^n\) (power law)</td><td>\(\ln y\) vs \(\ln x\)</td><td>The exponent \(n\)</td></tr>
-        <tr><td>\(y = Ae^{kx}\) (exponential)</td><td>\(\ln y\) vs \(x\)</td><td>The rate constant \(k\)</td></tr>
-      </table>
-      <p><strong>How to tell them apart from raw data:</strong></p>
-      <p>• If the curve passes through the origin and bends — try a power law (log-log).</p>
-      <p>• If the curve has a non-zero intercept and bends — try an exponential (ln-linear).</p>
-      <p>• If in doubt, try both. Only one will give a straight line.</p>
-      <div class="insight">Log-log says "the variables are related by a power". Ln-linear says "one variable is in the exponent". These are fundamentally different physics — log-log is geometry (\(A \propto r^2\)), ln-linear is process (\(N \propto e^{-\lambda t}\)).</div>
-    </div>
-  </div>
-
-  <!-- §5: Reading Gradients & Intercepts -->
-  <div class="section-title"><span>§5</span> Extracting Physics from the Graph</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      How do you correctly read a gradient and intercept — with units?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>The gradient has units of \([\text{y-axis}] / [\text{x-axis}]\). The intercept has units of \([\text{y-axis}]\).</p>
-      <p><strong>Example:</strong> You plot \(T^2\) (s²) vs \(\ell\) (m) for a pendulum. Gradient has units s²/m. You know gradient \(= 4\pi^2/g\), so:</p>
-      <div class="eq">
-        \(g = \frac{4\pi^2}{\text{gradient}} \quad [\text{m s}^{-2}] \quad \checkmark\)
-      </div>
-      <p><strong>On a log graph:</strong> both axes are dimensionless (you're plotting \(\ln(\text{number})\)), so the gradient is a pure number. But it <em>represents</em> a physical quantity — the exponent, the decay constant, etc. Be explicit about what it means.</p>
-      <div class="warning">IB examiners penalise gradients calculated from data points rather than from the line of best fit. Use two points <strong>on the line</strong>, as far apart as possible. Never use your original data points unless they happen to lie exactly on the line.</div>
-    </div>
-  </div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      How do you handle uncertainties on a linearised graph?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p>The IB method:</p>
-      <p>1. Plot the data with error bars. (For \(\ln y\), the error bar is \(\Delta(\ln y) \approx \Delta y / y\) — from the fractional uncertainty.)</p>
-      <p>2. Draw the <strong>best-fit line</strong> through the error bars.</p>
-      <p>3. Draw the <strong>steepest</strong> and <strong>shallowest</strong> lines that still pass through most error bars.</p>
-      <p>4. The uncertainty in the gradient is:</p>
-      <div class="eq">
-        \(\Delta m = \frac{m_{\max} - m_{\min}}{2}\)
-      </div>
-      <p>5. Propagate this into your final answer. If gradient \(= -\lambda\), then \(\Delta\lambda = |\Delta m|\), and:</p>
-      <div class="eq">
-        \(\Delta t_{1/2} = t_{1/2} \times \frac{\Delta\lambda}{\lambda}\)
-      </div>
-      <div class="insight">Error bars on a \(\ln y\) axis are asymmetric in raw units but symmetric in log units. This is a feature, not a bug — it correctly represents the fact that multiplicative uncertainties become additive after taking logs.</div>
-    </div>
-  </div>
-
-  <!-- §6: Common IB Linearisations -->
-  <div class="section-title"><span>§6</span> The IB Cheat Sheet</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      Can you give me a reference table of the most common IB linearisations?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <table>
-        <tr><th>Physics</th><th>Equation</th><th>Plot</th><th>Gradient</th><th>Intercept</th></tr>
-        <tr><td>Pendulum</td><td>\(T = 2\pi\sqrt{\ell/g}\)</td><td>\(T^2\) vs \(\ell\)</td><td>\(4\pi^2/g\)</td><td>0</td></tr>
-        <tr><td>Radioactive decay</td><td>\(N = N_0 e^{-\lambda t}\)</td><td>\(\ln N\) vs \(t\)</td><td>\(-\lambda\)</td><td>\(\ln N_0\)</td></tr>
-        <tr><td>Capacitor discharge</td><td>\(V = V_0 e^{-t/RC}\)</td><td>\(\ln V\) vs \(t\)</td><td>\(-1/RC\)</td><td>\(\ln V_0\)</td></tr>
-        <tr><td>Inverse square law</td><td>\(I = P/(4\pi d^2)\)</td><td>\(I\) vs \(1/d^2\)</td><td>\(P/(4\pi)\)</td><td>0</td></tr>
-        <tr><td>Boyle's law</td><td>\(pV = \text{const}\)</td><td>\(p\) vs \(1/V\)</td><td>\(nRT\)</td><td>0</td></tr>
-        <tr><td>Stefan-Boltzmann</td><td>\(P = \sigma AT^4\)</td><td>\(\ln P\) vs \(\ln T\)</td><td>4</td><td>\(\ln(\sigma A)\)</td></tr>
-        <tr><td>Kinetic energy</td><td>\(E = \tfrac{1}{2}mv^2\)</td><td>\(E\) vs \(v^2\)</td><td>\(m/2\)</td><td>0</td></tr>
-        <tr><td>Spring constant</td><td>\(T = 2\pi\sqrt{m/k}\)</td><td>\(T^2\) vs \(m\)</td><td>\(4\pi^2/k\)</td><td>0</td></tr>
-        <tr><td>Beer-Lambert</td><td>\(I = I_0 e^{-\mu x}\)</td><td>\(\ln I\) vs \(x\)</td><td>\(-\mu\)</td><td>\(\ln I_0\)</td></tr>
-      </table>
-      <div class="insight">Nine relationships, two strategies: either transform a variable (\(T^2\), \(1/d^2\), \(v^2\)) or take logs. That's the entire toolkit.</div>
-    </div>
-  </div>
-
-  <!-- §7: Pitfalls -->
-  <div class="section-title"><span>§7</span> Common Pitfalls</div>
-
-  <div class="qa" onclick="toggle(this)">
-    <div class="qa-q">
-      What are the mistakes that lose marks?
-      <span class="arrow">▾</span>
-    </div>
-    <div class="qa-a">
-      <p><strong>1. Forgetting to transform the units.</strong> If you plot \(T^2\), the y-axis unit is s², not s. If you plot \(\ln V\), the axis is dimensionless — label it "\(\ln(V/\text{V})\)" or just "\(\ln V\)" with a note.</p>
-      <p><strong>2. Using data points instead of the line.</strong> The gradient comes from the best-fit line, not from \(\Delta y / \Delta x\) between two data points.</p>
-      <p><strong>3. Confusing \(\ln\) and \(\log_{10}\).</strong> For exponentials, use \(\ln\) (base \(e\)). If you use \(\log_{10}\), your gradient is off by a factor of \(\ln 10 \approx 2.303\). The IB expects \(\ln\).</p>
-      <p><strong>4. Not checking the intercept.</strong> If your theory predicts a zero intercept (e.g. \(T^2\) vs \(\ell\)), a non-zero intercept reveals systematic error — perhaps a timing offset or a non-zero effective length at the pivot.</p>
-      <p><strong>5. Plotting \(\ln y\) vs \(\ln x\) when you should plot \(\ln y\) vs \(x\).</strong> The first tests a power law; the second tests an exponential. They are different hypotheses about the physics.</p>
-      <div class="warning">The most devastating mistake is plotting the wrong variables. Before touching a ruler, write down the theoretical equation, identify the form (\(y = mx + c\)), and label your axes. Then plot.</div>
-    </div>
-  </div>
-
-  <!-- Summary -->
-  <div class="section-title"><span>Σ</span> The Method</div>
-
-  <div style="padding: 20px 0;">
-    <p><strong>Step 1.</strong> Write down the theoretical equation.</p>
-    <p><strong>Step 2.</strong> Identify the form: power law (\(y = kx^n\)) or exponential (\(y = Ae^{kx}\)).</p>
-    <p><strong>Step 3.</strong> Transform: square, reciprocal, or \(\ln\) — whatever produces \(y = mx + c\).</p>
-    <p><strong>Step 4.</strong> Calculate your transformed data in a table.</p>
-    <p><strong>Step 5.</strong> Plot with error bars. Draw best-fit, max, and min lines.</p>
-    <p><strong>Step 6.</strong> Read gradient and intercept from the line (not from data points).</p>
-    <p><strong>Step 7.</strong> Extract the physics. State the result with uncertainty and units.</p>
-  </div>
-
-  <div class="insight">
-    Linearisation is the physicist's confession: we only trust straight lines. Everything else — exponentials, power laws, oscillations — must be rewritten until a straight line appears. The line is the interface between theory and measurement.
-  </div>
-
-  <footer>
-    <p>Dwight School London · Department of Natural Sciences · IB Physics</p>
-  </footer>
-</div>
-
 <script>
-function toggle(el) {
-  el.classList.toggle('open');
-}
-
-window.addEventListener('scroll', () => {
-  const doc = document.documentElement;
-  const scrolled = (doc.scrollTop) / (doc.scrollHeight - doc.clientHeight) * 100;
-  document.getElementById('progress').style.width = scrolled + '%';
-});
-
 window.MathJax = {
   tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
   options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
 };
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{--bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--border:#2a2f42;--gold:#c9a84c;--gold-dim:#8a6f30;--amber:#e8b04b;--text:#d4cfc4;--text-dim:#7a7568;--text-bright:#f0ece0;--green:#5a9e6f;--red:#c0503a;--blue:#4a88c0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.75;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.6;}
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--amber));width:0%;z-index:100;transition:width .15s;}
+.container{max-width:820px;margin:0 auto;padding:60px 32px 100px;position:relative;z-index:1;}
+header{border-bottom:1px solid var(--border);padding-bottom:32px;margin-bottom:48px;}
+header h1{font-family:'Playfair Display',serif;font-size:2.6rem;color:var(--text-bright);letter-spacing:-0.02em;line-height:1.15;margin-bottom:12px;}
+header .subtitle{font-size:1.1rem;color:var(--gold);font-style:italic;}
+header .context{margin-top:12px;font-size:0.95rem;color:var(--text-dim);}
+.section-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--amber);margin:48px 0 20px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.section-title span{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--gold-dim);margin-right:10px;}
+.qa{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;overflow:hidden;transition:border-color .3s;}
+.qa:hover{border-color:var(--gold-dim);}
+.qa-q{padding:18px 22px;cursor:pointer;display:flex;align-items:baseline;gap:14px;user-select:none;}
+.qa-q::before{content:'Q';font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem;color:var(--gold);flex-shrink:0;}
+.qa-q .arrow{margin-left:auto;color:var(--text-dim);transition:transform .3s;flex-shrink:0;}
+.qa.open .qa-q .arrow{transform:rotate(180deg);}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .5s ease,padding .3s ease;padding:0 22px;}
+.qa.open .qa-a{max-height:10000px;padding:0 22px 24px;}
+.qa-a p{margin-bottom:12px;}
+.eq{background:var(--surface2);border-left:3px solid var(--gold);padding:14px 18px;margin:16px 0;border-radius:0 4px 4px 0;font-size:1.05rem;overflow-x:auto;}
+.insight{background:rgba(90,158,111,0.1);border-left:3px solid var(--green);padding:12px 18px;margin:16px 0;border-radius:0 4px 4px 0;font-style:italic;color:var(--text-bright);}
+.warning{background:rgba(192,80,58,0.1);border-left:3px solid var(--red);padding:12px 18px;margin:16px 0;border-radius:0 4px 4px 0;}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.95rem;}
+th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--gold-dim);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;}
+td{padding:10px 14px;border-bottom:1px solid var(--border);}
+svg.diagram{display:block;margin:20px auto;max-width:100%;}
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:0.85rem;color:var(--text-dim);text-align:center;}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:var(--surface2);padding:2px 6px;border-radius:3px;}
+@media(max-width:600px){.container{padding:32px 18px 60px;}header h1{font-size:1.8rem;}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="container">
+<header><h1>Linearisation</h1><div class="subtitle">Making curved relationships confess their secrets</div><div class="context">IB Physics SL/HL — Measurement, Data Processing &amp; Experimental Technique</div></header>
+
+<div class="section-title"><span>§1</span> Why Linearise?</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">Why not just draw the curve and be done with it?<span class="arrow">▾</span></div><div class="qa-a"><p>Because a straight line is the only graph you can fully characterise by eye. You can judge whether data fits it, read off two numbers (gradient and intercept) that encode the physics, and estimate uncertainties by drawing max/min lines.</p><p>A curve tells you "something is happening". A straight line tells you <em>exactly what</em>.</p><svg class="diagram" viewBox="0 0 520 180" width="520" height="180"><defs><marker id="ax" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs><text x="115" y="14" text-anchor="middle" fill="var(--gold)" font-size="11" font-family="JetBrains Mono,monospace">RAW DATA: y vs x</text><line x1="30" y1="160" x2="220" y2="160" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#ax)"/><line x1="30" y1="160" x2="30" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#ax)"/><text x="225" y="165" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">x</text><text x="22" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">y</text><path d="M35,155 Q60,148 80,130 Q110,100 140,62 Q165,35 200,28" fill="none" stroke="var(--amber)" stroke-width="2.5"/><circle cx="45" cy="152" r="3" fill="var(--amber)"/><circle cx="70" cy="138" r="3" fill="var(--amber)"/><circle cx="95" cy="118" r="3" fill="var(--amber)"/><circle cx="120" cy="90" r="3" fill="var(--amber)"/><circle cx="150" cy="58" r="3" fill="var(--amber)"/><circle cx="180" cy="35" r="3" fill="var(--amber)"/><text x="115" y="175" text-anchor="middle" fill="var(--red)" font-size="9" font-family="Source Serif 4,serif">Curved — what's the equation?</text><text x="252" y="90" fill="var(--gold)" font-size="22">→</text><text x="252" y="108" text-anchor="middle" fill="var(--gold-dim)" font-size="8" font-family="JetBrains Mono,monospace">transform</text><text x="395" y="14" text-anchor="middle" fill="var(--green)" font-size="11" font-family="JetBrains Mono,monospace">LINEARISED: Y vs X</text><line x1="300" y1="160" x2="500" y2="160" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#ax)"/><line x1="300" y1="160" x2="300" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#ax)"/><text x="505" y="165" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">X</text><text x="292" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">Y</text><line x1="310" y1="145" x2="485" y2="35" stroke="var(--green)" stroke-width="2.5"/><circle cx="320" cy="140" r="3" fill="var(--green)"/><circle cx="345" cy="126" r="3" fill="var(--green)"/><circle cx="375" cy="109" r="3" fill="var(--green)"/><circle cx="410" cy="88" r="3" fill="var(--green)"/><circle cx="445" cy="65" r="3" fill="var(--green)"/><circle cx="475" cy="42" r="3" fill="var(--green)"/><line x1="340" y1="130" x2="440" y2="130" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,3"/><line x1="440" y1="130" x2="440" y2="72" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,3"/><text x="390" y="143" text-anchor="middle" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">Δx</text><text x="452" y="105" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">Δy</text><circle cx="310" cy="145" r="4" fill="var(--red)" opacity="0.7"/><text x="310" y="157" text-anchor="middle" fill="var(--red)" font-size="8" font-family="JetBrains Mono,monospace">intercept c</text><text x="460" y="55" fill="var(--blue)" font-size="9" font-family="Source Serif 4,serif">m = Δy/Δx</text><text x="395" y="175" text-anchor="middle" fill="var(--green)" font-size="9" font-family="Source Serif 4,serif">Straight — gradient = physics!</text></svg><div class="insight">Linearisation is not a mathematical trick — it is an experimental strategy. You reshape the data so that the physics falls out of the gradient and intercept of \(y = mx + c\).</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">What is the general strategy for linearising a relationship?<span class="arrow">▾</span></div><div class="qa-a"><p>Start with the theoretical equation. Rearrange it into the form:</p><div class="eq">\(\underbrace{(\text{plot on } y\text{-axis})}_{y} = \underbrace{(\text{physics constant})}_{m} \times \underbrace{(\text{plot on } x\text{-axis})}_{x} + \underbrace{(\text{maybe zero})}_{c}\)</div><p>The variables you <em>measure</em> appear as \(y\) and \(x\). The constants you want to <em>find</em> appear as \(m\) (gradient) or \(c\) (intercept).</p><p><strong>The key decision</strong> is what to plot on each axis — square, reciprocal, or logarithm — whatever turns the equation into \(y = mx + c\).</p></div></div>
+
+<div class="section-title"><span>§2</span> Power Laws: \(y = kx^n\)</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">How does a log-log plot linearise a power law — and what do gradient and intercept mean?<span class="arrow">▾</span></div><div class="qa-a"><p>Start with \(y = kx^n\). Take the natural log:</p><div class="eq">\(\ln y = n\ln x + \ln k\)</div><p>This is \(Y = mX + c\) with \(Y = \ln y\), \(X = \ln x\), \(m = n\), \(c = \ln k\).</p><svg class="diagram" viewBox="0 0 520 190" width="520" height="190"><defs><marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs><text x="115" y="14" text-anchor="middle" fill="var(--gold)" font-size="10" font-family="JetBrains Mono,monospace">y = kxⁿ (raw data)</text><line x1="30" y1="170" x2="220" y2="170" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a2)"/><line x1="30" y1="170" x2="30" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a2)"/><text x="225" y="174" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">x</text><text x="22" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">y</text><path d="M35,168 C55,165 90,150 120,115 Q155,65 195,28" fill="none" stroke="var(--red)" stroke-width="2"/><text x="198" y="22" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">n=2</text><line x1="35" y1="165" x2="195" y2="55" stroke="var(--amber)" stroke-width="2"/><text x="198" y="52" fill="var(--amber)" font-size="9" font-family="JetBrains Mono,monospace">n=1</text><path d="M35,168 C65,140 100,110 140,88 Q170,72 195,65" fill="none" stroke="var(--blue)" stroke-width="2"/><text x="198" y="62" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">n=½</text><path d="M50,28 Q70,55 90,90 Q120,135 195,158" fill="none" stroke="var(--green)" stroke-width="2"/><text x="198" y="155" fill="var(--green)" font-size="9" font-family="JetBrains Mono,monospace">n=−1</text><text x="255" y="95" fill="var(--gold)" font-size="20">→</text><text x="256" y="112" text-anchor="middle" fill="var(--gold-dim)" font-size="8" font-family="JetBrains Mono,monospace">take ln</text><text x="395" y="14" text-anchor="middle" fill="var(--gold)" font-size="10" font-family="JetBrains Mono,monospace">ln y vs ln x (linearised)</text><line x1="300" y1="170" x2="500" y2="170" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a2)"/><line x1="300" y1="170" x2="300" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a2)"/><text x="505" y="174" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">ln x</text><text x="290" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">ln y</text><line x1="320" y1="158" x2="470" y2="28" stroke="var(--red)" stroke-width="2"/><text x="478" y="28" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">m=2</text><line x1="320" y1="140" x2="470" y2="60" stroke="var(--amber)" stroke-width="2"/><text x="478" y="58" fill="var(--amber)" font-size="9" font-family="JetBrains Mono,monospace">m=1</text><line x1="320" y1="130" x2="470" y2="90" stroke="var(--blue)" stroke-width="2"/><text x="478" y="88" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">m=½</text><line x1="320" y1="60" x2="470" y2="148" stroke="var(--green)" stroke-width="2"/><text x="478" y="148" fill="var(--green)" font-size="9" font-family="JetBrains Mono,monospace">m=−1</text><text x="308" y="185" text-anchor="middle" fill="var(--text-dim)" font-size="8" font-family="JetBrains Mono,monospace">intercepts = ln k</text><text x="420" y="185" text-anchor="middle" fill="var(--text-dim)" font-size="8" font-family="JetBrains Mono,monospace">gradient = n (the power)</text></svg><p><strong>The gradient gives you the exponent \(n\) directly.</strong> Gradient of 2 → \(y \propto x^2\). Gradient of \(-1\) → \(y \propto 1/x\). Gradient of ½ → \(y \propto \sqrt{x}\).</p><p><strong>The \(y\)-intercept gives \(\ln k\)</strong>, so \(k = e^{\text{intercept}}\).</p><div class="insight">Every power law becomes a straight line on a log-log plot. The exponent — hidden in the curvature — appears directly as the gradient. This is why log-log paper exists.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">How do you linearise a pendulum: \(T = 2\pi\sqrt{\ell/g}\)?<span class="arrow">▾</span></div><div class="qa-a"><p><strong>Approach 1 — Square it</strong> (known power):</p><div class="eq">\(T^2 = \dfrac{4\pi^2}{g}\,\ell\)</div><p>Plot \(T^2\) vs \(\ell\). Gradient \(= 4\pi^2/g\). Intercept \(= 0\).</p><p><strong>Approach 2 — Log both sides</strong> (testing the power):</p><div class="eq">\(\ln T = \tfrac{1}{2}\ln\ell + \ln\!\left(\dfrac{2\pi}{\sqrt{g}}\right)\)</div><p>Plot \(\ln T\) vs \(\ln\ell\). Gradient \(= \tfrac{1}{2}\). Intercept gives \(g\).</p><div class="insight">Approach 1 is cleaner when you know the power. Approach 2 is better when you're <em>testing</em> what the power is.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">Intensity follows \(I = P/(4\pi d^2)\). How would you verify the inverse-square law?<span class="arrow">▾</span></div><div class="qa-a"><p><strong>Direct:</strong> Plot \(I\) vs \(1/d^2\). Straight line through origin, gradient \(= P/(4\pi)\).</p><p><strong>Log-log:</strong> \(\ln I = -2\ln d + \ln(P/4\pi)\). Plot \(\ln I\) vs \(\ln d\). Gradient should be \(-2\).</p><div class="warning">Log-log tests the exponent rather than assuming it. If you get \(-1.87\) instead of \(-2\), you've discovered something — absorption, reflection, or a different law.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">Boyle's Law: \(pV = \text{const}\). Linearisation options?<span class="arrow">▾</span></div><div class="qa-a"><p><strong>Option 1:</strong> Plot \(p\) vs \(1/V\). Gradient \(= nRT\). Intercept \(= 0\).</p><p><strong>Option 2:</strong> Plot \(pV\) vs \(V\). Horizontal line → Boyle's law holds. Deviations are amplified.</p><p><strong>Option 3:</strong> \(\ln p = -\ln V + \ln k\). Plot \(\ln p\) vs \(\ln V\). Gradient \(= -1\).</p><div class="insight">Option 2 is under-used but elegant — a curve on \(p\) vs \(1/V\) might look straight; the same data on \(pV\) vs \(V\) shows the wobble clearly.</div></div></div>
+
+<div class="section-title"><span>§3</span> Exponential Relationships: \(y = Ae^{kx}\)</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">How does an ln-linear plot linearise an exponential — and what do gradient and intercept mean?<span class="arrow">▾</span></div><div class="qa-a"><p>Start with \(N = N_0 e^{-\lambda t}\). Take the natural log:</p><div class="eq">\(\ln N = -\lambda t + \ln N_0\)</div><svg class="diagram" viewBox="0 0 520 190" width="520" height="190"><defs><marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs><text x="115" y="14" text-anchor="middle" fill="var(--gold)" font-size="10" font-family="JetBrains Mono,monospace">N vs t (raw decay)</text><line x1="30" y1="170" x2="220" y2="170" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a3)"/><line x1="30" y1="170" x2="30" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a3)"/><text x="225" y="174" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">t</text><text x="22" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">N</text><path d="M35,32 Q55,42 75,65 Q100,100 130,130 Q160,150 200,160" fill="none" stroke="var(--amber)" stroke-width="2.5"/><circle cx="40" cy="35" r="3" fill="var(--amber)"/><circle cx="65" cy="55" r="3" fill="var(--amber)"/><circle cx="90" cy="85" r="3" fill="var(--amber)"/><circle cx="115" cy="115" r="3" fill="var(--amber)"/><circle cx="145" cy="140" r="3" fill="var(--amber)"/><circle cx="180" cy="156" r="3" fill="var(--amber)"/><line x1="28" y1="32" x2="40" y2="32" stroke="var(--red)" stroke-width="1" stroke-dasharray="3,2"/><text x="18" y="36" fill="var(--red)" font-size="8" font-family="JetBrains Mono,monospace">N₀</text><text x="115" y="185" text-anchor="middle" fill="var(--red)" font-size="9" font-family="Source Serif 4,serif">Curved — hard to read λ</text><text x="252" y="95" fill="var(--gold)" font-size="20">→</text><text x="256" y="112" text-anchor="middle" fill="var(--gold-dim)" font-size="8" font-family="JetBrains Mono,monospace">take ln</text><text x="395" y="14" text-anchor="middle" fill="var(--green)" font-size="10" font-family="JetBrains Mono,monospace">ln N vs t (linearised)</text><line x1="300" y1="170" x2="500" y2="170" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a3)"/><line x1="300" y1="170" x2="300" y2="22" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a3)"/><text x="505" y="174" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">t</text><text x="290" y="20" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">ln N</text><line x1="315" y1="40" x2="480" y2="155" stroke="var(--green)" stroke-width="2.5"/><circle cx="320" cy="43" r="3" fill="var(--green)"/><circle cx="350" cy="62" r="3" fill="var(--green)"/><circle cx="380" cy="82" r="3" fill="var(--green)"/><circle cx="410" cy="102" r="3" fill="var(--green)"/><circle cx="440" cy="123" r="3" fill="var(--green)"/><circle cx="470" cy="147" r="3" fill="var(--green)"/><line x1="345" y1="58" x2="445" y2="58" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,3"/><line x1="445" y1="58" x2="445" y2="126" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,3"/><text x="395" y="52" text-anchor="middle" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">Δt</text><text x="457" y="95" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">Δ(ln N)</text><circle cx="315" cy="40" r="4" fill="var(--red)" opacity="0.7"/><text x="330" y="34" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">ln N₀</text><text x="395" y="185" text-anchor="middle" fill="var(--green)" font-size="9" font-family="Source Serif 4,serif">gradient = −λ (decay constant)</text></svg><table><tr><th>Role</th><th>Expression</th><th>What it tells you</th></tr><tr><td>\(y\)</td><td>\(\ln N\)</td><td>Plot on vertical axis</td></tr><tr><td>\(x\)</td><td>\(t\)</td><td>Plot on horizontal axis</td></tr><tr><td>\(m\)</td><td>\(-\lambda\)</td><td>Gradient → decay constant</td></tr><tr><td>\(c\)</td><td>\(\ln N_0\)</td><td>Intercept → initial count (\(N_0 = e^c\))</td></tr></table><p>From \(\lambda\): \(t_{1/2} = \ln 2 / \lambda\).</p><div class="insight">This is the single most common IB linearisation. It appears in radioactive decay, capacitor discharge, Beer-Lambert attenuation, and cooling curves.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">Capacitor discharge: \(V = V_0 e^{-t/RC}\). How to extract \(RC\)?<span class="arrow">▾</span></div><div class="qa-a"><div class="eq">\(\ln V = \ln V_0 - \dfrac{1}{RC}\,t\)</div><p>Plot \(\ln V\) vs \(t\). Gradient \(= -1/RC\), so \(RC = -1/\text{gradient}\).</p><p><strong>Example:</strong> gradient \(= -0.25\) s⁻¹ → \(RC = 4.0\) s. If \(R = 10\) kΩ → \(C = 400\) μF.</p><div class="warning">Using \(\log_{10}\) instead of \(\ln\) makes the gradient off by a factor of 2.303. Stick to natural logs.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">\(y = A(1 - e^{-t/\tau})\) — exponential approach to a limit?<span class="arrow">▾</span></div><div class="qa-a"><p>Rearrange first: \(A - y = Ae^{-t/\tau}\), then:</p><div class="eq">\(\ln(A - y) = \ln A - t/\tau\)</div><p>Plot \(\ln(A - y)\) vs \(t\). Gradient \(= -1/\tau\).</p><div class="insight">Isolate the exponential, <em>then</em> take the log. Don't try to take the log of a sum.</div></div></div>
+
+<div class="section-title"><span>§4</span> The Two Master Plots</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">When do I use log-log, and when do I use ln-linear?<span class="arrow">▾</span></div><div class="qa-a"><svg class="diagram" viewBox="0 0 520 200" width="520" height="200"><defs><marker id="a4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs><rect x="10" y="5" width="240" height="190" rx="6" fill="none" stroke="var(--gold-dim)" stroke-width="1" stroke-dasharray="6,3"/><text x="130" y="22" text-anchor="middle" fill="var(--gold)" font-size="11" font-family="JetBrains Mono,monospace">LOG-LOG</text><text x="130" y="36" text-anchor="middle" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif">for power laws: y = kxⁿ</text><line x1="40" y1="175" x2="230" y2="175" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a4)"/><line x1="40" y1="175" x2="40" y2="45" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a4)"/><text x="235" y="179" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif" font-style="italic">ln x</text><text x="32" y="42" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif" font-style="italic">ln y</text><line x1="55" y1="160" x2="210" y2="60" stroke="var(--green)" stroke-width="2.5"/><circle cx="55" cy="160" r="3" fill="var(--green)"/><circle cx="95" cy="136" r="3" fill="var(--green)"/><circle cx="135" cy="112" r="3" fill="var(--green)"/><circle cx="175" cy="84" r="3" fill="var(--green)"/><circle cx="210" cy="60" r="3" fill="var(--green)"/><text x="175" y="55" fill="var(--amber)" font-size="10" font-family="JetBrains Mono,monospace">gradient = n</text><text x="55" y="170" fill="var(--red)" font-size="12">●</text><text x="60" y="185" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">intercept = ln k</text><rect x="270" y="5" width="240" height="190" rx="6" fill="none" stroke="var(--gold-dim)" stroke-width="1" stroke-dasharray="6,3"/><text x="390" y="22" text-anchor="middle" fill="var(--gold)" font-size="11" font-family="JetBrains Mono,monospace">LN-LINEAR</text><text x="390" y="36" text-anchor="middle" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif">for exponentials: y = Ae^(kx)</text><line x1="300" y1="175" x2="490" y2="175" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a4)"/><line x1="300" y1="175" x2="300" y2="45" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a4)"/><text x="495" y="179" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif" font-style="italic">x</text><text x="290" y="42" fill="var(--text-dim)" font-size="9" font-family="Source Serif 4,serif" font-style="italic">ln y</text><line x1="315" y1="60" x2="475" y2="162" stroke="var(--green)" stroke-width="2.5"/><circle cx="315" cy="60" r="3" fill="var(--green)"/><circle cx="355" cy="86" r="3" fill="var(--green)"/><circle cx="395" cy="112" r="3" fill="var(--green)"/><circle cx="435" cy="138" r="3" fill="var(--green)"/><circle cx="475" cy="162" r="3" fill="var(--green)"/><text x="420" y="55" fill="var(--amber)" font-size="10" font-family="JetBrains Mono,monospace">gradient = k</text><text x="315" y="70" fill="var(--red)" font-size="12">●</text><text x="320" y="185" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">intercept = ln A</text></svg><table><tr><th>Relationship</th><th>Plot type</th><th>What gradient gives</th></tr><tr><td>\(y = kx^n\) (power law)</td><td>\(\ln y\) vs \(\ln x\)</td><td>The exponent \(n\)</td></tr><tr><td>\(y = Ae^{kx}\) (exponential)</td><td>\(\ln y\) vs \(x\)</td><td>The rate constant \(k\)</td></tr></table><p><strong>How to tell them apart:</strong> Curve through origin → power law (log-log). Non-zero intercept and bends → exponential (ln-linear). In doubt? Try both — only one gives a straight line.</p><div class="insight">Log-log says "related by a power" (geometry). Ln-linear says "one variable is in the exponent" (process). Fundamentally different physics.</div></div></div>
+
+<div class="section-title"><span>§5</span> Extracting Physics from the Graph</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">How do you correctly read a gradient and intercept — with units?<span class="arrow">▾</span></div><div class="qa-a"><p>Gradient units: \([\text{y-axis}] / [\text{x-axis}]\). Intercept units: \([\text{y-axis}]\).</p><p><strong>Example:</strong> \(T^2\) (s²) vs \(\ell\) (m). Gradient = s²/m. Gradient \(= 4\pi^2/g\), so:</p><div class="eq">\(g = 4\pi^2/\text{gradient} \quad [\text{m s}^{-2}]\)</div><p>On a log graph: axes are dimensionless, gradient is a pure number (the exponent or rate constant).</p><div class="warning">IB examiners penalise gradients from data points rather than from the line. Use two points <strong>on the line</strong>, far apart.</div></div></div>
+
+<div class="qa" onclick="toggle(this)"><div class="qa-q">How do you handle uncertainties on a linearised graph?<span class="arrow">▾</span></div><div class="qa-a"><svg class="diagram" viewBox="0 0 340 200" width="340" height="200"><defs><marker id="a5" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="var(--text-dim)"/></marker></defs><line x1="40" y1="180" x2="320" y2="180" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a5)"/><line x1="40" y1="180" x2="40" y2="15" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#a5)"/><text x="325" y="184" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">X</text><text x="32" y="12" fill="var(--text-dim)" font-size="10" font-family="Source Serif 4,serif" font-style="italic">Y</text><line x1="80" y1="145" x2="80" y2="165" stroke="var(--text-dim)" stroke-width="1"/><circle cx="80" cy="155" r="3" fill="var(--amber)"/><line x1="120" y1="120" x2="120" y2="140" stroke="var(--text-dim)" stroke-width="1"/><circle cx="120" cy="128" r="3" fill="var(--amber)"/><line x1="160" y1="95" x2="160" y2="115" stroke="var(--text-dim)" stroke-width="1"/><circle cx="160" cy="107" r="3" fill="var(--amber)"/><line x1="200" y1="72" x2="200" y2="92" stroke="var(--text-dim)" stroke-width="1"/><circle cx="200" cy="80" r="3" fill="var(--amber)"/><line x1="240" y1="48" x2="240" y2="68" stroke="var(--text-dim)" stroke-width="1"/><circle cx="240" cy="60" r="3" fill="var(--amber)"/><line x1="280" y1="28" x2="280" y2="48" stroke="var(--text-dim)" stroke-width="1"/><circle cx="280" cy="36" r="3" fill="var(--amber)"/><line x1="65" y1="165" x2="290" y2="30" stroke="var(--green)" stroke-width="2.5"/><text x="295" y="28" fill="var(--green)" font-size="9" font-family="JetBrains Mono,monospace">best fit</text><line x1="65" y1="170" x2="290" y2="22" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="6,3"/><text x="295" y="18" fill="var(--red)" font-size="9" font-family="JetBrains Mono,monospace">m_max</text><line x1="65" y1="160" x2="290" y2="42" stroke="var(--blue)" stroke-width="1.5" stroke-dasharray="6,3"/><text x="295" y="45" fill="var(--blue)" font-size="9" font-family="JetBrains Mono,monospace">m_min</text></svg><p>1. Plot data with error bars. (For \(\ln y\): error bar \(\approx \Delta y / y\).)</p><p>2. Draw best-fit, steepest, and shallowest lines through the error bars.</p><p>3. Uncertainty in gradient:</p><div class="eq">\(\Delta m = (m_{\max} - m_{\min})/2\)</div><p>4. Propagate: if gradient \(= -\lambda\), then \(\Delta\lambda = |\Delta m|\) and \(\Delta t_{1/2} = t_{1/2} \times \Delta\lambda/\lambda\).</p><div class="insight">Error bars on \(\ln y\) are asymmetric in raw units but symmetric in log units — multiplicative uncertainties become additive after taking logs.</div></div></div>
+
+<div class="section-title"><span>§6</span> The IB Cheat Sheet</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">Reference table: the most common IB linearisations<span class="arrow">▾</span></div><div class="qa-a"><table><tr><th>Physics</th><th>Equation</th><th>Plot</th><th>Gradient</th><th>Intercept</th></tr><tr><td>Pendulum</td><td>\(T = 2\pi\sqrt{\ell/g}\)</td><td>\(T^2\) vs \(\ell\)</td><td>\(4\pi^2/g\)</td><td>0</td></tr><tr><td>Radioactive decay</td><td>\(N = N_0 e^{-\lambda t}\)</td><td>\(\ln N\) vs \(t\)</td><td>\(-\lambda\)</td><td>\(\ln N_0\)</td></tr><tr><td>Capacitor discharge</td><td>\(V = V_0 e^{-t/RC}\)</td><td>\(\ln V\) vs \(t\)</td><td>\(-1/RC\)</td><td>\(\ln V_0\)</td></tr><tr><td>Inverse square</td><td>\(I = P/(4\pi d^2)\)</td><td>\(I\) vs \(1/d^2\)</td><td>\(P/(4\pi)\)</td><td>0</td></tr><tr><td>Boyle's law</td><td>\(pV = k\)</td><td>\(p\) vs \(1/V\)</td><td>\(nRT\)</td><td>0</td></tr><tr><td>Stefan-Boltzmann</td><td>\(P = \sigma AT^4\)</td><td>\(\ln P\) vs \(\ln T\)</td><td>4</td><td>\(\ln(\sigma A)\)</td></tr><tr><td>Kinetic energy</td><td>\(E = \tfrac{1}{2}mv^2\)</td><td>\(E\) vs \(v^2\)</td><td>\(m/2\)</td><td>0</td></tr><tr><td>Spring constant</td><td>\(T = 2\pi\sqrt{m/k}\)</td><td>\(T^2\) vs \(m\)</td><td>\(4\pi^2/k\)</td><td>0</td></tr><tr><td>Beer-Lambert</td><td>\(I = I_0 e^{-\mu x}\)</td><td>\(\ln I\) vs \(x\)</td><td>\(-\mu\)</td><td>\(\ln I_0\)</td></tr></table><div class="insight">Nine relationships, two strategies: transform a variable or take logs. That's the entire toolkit.</div></div></div>
+
+<div class="section-title"><span>§7</span> Common Pitfalls</div>
+<div class="qa" onclick="toggle(this)"><div class="qa-q">What are the mistakes that lose marks?<span class="arrow">▾</span></div><div class="qa-a"><p><strong>1. Forgetting to transform units.</strong> \(T^2\) axis is s², not s. \(\ln V\) axis is dimensionless.</p><p><strong>2. Using data points instead of the line.</strong> Gradient from the best-fit line, not from raw data.</p><p><strong>3. Confusing \(\ln\) and \(\log_{10}\).</strong> For exponentials use \(\ln\). Using \(\log_{10}\) gives gradient off by 2.303.</p><p><strong>4. Not checking the intercept.</strong> Zero-intercept theory + non-zero intercept data = systematic error.</p><p><strong>5. Wrong plot type.</strong> \(\ln y\) vs \(\ln x\) tests a power law. \(\ln y\) vs \(x\) tests an exponential. Different hypotheses.</p><div class="warning">The most devastating mistake is plotting the wrong variables. Write the equation, identify \(y = mx + c\), label axes. Then plot.</div></div></div>
+
+<div class="section-title"><span>Σ</span> The Method</div>
+<div style="padding:20px 0;"><p><strong>Step 1.</strong> Write down the theoretical equation.</p><p><strong>Step 2.</strong> Identify: power law (\(y = kx^n\)) or exponential (\(y = Ae^{kx}\))?</p><p><strong>Step 3.</strong> Transform: square, reciprocal, or \(\ln\) — whatever produces \(y = mx + c\).</p><p><strong>Step 4.</strong> Calculate transformed data in a table.</p><p><strong>Step 5.</strong> Plot with error bars. Draw best-fit, max, and min lines.</p><p><strong>Step 6.</strong> Read gradient and intercept from the line.</p><p><strong>Step 7.</strong> Extract the physics. State result with uncertainty and units.</p></div>
+
+<div class="insight">Linearisation is the physicist's confession: we only trust straight lines. Everything else — exponentials, power laws, oscillations — must be rewritten until a straight line appears. The line is the interface between theory and measurement.</div>
+
+<footer><p>Dwight School London · Department of Natural Sciences · IB Physics</p></footer>
+</div>
+<script>
+function toggle(el){el.classList.toggle('open');}
+window.addEventListener('scroll',()=>{const d=document.documentElement;document.getElementById('progress').style.width=(d.scrollTop/(d.scrollHeight-d.clientHeight)*100)+'%';});
+</script>
 </body>
 </html>
+
