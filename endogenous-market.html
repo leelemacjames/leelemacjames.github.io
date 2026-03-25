@@ -70,13 +70,13 @@ canvas{width:100%;border-radius:6px;background:rgba(0,0,0,0.25);border:1px solid
 <div class="prose">
 <h2>The Model</h2>
 <p>
-  This simulation constructs a market from first principles. There is no exogenous price feed that agents passively observe, but instead, <strong>price is set by aggregate demand</strong>. Each agent holds a belief about an asset's fundamental value, computes a desired portfolio weight via the Markowitz formula, and submits demand. The market-clearing mechanism aggregates all demand and reprices the asset accordingly.
+  This simulation constructs a market from first principles. There is no exogenous price feed that agents passively observe — instead, <strong>price is set by aggregate demand</strong>. Each agent holds a belief about an asset's fundamental value, computes a desired portfolio weight via the Markowitz formula, and submits demand. The market-clearing mechanism aggregates all demand and reprices the asset accordingly.
 </p>
 <p>
-  Two classes of agent populate the network. <strong>Fundamental agents</strong> receive noisy signals about the asset's true value (anchored to real FTSE100 price data) and update their beliefs via Bayes' or Jeffrey's rule, sharing evidence with their network neighbours. <strong>Technical agents</strong> receive no exogenous signal, rather they update beliefs solely from the observed market price and its recent history (a moving average crossover). They are the degenerate case: no independent evidence, only endogenous feedback.
+  Two classes of agent populate the network. <strong>Fundamental agents</strong> receive noisy signals about the asset's true value (anchored to real SPY price data) and update their beliefs via Bayes' or Jeffrey's rule, sharing evidence with their network neighbours. <strong>Technical agents</strong> receive no exogenous signal — they update beliefs solely from the observed market price and its recent history (a moving average crossover). They are the degenerate case: no independent evidence, only endogenous feedback.
 </p>
 <p>
-  The real FTSE 100 daily closes (Aug 2008 - Jul 2023, covering the financial crisis, recovery, Brexit, COVID, and post-COVID) serve as the <span class="em">fundamental value trajectory</span> — the ground truth that fundamental agents can (noisily) observe but technical agents cannot. The market price that results from the agents' collective demand may deviate from this fundamental value. The gap between the two is the <span class="em">mispricing</span> being the measurable cost of network structure, trust dynamics, and the proportion of technical traders.
+  The real FTSE 100 daily closes (Aug 2008 - Jul 2023, covering the financial crisis, recovery, Brexit, COVID, and post-COVID) serve as the <span class="em">fundamental value trajectory</span> — the ground truth that fundamental agents can (noisily) observe but technical agents cannot. The market price that results from the agents' collective demand may deviate from this fundamental value. The gap between the two is the <span class="em">mispricing</span> — the measurable cost of network structure, trust dynamics, and the proportion of technical traders.
 </p>
 
 <h2>The Simulation</h2>
@@ -140,6 +140,7 @@ canvas{width:100%;border-radius:6px;background:rgba(0,0,0,0.25);border:1px solid
     <button class="btn btn-gold" onclick="runMarket()">Run Market</button>
     <button class="btn btn-gold" onclick="runMonteCarlo()" style="background:var(--blue)">Monte Carlo (20 runs)</button>
     <button class="btn btn-outline" onclick="runComparison()">Compare: 0% vs 50% vs 100% Technical</button>
+    <button class="btn btn-outline" onclick="downloadPaperFigure()" style="border-color:var(--blue);color:var(--blue)">Download paper figure</button>
   </div>
 </div>
 
@@ -174,7 +175,7 @@ canvas{width:100%;border-radius:6px;background:rgba(0,0,0,0.25);border:1px solid
 
 <div class="guide">
   <div class="gt">Reading the price chart</div>
-  <p><strong>Green line</strong>: the real FTSE 100 daily close is the asset's fundamental value. <strong>Gold line</strong>: the price generated endogenously by agent demand. The <strong>shaded red area</strong> between them is mispricing. In a well-functioning market (fundamental agents, good topology, low noise), the gold line hugs the green. As technical trader proportion rises or trust degrades, the gold line diverges and sometimes permanently.</p>
+  <p><strong>Green line</strong>: the real FTSE 100 daily close — the asset's fundamental value. <strong>Gold line</strong>: the price generated endogenously by agent demand. The <strong>shaded red area</strong> between them is mispricing. In a well-functioning market (fundamental agents, good topology, low noise), the gold line hugs the green. As technical trader proportion rises or trust degrades, the gold line diverges — sometimes permanently.</p>
 </div>
 
 <div class="chart-panel">
@@ -192,14 +193,14 @@ canvas{width:100%;border-radius:6px;background:rgba(0,0,0,0.25);border:1px solid
 
 <div class="guide">
   <div class="gt">Reading the belief chart</div>
-  <p><strong>Blue line</strong>: mean belief of fundamental agents which should track the green (truth). <strong>Red line</strong>: mean belief of technical agents which tracks price, not value. The <strong>shaded band</strong> is ±1 standard deviation across all agents. When the band is wide, agents disagree and the network has not reached consensus. When blue and red diverge, the two agent classes are in conflict, and the market price is a weighted average of irreconcilable views which we call the phantom portfolio.</p>
+  <p><strong>Blue line</strong>: mean belief of fundamental agents — should track the green (truth). <strong>Red line</strong>: mean belief of technical agents — tracks price, not value. The <strong>shaded band</strong> is ±1 standard deviation across all agents. When the band is wide, agents disagree — the network has not reached consensus. When blue and red diverge, the two agent classes are in conflict, and the market price is a weighted average of irreconcilable views — the phantom portfolio from the paper.</p>
 </div>
 
 <!-- Comparison section -->
 <div id="comparisonSection" style="display:none;margin:32px 0">
   <div class="chart-panel">
     <div class="chart-title">Agent Mix Comparison</div>
-    <div class="chart-sub">Same topology, same parameters as only technical trader proportion varies</div>
+    <div class="chart-sub">Same topology, same parameters — only technical trader proportion varies</div>
     <canvas id="compCanvas" width="700" height="340"></canvas>
   </div>
   <div class="legend-row" style="margin-bottom:10px">
@@ -224,7 +225,8 @@ canvas{width:100%;border-radius:6px;background:rgba(0,0,0,0.25);border:1px solid
 
 <script>
 // ═══════════════════════════════════════════
-// DATA — bundled FTSE 100 (^FTSE) 
+// DATA — bundled FTSE 100 (^FTSE) (504 trading days)
+// Upload your own CSV via drag-and-drop to replace
 // ═══════════════════════════════════════════
 let fundamentalData = null;
 
@@ -236,7 +238,7 @@ function loadBundledData() {
     close: c
   }));
   document.getElementById('status').textContent =
-    `Loaded bundled data: ${fundamentalData.length} trading days (FTSE 100 (^FTSE), ${BUNDLED_DATA.dates[0]} to ${BUNDLED_DATA.dates[BUNDLED_DATA.dates.length-1]}).`;
+    `Loaded bundled data: ${fundamentalData.length} trading days (FTSE 100 (^FTSE), ${BUNDLED_DATA.dates[0]} to ${BUNDLED_DATA.dates[BUNDLED_DATA.dates.length-1]}). Drag-and-drop a CSV to use your own data.`;
   return fundamentalData;
 }
 
@@ -742,6 +744,8 @@ async function runMarket() {
   const network = generateNetwork(type, n);
   const history = runMarketSim(network, data, pctTech, updateRule, lambda, eta, sigNoise, nDays);
 
+  window.lastMarketHistory = history;
+
   drawPriceChart(document.getElementById('priceCanvas'), history);
   drawMispricingChart(document.getElementById('mispricingCanvas'), history);
   drawBeliefChart(document.getElementById('beliefCanvas'), history);
@@ -1038,6 +1042,193 @@ function drawPriceChartMC(canvas, history, allPrices) {
 // Auto-init
 window.addEventListener('load', () => { setupCSVDrop(); setTimeout(runMarket, 300); });
 window.addEventListener('resize', () => { if(fundamentalData) runMarket(); });
+
+function getActiveConfigSummary() {
+  const type = document.getElementById('topology').value;
+  const n = parseInt(document.getElementById('nAgents').value, 10);
+  const pctTech = parseInt(document.getElementById('pctTech').value, 10);
+  const updateRule = document.getElementById('updateRule').value;
+  const lambda = parseFloat(document.getElementById('lambda').value);
+  const eta = parseFloat(document.getElementById('eta').value);
+  const sigNoise = parseFloat(document.getElementById('sigNoise').value);
+  const nDays = parseInt(document.getElementById('nDays').value, 10);
+
+  const trustLabel =
+    updateRule === 'bayes' ? 'Bayes' :
+    updateRule === 'jeffrey' ? 'Jeffrey m=1' :
+    'Jeffrey m=2';
+
+  const topoLabel =
+    type === 'complete' ? 'Complete' :
+    type === 'cycle' ? 'Cycle' :
+    type === 'star' ? 'Star' :
+    'Barabási-Albert';
+
+  return { type, topoLabel, n, pctTech, trustLabel, lambda, eta, sigNoise, nDays };
+}
+
+function drawPaperPriceChart(canvas, history) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { l: 84, r: 28, t: 58, b: 68 };
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  const steps = history.price.length;
+  const allVals = [...history.fv, ...history.price];
+  const yMinRaw = Math.min(...allVals);
+  const yMaxRaw = Math.max(...allVals);
+  const margin = (yMaxRaw - yMinRaw) * 0.06 || 1;
+  const yMin = yMinRaw - margin;
+  const yMax = yMaxRaw + margin;
+  const ySpan = yMax - yMin;
+
+  ctx.strokeStyle = '#dddddd';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (i / 4) * ph;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + pw, y);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1.25;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, pad.t + ph);
+  ctx.lineTo(pad.l + pw, pad.t + ph);
+  ctx.stroke();
+
+  ctx.fillStyle = '#000000';
+  ctx.font = '12px Arial, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++) {
+    const frac = 1 - i / 4;
+    const v = yMin + frac * ySpan;
+    const y = pad.t + (i / 4) * ph;
+    ctx.fillText(Math.round(v).toLocaleString(), pad.l - 10, y);
+  }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  if (history.dates && history.dates.length > 1) {
+    const nLabels = Math.min(6, steps);
+    for (let i = 0; i < nLabels; i++) {
+      const idx = Math.floor(i * (steps - 1) / Math.max(1, nLabels - 1));
+      const x = pad.l + (idx / Math.max(1, steps - 1)) * pw;
+      const d = history.dates[idx];
+      const label = d instanceof Date ? d.toISOString().slice(0, 7) : String(d).slice(0, 7);
+      ctx.fillText(label, x, pad.t + ph + 10);
+    }
+  } else {
+    ctx.fillText(`${steps} days`, pad.l + pw / 2, pad.t + ph + 10);
+  }
+
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Endogenous Market Price vs Fundamental Value', pad.l, 28);
+
+  const cfg = getActiveConfigSummary();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillText(
+    `${cfg.topoLabel} | N=${cfg.n} | ${cfg.pctTech}% technical | ${cfg.trustLabel} | λ=${cfg.lambda} | η=${cfg.eta} | σ_s=${cfg.sigNoise}`,
+    pad.l,
+    48
+  );
+
+  ctx.fillStyle = 'rgba(220, 20, 60, 0.10)';
+  ctx.beginPath();
+  for (let s = 0; s < steps; s++) {
+    const x = pad.l + (s / Math.max(1, steps - 1)) * pw;
+    const y = pad.t + ph * (1 - (history.price[s] - yMin) / ySpan);
+    if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  for (let s = steps - 1; s >= 0; s--) {
+    const x = pad.l + (s / Math.max(1, steps - 1)) * pw;
+    const y = pad.t + ph * (1 - (history.fv[s] - yMin) / ySpan);
+    ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let s = 0; s < steps; s++) {
+    const x = pad.l + (s / Math.max(1, steps - 1)) * pw;
+    const y = pad.t + ph * (1 - (history.fv[s] - yMin) / ySpan);
+    if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  ctx.strokeStyle = '#1f77b4';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let s = 0; s < steps; s++) {
+    const x = pad.l + (s / Math.max(1, steps - 1)) * pw;
+    const y = pad.t + ph * (1 - (history.price[s] - yMin) / ySpan);
+    if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  const legendY = H - 24;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = '13px Arial, sans-serif';
+
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, legendY);
+  ctx.lineTo(pad.l + 30, legendY);
+  ctx.stroke();
+  ctx.fillStyle = '#000000';
+  ctx.fillText('Fundamental value', pad.l + 38, legendY);
+
+  const x2 = pad.l + 220;
+  ctx.strokeStyle = '#1f77b4';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x2, legendY);
+  ctx.lineTo(x2 + 30, legendY);
+  ctx.stroke();
+  ctx.fillStyle = '#000000';
+  ctx.fillText('Market price', x2 + 38, legendY);
+}
+
+function downloadPaperFigure() {
+  if (!window.lastMarketHistory) {
+    alert('Run the market first.');
+    return;
+  }
+
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = 1600;
+  exportCanvas.height = 900;
+
+  drawPaperPriceChart(exportCanvas, window.lastMarketHistory);
+
+  const cfg = getActiveConfigSummary();
+  const topoSlug = cfg.topoLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const a = document.createElement('a');
+  a.download = `ftse-paper-figure-${topoSlug}-${cfg.pctTech}pct-tech.png`;
+  a.href = exportCanvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 </script>
 </body>
 </html>
