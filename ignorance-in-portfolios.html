@@ -700,6 +700,8 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
       <div class="buttons-row" style="margin-top:0;">
         <button class="run-btn" onclick="runSimulation()">Run Simulation</button>
         <button class="outline-btn" onclick="runComparison()">Compare All Topologies</button>
+        <button class="outline-btn" onclick="downloadNetworkFigure()">Download network figure</button>
+        <button class="outline-btn" onclick="downloadCredenceFigure()">Download trajectories figure</button>
       </div>
     </div>
   </div>
@@ -1490,6 +1492,61 @@ window.addEventListener('load', () => {
 window.addEventListener('resize', () => {
   if (currentNetwork && currentHistory) runSimulation();
 });
+// ═══════════════════════════════════════════
+// EXPORT HELPERS (PAPER FIGURES)
+// ═══════════════════════════════════════════
+
+function exportCanvas(canvas, filename) {
+  if (!canvas) {
+    alert("Run simulation first.");
+    return;
+  }
+
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+
+  const ctx = exportCanvas.getContext('2d');
+
+  // White background (for LaTeX / paper)
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+  // Draw original chart
+  ctx.drawImage(canvas, 0, 0);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = exportCanvas.toDataURL('image/png', 1.0);
+  link.click();
+}
+
+// ── Network figure ──
+function downloadNetworkFigure() {
+  if (!currentNetwork) {
+    alert("Run simulation first.");
+    return;
+  }
+
+  const canvas = document.getElementById('networkCanvas');
+  const filename = `network_${currentNetwork.type}_N${currentNetwork.n}.png`;
+
+  exportCanvas(canvas, filename);
+}
+
+// ── Credence trajectories ──
+function downloadCredenceFigure() {
+  if (!currentNetwork) {
+    alert("Run simulation first.");
+    return;
+  }
+
+  const canvas = document.getElementById('credenceCanvas');
+  const filename = `credence_${currentNetwork.type}_N${currentNetwork.n}.png`;
+
+  exportCanvas(canvas, filename);
+}
 </script>
 </body>
 </html>
