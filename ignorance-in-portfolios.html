@@ -1507,15 +1507,34 @@ function exportCanvas(canvas, filename) {
   const exportCanvas = document.createElement('canvas');
   exportCanvas.width = canvas.width;
   exportCanvas.height = canvas.height;
-
   const ctx = exportCanvas.getContext('2d');
 
-  // White background (for LaTeX / paper)
+  // White background
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-  // Draw original chart
+  // Draw original
   ctx.drawImage(canvas, 0, 0);
+
+  // 🔥 Replace white pixels with gold
+  const imageData = ctx.getImageData(0, 0, exportCanvas.width, exportCanvas.height);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    // Detect near-white pixels
+    if (r > 240 && g > 240 && b > 240) {
+      // Replace with gold
+      data[i]     = 200; // R
+      data[i + 1] = 170; // G
+      data[i + 2] = 90;  // B
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
 
   // Download
   const link = document.createElement('a');
