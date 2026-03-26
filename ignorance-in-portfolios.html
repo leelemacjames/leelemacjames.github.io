@@ -856,7 +856,7 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
 <p>
   The formal treatment of these results, including the \(\lambda_{\text{eff}} = \lambda/\alpha\)
   isomorphism and the endogenous risk aversion specification, is in the accompanying paper:
-  <a href="https://leelemacjames.github.io/networked_belief_portfolio_allocation.pdf" style="color:var(--gold)">Networked Belief Formation and Portfolio Allocation</a>.
+  <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold)">Networked Belief Formation and Portfolio Allocation</a>.
 </p>
 
 </div>
@@ -867,7 +867,7 @@ button.outline-btn:hover { border-color: var(--gold); background: var(--gold-glo
     Based on: Brian Ball, <em>Ignorance in Social Networks: Discounting Delays and Shape Matters</em> (under review).
     Simulation implements the Zollman (2007) and O'Connor &amp; Weatherall (2018) models with
     Markowitz portfolio weight mapping. Full paper:
-    <a href="https://leelemacjames.github.io/networked_belief_portfolio_allocation.pdf" style="color:var(--gold-dim)">networked-belief-portfolio-allocation.pdf</a>.
+    <a href="https://leelemacjames.github.io/networked-belief-portfolio-allocation.pdf" style="color:var(--gold-dim)">networked-belief-portfolio-allocation.pdf</a>.
   </p>
 </div>
 
@@ -1073,15 +1073,13 @@ function drawNetwork(canvas, network, credences) {
   // Edges
   for (const [a,b] of network.edges) {
     const credDist = credences ? Math.abs(credences[a] - credences[b]) : 0;
-  if (credDist > 0.3) {
-      // Disagreement edges (clear but not overpowering)
-      ctx.strokeStyle = 'rgba(170, 60, 60, 0.6)';
-      ctx.lineWidth = 1.2;
-  } else {
-      // Agreement / low-distance edges (structural background)
-      ctx.strokeStyle = 'rgba(120, 90, 40, 0.35)';
-      ctx.lineWidth = 0.8;
-  }
+    if (credDist > 0.3) {
+      ctx.strokeStyle = 'rgba(196,91,91,0.25)';
+      ctx.lineWidth = 1;
+    } else {
+      ctx.strokeStyle = 'rgba(200,169,110,0.12)';
+      ctx.lineWidth = 0.5;
+    }
     ctx.beginPath();
     ctx.moveTo(positions[a][0], positions[a][1]);
     ctx.lineTo(positions[b][0], positions[b][1]);
@@ -1211,7 +1209,7 @@ function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1, lambda=2, epsilon=
 
   // Mean trajectory
   ctx.strokeStyle = paperMode ? '#b8963c' : '#ffffff';
-  ctx.lineWidth = paperMode ? 2.5 : 2;
+  ctx.lineWidth = paperMode ? 3 : 2.5;
   ctx.beginPath();
   for (let s = 0; s < steps; s++) {
     const x = pad.l + (s/(steps-1||1)) * pw;
@@ -1326,10 +1324,24 @@ function drawAggregateChart(canvas, history, lambda, epsilon) {
 }
 
 // ═══════════════════════════════════════════
+// CURRENT RENDER HELPER
+// ═══════════════════════════════════════════
+function renderCurrentSimulation() {
+  if (!currentNetwork || !currentHistory) return;
+  const lambda = parseFloat(document.getElementById('lambda').value);
+  const epsilon = parseFloat(document.getElementById('epsilon').value);
+
+  drawNetwork(document.getElementById('networkCanvas'), currentNetwork, currentHistory[currentHistory.length-1]);
+  drawTimeSeries(document.getElementById('credenceCanvas'), currentHistory, (p) => p, 0, 1, lambda, epsilon);
+  drawAggregateChart(document.getElementById('utilityCanvas'), currentHistory, lambda, epsilon);
+}
+
+// ═══════════════════════════════════════════
 // MAIN SIMULATION RUNNER
 // ═══════════════════════════════════════════
 let currentNetwork = null;
 let currentHistory = null;
+let paperMode = false;
 
 function runSimulation() {
   const type = document.getElementById('topology').value;
@@ -1346,9 +1358,7 @@ function runSimulation() {
   currentHistory = history;
 
   // Draw
-  drawNetwork(document.getElementById('networkCanvas'), network, history[history.length-1]);
-  drawTimeSeries(document.getElementById('credenceCanvas'), history, (p) => p, 0, 1, lambda, epsilon);
-  drawAggregateChart(document.getElementById('utilityCanvas'), history, lambda, epsilon);
+  renderCurrentSimulation();
 
   // Parameter panel
   const trustLabel = updateRule === 'bayes' ? 'Bayes (full trust)' : updateRule === 'jeffrey' ? 'Jeffrey (m = 1)' : 'Jeffrey (m = 2)';
@@ -1470,6 +1480,60 @@ function runComparison() {
 }
 
 // ═══════════════════════════════════════════
+// EXPORT HELPERS (PAPER FIGURES)
+// ═══════════════════════════════════════════
+function exportCanvas(canvas, filename) {
+  if (!canvas) {
+    alert('Run simulation first.');
+    return;
+  }
+
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+  const ctx = exportCanvas.getContext('2d');
+
+  // White background for paper
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+  // Draw chart (already styled via paperMode if needed)
+  ctx.drawImage(canvas, 0, 0);
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = exportCanvas.toDataURL('image/png', 1.0);
+  link.click();
+}
+
+function downloadNetworkFigure() {
+  if (!currentNetwork || !currentHistory) {
+    alert('Run simulation first.');
+    return;
+  }
+  const canvas = document.getElementById('networkCanvas');
+  exportCanvas(canvas, `network_${currentNetwork.type}_N${currentNetwork.n}.png`);
+}
+
+function downloadCredenceFigure() {
+  if (!currentNetwork || !currentHistory) {
+    alert('Run simulation first.');
+    return;
+  }
+
+  const canvas = document.getElementById('credenceCanvas');
+
+  // Temporarily redraw in paper mode so the mean line is visible on white background
+  paperMode = true;
+  renderCurrentSimulation();
+  exportCanvas(canvas, `credence_${currentNetwork.type}_N${currentNetwork.n}.png`);
+
+  // Restore normal dark-theme rendering
+  paperMode = false;
+  renderCurrentSimulation();
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 window.addEventListener('load', () => {
@@ -1494,78 +1558,6 @@ window.addEventListener('load', () => {
 window.addEventListener('resize', () => {
   if (currentNetwork && currentHistory) runSimulation();
 });
-// ═══════════════════════════════════════════
-// EXPORT HELPERS (PAPER FIGURES)
-// ═══════════════════════════════════════════
-
-function exportCanvas(canvas, filename) {
-  if (!canvas) {
-    alert("Run simulation first.");
-    return;
-  }
-
-  const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = canvas.width;
-  exportCanvas.height = canvas.height;
-  const ctx = exportCanvas.getContext('2d');
-
-  // White background f
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-  // Draw chart (already styled via paperMode)
-  ctx.drawImage(canvas, 0, 0);
-
-  // Download
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = exportCanvas.toDataURL('image/png', 1.0);
-  link.click();
-}
-
-  ctx.putImageData(imageData, 0, 0);
-
-  // Download
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = exportCanvas.toDataURL('image/png', 1.0);
-  link.click();
-}
-
-// ── Network figure ──
-function downloadNetworkFigure() {
-  if (!currentNetwork) {
-    alert("Run simulation first.");
-    return;
-  }
-
-  const canvas = document.getElementById('networkCanvas');
-  const filename = `network_${currentNetwork.type}_N${currentNetwork.n}.png`;
-
-  exportCanvas(canvas, filename);
-}
-
-// ── Credence trajectories ──
-function downloadCredenceFigure() {
-  if (!currentNetwork) {
-    alert("Run simulation first.");
-    return;
-  }
-
-  const canvas = document.getElementById('credenceCanvas');
-
-  // 🔥 Turn on paper mode
-  paperMode = true;
-
-  // Redraw with paper styling
-  drawCredenceChart(canvas, currentHistory);
-
-  exportCanvas(canvas, `credence_${currentNetwork.type}_N${currentNetwork.n}.png`);
-
-  // 🔥 Restore normal mode
-  paperMode = false;
-  drawCredenceChart(canvas, currentHistory);
-}
 </script>
 </body>
 </html>
