@@ -1210,8 +1210,8 @@ function drawTimeSeries(canvas, history, yFn, yMin=0, yMax=1, lambda=2, epsilon=
   }
 
   // Mean trajectory
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = paperMode ? '#b8963c' : '#ffffff';
+  ctx.lineWidth = paperMode ? 2.5 : 2;
   ctx.beginPath();
   for (let s = 0; s < steps; s++) {
     const x = pad.l + (s/(steps-1||1)) * pw;
@@ -1509,30 +1509,19 @@ function exportCanvas(canvas, filename) {
   exportCanvas.height = canvas.height;
   const ctx = exportCanvas.getContext('2d');
 
-  // White background
+  // White background f
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-  // Draw original
+  // Draw chart (already styled via paperMode)
   ctx.drawImage(canvas, 0, 0);
 
-  // 🔥 Replace white pixels with gold
-  const imageData = ctx.getImageData(0, 0, exportCanvas.width, exportCanvas.height);
-  const data = imageData.data;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-
-    // Detect near-white pixels
-    if (r > 240 && g > 240 && b > 240) {
-      // Replace with gold
-      data[i]     = 200; // R
-      data[i + 1] = 170; // G
-      data[i + 2] = 90;  // B
-    }
-  }
+  // Download
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = exportCanvas.toDataURL('image/png', 1.0);
+  link.click();
+}
 
   ctx.putImageData(imageData, 0, 0);
 
@@ -1564,9 +1553,18 @@ function downloadCredenceFigure() {
   }
 
   const canvas = document.getElementById('credenceCanvas');
-  const filename = `credence_${currentNetwork.type}_N${currentNetwork.n}.png`;
 
-  exportCanvas(canvas, filename);
+  // 🔥 Turn on paper mode
+  paperMode = true;
+
+  // Redraw with paper styling
+  drawCredenceChart(canvas, currentHistory);
+
+  exportCanvas(canvas, `credence_${currentNetwork.type}_N${currentNetwork.n}.png`);
+
+  // 🔥 Restore normal mode
+  paperMode = false;
+  drawCredenceChart(canvas, currentHistory);
 }
 </script>
 </body>
