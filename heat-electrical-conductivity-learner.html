@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thermal & Electrical Conductivity — IB Physics</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0d0d;
+    --surface:  #141414;
+    --card:     #1a1a1a;
+    --border:   #2a2a2a;
+    --gold:     #c9a84c;
+    --gold-dim: #8a6e2f;
+    --gold-glow:#c9a84c22;
+    --text:     #e8e2d6;
+    --muted:    #7a7468;
+    --correct:  #4caf78;
+    --wrong:    #cf6679;
+    --correct-bg:#0f2419;
+    --wrong-bg: #2a0f15;
+    --heat:     #e07040;
+    --elec:     #5090d0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 36px 48px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 60% 0%, #c9a84c0a 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    color: var(--text);
+  }
+  header h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+  .header-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Concept Map ── */
+  .concept-section {
+    max-width: 900px;
+    margin: 48px auto 0;
+    padding: 0 32px;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Analogy Cards ── */
+  .analogy-grid {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    margin-bottom: 48px;
+    align-items: stretch;
+  }
+  .analogy-col {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-radius: 2px;
+  }
+  .analogy-col.heat { border-top: 2px solid var(--heat); }
+  .analogy-col.elec { border-top: 2px solid var(--elec); }
+  .analogy-col h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .heat h3 { color: var(--heat); }
+  .elec h3 { color: var(--elec); }
+
+  .analogy-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .qty {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    padding: 5px 0;
+    font-size: 0.82rem;
+  }
+  .qty-label { color: var(--muted); font-size: 0.72rem; font-family: 'IBM Plex Mono', monospace; }
+  .qty-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text); }
+
+  .analogy-mid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .analogy-mid .equiv { font-size: 1.2rem; color: var(--gold); }
+
+  /* Equation display */
+  .eq-block {
+    margin: 10px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--gold);
+  }
+  .eq-block .eq-label {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Comparison Table ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 48px;
+    font-size: 0.82rem;
+  }
+  .compare-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--gold-dim);
+  }
+  .compare-table th.th-heat { color: var(--heat); }
+  .compare-table th.th-elec { color: var(--elec); }
+  .compare-table th.th-aspect { color: var(--muted); }
+  .compare-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .compare-table tr:hover td { background: #ffffff04; }
+  .compare-table td.aspect {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge.sim { background: #c9a84c15; color: var(--gold); border: 1px solid var(--gold-dim); }
+  .badge.diff { background: #5090d015; color: var(--elec); border: 1px solid #5090d040; }
+
+  /* ── Q&A Engine ── */
+  .qa-section { max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+    border-radius: 1px;
+  }
+
+  .progress-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .q-card.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .q-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .q-type-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+  }
+
+  .q-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    color: var(--text);
+  }
+
+  /* MCQ options */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
+  }
+  .opt:hover:not(.locked) { border-color: var(--gold-dim); background: var(--gold-glow); }
+  .opt-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--gold-dim);
+    min-width: 18px;
+    padding-top: 1px;
+  }
+  .opt.correct { border-color: var(--correct); background: var(--correct-bg); }
+  .opt.wrong   { border-color: var(--wrong);   background: var(--wrong-bg); }
+  .opt.correct .opt-key { color: var(--correct); }
+  .opt.wrong   .opt-key { color: var(--wrong); }
+
+  /* True/False */
+  .tf-row { display: flex; gap: 12px; }
+  .tf-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 14px;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--text);
+    transition: border-color 0.15s, background 0.15s;
+    text-align: center;
+  }
+  .tf-btn:hover:not(.locked) { border-color: var(--gold-dim); background: var(--gold-glow); }
+  .tf-btn.correct { border-color: var(--correct); background: var(--correct-bg); color: var(--correct); }
+  .tf-btn.wrong   { border-color: var(--wrong);   background: var(--wrong-bg);   color: var(--wrong); }
+
+  /* Fill-in */
+  .fill-row { display: flex; gap: 10px; align-items: center; }
+  .fill-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    flex: 1;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .fill-input:focus { border-color: var(--gold-dim); }
+  .fill-input.correct { border-color: var(--correct); background: var(--correct-bg); }
+  .fill-input.wrong   { border-color: var(--wrong);   background: var(--wrong-bg); }
+  .fill-btn {
+    background: var(--gold-dim);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 2px;
+    padding: 10px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .fill-btn:hover { background: var(--gold); }
+
+  /* Feedback box */
+  .feedback {
+    display: none;
+    margin-top: 18px;
+    border-radius: 2px;
+    padding: 16px 18px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    border-left: 3px solid;
+    animation: fadeIn 0.25s ease;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { border-color: var(--correct); background: var(--correct-bg); }
+  .feedback.wrong   { border-color: var(--wrong);   background: var(--wrong-bg); }
+  .feedback-head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .feedback.correct .feedback-head { color: var(--correct); }
+  .feedback.wrong   .feedback-head { color: var(--wrong); }
+  .feedback-body { color: var(--text); }
+  .feedback-body code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #ffffff0a;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 0.8em;
+    color: var(--gold);
+  }
+
+  /* Confusion box */
+  .confusion-box {
+    margin-top: 16px;
+    border: 1px solid #cf667930;
+    background: #cf667908;
+    border-radius: 2px;
+    padding: 12px 16px;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .confusion-box.show { display: block; }
+  .confusion-head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--wrong);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .confusion-body { color: var(--muted); }
+
+  /* Nav buttons */
+  .q-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 12px;
+  }
+  .nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid;
+  }
+  .nav-btn.primary {
+    background: var(--gold);
+    color: #0d0d0d;
+    border-color: var(--gold);
+    display: none;
+  }
+  .nav-btn.primary:hover { background: #e0bc68; }
+  .nav-btn.primary.visible { display: block; }
+  .nav-btn.ghost {
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--border);
+  }
+  .nav-btn.ghost:hover { border-color: var(--gold-dim); color: var(--text); }
+
+  /* Score card */
+  .score-card {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: 2px;
+    padding: 48px 32px;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .score-card.show { display: block; }
+  .score-card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .score-fraction {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 3rem;
+    color: var(--text);
+    margin: 20px 0 8px;
+  }
+  .score-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .restart-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    transition: all 0.15s;
+  }
+  .restart-btn:hover { background: var(--gold-glow); border-color: var(--gold); }
+
+  /* TOK prompt */
+  .tok-block {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+  }
+  .tok-inner {
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    padding: 20px 24px;
+    background: var(--gold-glow);
+  }
+  .tok-head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .tok-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* Cross-ref */
+  .crossref {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--gold-dim);
+    margin-top: 12px;
+    letter-spacing: 0.06em;
+  }
+  .crossref a { color: var(--gold-dim); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    header { padding: 24px 20px 20px; }
+    .concept-section, .qa-section, .tok-block { padding: 0 16px; }
+    .analogy-grid { grid-template-columns: 1fr; }
+    .analogy-mid { padding: 16px 0; border: 1px solid var(--border); border-left: none; border-right: none; flex-direction: row; justify-content: center; }
+    .q-card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">IB Physics · Topic 8.2 · Thermal Energy Transfer</div>
+  <h1>Thermal &amp; Electrical<br><em>Conductivity</em></h1>
+  <div class="header-sub">Analogies, Differences, and the Fourier Law</div>
+</header>
+
+<!-- ── CONCEPT MAP ── -->
+<div class="concept-section">
+
+  <div class="section-label">The Core Analogy</div>
+
+  <div class="analogy-grid">
+    <!-- Heat column -->
+    <div class="analogy-col heat">
+      <h3>🔥 Heat Conduction</h3>
+      <div class="analogy-row">
+        <div class="qty"><span class="qty-label">Driving quantity</span><span class="qty-val">ΔT (temperature difference)</span></div>
+        <div class="qty"><span class="qty-label">Flow quantity</span><span class="qty-val">Q (thermal energy / J)</span></div>
+        <div class="qty"><span class="qty-label">Flow rate</span><span class="qty-val">ΔQ/Δt (watts, W)</span></div>
+        <div class="qty"><span class="qty-label">Material property</span><span class="qty-val">k (thermal conductivity)</span></div>
+        <div class="qty"><span class="qty-label">Geometry ↑ rate</span><span class="qty-val">cross-section area A</span></div>
+        <div class="qty"><span class="qty-label">Geometry ↓ rate</span><span class="qty-val">length d</span></div>
+        <div class="qty"><span class="qty-label">Carrier in metals</span><span class="qty-val">free electrons + phonons</span></div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">Fourier's Law</div>
+        ΔQ/Δt = k·A·ΔT / d
+      </div>
+    </div>
+
+    <!-- Middle -->
+    <div class="analogy-mid">
+      <span class="equiv">⇌</span>
+      <span>analogous<br>quantities</span>
+    </div>
+
+    <!-- Electrical column -->
+    <div class="analogy-col elec">
+      <h3>⚡ Electrical Conduction</h3>
+      <div class="analogy-row">
+        <div class="qty"><span class="qty-label">Driving quantity</span><span class="qty-val">ΔV (potential difference)</span></div>
+        <div class="qty"><span class="qty-label">Flow quantity</span><span class="qty-val">Q (charge / C)</span></div>
+        <div class="qty"><span class="qty-label">Flow rate</span><span class="qty-val">I (current, A = C s⁻¹)</span></div>
+        <div class="qty"><span class="qty-label">Material property</span><span class="qty-val">σ (electrical conductivity)</span></div>
+        <div class="qty"><span class="qty-label">Geometry ↑ rate</span><span class="qty-val">cross-section area A</span></div>
+        <div class="qty"><span class="qty-label">Geometry ↓ rate</span><span class="qty-val">length L</span></div>
+        <div class="qty"><span class="qty-label">Carrier in metals</span><span class="qty-val">free electrons only</span></div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">Ohm's Law (microscopic)</div>
+        I = σ·A·ΔV / L
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison table -->
+  <div class="section-label">Similarities &amp; Differences</div>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th class="th-aspect">Aspect</th>
+        <th class="th-heat">Heat Conduction</th>
+        <th class="th-elec">Electrical Conduction</th>
+        <th style="color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase;">S / D</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="aspect">Equation form</td>
+        <td>Rate ∝ A·ΔX / L</td>
+        <td>Rate ∝ A·ΔX / L</td>
+        <td><span class="badge sim">Similar</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Carrier in metals</td>
+        <td>Free electrons AND lattice vibrations (phonons)</td>
+        <td>Free electrons only</td>
+        <td><span class="badge diff">Differ</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">What flows</td>
+        <td>Energy (joules)</td>
+        <td>Charge (coulombs)</td>
+        <td><span class="badge diff">Differ</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Can flow in vacuum?</td>
+        <td>No (conduction requires matter)</td>
+        <td>No (electrons need a medium)</td>
+        <td><span class="badge sim">Similar</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Good conductors</td>
+        <td>Metals (high k); insulators include wood, air</td>
+        <td>Metals (high σ); insulators include rubber, glass</td>
+        <td><span class="badge sim">Similar</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Effect of temperature ↑</td>
+        <td>k roughly constant for metals (slight ↓)</td>
+        <td>Resistance ↑ → conductivity ↓ (lattice scatters electrons more)</td>
+        <td><span class="badge diff">Differ</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Can transfer without medium?</td>
+        <td>No — radiation does that instead</td>
+        <td>No — radiation does not carry charge the same way</td>
+        <td><span class="badge sim">Similar</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Wiedemann-Franz link</td>
+        <td colspan="2" style="font-style:italic; color:var(--muted);">In metals, k/σ ≈ L₀T (Lorenz number). The same free electrons responsible for electrical conduction also dominate thermal conduction — they are coupled.</td>
+        <td><span class="badge sim">Similar</span></td>
+      </tr>
+      <tr>
+        <td class="aspect">Non-metals</td>
+        <td>Can conduct heat (via phonons) — e.g. diamond is excellent</td>
+        <td>Non-metals generally insulators (no free charges)</td>
+        <td><span class="badge diff">Differ</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- TOK -->
+  <div class="section-label">Theory of Knowledge</div>
+  <div class="tok-inner" style="margin-bottom:48px;">
+    <div class="tok-head">TOK Prompt</div>
+    <div class="tok-text">The Fourier heat equation and Ohm's law share identical mathematical form, yet describe physically distinct phenomena. Does structural similarity between laws constitute genuine scientific understanding — or is it merely a notational convenience? When two equations look the same, how much does that tell us about the underlying reality?</div>
+  </div>
+
+  <!-- Q&A section label -->
+  <div class="section-label">Questions</div>
+</div>
+
+<!-- ── Q&A ENGINE ── -->
+<div class="qa-section">
+  <div class="progress-label">
+    <span id="progressText">Question 1 of 12</span>
+    <span id="scoreText">Score: 0</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <!-- All Q cards rendered here -->
+  <div id="qContainer"></div>
+
+  <div class="q-nav">
+    <button class="nav-btn ghost" id="skipBtn" onclick="skipQ()">Skip</button>
+    <button class="nav-btn primary" id="nextBtn" onclick="nextQ()">Next →</button>
+  </div>
+
+  <div class="score-card" id="scoreCard">
+    <h2>Complete</h2>
+    <div class="score-fraction" id="finalScore">—</div>
+    <div class="score-label">Questions Correct</div>
+    <button class="restart-btn" onclick="restart()">Restart</button>
+  </div>
+</div>
+
+<div style="height:60px"></div>
+
+<script>
+const Qs = [
+  {
+    type: 'mcq',
+    text: 'In the Fourier heat conduction law ΔQ/Δt = kAΔT/d, what is the direct analogue of electrical resistance R = ρL/A?',
+    options: ['k (thermal conductivity)', 'd/(kA) — thermal resistance', 'ΔT (temperature difference)', 'ΔQ/Δt (power)'],
+    correct: 1,
+    feedback: 'Thermal resistance is d/(kA), exactly mirroring electrical resistance R = ρL/A = L/(σA). Longer path → more resistance; larger cross-section → less. The geometric dependence is identical.',
+    confusion: 'Students often confuse k itself with resistance. k is a material property analogous to electrical conductivity σ, not to resistance.',
+  },
+  {
+    type: 'tf',
+    text: 'True or False: In metals, heat is conducted primarily by phonons (lattice vibrations), with free electrons playing only a minor role.',
+    correct: false,
+    feedback: 'False. In metals, free electrons dominate thermal conduction. The Wiedemann–Franz law quantifies the link: k/σ ≈ L₀T. This is why good electrical conductors (copper, silver) are also good thermal conductors.',
+    confusion: 'Phonons dominate in non-metals and semiconductors. In metals, free electrons carry the bulk of the thermal energy — the same electrons responsible for electrical conduction.',
+  },
+  {
+    type: 'mcq',
+    text: 'A brick of thermal conductivity k = 0.71 J m⁻¹ s⁻¹ °C⁻¹, cross-section 0.75 × 0.50 m and length 2.50 m has its ends held at 20°C and 100°C. What is the rate of heat conduction?',
+    options: ['6.5 W', '8.5 W', '10.7 W', '21.3 W'],
+    correct: 1,
+    feedback: 'ΔQ/Δt = kAΔT/d = 0.71 × (0.75 × 0.50) × (100 − 20) / 2.50 = 0.71 × 0.375 × 80 / 2.50 ≈ 8.52 W. Note that A is the face perpendicular to the heat flow direction.',
+    confusion: 'A common error is using the wrong face for A, or forgetting to convert to SI units before substituting.',
+  },
+  {
+    type: 'tf',
+    text: 'True or False: Electrical conduction and thermal conduction both require a physical medium — neither can occur in a vacuum.',
+    correct: true,
+    feedback: 'True. Both conduction mechanisms require matter. Thermal energy can still be transferred through vacuum, but only by radiation (photons), not conduction. Charge transfer through vacuum (e.g. electron beams) is a separate phenomenon from bulk conduction.',
+    confusion: null,
+  },
+  {
+    type: 'mcq',
+    text: 'Which statement correctly explains why raising the temperature of a metal increases its electrical resistance but has comparatively little effect on its thermal conductivity?',
+    options: [
+      'Higher temperature reduces free electron density in both cases equally.',
+      'Lattice vibrations scatter electrons more, reducing σ; but the same vibrations (phonons) contribute to k, partially compensating the reduction.',
+      'Thermal conductivity is independent of electron behaviour in all materials.',
+      'The Fourier law does not apply above room temperature.'
+    ],
+    correct: 1,
+    feedback: 'Exactly. As temperature rises, lattice vibrations increase, scattering electrons more frequently and reducing σ. However, those vibrations (phonons) themselves carry heat. In metals the two effects partially cancel — a rough empirical observation captured by the Wiedemann–Franz law.',
+    confusion: 'This is a subtle point. The Wiedemann–Franz law k/σ = L₀T shows k and σ are coupled via T, so as σ drops with T, k stays roughly constant because the T factor compensates.',
+  },
+  {
+    type: 'fill',
+    text: 'Complete the analogy. In electrical conduction, the driving quantity is potential difference ΔV. In thermal conduction, the analogous driving quantity is ___.',
+    answer: ['temperature difference', 'ΔT', 'delta T', 'temperature gradient'],
+    feedback: 'Temperature difference ΔT drives heat flow, exactly as potential difference ΔV drives current. Both are "gradients" — differences across the conductor that push the relevant quantity from high to low.',
+    confusion: null,
+  },
+  {
+    type: 'mcq',
+    text: 'Diamond is an electrical insulator but one of the best thermal conductors known. Which statement best explains this?',
+    options: [
+      'Diamond has unusually high free electron density.',
+      'Diamond conducts heat via phonons (lattice vibrations), not free electrons, so thermal and electrical conductivity are decoupled in non-metals.',
+      'Diamond is an exception to the Fourier law.',
+      'All insulators are actually good thermal conductors at high pressures.'
+    ],
+    correct: 1,
+    feedback: 'In non-metals there are no free electrons, so σ ≈ 0. But heat still flows via phonons — collective vibrations of the crystal lattice. Diamond\'s extremely stiff, ordered lattice gives it exceptionally efficient phonon transport (k ≈ 2200 W m⁻¹ K⁻¹, far higher than most metals).',
+    confusion: 'The Wiedemann–Franz link between k and σ applies only to metals, where free electrons dominate both. In non-metals the two conductivities are essentially independent.',
+  },
+  {
+    type: 'tf',
+    text: 'True or False: Doubling the cross-sectional area of a conductor doubles the rate of both heat conduction and electrical conduction, all else equal.',
+    correct: true,
+    feedback: 'True. Both laws (ΔQ/Δt = kAΔT/d and I = σAΔV/L) are directly proportional to A. More area provides more parallel "lanes" for energy or charge to travel.',
+    confusion: null,
+  },
+  {
+    type: 'mcq',
+    text: 'The Wiedemann–Franz law states that k/σ ≈ L₀T for metals, where L₀ is the Lorenz number. What does this imply about the relationship between thermal and electrical conductivity in metals?',
+    options: [
+      'They are completely independent — any correlation is coincidental.',
+      'The same free electrons carry both heat and charge, so the two conductivities are fundamentally linked.',
+      'Thermal conductivity is always numerically equal to electrical conductivity.',
+      'σ is always larger than k in metals.'
+    ],
+    correct: 1,
+    feedback: 'The Wiedemann–Franz law is a direct consequence of free electrons carrying both energy and charge. It was historically one of the key pieces of evidence for the free electron model of metals.',
+    confusion: null,
+  },
+  {
+    type: 'mcq',
+    text: 'A student claims: "Since the equations for heat and electrical conduction look the same, they must describe the same physical process." Which is the most precise rebuttal?',
+    options: [
+      'The student is entirely correct — they are the same process.',
+      'The equations have the same mathematical structure but describe different transported quantities (energy vs charge) carried by different mechanisms in non-metals.',
+      'The equations are not actually the same — Fourier\'s law has an extra factor.',
+      'The claim is irrelevant because physics does not use mathematical analogies.'
+    ],
+    correct: 1,
+    feedback: 'Mathematical isomorphism does not imply physical identity. The analogy is genuine and useful — it allows methods developed for one domain to be applied to the other — but the transported quantity, and the carrier mechanism in non-metals, differ fundamentally.',
+    confusion: 'This is the TOK dimension. Shared mathematical form suggests deep structural similarity but not identity. Physics is full of such "analogies that bite back" when pushed too far.',
+  },
+  {
+    type: 'fill',
+    text: 'In the thermal conduction equation, the material property k is called thermal ___.',
+    answer: ['conductivity', 'thermal conductivity'],
+    feedback: 'Thermal conductivity k (units: W m⁻¹ K⁻¹). It is the thermal analogue of electrical conductivity σ (units: S m⁻¹). Both measure how readily a material permits the relevant flow.',
+    confusion: null,
+  },
+  {
+    type: 'mcq',
+    text: 'Two rods of the same material, geometry, and temperature difference are connected in series (end to end). How does the total thermal resistance compare to a single rod?',
+    options: [
+      'Halved',
+      'Unchanged',
+      'Doubled',
+      'It depends on which end is hotter.'
+    ],
+    correct: 2,
+    feedback: 'Thermal resistance R_th = d/(kA) adds in series exactly like electrical resistance. Two identical rods in series: R_total = 2d/(kA) — double. The heat flow rate ΔQ/Δt = ΔT/R_total is therefore halved for the same ΔT.',
+    confusion: 'This is a direct consequence of the structural analogy with Ohm\'s law. Series resistors — thermal or electrical — add.',
+  },
+];
+
+let current = 0;
+let score = 0;
+let answered = new Array(Qs.length).fill(false);
+
+function renderAll() {
+  const container = document.getElementById('qContainer');
+  container.innerHTML = '';
+  Qs.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card' + (i === 0 ? ' active' : '');
+    card.id = 'q' + i;
+
+    const typeLabel = q.type === 'mcq' ? 'Multiple Choice' : q.type === 'tf' ? 'True / False' : 'Fill in the Blank';
+    let inputHTML = '';
+
+    if (q.type === 'mcq') {
+      inputHTML = `<div class="options">` + q.options.map((o, j) =>
+        `<div class="opt" id="opt_${i}_${j}" onclick="checkMCQ(${i},${j})">
+          <span class="opt-key">${String.fromCharCode(65+j)}</span>
+          <span>${o}</span>
+        </div>`
+      ).join('') + `</div>`;
+    } else if (q.type === 'tf') {
+      inputHTML = `<div class="tf-row">
+        <button class="tf-btn" id="tf_${i}_true" onclick="checkTF(${i},true)">True</button>
+        <button class="tf-btn" id="tf_${i}_false" onclick="checkTF(${i},false)">False</button>
+      </div>`;
+    } else {
+      inputHTML = `<div class="fill-row">
+        <input class="fill-input" id="fill_${i}" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')checkFill(${i})">
+        <button class="fill-btn" onclick="checkFill(${i})">Check</button>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="q-type"><span class="q-type-dot"></span>${typeLabel} · Q${i+1}</div>
+      <div class="q-text">${q.text}</div>
+      ${inputHTML}
+      <div class="feedback" id="fb_${i}">
+        <div class="feedback-head" id="fb_head_${i}"></div>
+        <div class="feedback-body" id="fb_body_${i}"></div>
+      </div>
+      ${q.confusion ? `<div class="confusion-box" id="conf_${i}"><div class="confusion-head">⚠ Common Confusion</div><div class="confusion-body">${q.confusion}</div></div>` : ''}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showFeedback(i, correct, msg) {
+  const fb = document.getElementById('fb_'+i);
+  const head = document.getElementById('fb_head_'+i);
+  const body = document.getElementById('fb_body_'+i);
+  fb.className = 'feedback show ' + (correct ? 'correct' : 'wrong');
+  head.textContent = correct ? '✓ Correct' : '✗ Incorrect';
+  body.innerHTML = msg;
+  if (!correct && Qs[i].confusion) {
+    document.getElementById('conf_'+i).classList.add('show');
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+  updateProgress();
+}
+
+function lockMCQ(i) {
+  Qs[i].options.forEach((_, j) => {
+    document.getElementById('opt_'+i+'_'+j).classList.add('locked');
+    document.getElementById('opt_'+i+'_'+j).onclick = null;
+  });
+}
+function lockTF(i) {
+  ['true','false'].forEach(v => {
+    const el = document.getElementById('tf_'+i+'_'+v);
+    el.classList.add('locked');
+    el.onclick = null;
+  });
+}
+
+function checkMCQ(i, j) {
+  if (answered[i]) return;
+  answered[i] = true;
+  const correct = j === Qs[i].correct;
+  if (correct) score++;
+  document.getElementById('opt_'+i+'_'+j).classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) document.getElementById('opt_'+i+'_'+Qs[i].correct).classList.add('correct');
+  lockMCQ(i);
+  showFeedback(i, correct, Qs[i].feedback);
+}
+
+function checkTF(i, val) {
+  if (answered[i]) return;
+  answered[i] = true;
+  const correct = val === Qs[i].correct;
+  if (correct) score++;
+  const key = val ? 'true' : 'false';
+  document.getElementById('tf_'+i+'_'+key).classList.add(correct ? 'correct' : 'wrong');
+  const correctKey = Qs[i].correct ? 'true' : 'false';
+  if (!correct) document.getElementById('tf_'+i+'_'+correctKey).classList.add('correct');
+  lockTF(i);
+  showFeedback(i, correct, Qs[i].feedback);
+}
+
+function checkFill(i) {
+  if (answered[i]) return;
+  const inp = document.getElementById('fill_'+i);
+  const val = inp.value.trim().toLowerCase();
+  const correct = Qs[i].answer.some(a => val === a.toLowerCase() || val.includes(a.toLowerCase()));
+  answered[i] = true;
+  if (correct) score++;
+  inp.classList.add(correct ? 'correct' : 'wrong');
+  inp.disabled = true;
+  showFeedback(i, correct, Qs[i].feedback);
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  document.getElementById('progressText').textContent = `Question ${current+1} of ${Qs.length}`;
+  document.getElementById('scoreText').textContent = `Score: ${score}`;
+  document.getElementById('progressFill').style.width = ((current+1)/Qs.length*100) + '%';
+}
+
+function nextQ() {
+  document.getElementById('q'+current).classList.remove('active');
+  current++;
+  if (current >= Qs.length) {
+    document.getElementById('qContainer').style.display = 'none';
+    document.querySelector('.q-nav').style.display = 'none';
+    const sc = document.getElementById('scoreCard');
+    sc.classList.add('show');
+    document.getElementById('finalScore').textContent = `${score} / ${Qs.length}`;
+    return;
+  }
+  document.getElementById('q'+current).classList.add('active');
+  document.getElementById('nextBtn').classList.remove('visible');
+  updateProgress();
+}
+
+function skipQ() {
+  if (!answered[current]) {
+    answered[current] = false; // mark skipped
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+  nextQ();
+}
+
+function restart() {
+  current = 0; score = 0;
+  answered = new Array(Qs.length).fill(false);
+  document.getElementById('scoreCard').classList.remove('show');
+  document.getElementById('qContainer').style.display = '';
+  document.querySelector('.q-nav').style.display = '';
+  document.getElementById('nextBtn').classList.remove('visible');
+  renderAll();
+  updateProgress();
+}
+
+renderAll();
+updateProgress();
+</script>
+</body>
+</html>
