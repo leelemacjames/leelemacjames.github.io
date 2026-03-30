@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Primitive Triangle Square Pairs Learner</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)'], ['$', '$']], displayMath: [['\\[','\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #020617, #0f172a 30%, #111827);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2, h3 { line-height: 1.15; }
+    h1 { font-size: 2.2rem; margin-bottom: 0.2rem; }
+    .sub { color: var(--muted); margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+    }
+    .card {
+      background: rgba(17,24,39,0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.35);
+      color: #bae6fd;
+      font-size: 0.85rem;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .equation, .promptbox {
+      background: rgba(15,23,42,0.8);
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .promptbox {
+      border-left-color: var(--warn);
+      background: rgba(51,65,85,0.42);
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    label { font-size: 0.95rem; color: #cbd5e1; display: block; margin-bottom: 6px; }
+    input, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(90deg, rgba(56,189,248,0.18), rgba(167,139,250,0.18));
+      border-color: rgba(148,163,184,0.35);
+      font-weight: 600;
+    }
+    button:hover { filter: brightness(1.08); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: #cbd5e1; }
+    .small { color: var(--muted); font-size: 0.9rem; }
+    .highlight { color: var(--good); font-weight: 700; }
+    canvas {
+      width: 100%;
+      height: 480px;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: block;
+    }
+    .notes {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .note {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(30,41,59,0.75);
+      border: 1px solid rgba(148,163,184,0.18);
+    }
+    details {
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(2,6,23,0.35);
+      margin: 12px 0;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #e2e8f0;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+      content: '▸ ';
+      color: var(--accent);
+    }
+    details[open] summary::before {
+      content: '▾ ';
+    }
+    .step {
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+    .footer {
+      color: var(--muted);
+      margin-top: 18px;
+      font-size: 0.92rem;
+    }
+    ol.tight li { margin-bottom: 8px; }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Primitive Triangle Square Pairs</h1>
+    <div class="sub">A layered learner: start from the table and the graph, make a conjecture, then reveal the algebra one step at a time.</div>
+
+    <div class="card">
+      <span class="pill">Prompt first</span>
+      <span class="pill">Reveal proof gradually</span>
+      <span class="pill">Rendered LaTeX</span>
+      <span class="pill">Graph structure</span>
+      <div class="promptbox">
+        <strong>Guiding question.</strong>
+        Why do some products \(T(i)T(j)\) become perfect squares, and why does the log–log plot look structured rather than random?
+      </div>
+      <p>We avoid the trivial cases \(i=j\) and \(T(1)=1\). The aim is to infer the hidden rule from examples before seeing the proof.</p>
+    </div>
+
+    <div class="grid" style="margin-top:20px;">
+      <div class="card">
+        <h2>Prompt A: what do you notice in the \(T(2)\) row?</h2>
+        <p>Here \(T(2)=3\). The sample row is:</p>
+        <div id="t2Table"></div>
+        <div class="promptbox">
+          <strong>Prompt.</strong> Since \(T(2)=3\), what must be true about \(T(j)\) if \(T(2)T(j)\) is to be a square?
+        </div>
+
+        <details>
+          <summary>Reveal step 1</summary>
+          <div class="step">
+            <p>If \(T(2)T(j)\) is a square, then</p>
+            <div class="equation">\[
+              3\,T(j)=m^2.
+            \]</div>
+            <p>So \(T(j)\) must be <em>three times a square</em>:</p>
+            <div class="equation">\[
+              T(j)=3y^2.
+            \]</div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal step 2</summary>
+          <div class="step">
+            <p>Now substitute \(T(j)=\dfrac{j(j+1)}{2}\):</p>
+            <div class="equation">\[
+              \frac{j(j+1)}{2}=3y^2.
+            \]</div>
+            <p>Multiply by 2:</p>
+            <div class="equation">\[
+              j(j+1)=6y^2.
+            \]</div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal step 3</summary>
+          <div class="step">
+            <p>Now complete the square in the standard Pell way by setting \(x=2j+1\).</p>
+            <div class="equation">\[
+              x^2=(2j+1)^2=4j^2+4j+1=4j(j+1)+1.
+            \]</div>
+            <p>Since \(j(j+1)=6y^2\), this becomes</p>
+            <div class="equation">\[
+              x^2=24y^2+1,
+            \]</div>
+            <div class="equation">\[
+              x^2-24y^2=1.
+            \]</div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal conclusion</summary>
+          <div class="step">
+            <p>So the \(T(2)\) row is governed by the Pell equation</p>
+            <div class="equation">\[
+              x^2-24y^2=1.
+            \]</div>
+            <p>That is why the values</p>
+            <div class="equation">\[
+              j=24,\ 242,\ 2400,\ 23762,\dots
+            \]</div>
+            <p>come in a rigid sequence rather than by accident.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>Prompt B: can the same idea work for any fixed \(i\)?</h2>
+        <div class="promptbox">
+          <strong>Prompt.</strong> Suppose \(T(i)T(j)\) is a square. What hidden invariant of \(T(i)\) and \(T(j)\) must match?
+        </div>
+
+        <details>
+          <summary>Reveal step 1</summary>
+          <div class="step">
+            <p>Every positive integer can be written as</p>
+            <div class="equation">\[
+              N = k a^2,
+            \]</div>
+            <p>where \(k\) is squarefree. Apply this to \(T(i)\):</p>
+            <div class="equation">\[
+              T(i)=k a^2,
+            \]</div>
+            <p>with \(k=\operatorname{sf}(T(i))\), the squarefree part of \(T(i)\).</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal step 2</summary>
+          <div class="step">
+            <p>Now if \(T(i)T(j)\) is a square, then</p>
+            <div class="equation">\[
+              (k a^2)T(j) \text{ is a square.}
+            \]</div>
+            <p>The square factor \(a^2\) does not matter, so \(T(j)\) must contribute exactly the same squarefree part \(k\). Hence</p>
+            <div class="equation">\[
+              T(j)=k b^2.
+            \]</div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal step 3</summary>
+          <div class="step">
+            <p>Substitute \(T(j)=\dfrac{j(j+1)}{2}\):</p>
+            <div class="equation">\[
+              \frac{j(j+1)}{2}=k b^2.
+            \]</div>
+            <p>Then</p>
+            <div class="equation">\[
+              j(j+1)=2k b^2.
+            \]</div>
+            <p>Setting \(x=2j+1\), we get</p>
+            <div class="equation">\[
+              x^2=4j(j+1)+1=8k b^2+1,
+            \]</div>
+            <div class="equation">\[
+              x^2-8k b^2=1.
+            \]</div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Reveal conclusion</summary>
+          <div class="step">
+            <p>So for each fixed squarefree class \(k\), the matching indices \(j\) lie in a Pell-type family:</p>
+            <div class="equation">\[
+              x^2-8k b^2=1.
+            \]</div>
+            <p>The graph is therefore a superposition of many Pell families, one for each squarefree class.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px;">
+      <div class="card">
+        <h2>Explorer</h2>
+        <p class="small">Choose a maximum index and a highlighted base index. The plot shows all primitive pairs \((T(i),T(j))\) with \(2 \le i < j \le \text{max}\) such that the product is a square.</p>
+        <div class="controls">
+          <div>
+            <label for="maxN">Maximum index</label>
+            <input id="maxN" type="number" min="30" max="5000" step="10" value="400" />
+          </div>
+          <div>
+            <label for="focusI">Highlight pairs involving \(i=\)</label>
+            <input id="focusI" type="number" min="2" max="5000" step="1" value="2" />
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button id="runBtn">Generate plot and explanation</button>
+          </div>
+        </div>
+        <canvas id="plot" width="800" height="480"></canvas>
+        <div id="summary" class="footer"></div>
+      </div>
+
+      <div class="card">
+        <h2>Prompt C: what does the graph suggest?</h2>
+        <div class="promptbox">
+          <strong>Prompt.</strong> When you highlight a fixed \(i\), do the matching points look random, or do they behave like a thin family with rapidly growing gaps?
+        </div>
+        <div id="graphExplanation">
+          <p>Press <strong>Generate</strong> to compute the pairs and update the explanation.</p>
+        </div>
+        <details>
+          <summary>Reveal graph interpretation</summary>
+          <div class="step">
+            <ol class="tight">
+              <li>Each point is one primitive pair \((T(i),T(j))\) whose product is a square.</li>
+              <li>Pairs occur when \(T(i)\) and \(T(j)\) have the same squarefree part.</li>
+              <li>Fixing one squarefree part \(k\) gives a Pell-type family.</li>
+              <li>Pell solutions grow roughly exponentially.</li>
+              <li>On a log scale, that creates sparse branch-like traces rather than a uniform cloud.</li>
+            </ol>
+          </div>
+        </details>
+        <h3>Detected pairs in the highlighted family</h3>
+        <div id="pairTable"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h2>Compact theorem statement</h2>
+      <details>
+        <summary>Reveal theorem</summary>
+        <div class="step">
+          <p><strong>Theorem.</strong> Let \(T(n)=\dfrac{n(n+1)}{2}\). For distinct \(i,j\ge 2\), the product \(T(i)T(j)\) is a perfect square if and only if \(T(i)\) and \(T(j)\) have the same squarefree part.</p>
+          <p><strong>Reason.</strong> Write</p>
+          <div class="equation">\[
+            T(i)=k a^2, \qquad T(j)=\ell b^2,
+          \]</div>
+          <p>with \(k,\ell\) squarefree. Then</p>
+          <div class="equation">\[
+            T(i)T(j)=k\ell (ab)^2.
+          \]</div>
+          <p>This is a square exactly when \(k\ell\) is a square. Since \(k\) and \(\ell\) are squarefree, that happens exactly when \(k=\ell\).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    function triangular(n) {
+      return (n * (n + 1)) / 2;
+    }
+
+    function factorParitySquarefree(n) {
+      let x = n;
+      let result = 1;
+      let p = 2;
+      while (p * p <= x) {
+        let parity = 0;
+        while (x % p === 0) {
+          x = Math.floor(x / p);
+          parity ^= 1;
+        }
+        if (parity) result *= p;
+        p = (p === 2) ? 3 : p + 2;
+      }
+      if (x > 1) result *= x;
+      return result;
+    }
+
+    function findPairs(maxN) {
+      const Ts = Array.from({ length: maxN + 1 }, (_, n) => triangular(n));
+      const kernels = Array.from({ length: maxN + 1 }, (_, n) => n < 2 ? 0 : factorParitySquarefree(Ts[n]));
+      const buckets = new Map();
+      for (let n = 2; n <= maxN; n++) {
+        const k = kernels[n];
+        if (!buckets.has(k)) buckets.set(k, []);
+        buckets.get(k).push(n);
+      }
+      const pairs = [];
+      for (const [k, arr] of buckets.entries()) {
+        if (arr.length < 2) continue;
+        for (let a = 0; a < arr.length; a++) {
+          for (let b = a + 1; b < arr.length; b++) {
+            const i = arr[a], j = arr[b];
+            pairs.push({ i, j, k, Ti: Ts[i], Tj: Ts[j], side: Math.sqrt(Ts[i] * Ts[j]) });
+          }
+        }
+      }
+      return { pairs, Ts, kernels };
+    }
+
+    function drawPlot(canvas, pairs, focusI) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, W, H);
+
+      const margin = { left: 64, right: 20, top: 20, bottom: 52 };
+      if (!pairs.length) return;
+      const xs = pairs.map(p => Math.log10(p.Ti));
+      const ys = pairs.map(p => Math.log10(p.Tj));
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      const xScale = x => margin.left + (x - minX) / (maxX - minX || 1) * (W - margin.left - margin.right);
+      const yScale = y => H - margin.bottom - (y - minY) / (maxY - minY || 1) * (H - margin.top - margin.bottom);
+
+      ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+      ctx.lineWidth = 1;
+      for (let t = 0; t <= 5; t++) {
+        const gx = margin.left + t / 5 * (W - margin.left - margin.right);
+        const gy = margin.top + t / 5 * (H - margin.top - margin.bottom);
+        ctx.beginPath(); ctx.moveTo(gx, margin.top); ctx.lineTo(gx, H - margin.bottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(margin.left, gy); ctx.lineTo(W - margin.right, gy); ctx.stroke();
+      }
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.moveTo(margin.left, H - margin.bottom);
+      ctx.lineTo(W - margin.right, H - margin.bottom);
+      ctx.moveTo(margin.left, H - margin.bottom);
+      ctx.lineTo(margin.left, margin.top);
+      ctx.stroke();
+
+      ctx.font = '13px sans-serif';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText('log10 T(i)', W / 2 - 24, H - 16);
+      ctx.save();
+      ctx.translate(18, H / 2 + 20);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('log10 T(j)', 0, 0);
+      ctx.restore();
+
+      for (const p of pairs) {
+        const x = xScale(Math.log10(p.Ti));
+        const y = yScale(Math.log10(p.Tj));
+        const focus = (p.i === focusI || p.j === focusI);
+        ctx.beginPath();
+        ctx.arc(x, y, focus ? 4 : 2.4, 0, Math.PI * 2);
+        ctx.fillStyle = focus ? 'rgba(52,211,153,0.95)' : 'rgba(56,189,248,0.65)';
+        ctx.fill();
+      }
+    }
+
+    function familyForI(focusI, maxN, kernels, Ts) {
+      if (focusI < 2 || focusI > maxN) return [];
+      const k = kernels[focusI];
+      const out = [];
+      for (let j = 2; j <= maxN; j++) {
+        if (j !== focusI && kernels[j] === k) {
+          const i = Math.min(focusI, j), jj = Math.max(focusI, j);
+          out.push({ i, j: jj, Ti: Ts[i], Tj: Ts[jj], side: Math.sqrt(Ts[i] * Ts[jj]), k });
+        }
+      }
+      const uniq = new Map();
+      for (const row of out) uniq.set(row.i + '-' + row.j, row);
+      return Array.from(uniq.values()).sort((a, b) => a.j - b.j);
+    }
+
+    function renderTable(rows, mountId, limit = 12) {
+      const mount = document.getElementById(mountId);
+      if (!rows.length) {
+        mount.innerHTML = '<p class="small">No primitive pairs found in this range for that choice.</p>';
+        return;
+      }
+      let html = '<table><thead><tr><th>Pair</th><th>T(i)</th><th>T(j)</th><th>Square</th><th>Kernel</th></tr></thead><tbody>';
+      for (const r of rows.slice(0, limit)) {
+        html += `<tr><td>\( (T(${r.i}),T(${r.j})) \)</td><td>${r.Ti.toLocaleString()}</td><td>${r.Tj.toLocaleString()}</td><td>${Math.round(r.side).toLocaleString()}<sup>2</sup></td><td>${r.k}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      if (rows.length > limit) html += `<div class="small">Showing first ${limit} rows of ${rows.length}.</div>`;
+      mount.innerHTML = html;
+    }
+
+    function explainGraph(allPairs, family, focusI, kernels, Ts) {
+      const mount = document.getElementById('graphExplanation');
+      if (focusI < 2 || focusI >= kernels.length) {
+        mount.innerHTML = '<p>Choose an index at least 2.</p>';
+        return;
+      }
+      const k = kernels[focusI];
+      const Ti = Ts[focusI];
+      const count = family.length;
+      const sample = family.slice(0, 4).map(r => `\\(T(${r.j})\\)`).join(', ');
+      let growthText = '';
+      if (family.length >= 3) {
+        const ratios = [];
+        for (let n = 1; n < family.length; n++) ratios.push(family[n].j / family[n - 1].j);
+        const avg = ratios.reduce((a,b)=>a+b,0) / ratios.length;
+        growthText = `<p>In this sample the successive \(j\)-values grow roughly geometrically, with average ratio <span class="highlight">${avg.toFixed(3)}</span>. That is typical Pell-family behaviour.</p>`;
+      }
+      mount.innerHTML = `
+        <p>For the highlighted choice \(i=${focusI}\), we have \(T(${focusI})=${Ti.toLocaleString()}\) and squarefree part \(k=${k}\).</p>
+        <p>So the matching values of \(j\) must satisfy the same squarefree condition. In the current range there are <strong>${count}</strong> primitive pairs involving \(T(${focusI})\)${sample ? `, including ${sample}` : ''}.</p>
+        <div class=\"equation\">$$\frac{j(j+1)}{2}=k b^2\qquad\Longleftrightarrow\qquad(2j+1)^2-8k b^2=1$$</div>
+        ${growthText}
+        <p>So the graph is best read as many thin Pell-type families laid on top of one another.</p>
+      `;
+    }
+
+    function fillT2Table() {
+      const rows = [
+        { i: 2, j: 24, Ti: 3, Tj: 300, side: 30, k: 3 },
+        { i: 2, j: 242, Ti: 3, Tj: 29403, side: 297, k: 3 },
+        { i: 2, j: 2400, Ti: 3, Tj: 2881200, side: 2940, k: 3 },
+        { i: 2, j: 23762, Ti: 3, Tj: 282328203, side: 29103, k: 3 }
+      ];
+      renderTable(rows, 't2Table', 10);
+    }
+
+    function rerenderMath() {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
+    }
+
+    function run() {
+      const maxN = Math.max(30, Math.min(5000, parseInt(document.getElementById('maxN').value || '400', 10)));
+      const focusI = Math.max(2, Math.min(maxN, parseInt(document.getElementById('focusI').value || '2', 10)));
+      const { pairs, Ts, kernels } = findPairs(maxN);
+      drawPlot(document.getElementById('plot'), pairs, focusI);
+      const fam = familyForI(focusI, maxN, kernels, Ts);
+      explainGraph(pairs, fam, focusI, kernels, Ts);
+      renderTable(fam, 'pairTable', 14);
+      document.getElementById('summary').innerHTML = `Computed <strong>${pairs.length}</strong> primitive square-triangle pairs up to index <strong>${maxN}</strong>. Highlighting pairs involving <strong>\(T(${focusI})\)</strong>.`;
+      rerenderMath();
+    }
+
+    document.getElementById('runBtn').addEventListener('click', run);
+    fillT2Table();
+    run();
+  </script>
+</body>
+</html>
