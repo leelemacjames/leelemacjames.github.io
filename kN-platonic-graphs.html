@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>k(N) · Platonic Solids, Graphs &amp; the Smallest Non-Divisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1117;
+  --bg-card: #161b22;
+  --bg-card-alt: #1a2030;
+  --gold: #c8a96e;
+  --gold-dim: #a08550;
+  --gold-bright: #e0c88a;
+  --cyan: #56d4c8;
+  --cyan-dim: rgba(86,212,200,0.35);
+  --red: #e84855;
+  --green: #7ee87e;
+  --violet: #b48ead;
+  --orange: #d08770;
+  --blue: #5e81ac;
+  --text: #c9d1d9;
+  --text-dim: #7d8590;
+  --text-bright: #e6edf3;
+  --border: #30363d;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── Header ── */
+.hero {
+  padding: 4rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 2.6rem;
+  color: var(--gold);
+  letter-spacing: 0.015em;
+  line-height: 1.2;
+}
+.hero h1 .mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 2.1rem;
+  color: var(--gold-bright);
+}
+.hero .subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+}
+
+/* ── Section headings ── */
+.section { padding: 2.5rem 0 1rem; }
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.section h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: var(--gold);
+  line-height: 1.25;
+}
+.section h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+/* ── Prose ── */
+.prose { max-width: 780px; font-size: 0.95rem; color: var(--text); line-height: 1.75; }
+.prose p { margin-bottom: 1rem; }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--cyan);
+  background: rgba(86,212,200,0.08);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+.prose em { font-style: italic; color: var(--text-bright); }
+.prose .math {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--gold-bright);
+  font-size: 1.05em;
+}
+.prose .eq {
+  display: block;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--gold-bright);
+  margin: 1.2rem 0;
+  letter-spacing: 0.02em;
+}
+
+/* ── Cards / panels ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.2rem;
+}
+.card h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+/* ── Euler table ── */
+.euler-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  margin: 1rem 0;
+}
+.euler-table th {
+  text-align: left;
+  color: var(--gold-dim);
+  font-weight: 500;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.euler-table td {
+  padding: 0.4rem 0.7rem;
+  color: var(--text);
+  border-bottom: 1px solid rgba(48,54,61,0.4);
+}
+.euler-table tr:hover td { background: rgba(200,169,110,0.04); }
+.euler-table .sa { color: var(--red); font-weight: 500; }
+.euler-table .match { color: var(--cyan); }
+.euler-table .gold-cell { color: var(--gold-bright); }
+
+/* ── Controls ── */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end;
+  margin-bottom: 1rem; padding: 1rem 1.5rem;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+}
+.control-group label {
+  display: block; font-family: var(--font-mono); font-size: 0.72rem;
+  font-weight: 500; color: var(--gold-dim); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 0.3rem;
+}
+.control-group input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 200px; height: 4px;
+  background: var(--border); border-radius: 2px; outline: none;
+}
+.control-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold); cursor: pointer; border: 2px solid var(--bg);
+}
+.range-val { font-family: var(--font-mono); font-size: 0.85rem; color: var(--gold-bright); margin-left: 0.5rem; }
+.toggle-group { display: flex; gap: 0.5rem; }
+.toggle-btn {
+  font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 4px; background: transparent;
+  color: var(--text-dim); cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em;
+}
+.toggle-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,110,0.08); }
+.toggle-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+
+/* ── Chart ── */
+.chart-wrap {
+  position: relative; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;
+}
+canvas.main-chart { width: 100% !important; height: 420px !important; }
+.chart-tooltip {
+  position: absolute; pointer-events: none; background: var(--bg-card);
+  border: 1px solid var(--gold-dim); border-radius: 4px; padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-bright);
+  display: none; z-index: 10; white-space: nowrap;
+}
+.chart-tooltip .tn { color: var(--gold-bright); font-weight: 500; }
+.chart-tooltip .tk { color: var(--text); }
+.chart-tooltip .tr { color: var(--cyan); }
+.chart-tooltip .tsa { color: var(--red); }
+
+/* ── Inspector ── */
+.inspector {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1.2rem 1.5rem; margin-bottom: 1.5rem;
+  display: flex; gap: 1.2rem; align-items: flex-start; flex-wrap: wrap;
+}
+.inspector label {
+  display: block; font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem;
+}
+.inspector input[type="number"] {
+  width: 120px; padding: 0.4rem 0.6rem; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--gold-bright); font-family: var(--font-mono); font-size: 1rem; outline: none;
+}
+.inspector input:focus { border-color: var(--gold); }
+.insp-result {
+  font-family: var(--font-mono); font-size: 0.83rem; line-height: 1.8;
+  color: var(--text); flex: 1; min-width: 200px;
+}
+.insp-result .il { color: var(--text-dim); }
+.insp-result .iv { color: var(--gold-bright); }
+.insp-result .ic { color: var(--cyan); }
+.insp-result .ir { color: var(--red); }
+
+/* ── Graph viz ── */
+.graph-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.2rem; margin: 1.2rem 0;
+}
+.graph-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1rem; text-align: center;
+}
+.graph-card h4 {
+  font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem;
+  color: var(--gold); margin-bottom: 0.3rem;
+}
+.graph-card .meta {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+canvas.graph-canvas { width: 100%; height: 280px; }
+.graph-card .eigenvals {
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);
+  margin-top: 0.5rem; text-align: left; padding: 0.5rem;
+  background: rgba(14,17,23,0.5); border-radius: 4px;
+}
+.graph-card .eigenvals span.ev { color: var(--cyan); }
+.graph-card .eigenvals span.lbl { color: var(--gold-dim); }
+
+/* ── Matrix display ── */
+.matrix-display {
+  font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.4;
+  overflow-x: auto; margin: 0.5rem 0;
+}
+.matrix-display table { border-collapse: collapse; margin: 0 auto; }
+.matrix-display td {
+  width: 1.6rem; height: 1.4rem; text-align: center;
+  color: var(--text-dim); padding: 2px;
+}
+.matrix-display td.one { color: var(--gold); font-weight: 500; }
+
+/* ── Spectral comparison ── */
+.spectral-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.2rem; margin: 1.2rem 0;
+}
+@media (max-width: 768px) { .spectral-grid { grid-template-columns: 1fr; } }
+.spectral-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1.2rem 1.5rem;
+}
+.spectral-card h4 {
+  font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem;
+  color: var(--gold); margin-bottom: 0.5rem;
+}
+.spectral-card .spec-row {
+  font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.9;
+  color: var(--text);
+}
+.spectral-card .spec-row .sl { color: var(--text-dim); }
+.spectral-card .spec-row .sv { color: var(--cyan); }
+.spectral-card .spec-row .sg { color: var(--gold-bright); }
+.spectral-card .spec-row .phi { color: var(--gold); font-weight: 500; }
+
+.bridge-box {
+  background: var(--bg-card-alt); border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0; padding: 1.2rem 1.5rem; margin: 1.5rem 0;
+}
+.bridge-box .bridge-label {
+  font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;
+}
+.bridge-box p {
+  font-family: var(--font-sans); font-size: 0.9rem; color: var(--text);
+  line-height: 1.7;
+}
+
+canvas.tridiag-canvas { width: 100% !important; height: 320px !important; }
+
+/* ── Footer ── */
+.footer {
+  padding: 2rem 0; border-top: 1px solid var(--border);
+  text-align: center; font-family: var(--font-mono); font-size: 0.68rem;
+  color: var(--text-dim); letter-spacing: 0.04em; margin-top: 2rem;
+}
+.footer .carbon { color: var(--gold-dim); }
+.footer .silicon { color: var(--text-dim); }
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.8rem; }
+  .hero h1 .mono { font-size: 1.5rem; }
+  .graph-grid { grid-template-columns: 1fr; }
+  .control-group input[type="range"] { width: 150px; }
+  .container { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <h1>Platonic Solids &amp; the Smallest Non-Divisor <span class="mono">k(N)</span></h1>
+  <div class="subtitle">From Euler's formula through graph spectra — the arithmetic of faces, edges, and vertices</div>
+</div>
+
+<!-- ═══════════════ §1 EULER ═══════════════ -->
+<div class="section">
+  <span class="section-num">§1</span>
+  <h2>Euler's Polyhedron Formula</h2>
+</div>
+
+<div class="prose">
+  <p>Every convex polyhedron satisfies Euler's relation between vertices <span class="math">V</span>, edges <span class="math">E</span>, and faces <span class="math">F</span>:</p>
+  <span class="eq">V − E + F = 2</span>
+  <p>The five Platonic solids are the only convex polyhedra whose faces are all congruent regular polygons meeting the same way at every vertex. Each is determined by a pair of integers: <span class="math">p</span>, the number of edges per face, and <span class="math">q</span>, the number of faces meeting at each vertex. The Schläfli symbol {<span class="math">p, q</span>} encodes this — {3, 3} for the tetrahedron, {4, 3} for the cube, {3, 4} for the octahedron, {5, 3} for the dodecahedron, {3, 5} for the icosahedron.</p>
+  <p>From Euler's formula and the double-counting identity <span class="math">2E = pF = qV</span>, the entire geometry is fixed once you choose {<span class="math">p, q</span>}.</p>
+</div>
+
+<div class="card">
+  <table class="euler-table" id="eulerTable">
+    <thead>
+      <tr>
+        <th>Solid</th><th>{p, q}</th><th>F</th><th>V</th><th>E</th>
+        <th>V−E+F</th><th>Edges/Face (p)</th><th>k(F)</th><th>k(F)=p ?</th><th>SA?</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="prose">
+  <p>The function <code>k(N)</code> returns the <em>smallest integer greater than 1 that does not divide N</em>. For every Platonic solid, <code>k(F)</code> equals the number of edges per face — the Schläfli parameter <span class="math">p</span>. This is not a deep theorem but it is a pleasing coincidence rooted in how divisible the face-counts are: the dense divisor sets of 4, 6, 8, 12, and 20 each have their first gap landing exactly at the polygon order.</p>
+</div>
+
+<!-- ═══════════════ §2 k(N) EXPLORER ═══════════════ -->
+<div class="section">
+  <span class="section-num">§2</span>
+  <h2>The <span style="font-family:var(--font-mono);font-weight:400;">k(N)</span> Landscape</h2>
+</div>
+
+<div class="prose">
+  <p>The scatter plot below shows three number-theoretic quantities for each integer: <code>k(N)</code> (smallest non-divisor), <span class="math">Ω(N)</span> (roundness — total prime factor count with multiplicity), and whether <span class="math">N</span> is superabundant (meaning <span class="math">σ(N)/N</span> exceeds that ratio for all smaller integers). The Platonic face-counts are annotated.</p>
+</div>
+
+<div class="controls" id="chartControls">
+  <div class="control-group">
+    <label>Range (N)</label>
+    <div style="display:flex;align-items:center;">
+      <input type="range" id="rangeSlider" min="20" max="1000" value="120" step="10">
+      <span class="range-val" id="rangeVal">120</span>
+    </div>
+  </div>
+  <div class="control-group">
+    <label>Layers</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-layer="kn">k(N)</button>
+      <button class="toggle-btn active" data-layer="round">Ω(N)</button>
+      <button class="toggle-btn active" data-layer="sa">SA</button>
+      <button class="toggle-btn active" data-layer="plat">Platonics</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <label>X Scale</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-scale="linear">Linear</button>
+      <button class="toggle-btn" data-scale="log">Log</button>
+    </div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <canvas class="main-chart" id="mainChart"></canvas>
+  <div class="chart-tooltip" id="tooltip"></div>
+</div>
+
+<div class="inspector">
+  <div>
+    <label>Inspect N</label>
+    <input type="number" id="inspectN" min="1" max="100000" value="12">
+  </div>
+  <div class="insp-result" id="inspectResult"></div>
+</div>
+
+<!-- ═══════════════ §3 GRAPHS ═══════════════ -->
+<div class="section">
+  <span class="section-num">§3</span>
+  <h2>Graph Duality &amp; Adjacency Spectra</h2>
+</div>
+
+<div class="prose">
+  <p>Each Platonic solid has a natural <em>graph</em>: vertices become nodes, geometric edges become graph edges. The <em>adjacency matrix</em> <span class="math">A</span> encodes connectivity — entry <span class="math">A<sub>ij</sub> = 1</span> when vertices <span class="math">i</span> and <span class="math">j</span> share an edge, 0 otherwise. Since no vertex connects to itself, the trace is always zero, and so the eigenvalues sum to zero.</p>
+  <p>Duality swaps faces and vertices while preserving edges: the cube (8 vertices, 6 faces) is dual to the octahedron (6 vertices, 8 faces); the dodecahedron (20 vertices, 12 faces) is dual to the icosahedron (12 vertices, 20 faces). The tetrahedron is self-dual. This duality transposes the adjacency structure — rows in one correspond to faces in the other.</p>
+
+  <h3>Chromatic Structure</h3>
+  <p>The <em>chromatic number</em> χ is the minimum number of colours needed to colour vertices so that no two adjacent vertices share a colour. The graph below renders each solid's vertex graph with a valid colouring. Platonic symmetry constrains χ tightly: the tetrahedron is <span class="math">K<sub>4</sub></span> so χ = 4, while the cube and dodecahedron (bipartite-like structures) need fewer.</p>
+  <p>By Vizing's theorem, the <em>edge</em> chromatic number (chromatic index) is either Δ or Δ+1, where Δ is the maximum vertex degree. For all five Platonic graphs, the edge chromatic number equals the vertex degree — they are all Class 1.</p>
+</div>
+
+<div class="graph-grid" id="graphGrid"></div>
+
+<!-- ═══════════════ §4 ADJACENCY MATRICES ═══════════════ -->
+<div class="section">
+  <span class="section-num">§4</span>
+  <h2>Adjacency Matrices &amp; Eigenvalues</h2>
+</div>
+
+<div class="prose">
+  <p>Click any solid above to see its adjacency matrix below. The eigenvalues of the adjacency matrix encode deep structural information: the largest eigenvalue equals the vertex degree (since the graphs are regular), the multiplicity structure reflects the symmetry group, and for dual pairs, the spectral properties are intimately related through the face–vertex swap.</p>
+</div>
+
+<div class="card" id="matrixPanel">
+  <h4 id="matrixTitle">Select a solid above</h4>
+  <div class="matrix-display" id="matrixDisplay"></div>
+  <div class="eigenvals" id="eigenDisplay" style="display:none;"></div>
+</div>
+
+<!-- ═══════════════ §5 GOLDEN RATIO IN THE SPECTRUM ═══════════════ -->
+<div class="section">
+  <span class="section-num">§5</span>
+  <h2>The Golden Ratio in the Spectrum</h2>
+</div>
+
+<div class="prose">
+  <p>The eigenvalues of the dodecahedron and icosahedron are not arbitrary irrationals. They are built from exactly the same algebraic numbers that govern the Fibonacci sequence: the golden ratio <span class="math">φ = (1+√5)/2</span>, its conjugate <span class="math">ψ = (1−√5)/2 = −1/φ</span>, and their common radical <span class="math">√5</span>.</p>
+</div>
+
+<div class="spectral-grid">
+  <div class="spectral-card">
+    <h4>Dodecahedron · 20 vertices</h4>
+    <div class="spec-row">
+      <span class="sl">Eigenvalues:</span><br>
+      <span class="sv">3</span> <span class="sl">(×1)</span>,&ensp;
+      <span class="phi">√5 ≈ 2.236</span> <span class="sl">(×3)</span>,&ensp;
+      <span class="sv">1</span> <span class="sl">(×5)</span>,<br>
+      <span class="sv">0</span> <span class="sl">(×4)</span>,&ensp;
+      <span class="sv">−2</span> <span class="sl">(×4)</span>,&ensp;
+      <span class="phi">−√5 ≈ −2.236</span> <span class="sl">(×3)</span>
+    </div>
+    <div class="spec-row" style="margin-top:0.6rem;">
+      <span class="sl">Pentagonal faces →</span> <span class="sg">√5 = φ + ψ = φ − 1/φ enters the spectrum</span>
+    </div>
+  </div>
+  <div class="spectral-card">
+    <h4>Icosahedron · 12 vertices</h4>
+    <div class="spec-row">
+      <span class="sl">Eigenvalues:</span><br>
+      <span class="sv">5</span> <span class="sl">(×1)</span>,&ensp;
+      <span class="phi">√5 ≈ 2.236</span> <span class="sl">(×3)</span>,<br>
+      <span class="sv">−1</span> <span class="sl">(×5)</span>,&ensp;
+      <span class="phi">−√5 ≈ −2.236</span> <span class="sl">(×3)</span>
+    </div>
+    <div class="spec-row" style="margin-top:0.6rem;">
+      <span class="sl">5 triangles meet at each vertex →</span> <span class="sg">the pentagonal vertex figure carries √5 into the spectrum</span>
+    </div>
+  </div>
+</div>
+
+<div class="prose">
+  <p>Compare these with the three solids whose geometry involves no pentagons: the tetrahedron (eigenvalues 3, −1), the cube (3, 1, −1, −3), and the octahedron (4, 0, −2). All integers. No √5, no φ. The golden ratio enters the adjacency spectrum <em>precisely when the solid has pentagonal symmetry</em> — pentagonal faces for the dodecahedron, pentagonal vertex figures for the icosahedron.</p>
+</div>
+
+<div class="bridge-box">
+  <div class="bridge-label">The tridiagonal connection</div>
+  <p>In the Fibonacci essay <em>"Why i Makes Fibonacci Inevitable"</em>, we saw that the tridiagonal continuant matrix with off-diagonal entries <span class="math" style="color:var(--cyan);">x</span> has determinant satisfying the recurrence <span class="math" style="color:var(--cyan);">K<sub>n</sub> = K<sub>n−1</sub> − x²K<sub>n−2</sub></span>. Setting <span class="math" style="color:var(--cyan);">x = i</span> flips the minus to a plus, giving Fibonacci. The characteristic polynomial of the 2×2 case is <span class="math" style="color:var(--cyan);">λ² − λ − 1 = 0</span>, whose roots are exactly <span class="math" style="color:var(--gold);">φ</span> and <span class="math" style="color:var(--gold);">ψ</span>.</p>
+  <p style="margin-top:0.6rem;">The adjacency spectra of both the dodecahedron and icosahedron contain ±√5 as eigenvalues. Since √5 = φ − ψ = 2φ − 1, these live in the same quadratic extension <span class="math" style="color:var(--gold);">ℚ(√5)</span> as the golden ratio. The characteristic polynomial of each must have <span class="math" style="color:var(--gold);">λ² − 5</span> as a factor — the minimal polynomial of √5 over ℚ — and this is the same radical that appears in the quadratic formula for the Fibonacci companion matrix.</p>
+</div>
+
+<div class="prose">
+  <h3>The algebraic ladder</h3>
+  <p>The connection can be made precise. Consider the chain:</p>
+</div>
+
+<div class="spectral-grid">
+  <div class="spectral-card">
+    <h4>Fibonacci companion matrix</h4>
+    <div class="spec-row">
+      <span class="sl">Matrix:</span> <span class="sv">[[1,1],[1,0]]</span><br>
+      <span class="sl">Char. poly:</span> <span class="sg">λ² − λ − 1 = 0</span><br>
+      <span class="sl">Eigenvalues:</span> <span class="phi">φ, ψ</span><br>
+      <span class="sl">Source:</span> <span class="sv">F<sub>n</sub> = F<sub>n−1</sub> + F<sub>n−2</sub></span>
+    </div>
+  </div>
+  <div class="spectral-card">
+    <h4>Tridiagonal continuant (x = i)</h4>
+    <div class="spec-row">
+      <span class="sl">2×2 case:</span> <span class="sv">[[1,i],[i,1]]</span><br>
+      <span class="sl">Char. poly:</span> <span class="sg">λ² − 2λ + 1 − (i)² = λ² − 2λ + 2</span><br>
+      <span class="sl">Determinant:</span> <span class="phi">1 − i² = 2</span> <span class="sl">= F<sub>3</sub></span><br>
+      <span class="sl">The −x² = +1 flip gives the Fibonacci recurrence</span>
+    </div>
+  </div>
+  <div class="spectral-card">
+    <h4>Regular pentagon</h4>
+    <div class="spec-row">
+      <span class="sl">Diagonal / side ratio:</span> <span class="phi">φ = (1+√5)/2</span><br>
+      <span class="sl">Interior angle:</span> <span class="sv">108° = 3π/5</span><br>
+      <span class="sl">cos(π/5) = φ/2</span>,&ensp; <span class="sl">cos(2π/5) = (√5−1)/4</span><br>
+      <span class="sl">All ratios in</span> <span class="sg">ℚ(√5)</span>
+    </div>
+  </div>
+  <div class="spectral-card">
+    <h4>Platonic spectra</h4>
+    <div class="spec-row">
+      <span class="sl">Tetra, Cube, Octa eigenvalues ∈</span> <span class="sv">ℤ</span><br>
+      <span class="sl">Dodeca, Icosa eigenvalues ∈</span> <span class="phi">ℚ(√5)</span><br>
+      <span class="sl">Factor of char. poly:</span> <span class="sg">λ² − 5</span><br>
+      <span class="sl">Pentagonal symmetry ↔ golden algebraic extension</span>
+    </div>
+  </div>
+</div>
+
+<div class="prose">
+  <p>The tridiagonal band structure that produces Fibonacci and the adjacency structure that produces the Platonic spectra are different matrices, but they share the same <em>algebraic substrate</em>. The eigenvalue <span class="math">φ</span> is not merely a numerical curiosity appearing in unrelated places — it is the fundamental unit of the quadratic field <span class="math">ℚ(√5)</span>, and any matrix whose structure encodes pentagonal or golden-ratio geometry will have its spectrum fall in that field.</p>
+  <p>The cube and octahedron, built from squares and triangles, have integer eigenvalues — they live over <span class="math">ℚ</span>. The dodecahedron and icosahedron, built from pentagons (or pentagonal vertex arrangements), require the richer number field. The tetrahedron, being self-dual and triangular, also stays over <span class="math">ℚ</span>. The algebraic complexity of the spectrum tracks the geometric complexity of the underlying polygon.</p>
+</div>
+
+<div class="bridge-box">
+  <div class="bridge-label">Spectral summary</div>
+  <p><span style="color:var(--cyan);">Triangles and squares → ℤ eigenvalues.</span> &ensp; <span style="color:var(--gold);">Pentagons → ℚ(√5) eigenvalues.</span> &ensp; The smallest non-divisor <span style="font-family:var(--font-mono);color:var(--gold-bright);">k(N)</span> detects the polygon order from the face count. The eigenvalue field detects it from the adjacency structure. Two different routes to the same geometric fact.</p>
+</div>
+
+</div><!-- /.container -->
+
+<div class="footer container">
+  Constructed by <span class="silicon">Silicon · Anthropic Claude</span> — Architect <span class="carbon">Carbon · LeeMcCullochJames</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// NUMBER THEORY
+// ══════════════════════════════════════════════
+
+function findKN(n) { let k=2; while(n%k===0) k++; return k; }
+
+function sumOfDivisors(n) {
+  let s=0;
+  for(let i=1;i*i<=n;i++) { if(n%i===0){ s+=i; if(i!==n/i) s+=n/i; }}
+  return s;
+}
+
+function computeRoundness(limit) {
+  const r=new Array(limit+1).fill(0);
+  for(let i=2;i<=limit;i++){
+    if(r[i]===0){
+      for(let j=i;j<=limit;j+=i){
+        let num=j,pow=0;
+        while(num%i===0){num=Math.floor(num/i);pow++;}
+        r[j]+=pow;
+      }
+    }
+  }
+  return r;
+}
+
+function computeSA(limit) {
+  const sa=[]; let maxR=0;
+  for(let n=1;n<=limit;n++){
+    const r=sumOfDivisors(n)/n;
+    if(r>maxR){maxR=r; sa.push(n);}
+  }
+  return new Set(sa);
+}
+
+function factorize(n) {
+  if(n<2)return[];
+  const f=[]; let d=2;
+  while(d*d<=n){let c=0; while(n%d===0){n=Math.floor(n/d);c++;} if(c>0)f.push([d,c]); d++;}
+  if(n>1)f.push([n,1]);
+  return f;
+}
+
+function divisorsOf(n) {
+  const d=[];
+  for(let i=1;i*i<=n;i++){if(n%i===0){d.push(i);if(i!==n/i)d.push(n/i);}}
+  return d.sort((a,b)=>a-b);
+}
+
+// ══════════════════════════════════════════════
+// PLATONIC DATA
+// ══════════════════════════════════════════════
+
+const PLATONICS = [
+  {
+    name:'Tetrahedron', p:3, q:3, F:4, V:4, E:6, chi:4, dual:'Self-dual',
+    adj:[
+      [0,1,1,1],
+      [1,0,1,1],
+      [1,1,0,1],
+      [1,1,1,0]
+    ],
+    eigenvalues:[3,-1,-1,-1],
+    // vertex positions for 2D graph drawing (projected)
+    pos:[[0,-1],[-.87,.5],[.87,.5],[0,.1]],
+    colors:['#e84855','#56d4c8','#c8a96e','#b48ead']
+  },
+  {
+    name:'Cube', p:4, q:3, F:6, V:8, E:12, chi:2, dual:'Octahedron',
+    adj:[
+      [0,1,0,1,1,0,0,0],
+      [1,0,1,0,0,0,0,1],
+      [0,1,0,1,0,0,1,0],
+      [1,0,1,0,0,1,0,0],
+      [1,0,0,0,0,1,0,1],
+      [0,0,0,1,1,0,1,0],
+      [0,0,1,0,0,1,0,1],
+      [0,1,0,0,1,0,1,0]
+    ],
+    eigenvalues:[3,1,1,1,-1,-1,-1,-3],
+    pos:[[-0.7,-0.7],[-0.7,0.7],[0.7,0.7],[0.7,-0.7],[-0.35,-0.35],[-0.35,0.35],[0.35,0.35],[0.35,-0.35]],
+    colors:['#e84855','#56d4c8','#e84855','#56d4c8','#56d4c8','#e84855','#56d4c8','#e84855']
+  },
+  {
+    name:'Octahedron', p:3, q:4, F:8, V:6, E:12, chi:3, dual:'Cube',
+    adj:[
+      [0,1,1,1,1,0],
+      [1,0,1,0,1,1],
+      [1,1,0,1,0,1],
+      [1,0,1,0,1,1],
+      [1,1,0,1,0,1],
+      [0,1,1,1,1,0]
+    ],
+    eigenvalues:[4,-2,-2,0,0,0],
+    pos:[[0,-1],[-.95,0],[-.32,.3],[.32,.3],[.95,0],[0,1]],
+    colors:['#e84855','#56d4c8','#c8a96e','#56d4c8','#c8a96e','#e84855']
+  },
+  {
+    name:'Dodecahedron', p:5, q:3, F:12, V:20, E:30, chi:4, dual:'Icosahedron',
+    adj:(function(){
+      // Dodecahedron graph adjacency (vertex labels 0-19)
+      const edges=[[0,1],[1,2],[2,3],[3,4],[4,0],
+        [0,5],[1,6],[2,7],[3,8],[4,9],
+        [5,10],[5,14],[6,10],[6,11],[7,11],[7,12],[8,12],[8,13],[9,13],[9,14],
+        [10,15],[11,16],[12,17],[13,18],[14,19],
+        [15,16],[16,17],[17,18],[18,19],[19,15]];
+      const a=Array.from({length:20},()=>new Array(20).fill(0));
+      edges.forEach(([u,v])=>{a[u][v]=1;a[v][u]=1;});
+      return a;
+    })(),
+    eigenvalues:[3, Math.sqrt(5),Math.sqrt(5),Math.sqrt(5),
+      1,1,1,1,1, 0,0,0,0,
+      -2,-2,-2,-2,
+      -Math.sqrt(5),-Math.sqrt(5),-Math.sqrt(5)],
+    pos:(function(){
+      // place on concentric pentagons
+      const pts=[];
+      for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5; pts.push([Math.cos(a)*0.35,Math.sin(a)*0.35]);}
+      for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5; pts.push([Math.cos(a)*0.65,Math.sin(a)*0.65]);}
+      for(let i=0;i<5;i++){const a=-Math.PI/2+(i+0.5)*2*Math.PI/5; pts.push([Math.cos(a)*0.82,Math.sin(a)*0.82]);}
+      for(let i=0;i<5;i++){const a=-Math.PI/2+(i+0.5)*2*Math.PI/5; pts.push([Math.cos(a)*1.0,Math.sin(a)*1.0]);}
+      return pts;
+    })(),
+    colors:(function(){
+      const c=['#e84855','#56d4c8','#c8a96e','#b48ead'];
+      // 4-colour the dodecahedron graph
+      return [0,1,2,1,2, 2,0,1,0,1, 3,3,3,3,3, 0,1,2,1,2].map(i=>c[i]);
+    })()
+  },
+  {
+    name:'Icosahedron', p:3, q:5, F:20, V:12, E:30, chi:4, dual:'Dodecahedron',
+    adj:(function(){
+      const edges=[[0,1],[0,2],[0,3],[0,4],[0,5],
+        [1,2],[2,3],[3,4],[4,5],[5,1],
+        [1,6],[2,6],[2,7],[3,7],[3,8],[4,8],[4,9],[5,9],[5,10],[1,10],
+        [6,7],[7,8],[8,9],[9,10],[10,6],
+        [6,11],[7,11],[8,11],[9,11],[10,11]];
+      const a=Array.from({length:12},()=>new Array(12).fill(0));
+      edges.forEach(([u,v])=>{a[u][v]=1;a[v][u]=1;});
+      return a;
+    })(),
+    eigenvalues:[5, Math.sqrt(5),Math.sqrt(5),Math.sqrt(5),
+      -1,-1,-1,-1,-1,
+      -Math.sqrt(5),-Math.sqrt(5),-Math.sqrt(5)],
+    pos:(function(){
+      const pts=[[0,-1]];
+      for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5; pts.push([Math.cos(a)*0.6,Math.sin(a)*0.6]);}
+      for(let i=0;i<5;i++){const a=-Math.PI/2+(i+0.5)*2*Math.PI/5; pts.push([Math.cos(a)*0.9,Math.sin(a)*0.9]);}
+      pts.push([0,1]);
+      return pts;
+    })(),
+    colors:['#e84855','#56d4c8','#c8a96e','#b48ead','#56d4c8','#c8a96e',
+            '#b48ead','#e84855','#56d4c8','#e84855','#c8a96e','#b48ead']
+  }
+];
+
+// ══════════════════════════════════════════════
+// §1 — EULER TABLE
+// ══════════════════════════════════════════════
+
+(function buildEulerTable(){
+  const tbody=document.querySelector('#eulerTable tbody');
+  const saSet=computeSA(20);
+  PLATONICS.forEach(s=>{
+    const k=findKN(s.F);
+    const match=k===s.p;
+    const isSA=saSet.has(s.F);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${s.name}</td>
+      <td class="gold-cell">{${s.p}, ${s.q}}</td>
+      <td>${s.F}</td><td>${s.V}</td><td>${s.E}</td>
+      <td class="match">${s.V}-${s.E}+${s.F} = 2</td>
+      <td>${s.p}</td>
+      <td class="gold-cell">${k}</td>
+      <td class="${match?'match':''}">${match?'✓':'✗'}</td>
+      <td>${isSA?'<span class="sa">SA</span>':''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+})();
+
+// ══════════════════════════════════════════════
+// §2 — SCATTER CHART
+// ══════════════════════════════════════════════
+
+const canvas=document.getElementById('mainChart');
+const ctx=canvas.getContext('2d');
+const tip=document.getElementById('tooltip');
+
+let chartState={limit:120, layers:{kn:true,round:true,sa:true,plat:true}, scale:'linear'};
+let chartCache=null;
+
+function computeChart(limit){
+  const kV=[]; for(let n=1;n<=limit;n++) kV.push(findKN(n));
+  return {kValues:kV, roundness:computeRoundness(limit), saSet:computeSA(limit)};
+}
+
+function drawChart(){
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W=rect.width, H=rect.height;
+  const pad={top:25,right:25,bottom:45,left:50};
+  const pW=W-pad.left-pad.right, pH=H-pad.top-pad.bottom;
+
+  chartCache=computeChart(chartState.limit);
+  const {kValues,roundness,saSet}=chartCache;
+
+  let yMax=2;
+  for(let i=0;i<kValues.length;i++){
+    if(chartState.layers.kn && kValues[i]>yMax) yMax=kValues[i];
+    if(chartState.layers.round && roundness[i+1]>yMax) yMax=roundness[i+1];
+  }
+  yMax=Math.ceil(yMax*1.15);
+
+  const isLog=chartState.scale==='log';
+  function xP(n){
+    if(isLog){const lMin=0,lMax=Math.log(chartState.limit);return pad.left+((Math.log(Math.max(n,1))-lMin)/(lMax-lMin))*pW;}
+    return pad.left+((n-1)/(chartState.limit-1))*pW;
+  }
+  function yP(v){ return pad.top+pH-(v/yMax)*pH; }
+
+  ctx.fillStyle='#161b22'; ctx.fillRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle='rgba(48,54,61,0.6)'; ctx.lineWidth=0.5;
+  const yT=Math.min(yMax,10);
+  for(let i=0;i<=yT;i++){
+    const v=Math.round(yMax*i/yT), y=yP(v);
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();
+    ctx.fillStyle='#7d8590';ctx.font='11px "IBM Plex Mono"';ctx.textAlign='right';
+    ctx.fillText(v,pad.left-8,y+4);
+  }
+  for(let i=0;i<=6;i++){
+    let n=isLog?Math.round(Math.exp(Math.log(Math.max(1,1))+(Math.log(chartState.limit))*i/6)):Math.round(1+(chartState.limit-1)*i/6);
+    const x=xP(n);
+    ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,pad.top+pH);ctx.stroke();
+    ctx.fillStyle='#7d8590';ctx.textAlign='center';ctx.fillText(n,x,H-pad.bottom+16);
+  }
+  ctx.fillStyle='#7d8590';ctx.font='12px "IBM Plex Sans"';ctx.textAlign='center';
+  ctx.fillText('N',W/2,H-6);
+
+  // k(N)
+  if(chartState.layers.kn){
+    ctx.fillStyle='rgba(201,209,217,0.2)';
+    for(let i=0;i<kValues.length;i++){
+      ctx.beginPath();ctx.arc(xP(i+1),yP(kValues[i]),3,0,Math.PI*2);ctx.fill();
+    }
+  }
+  // roundness
+  if(chartState.layers.round){
+    ctx.fillStyle='rgba(86,212,200,0.35)';
+    for(let i=0;i<chartState.limit;i++){
+      ctx.beginPath();ctx.arc(xP(i+1),yP(roundness[i+1]),2.5,0,Math.PI*2);ctx.fill();
+    }
+  }
+  // SA
+  if(chartState.layers.sa){
+    ctx.strokeStyle='#e84855';ctx.lineWidth=2;
+    for(const n of saSet){
+      if(n>chartState.limit)continue;
+      ctx.beginPath();ctx.arc(xP(n),yP(kValues[n-1]),6,0,Math.PI*2);ctx.stroke();
+    }
+  }
+  // Platonics
+  if(chartState.layers.plat){
+    PLATONICS.forEach(p=>{
+      if(p.F>chartState.limit)return;
+      const x=xP(p.F),y=yP(kValues[p.F-1]);
+      ctx.fillStyle='#c8a96e';
+      ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+5,y);ctx.lineTo(x,y+7);ctx.lineTo(x-5,y);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#c8a96e';ctx.font='600 11px "IBM Plex Sans"';ctx.textAlign='center';
+      ctx.fillText(p.name,x,y-12);
+      ctx.font='11px "IBM Plex Mono"';ctx.fillStyle='#a08550';
+      ctx.fillText(`k(${p.F})=${kValues[p.F-1]}`,x,y-24);
+    });
+  }
+
+  canvas._pm={pad,pW,pH,yMax,xP,yP,kValues:kValues,roundness,saSet};
+}
+
+// hover
+canvas.addEventListener('mousemove',e=>{
+  if(!canvas._pm)return;
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const {pad,pW,pH,xP,yP,kValues,roundness,saSet}=canvas._pm;
+  if(mx<pad.left||mx>pad.left+pW||my<pad.top||my>pad.top+pH){tip.style.display='none';return;}
+  let bestN=1,bestD=1e9;
+  for(let n=1;n<=chartState.limit;n++){const dx=Math.abs(xP(n)-mx);if(dx<bestD){bestD=dx;bestN=n;}}
+  if(bestD>15){tip.style.display='none';return;}
+  const n=bestN,k=kValues[n-1],r=roundness[n],isSA=saSet.has(n),plat=PLATONICS.find(p=>p.F===n);
+  let h=`<span class="tn">N=${n}</span><br><span class="tk">k(${n})=${k}</span><br><span class="tr">Ω(${n})=${r}</span>`;
+  if(isSA) h+=`<br><span class="tsa">⬤ Superabundant</span>`;
+  if(plat) h+=`<br><span class="tn">◆ ${plat.name}</span>`;
+  tip.innerHTML=h;tip.style.display='block';
+  tip.style.left=(mx+16)+'px';tip.style.top=(my-10)+'px';
+});
+canvas.addEventListener('mouseleave',()=>{tip.style.display='none';});
+
+// controls
+document.getElementById('rangeSlider').addEventListener('input',function(){
+  chartState.limit=+this.value;document.getElementById('rangeVal').textContent=chartState.limit;drawChart();
+});
+document.querySelectorAll('.toggle-btn[data-layer]').forEach(b=>{
+  b.addEventListener('click',()=>{chartState.layers[b.dataset.layer]=!chartState.layers[b.dataset.layer];b.classList.toggle('active');drawChart();});
+});
+document.querySelectorAll('.toggle-btn[data-scale]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.toggle-btn[data-scale]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');chartState.scale=b.dataset.scale;drawChart();
+  });
+});
+
+// inspector
+function inspect(n){
+  const el=document.getElementById('inspectResult');
+  if(n<1||isNaN(n)){el.innerHTML='<span class="il">Enter a positive integer.</span>';return;}
+  n=Math.floor(n);
+  const k=findKN(n),facts=factorize(n),divs=divisorsOf(n);
+  const omega=facts.reduce((s,[,e])=>s+e,0);
+  const sigR=(sumOfDivisors(n)/n).toFixed(4);
+  let isSA=false,maxR=0;
+  for(let i=1;i<=n;i++){const r=sumOfDivisors(i)/i;if(r>maxR){maxR=r;if(i===n)isSA=true;}}
+  const fStr=facts.length===0?'1':facts.map(([p,e])=>e===1?p:`${p}<sup>${e}</sup>`).join(' · ');
+  const plat=PLATONICS.find(p=>p.F===n);
+  let h=`<span class="il">N = </span><span class="iv">${n}</span> = <span class="iv">${fStr}</span><br>`;
+  h+=`<span class="il">Divisors: </span><span class="iv">${divs.join(', ')}</span><br>`;
+  h+=`<span class="il">k(${n}) = </span><span class="iv">${k}</span> · <span class="il">Ω(${n}) = </span><span class="ic">${omega}</span> · <span class="il">σ/${n} = </span><span class="iv">${sigR}</span>`;
+  if(isSA) h+=` <span class="ir">⬤ SA</span>`;
+  if(plat) h+=`<br><span class="iv">◆ ${plat.name} — ${plat.F} faces, k(${plat.F})=${k} edges/face</span>`;
+  el.innerHTML=h;
+}
+document.getElementById('inspectN').addEventListener('input',function(){inspect(+this.value);});
+inspect(12);
+
+// ══════════════════════════════════════════════
+// §3 — GRAPH VISUALISATIONS
+// ══════════════════════════════════════════════
+
+function drawGraph(canvasEl, solid){
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvasEl.getBoundingClientRect();
+  canvasEl.width=rect.width*dpr; canvasEl.height=rect.height*dpr;
+  const gc=canvasEl.getContext('2d');
+  gc.setTransform(dpr,0,0,dpr,0,0);
+  const W=rect.width, H=rect.height;
+  const cx=W/2, cy=H/2;
+  const scale=Math.min(W,H)*0.38;
+
+  const pts=solid.pos.map(([x,y])=>[cx+x*scale, cy+y*scale]);
+
+  // edges
+  gc.strokeStyle='rgba(200,169,110,0.18)'; gc.lineWidth=1.5;
+  const adj=solid.adj;
+  for(let i=0;i<adj.length;i++){
+    for(let j=i+1;j<adj[i].length;j++){
+      if(adj[i][j]){
+        gc.beginPath();gc.moveTo(pts[i][0],pts[i][1]);gc.lineTo(pts[j][0],pts[j][1]);gc.stroke();
+      }
+    }
+  }
+
+  // vertices with chromatic colouring
+  pts.forEach(([x,y],i)=>{
+    gc.beginPath();gc.arc(x,y,8,0,Math.PI*2);
+    gc.fillStyle=solid.colors[i]||'#c8a96e';
+    gc.fill();
+    gc.strokeStyle='rgba(14,17,23,0.6)';gc.lineWidth=2;gc.stroke();
+    // label
+    gc.fillStyle='#0e1117';gc.font='bold 9px "IBM Plex Mono"';gc.textAlign='center';gc.textBaseline='middle';
+    gc.fillText(i,x,y+0.5);
+  });
+}
+
+function buildGraphCards(){
+  const grid=document.getElementById('graphGrid');
+  grid.innerHTML='';
+  PLATONICS.forEach((s,idx)=>{
+    const card=document.createElement('div');
+    card.className='graph-card';
+    card.style.cursor='pointer';
+    const evs=s.eigenvalues.map(v=>typeof v==='number'?(Number.isInteger(v)?v:v.toFixed(3)):v);
+    // group and count eigenvalues
+    const evCount={};
+    evs.forEach(v=>{const key=parseFloat(v).toFixed(3);evCount[key]=(evCount[key]||0)+1;});
+    const evStr=Object.entries(evCount).sort((a,b)=>+b[0]-a[0]).map(([v,c])=>{
+      const vn=parseFloat(v);
+      const disp=Number.isInteger(vn)?vn.toString():vn.toFixed(3);
+      return c>1?`${disp} <span style="font-size:0.65rem;color:var(--text-dim);">(×${c})</span>`:disp;
+    }).join(', ');
+
+    card.innerHTML=`
+      <h4>${s.name}</h4>
+      <div class="meta">{${s.p}, ${s.q}} · V=${s.V} E=${s.E} F=${s.F} · χ=${s.chi} · Dual: ${s.dual}</div>
+      <canvas class="graph-canvas" id="gCanvas${idx}"></canvas>
+      <div class="eigenvals">
+        <span class="lbl">λ: </span><span class="ev">${evStr}</span><br>
+        <span class="lbl">Σλ = </span><span class="ev">0</span> &nbsp;
+        <span class="lbl">deg = </span><span class="ev">${s.p===3&&s.q===3?3:s.adj[0].reduce((a,b)=>a+b,0)}</span>
+      </div>
+    `;
+    card.addEventListener('click',()=>showMatrix(s));
+    grid.appendChild(card);
+  });
+
+  // draw after DOM insertion
+  requestAnimationFrame(()=>{
+    PLATONICS.forEach((s,idx)=>{
+      drawGraph(document.getElementById('gCanvas'+idx), s);
+    });
+  });
+}
+
+function showMatrix(solid){
+  document.getElementById('matrixTitle').textContent=solid.name+' — Adjacency Matrix ('+solid.V+'×'+solid.V+')';
+  const disp=document.getElementById('matrixDisplay');
+  const n=solid.adj.length;
+  let html='<table>';
+  for(let i=0;i<n;i++){
+    html+='<tr>';
+    for(let j=0;j<n;j++){
+      const v=solid.adj[i][j];
+      html+=`<td class="${v?'one':''}">${v}</td>`;
+    }
+    html+='</tr>';
+  }
+  html+='</table>';
+  disp.innerHTML=html;
+
+  const evDisp=document.getElementById('eigenDisplay');
+  evDisp.style.display='block';
+  const evCount={};
+  solid.eigenvalues.forEach(v=>{const key=parseFloat(v).toFixed(4);evCount[key]=(evCount[key]||0)+1;});
+  const evStr=Object.entries(evCount).sort((a,b)=>+b[0]-a[0]).map(([v,c])=>{
+    const vn=parseFloat(v);
+    const disp=Number.isInteger(vn)?vn.toString():(Math.abs(vn-Math.round(vn))<0.0001?Math.round(vn).toString():vn.toFixed(4));
+    return c>1?`<span class="ev">${disp}</span> <span class="lbl">(×${c})</span>`:`<span class="ev">${disp}</span>`;
+  }).join(', &nbsp;');
+  evDisp.innerHTML=`<span class="lbl">Eigenvalues: </span>${evStr}<br><span class="lbl">Trace = Σλ = </span><span class="ev">0</span> &nbsp; <span class="lbl">(simple graph, no loops)</span>`;
+}
+
+buildGraphCards();
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+window.addEventListener('resize',()=>{
+  drawChart();
+  PLATONICS.forEach((s,idx)=>{
+    const c=document.getElementById('gCanvas'+idx);
+    if(c) drawGraph(c,s);
+  });
+});
+drawChart();
+</script>
+</body>
+</html>
