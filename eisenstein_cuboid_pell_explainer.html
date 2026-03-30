@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Eisenstein Triples to Cuboids and Pell</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #131a2e;
+      --panel-2: #1a2440;
+      --text: #eef2ff;
+      --muted: #b8c0e0;
+      --accent: #8ab4ff;
+      --accent-2: #7ee0c3;
+      --accent-3: #f4c76b;
+      --line: #31406c;
+      --good: #8ee79b;
+      --warn: #ffd27a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #10172b 100%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: rgba(19, 26, 46, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.24);
+      overflow: hidden;
+    }
+    .pad { padding: 24px; }
+    h1, h2, h3 { line-height: 1.15; margin: 0 0 12px; }
+    h1 { font-size: clamp(2rem, 3vw, 3.2rem); }
+    h2 { font-size: clamp(1.25rem, 2vw, 1.8rem); margin-top: 4px; }
+    h3 { font-size: 1.1rem; color: var(--accent-2); }
+    p { margin: 0 0 12px; color: var(--text); }
+    .muted { color: var(--muted); }
+    .lede { font-size: 1.06rem; color: #d9e1ff; }
+    .pillrow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #1c2750;
+      border: 1px solid #3b4a7a;
+      color: #dbe6ff;
+      font-size: 0.92rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .section { margin-top: 24px; }
+    .eq {
+      font-family: "Times New Roman", Georgia, serif;
+      font-size: 1.15rem;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .eq .big { font-size: 1.25rem; }
+    .accent { color: var(--accent); }
+    .accent2 { color: var(--accent-2); }
+    .accent3 { color: var(--accent-3); }
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      background: rgba(138,180,255,0.08);
+      border-radius: 0 16px 16px 0;
+      color: #eaf1ff;
+      margin-top: 12px;
+    }
+    .callout.good { border-left-color: var(--good); background: rgba(142,231,155,0.08); }
+    .callout.warn { border-left-color: var(--warn); background: rgba(255,210,122,0.08); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.96rem;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: top;
+    }
+    th { color: #dce6ff; background: rgba(255,255,255,0.03); }
+    .small { font-size: 0.92rem; }
+    .tiny { font-size: 0.84rem; }
+    .center { text-align: center; }
+    .foot { margin-top: 28px; color: var(--muted); font-size: 0.92rem; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .svgwrap { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00)); }
+    .legend { display:flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 0.9rem; }
+    .legend span::before { content: ""; display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+    .l1::before { background:#8ab4ff; }
+    .l2::before { background:#7ee0c3; }
+    .l3::before { background:#f4c76b; }
+    .l4::before { background:#ff8ea1; }
+    @media (max-width: 920px) {
+      .hero, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .wrap { padding: 18px 14px 50px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="card pad">
+        <h1>From <span class="accent">Eisenstein triples</span> to <span class="accent2">cuboids</span> and <span class="accent3">Pell</span></h1>
+        <p class="lede">The same theme appears three times in different clothes: a norm on a lattice, a rational parametrisation of a conic, and a Pell recursion that stabilises integrality. The cuboid story is not separate from the Eisenstein story. It is a 3D lift of the same arithmetic instinct.</p>
+        <div class="pillrow">
+          <div class="pill">Gaussian: <code>x²+y²=z²</code></div>
+          <div class="pill">Eisenstein: <code>a²-ab+b²=c²</code></div>
+          <div class="pill">Cuboid lift: <code>d²=a²+b²+(ab)²</code></div>
+          <div class="pill">Pell backbone: <code>u²-2v²=±1</code></div>
+        </div>
+        <div class="callout" style="margin-top:18px;">
+          <strong>Main idea.</strong> In the Gaussian world, squaring a lattice point gives a right triangle. In the Eisenstein world, squaring a hexagonal-lattice point gives an Eisenstein triangle. In your cuboid construction, a classical Pythagorean pair <code>(a,b)</code> is lifted again by attaching the third edge <code>ab</code>, and the Pell orbit is exactly what keeps the new space diagonal integral.
+        </div>
+      </div>
+      <div class="card svgwrap">
+        <svg viewBox="0 0 520 360" width="100%" height="100%" aria-label="Concept map">
+          <defs>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 z" fill="#9fb8ff"></path>
+            </marker>
+          </defs>
+          <rect x="0" y="0" width="520" height="360" fill="transparent"></rect>
+          <rect x="36" y="40" rx="18" ry="18" width="144" height="82" fill="#172240" stroke="#40528a"></rect>
+          <text x="108" y="68" fill="#eef2ff" text-anchor="middle" font-size="22" font-weight="700">Gaussian</text>
+          <text x="108" y="96" fill="#b8c0e0" text-anchor="middle" font-size="16">square lattice</text>
+          <text x="108" y="116" fill="#8ab4ff" text-anchor="middle" font-size="16">x² + y²</text>
+
+          <rect x="196" y="140" rx="18" ry="18" width="128" height="82" fill="#172c2b" stroke="#3f8775"></rect>
+          <text x="260" y="168" fill="#eef2ff" text-anchor="middle" font-size="22" font-weight="700">Cuboid</text>
+          <text x="260" y="196" fill="#b8c0e0" text-anchor="middle" font-size="16">third edge = ab</text>
+          <text x="260" y="216" fill="#7ee0c3" text-anchor="middle" font-size="16">a² + b² + (ab)²</text>
+
+          <rect x="340" y="40" rx="18" ry="18" width="144" height="82" fill="#30281a" stroke="#8e6f2c"></rect>
+          <text x="412" y="68" fill="#eef2ff" text-anchor="middle" font-size="22" font-weight="700">Eisenstein</text>
+          <text x="412" y="96" fill="#b8c0e0" text-anchor="middle" font-size="16">hexagonal lattice</text>
+          <text x="412" y="116" fill="#f4c76b" text-anchor="middle" font-size="16">a² - ab + b²</text>
+
+          <rect x="188" y="262" rx="18" ry="18" width="144" height="60" fill="#261f3f" stroke="#6650af"></rect>
+          <text x="260" y="288" fill="#eef2ff" text-anchor="middle" font-size="22" font-weight="700">Pell orbit</text>
+          <text x="260" y="309" fill="#c9b9ff" text-anchor="middle" font-size="16">1 + √2 controls recurrence</text>
+
+          <line x1="180" y1="105" x2="230" y2="140" stroke="#9fb8ff" stroke-width="3" marker-end="url(#arrow)"></line>
+          <line x1="340" y1="105" x2="290" y2="140" stroke="#9fb8ff" stroke-width="3" marker-end="url(#arrow)"></line>
+          <line x1="260" y1="222" x2="260" y2="262" stroke="#9fb8ff" stroke-width="3" marker-end="url(#arrow)"></line>
+
+          <text x="182" y="138" fill="#dfe7ff" font-size="14">square the generator</text>
+          <text x="292" y="138" fill="#dfe7ff" font-size="14">norm analogy</text>
+          <text x="272" y="250" fill="#dfe7ff" font-size="14">integrality pattern</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section grid-2">
+      <div class="card pad">
+        <h2>1. The classical side: Gaussian integers</h2>
+        <p>The standard parametrisation of primitive Pythagorean triples comes from squaring a Gaussian integer.</p>
+        <div class="eq">
+          <span class="big">(p+qi)^2 = (p^2-q^2) + 2pq \, i</span><br>
+          so<br>
+          <span class="big">a = p^2-q^2, \quad b = 2pq, \quad c = p^2+q^2.</span>
+        </div>
+        <p class="muted">This is the familiar circle story in arithmetic form: rational points on <code>X²+Y²=1</code> become integer triples after clearing denominators.</p>
+        <div class="callout good">
+          <strong>Structural slogan.</strong> A right triangle is the shadow of a Gaussian square.
+        </div>
+      </div>
+      <div class="card pad">
+        <h2>2. The Eisenstein side: the hexagonal analogue</h2>
+        <p>On the hexagonal lattice, the natural norm changes because the basis angle changes. The Eisenstein norm is</p>
+        <div class="eq">
+          <span class="big">N(a+b\omega) = a^2-ab+b^2.</span>
+        </div>
+        <p>Squaring an Eisenstein integer gives</p>
+        <div class="eq">
+          <span class="big">(m+n\omega)^2 = (m^2-n^2) + n(2m-n)\,\omega,</span><br>
+          with<br>
+          <span class="big">c = m^2-mn+n^2.</span>
+        </div>
+        <p>Hence</p>
+        <div class="eq"><span class="big">a^2-ab+b^2 = c^2.</span></div>
+        <div class="callout good">
+          <strong>Structural slogan.</strong> An Eisenstein triple is the shadow of an Eisenstein square.
+        </div>
+      </div>
+    </section>
+
+    <section class="section card pad">
+      <h2>3. Why your cuboid sits between them</h2>
+      <p>You start from a classical Pythagorean pair</p>
+      <div class="eq">
+        <span class="big">a = p^2-q^2, \quad b = 2pq, \quad c = p^2+q^2</span>
+      </div>
+      <p>and then build a cuboid with edges <code>a</code>, <code>b</code>, and <code>ab</code>. Its space diagonal is</p>
+      <div class="eq">
+        <span class="big">j(p,q)^2 = a^2+b^2+(ab)^2 = c^2 + (ab)^2.</span>
+      </div>
+      <p>That last rewrite is the key. It says the cuboid condition is not random: it asks whether the pair <code>(c,ab)</code> is itself the leg pair of a second right triangle.</p>
+      <div class="callout">
+        <strong>This is the bridge.</strong> The classical Gaussian square gives you <code>(a,b,c)</code>. Then the cuboid construction asks for a second squareness condition one level up:
+        <div class="eq"><span class="big">(c,ab,j) \text{ should also be Pythagorean.}</span></div>
+        So the cuboid is a <em>lifted norm problem</em>: first on the square lattice, then into three dimensions by multiplying the two legs together.
+      </div>
+    </section>
+
+    <section class="section grid-2">
+      <div class="card pad">
+        <h2>4. The hidden Pell mechanism</h2>
+        <p>The striking list</p>
+        <div class="eq"><span class="big">(p,q)=(2,1),(5,2),(12,5),(29,12),(70,29),\dots</span></div>
+        <p>is not accidental. It is generated by</p>
+        <div class="eq">
+          <span class="big">p_n = 2p_{n-1}+p_{n-2}, \qquad q_n = 2q_{n-1}+q_{n-2},</span>
+        </div>
+        <p>whose characteristic root is <code>1+√2</code>, the silver ratio. These are the standard Pell-type convergents to <code>1+√2</code>.</p>
+        <div class="eq">
+          <span class="big">\frac{p_n}{q_n} \to 1+\sqrt{2}</span>
+        </div>
+        <p>So the cuboid integrality condition is being stabilised by the same arithmetic that drives Pell equations.</p>
+        <div class="callout good">
+          <strong>Interpretation.</strong> The sequence is an orbit under multiplication by <code>1+√2</code> in <code>ℤ[√2]</code>.
+        </div>
+      </div>
+      <div class="card pad">
+        <h2>5. Why the first examples work</h2>
+        <table>
+          <thead>
+            <tr><th>p</th><th>q</th><th>a</th><th>b</th><th>j</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td>1</td><td>3</td><td>4</td><td>13</td></tr>
+            <tr><td>5</td><td>2</td><td>21</td><td>20</td><td>421</td></tr>
+            <tr><td>12</td><td>5</td><td>119</td><td>120</td><td>14281</td></tr>
+            <tr><td>29</td><td>12</td><td>697</td><td>696</td><td>485113</td></tr>
+          </tbody>
+        </table>
+        <p class="small muted">Notice how <code>a</code> and <code>b</code> become consecutive or near-consecutive in many cases. That is another Pell signature.</p>
+        <div class="eq">
+          <span class="big">j^2 = c^2 + (ab)^2</span>
+        </div>
+        <p>For <code>(p,q)=(2,1)</code>, this becomes</p>
+        <div class="eq"><span class="big">j^2 = 5^2 + 12^2 = 13^2.</span></div>
+        <p>So the cuboid diagonal sits inside a second Pythagorean triple <code>(5,12,13)</code>.</p>
+      </div>
+    </section>
+
+    <section class="section grid-3">
+      <div class="card pad">
+        <h3>Gaussian → circle</h3>
+        <p>The geometry is Euclidean in the square basis.</p>
+        <div class="eq"><span class="big">X^2+Y^2=1</span></div>
+        <p>Primitive triples come from a binary parity sieve:</p>
+        <div class="eq"><span class="big">p \not\equiv q \pmod 2.</span></div>
+      </div>
+      <div class="card pad">
+        <h3>Eisenstein → ellipse</h3>
+        <p>The geometry is Euclidean in the hexagonal basis.</p>
+        <div class="eq"><span class="big">X^2-XY+Y^2=1</span></div>
+        <p>Primitive triples come from the ramified-prime sieve:</p>
+        <div class="eq"><span class="big">m+n \not\equiv 0 \pmod 3.</span></div>
+      </div>
+      <div class="card pad">
+        <h3>Cuboid → lifted circle</h3>
+        <p>The geometry is no longer a plane conic, but a lifted square condition.</p>
+        <div class="eq"><span class="big">j^2 = c^2 + (ab)^2</span></div>
+        <p>Integrality is no longer controlled by mod 2 or mod 3 alone, but by a Pell orbit.</p>
+      </div>
+    </section>
+
+    <section class="section card pad">
+      <h2>6. A clean conceptual chain</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Arithmetic object</th>
+            <th>Quadratic form</th>
+            <th>What integrality means</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gaussian</td>
+            <td><code>ℤ[i]</code></td>
+            <td><code>x²+y²</code></td>
+            <td>ordinary Pythagorean triple</td>
+          </tr>
+          <tr>
+            <td>Eisenstein</td>
+            <td><code>ℤ[ω]</code></td>
+            <td><code>a²-ab+b²</code></td>
+            <td>hexagonal Pythagorean triple</td>
+          </tr>
+          <tr>
+            <td>Cuboid lift</td>
+            <td><code>ℤ[√2]</code> lurking in recurrence</td>
+            <td><code>a²+b²+(ab)²</code></td>
+            <td>space diagonal also integral</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <strong>Best way to say it.</strong> The cuboid family is not an Eisenstein norm directly. It is better viewed as a <em>second-stage lift of a Gaussian triple</em>, whose integrality pattern is organised by Pell recurrences. The link to the Eisenstein story is therefore structural rather than literal: both are norm-based parametrised geometries, but the cuboid case climbs from a 2D norm to a 3D multiplicative lift.
+      </div>
+    </section>
+
+    <section class="section grid-2">
+      <div class="card pad">
+        <h2>7. The semi-prime cuboid aside</h2>
+        <p>If you instead take prime edges <code>p</code>, <code>q</code>, and <code>pq</code>, then</p>
+        <div class="eq"><span class="big">d^2 = p^2 + q^2 + (pq)^2.</span></div>
+        <p>When one prime is <code>2</code>, this reduces to</p>
+        <div class="eq"><span class="big">d^2 - 5q^2 = 4,</span></div>
+        <p>which is genuinely Pell-type. The example <code>(p,q,d)=(2,3,7)</code> works because</p>
+        <div class="eq"><span class="big">7^2 - 5\cdot 3^2 = 4.</span></div>
+        <p>For general odd primes, the equation no longer has this simple Pell form, so computational search becomes natural.</p>
+      </div>
+      <div class="card pad">
+        <h2>8. A precise takeaway for your write-up</h2>
+        <p>You can present the relationship in one sentence like this:</p>
+        <div class="eq">
+          <span class="big">\text{Gaussian squaring} \longrightarrow \text{Pythagorean pair} \longrightarrow \text{cuboid lift} \longrightarrow \text{Pell-controlled integrality}.</span>
+        </div>
+        <p>And the Eisenstein side runs in parallel:</p>
+        <div class="eq">
+          <span class="big">\text{Eisenstein squaring} \longrightarrow \text{hexagonal triple} \longrightarrow \text{mod-3 parity sieve}.</span>
+        </div>
+        <div class="callout">
+          <strong>So the connection is this:</strong> Eisenstein gives the right 2D comparison class; the cuboid family is the 3D descendant of the Gaussian mechanism; Pell is the hidden engine that explains why only a thin recursive family survives the extra diagonal condition.
+        </div>
+      </div>
+    </section>
+
+    <section class="section card pad">
+      <h2>9. Suggested wording for the opening paragraph</h2>
+      <p class="muted">You can lift this directly into your paper or adapt it.</p>
+      <div class="eq small">
+        The classical Pythagorean parametrisation arises by squaring a primitive Gaussian integer, while the Eisenstein analogue arises by squaring a primitive Eisenstein integer on the hexagonal lattice. The integral cuboid construction considered here belongs to the same general family of norm-driven problems, but with an additional multiplicative lift: starting from a classical Pythagorean pair \((a,b)\), we form a cuboid with third edge \(ab\), so that the space diagonal satisfies \(j^2=a^2+b^2+(ab)^2=c^2+(ab)^2\). The integrality of this lifted diagonal is not generic; it is organised by a Pell-type recurrence whose characteristic root is \(1+\sqrt2\). Thus the cuboid family is best understood as a Pell-governed 3-dimensional lift of the Gaussian theory, standing in structural parallel to the Eisenstein parametrisation.
+      </div>
+    </section>
+
+    <p class="foot">This explainer is designed as a bridge document: not claiming that the cuboid form is itself an Eisenstein norm, but showing clearly how the three stories line up as lattice norms, rational parametrisations, and integrality sieves.</p>
+  </div>
+</body>
+</html>
