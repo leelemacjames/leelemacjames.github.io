@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeckendorf–Ulam Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --bg-panel: #141414;
+    --bg-card: #1a1a1a;
+    --bg-card2: #1f1f1f;
+    --gold: #c8a96e;
+    --gold-dim: #a08650;
+    --gold-faint: rgba(200,169,110,0.08);
+    --text: #d4d4d4;
+    --text-dim: #777;
+    --border: #272727;
+    --white: #f0ece4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 2.1rem;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+  header .sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.35rem;
+    letter-spacing: 0.06em;
+  }
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+  .tab-btn {
+    padding: 0.65rem 1.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Preamble */
+  .preamble {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 2.5rem;
+  }
+  .preamble h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .preamble h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.15rem;
+    color: var(--gold);
+    margin: 1.4rem 0 0.6rem;
+  }
+  .preamble p { font-size: 0.88rem; margin-bottom: 0.7rem; }
+  .preamble .rules {
+    background: var(--bg-card);
+    border-left: 3px solid var(--gold-dim);
+    padding: 0.9rem 1.1rem;
+    margin: 0.8rem 0 1rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .preamble .rules ol { padding-left: 1.2rem; font-size: 0.84rem; }
+  .preamble .rules li { margin-bottom: 0.35rem; }
+  .preamble .rules li strong { color: var(--gold); font-weight: 400; }
+  .preamble code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--bg-card2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: var(--gold);
+  }
+  .preamble .math {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--white);
+  }
+  .preamble .theorem {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 1rem 1.2rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+  .preamble .theorem .thm-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+  .preamble .theorem p { font-size: 0.84rem; margin-bottom: 0.3rem; }
+
+  /* Layout */
+  .layout { display: flex; min-height: 70vh; }
+  .sidebar {
+    width: 290px; min-width: 260px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    padding: 1.1rem;
+    overflow-y: auto;
+  }
+  .sidebar h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400; font-size: 1.05rem;
+    color: var(--gold); margin-bottom: 0.7rem;
+  }
+  .control-group { margin-bottom: 0.85rem; }
+  .control-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.67rem; color: var(--text-dim);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .control-group .val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem; color: var(--gold); float: right;
+  }
+  .control-group input[type="range"] {
+    width: 100%; accent-color: var(--gold); cursor: pointer;
+  }
+  .control-group select {
+    width: 100%; background: var(--bg-card); color: var(--text);
+    border: 1px solid var(--border); padding: 0.35rem 0.45rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem;
+    border-radius: 3px; outline: none;
+  }
+  .control-group select:focus { border-color: var(--gold-dim); }
+  button.run {
+    width: 100%; padding: 0.55rem; margin-top: 0.5rem;
+    background: var(--gold); color: var(--bg); border: none;
+    font-family: 'IBM Plex Sans', sans-serif; font-weight: 600;
+    font-size: 0.78rem; letter-spacing: 0.06em;
+    cursor: pointer; border-radius: 3px; transition: background 0.2s;
+  }
+  button.run:hover { background: var(--gold-dim); }
+  button.run:disabled { opacity: 0.4; cursor: wait; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0.8rem 0; }
+  .info-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem;
+    color: var(--text-dim); line-height: 1.5;
+  }
+  .info-box .gold { color: var(--gold); }
+  .main-area {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; padding: 1.2rem; overflow-y: auto;
+  }
+  .canvas-wrap {
+    position: relative; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.5rem; margin-bottom: 1rem;
+  }
+  canvas { display: block; image-rendering: pixelated; cursor: crosshair; }
+  .canvas-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem;
+    color: var(--text-dim); text-align: center;
+    margin-top: 0.35rem; letter-spacing: 0.04em;
+  }
+  .dual-view { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
+
+  .tbl-wrap {
+    max-height: 320px; overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 4px;
+    width: 100%; max-width: 850px;
+  }
+  table.dtbl {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem;
+  }
+  table.dtbl th {
+    position: sticky; top: 0; background: var(--bg-card);
+    color: var(--gold); padding: 0.3rem 0.5rem;
+    text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  table.dtbl td {
+    padding: 0.22rem 0.5rem; border-bottom: 1px solid var(--border);
+    color: var(--text-dim); max-width: 350px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  table.dtbl tr:hover td { color: var(--text); background: var(--gold-faint); }
+
+  .tooltip {
+    position: fixed; background: var(--bg-card);
+    border: 1px solid var(--gold-dim); padding: 0.35rem 0.55rem;
+    border-radius: 3px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem; color: var(--gold);
+    pointer-events: none; display: none; z-index: 999;
+  }
+  footer {
+    text-align: center; padding: 1rem;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.04em;
+  }
+  footer .g { color: var(--gold-dim); }
+
+  @media (max-width: 800px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; min-width: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .dual-view { flex-direction: column; }
+    .preamble { padding: 1.2rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Zeckendorf–Ulam Explorer</h1>
+  <div class="sub">Aperiodic tilings from Digital Fibonacci sequences &amp; Primes in Fibonacci base</div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="preamble">Preamble</button>
+  <button class="tab-btn" data-tab="digital-fib">Digital Fibonacci</button>
+  <button class="tab-btn" data-tab="zeckendorf">Zeckendorf Primes</button>
+</div>
+
+<!-- ═══ PREAMBLE ═══ -->
+<div class="tab-panel active" id="tab-preamble">
+<div class="preamble">
+  <h2>Aperiodic Tilings from Digital Fibonacci Sequences and Ulam Spirals</h2>
+
+  <h3>The Digital Fibonacci Sequence</h3>
+  <p>The classical Fibonacci model assumes immortal rabbits: each pair breeds forever. The <em>Digital Fibonacci sequence</em> introduces mortality via a generational limit <code>g</code>, producing a binary string at each generation whose concatenation reveals strikingly different tiling textures when wrapped into an Ulam spiral.</p>
+  <p>The sequence is constructed from three algorithmic rules applied to binary states — bunnies (<code>0</code>) and rabbits (<code>1</code>):</p>
+
+  <div class="rules">
+    <ol>
+      <li>A <strong>bunny</strong> (<code>0</code>) matures into a <strong>rabbit</strong> (<code>1</code>).</li>
+      <li>A <strong>rabbit</strong> (<code>1</code>) gives birth to a bunny (<code>0</code>) and persists — yielding the pair <code>10</code>.</li>
+      <li>After <strong><span class="math">g</span></strong> generations, a rabbit expires and is removed from the population.</li>
+    </ol>
+  </div>
+
+  <p>The parameter <code>g</code> controls the depth of generational memory. With <code>g = 3</code>, only grandparents survive alongside their offspring. With <code>g = 4</code>, great-grandparents persist. The limiting case <code>g = ∞</code> recovers the classical Fibonacci sequence — no death, only growth — and the binary string converges to the infinite Fibonacci word.</p>
+
+  <p>Algorithmically, each entity carries its birth generation as metadata. At generation <span class="math">t</span>, a rabbit born at generation <span class="math">b</span> has age <code>t − b</code>. If this age reaches <code>g</code>, the rabbit is silently removed. This is a direct encoding of mortality into the recurrence — the population at each step is not simply <span class="math">F<sub>n</sub></span> but a filtered sum over surviving lineages.</p>
+
+  <p>Each generation's population is recorded as a binary string, then all generations are concatenated (reversed, reading from most recent generation back to origin) and truncated to <span class="math">k</span> digits for display on the Ulam spiral.</p>
+
+  <h3>Ulam Spiral Wrapping</h3>
+  <p>The Ulam spiral walks outward from a central point in the right–up–left–down pattern, placing one digit per cell. With prime numbers the spiral famously reveals diagonal alignments; here, the binary digits of the Digital Fibonacci sequence produce aperiodic tilings whose visual texture depends sensitively on <code>g</code>.</p>
+
+  <p>The comparison against a random draw of <code>{0, 1}</code> with matched density is instructive. The Fibonacci-derived spirals show structured banding and quasi-periodic motifs absent in the stochastic case — evidence that the mortality rules imprint long-range correlations on the binary string.</p>
+
+  <h3>Zeckendorf Representations of Primes</h3>
+  <div class="theorem">
+    <div class="thm-title">Zeckendorf's Theorem</div>
+    <p>Every positive integer can be represented uniquely as the sum of one or more distinct non-consecutive Fibonacci numbers:</p>
+    <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.05rem; color:var(--white); margin:0.5rem 0;">
+      <span class="math">N = Σ F<sub>i</sub></span>&ensp;where no two <span class="math">F<sub>i</sub></span> are consecutive.
+    </p>
+    <p>For example, 100 = 89 + 8 + 3 → <code>101001000</code><sub style="color:var(--gold);">F</sub></p>
+  </div>
+  <p>The greedy algorithm walks backward through the Fibonacci sequence, subtracting the largest number that fits and skipping one index to enforce non-consecutiveness. Concatenating the Zeckendorf representations of successive primes and wrapping the result into an Ulam spiral produces tilings that "chime rather than rhyme" — structured, but in a different register than the lifecycle model.</p>
+
+  <p style="color:var(--text-dim); font-size:0.82rem; margin-top:1.5rem;">Use the tabs above to explore each model interactively. The <strong style="color:var(--gold); font-weight:400;">Digital Fibonacci</strong> tab lets you sweep <code>g</code> from 3 to ∞ and compare against random. The <strong style="color:var(--gold); font-weight:400;">Zeckendorf Primes</strong> tab renders the prime-representation spirals.</p>
+</div>
+</div>
+
+<!-- ═══ DIGITAL FIBONACCI ═══ -->
+<div class="tab-panel" id="tab-digital-fib">
+<div class="layout">
+  <aside class="sidebar">
+    <h2>Digital Fibonacci</h2>
+    <div class="control-group">
+      <label>View mode</label>
+      <select id="df-mode">
+        <option value="spiral">Ulam Spiral</option>
+        <option value="compare">Compare: Fibonacci vs Random</option>
+        <option value="table">Generation Table</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Generations (n) <span class="val" id="df-nVal">25</span></label>
+      <input type="range" id="df-n" min="8" max="31" step="1" value="25">
+    </div>
+    <div class="control-group">
+      <label>Mortality limit (g) <span class="val" id="df-gVal">∞</span></label>
+      <select id="df-g">
+        <option value="3">g = 3 · grandparents only</option>
+        <option value="4">g = 4 · great-grandparents</option>
+        <option value="5">g = 5</option>
+        <option value="6">g = 6</option>
+        <option value="8">g = 8</option>
+        <option value="10">g = 10</option>
+        <option value="inf" selected>g = ∞ · immortal (classical)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Sequence truncation <span class="val" id="df-truncVal">20000</span></label>
+      <input type="range" id="df-trunc" min="2000" max="60000" step="1000" value="20000">
+    </div>
+    <div class="control-group">
+      <label>Pixel size <span class="val" id="df-pxVal">2</span></label>
+      <input type="range" id="df-px" min="1" max="6" step="1" value="2">
+    </div>
+    <div class="control-group">
+      <label>Colour</label>
+      <select id="df-colour">
+        <option value="bw">Black / White</option>
+        <option value="gold">Gold / Dark</option>
+        <option value="heat">Density heatmap</option>
+      </select>
+    </div>
+    <button class="run" id="df-run">Generate</button>
+    <hr class="divider">
+    <div class="info-box" id="df-stats">Awaiting generation…</div>
+  </aside>
+  <div class="main-area" id="df-main">
+    <p style="color:var(--text-dim); font-style:italic; margin-top:3rem;">Press Generate to begin.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ ZECKENDORF PRIMES ═══ -->
+<div class="tab-panel" id="tab-zeckendorf">
+<div class="layout">
+  <aside class="sidebar">
+    <h2>Zeckendorf Primes</h2>
+    <div class="control-group">
+      <label>View mode</label>
+      <select id="zk-mode">
+        <option value="spiral">Ulam Spiral</option>
+        <option value="compare">Compare: Primes vs Random</option>
+        <option value="table">Zeckendorf Table</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Number of primes <span class="val" id="zk-npVal">2000</span></label>
+      <input type="range" id="zk-np" min="100" max="8000" step="100" value="2000">
+    </div>
+    <div class="control-group">
+      <label>Truncation <span class="val" id="zk-truncVal">20000</span></label>
+      <input type="range" id="zk-trunc" min="2000" max="80000" step="1000" value="20000">
+    </div>
+    <div class="control-group">
+      <label>Pixel size <span class="val" id="zk-pxVal">2</span></label>
+      <input type="range" id="zk-px" min="1" max="6" step="1" value="2">
+    </div>
+    <div class="control-group">
+      <label>Colour</label>
+      <select id="zk-colour">
+        <option value="bw">Black / White</option>
+        <option value="gold">Gold / Dark</option>
+        <option value="heat">Density heatmap</option>
+      </select>
+    </div>
+    <button class="run" id="zk-run">Generate</button>
+    <hr class="divider">
+    <div class="info-box" id="zk-stats">Awaiting generation…</div>
+  </aside>
+  <div class="main-area" id="zk-main">
+    <p style="color:var(--text-dim); font-style:italic; margin-top:3rem;">Press Generate to begin.</p>
+  </div>
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<footer>
+  <span class="g">Constructed by Silicon · Anthropic Claude</span> — <span class="g">Architect Carbon · LeeMcCullochJames</span>
+</footer>
+
+<script>
+// ═══ TABS ═══
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ═══ SHARED ═══
+const tooltip = document.getElementById('tooltip');
+
+function ulamCoords(length) {
+  const coords = new Array(length);
+  let x = 0, y = 0, dx = 1, dy = 0, steps = 1, stepCount = 0, turns = 0;
+  for (let i = 0; i < length; i++) {
+    coords[i] = [x, y];
+    x += dx; y += dy; stepCount++;
+    if (stepCount === steps) {
+      stepCount = 0;
+      [dx, dy] = [-dy, dx];
+      turns++;
+      if (turns % 2 === 0) steps++;
+    }
+  }
+  return coords;
+}
+
+function buildDensity(coords, seq, radius) {
+  const map = new Map();
+  for (let i = 0; i < seq.length; i++) {
+    if (seq[i] === '1') {
+      const [cx, cy] = coords[i];
+      for (let ddx = -radius; ddx <= radius; ddx++)
+        for (let ddy = -radius; ddy <= radius; ddy++) {
+          const key = (cx+ddx)+','+(cy+ddy);
+          map.set(key, (map.get(key)||0)+1);
+        }
+    }
+  }
+  return map;
+}
+
+function renderSpiral(canvas, seq, pixelSize, scheme) {
+  const len = seq.length;
+  const coords = ulamCoords(len);
+  let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+  for (const [x,y] of coords) {
+    if(x<minX)minX=x; if(x>maxX)maxX=x;
+    if(y<minY)minY=y; if(y>maxY)maxY=y;
+  }
+  const w=(maxX-minX+1)*pixelSize, h=(maxY-minY+1)*pixelSize;
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#0e0e0e'; ctx.fillRect(0,0,w,h);
+
+  if (scheme==='heat') {
+    const density=buildDensity(coords,seq,2);
+    let maxD=0;
+    for(const v of density.values()) if(v>maxD)maxD=v;
+    for(let i=0;i<len;i++){
+      const [x,y]=coords[i];
+      const d=density.get(x+','+y)||0;
+      const t=maxD>0?d/maxD:0;
+      ctx.fillStyle=`rgb(${Math.round(40+180*t)},${Math.round(40+130*(1-t))},${Math.round(40+60*(1-t))})`;
+      ctx.fillRect((x-minX)*pixelSize,(y-minY)*pixelSize,pixelSize,pixelSize);
+    }
+  } else {
+    const c1=scheme==='gold'?'#c8a96e':'#e8e0d0';
+    const c0=scheme==='gold'?'#1a1714':'#111';
+    for(let i=0;i<len;i++){
+      ctx.fillStyle=seq[i]==='1'?c1:c0;
+      const [x,y]=coords[i];
+      ctx.fillRect((x-minX)*pixelSize,(y-minY)*pixelSize,pixelSize,pixelSize);
+    }
+  }
+  canvas._spiralData={coords,minX,minY,pixelSize,seq};
+}
+
+function attachTooltip(canvas) {
+  canvas.addEventListener('mousemove',e=>{
+    const d=canvas._spiralData; if(!d)return;
+    const rect=canvas.getBoundingClientRect();
+    const gx=Math.floor((e.clientX-rect.left)/d.pixelSize)+d.minX;
+    const gy=Math.floor((e.clientY-rect.top)/d.pixelSize)+d.minY;
+    for(let i=0;i<d.coords.length;i++){
+      if(d.coords[i][0]===gx&&d.coords[i][1]===gy){
+        tooltip.style.display='block';
+        tooltip.style.left=(e.clientX+12)+'px';
+        tooltip.style.top=(e.clientY-20)+'px';
+        tooltip.textContent=`pos ${i}  val ${d.seq[i]}  (${gx}, ${gy})`;
+        return;
+      }
+    }
+    tooltip.style.display='none';
+  });
+  canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';});
+}
+
+function makeCanvasBox(seq,px,scheme,labelText){
+  const box=document.createElement('div'); box.className='canvas-wrap';
+  const c=document.createElement('canvas'); box.appendChild(c);
+  const lbl=document.createElement('div'); lbl.className='canvas-title';
+  lbl.textContent=labelText; box.appendChild(lbl);
+  renderSpiral(c,seq,px,scheme); attachTooltip(c);
+  return box;
+}
+
+// ═══════════════════════════════════════
+//  DIGITAL FIBONACCI LIFECYCLE ENGINE
+// ═══════════════════════════════════════
+// Direct port of your Python generate_lifecycle_digital_fibonacci_with_generations.
+// Each entity is [value, birthGeneration].
+// Rule 1: bunny (0) → rabbit (1), inheriting current gen as birth.
+// Rule 2: rabbit (1) with age < g → emits [0, currentGen] + [1, originalBirth].
+// Rule 3: rabbit with age >= g → silently removed (death).
+// The birth_generation metadata is what makes this work: it lets you
+// compute age = currentGen - birthGen without needing a separate counter.
+
+function digitalFibLifecycle(n, g) {
+  let pop = [[0, 0]];
+  const gens = [pop.map(e=>String(e[0])).join('')];
+  for (let gen=1; gen<n; gen++) {
+    const next = [];
+    for (const [val, birthGen] of pop) {
+      const age = gen - birthGen;
+      if (val === 1 && (g === Infinity || age < g)) {
+        next.push([0, gen]);       // birth a bunny
+        next.push([1, birthGen]);  // parent persists
+      } else if (val === 0) {
+        next.push([1, gen]);       // bunny matures
+      }
+      // else: aged-out rabbit — removed
+    }
+    pop = next;
+    gens.push(next.map(e=>String(e[0])).join(''));
+  }
+  return gens;
+}
+
+// ═══ DIGITAL FIB UI ═══
+const dfE={
+  mode:document.getElementById('df-mode'),
+  n:document.getElementById('df-n'),
+  g:document.getElementById('df-g'),
+  trunc:document.getElementById('df-trunc'),
+  px:document.getElementById('df-px'),
+  colour:document.getElementById('df-colour'),
+  run:document.getElementById('df-run'),
+  main:document.getElementById('df-main'),
+  stats:document.getElementById('df-stats'),
+  nVal:document.getElementById('df-nVal'),
+  gVal:document.getElementById('df-gVal'),
+  truncVal:document.getElementById('df-truncVal'),
+  pxVal:document.getElementById('df-pxVal'),
+};
+dfE.n.oninput=()=>dfE.nVal.textContent=dfE.n.value;
+dfE.g.onchange=()=>dfE.gVal.textContent=dfE.g.value==='inf'?'∞':dfE.g.value;
+dfE.trunc.oninput=()=>dfE.truncVal.textContent=dfE.trunc.value;
+dfE.px.oninput=()=>dfE.pxVal.textContent=dfE.px.value;
+dfE.run.onclick=()=>{
+  dfE.run.disabled=true; dfE.run.textContent='Computing…';
+  requestAnimationFrame(()=>setTimeout(runDF,30));
+};
+
+function runDF(){
+  const mode=dfE.mode.value;
+  const n=+dfE.n.value;
+  const g=dfE.g.value==='inf'?Infinity:+dfE.g.value;
+  const trunc=+dfE.trunc.value;
+  const px=+dfE.px.value;
+  const scheme=dfE.colour.value;
+  const t0=performance.now();
+
+  const gens=digitalFibLifecycle(n,g);
+  const fullSeq=gens.join('');
+  const reversed=fullSeq.split('').reverse().join('');
+  const seq=reversed.slice(0,trunc);
+  const ones=[...seq].filter(c=>c==='1').length;
+  const dt=(performance.now()-t0).toFixed(0);
+  const gL=g===Infinity?'∞':g;
+
+  dfE.stats.innerHTML=
+    `<span class="gold">n (gens):</span> ${n}<br>`+
+    `<span class="gold">g (mortality):</span> ${gL}<br>`+
+    `<span class="gold">Full seq length:</span> ${fullSeq.length}<br>`+
+    `<span class="gold">Displayed:</span> ${seq.length}<br>`+
+    `<span class="gold">1-density:</span> ${(ones/seq.length*100).toFixed(1)}%<br>`+
+    `<span class="gold">Final gen pop:</span> ${gens[gens.length-1].length}<br>`+
+    `<span class="gold">Computed in:</span> ${dt} ms`;
+
+  dfE.main.innerHTML='';
+
+  if(mode==='spiral'||mode==='compare'){
+    const wrap=document.createElement('div');
+    wrap.className=mode==='compare'?'dual-view':'';
+    wrap.appendChild(makeCanvasBox(seq,px,scheme,
+      `Digital Fibonacci  n=${n}  g=${gL} · ${seq.length} digits`));
+    if(mode==='compare'){
+      const d=ones/seq.length;
+      const r=Array.from({length:seq.length},()=>Math.random()<d?'1':'0').join('');
+      wrap.appendChild(makeCanvasBox(r,px,scheme,
+        `Random (${(d*100).toFixed(1)}% density) · ${r.length} digits`));
+    }
+    dfE.main.appendChild(wrap);
+  } else {
+    const wrap=document.createElement('div');
+    wrap.style.width='100%'; wrap.style.maxWidth='850px';
+    const title=document.createElement('div');
+    title.className='canvas-title'; title.style.marginBottom='0.5rem';
+    title.textContent=`Digital Fibonacci generations  n=${n}  g=${gL}`;
+    wrap.appendChild(title);
+
+    const tw=document.createElement('div'); tw.className='tbl-wrap';
+    const tbl=document.createElement('table'); tbl.className='dtbl';
+    tbl.innerHTML='<thead><tr><th>Gen</th><th>Pop size</th><th>0s</th><th>1s</th><th>Digital sequence</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    for(let i=0;i<gens.length;i++){
+      const s=gens[i];
+      const z=[...s].filter(c=>c==='0').length;
+      const o=s.length-z;
+      const tr=document.createElement('tr');
+      const disp=s.length>60?s.slice(0,55)+'…':s;
+      tr.innerHTML=`<td style="color:var(--gold)">${i+1}</td><td>${s.length}</td><td>${z}</td><td>${o}</td><td>${disp}</td>`;
+      tb.appendChild(tr);
+    }
+    tbl.appendChild(tb); tw.appendChild(tbl); wrap.appendChild(tw);
+    dfE.main.appendChild(wrap);
+  }
+  dfE.run.disabled=false; dfE.run.textContent='Generate';
+}
+
+// ═══ ZECKENDORF ═══
+function sievePrimes(n){
+  const limit=Math.max(100,Math.ceil(n*(Math.log(n)+Math.log(Math.log(n+2))+2)));
+  const s=new Uint8Array(limit+1); s[0]=s[1]=1;
+  for(let i=2;i*i<=limit;i++) if(!s[i]) for(let j=i*i;j<=limit;j+=i) s[j]=1;
+  const p=[]; for(let i=2;i<=limit&&p.length<n;i++) if(!s[i]) p.push(i);
+  return p;
+}
+function fibUpTo(max){
+  const f=[1,2]; while(f[f.length-1]+f[f.length-2]<=max) f.push(f[f.length-1]+f[f.length-2]);
+  return f;
+}
+function zeckendorf(n,fibs){
+  const rep=new Array(fibs.length).fill('0');
+  let rem=n, i=fibs.length-1;
+  while(rem>0&&i>=0){
+    if(fibs[i]<=rem){rem-=fibs[i];rep[i]='1';i-=2;}
+    else i--;
+  }
+  return rep.slice().reverse().join('').replace(/^0+/,'')||'0';
+}
+
+const zkE={
+  mode:document.getElementById('zk-mode'),
+  np:document.getElementById('zk-np'),
+  trunc:document.getElementById('zk-trunc'),
+  px:document.getElementById('zk-px'),
+  colour:document.getElementById('zk-colour'),
+  run:document.getElementById('zk-run'),
+  main:document.getElementById('zk-main'),
+  stats:document.getElementById('zk-stats'),
+  npVal:document.getElementById('zk-npVal'),
+  truncVal:document.getElementById('zk-truncVal'),
+  pxVal:document.getElementById('zk-pxVal'),
+};
+zkE.np.oninput=()=>zkE.npVal.textContent=zkE.np.value;
+zkE.trunc.oninput=()=>zkE.truncVal.textContent=zkE.trunc.value;
+zkE.px.oninput=()=>zkE.pxVal.textContent=zkE.px.value;
+zkE.run.onclick=()=>{
+  zkE.run.disabled=true; zkE.run.textContent='Computing…';
+  requestAnimationFrame(()=>setTimeout(runZK,30));
+};
+
+function runZK(){
+  const mode=zkE.mode.value;
+  const numP=+zkE.np.value;
+  const trunc=+zkE.trunc.value;
+  const px=+zkE.px.value;
+  const scheme=zkE.colour.value;
+  const t0=performance.now();
+
+  const primes=sievePrimes(numP);
+  const fibs=fibUpTo(primes[primes.length-1]);
+  const zReps=primes.map(p=>zeckendorf(p,fibs));
+  const concat=zReps.join('');
+  const seq=concat.slice(0,trunc);
+  const ones=[...seq].filter(c=>c==='1').length;
+  const dt=(performance.now()-t0).toFixed(0);
+
+  zkE.stats.innerHTML=
+    `<span class="gold">Primes:</span> ${numP}<br>`+
+    `<span class="gold">Concat length:</span> ${concat.length}<br>`+
+    `<span class="gold">Displayed:</span> ${seq.length}<br>`+
+    `<span class="gold">1-density:</span> ${(ones/seq.length*100).toFixed(1)}%<br>`+
+    `<span class="gold">Avg Zeck length:</span> ${(concat.length/numP).toFixed(1)}<br>`+
+    `<span class="gold">Computed in:</span> ${dt} ms`;
+
+  zkE.main.innerHTML='';
+
+  if(mode==='spiral'||mode==='compare'){
+    const wrap=document.createElement('div');
+    wrap.className=mode==='compare'?'dual-view':'';
+    wrap.appendChild(makeCanvasBox(seq,px,scheme,
+      `Primes in Zeckendorf base · ${seq.length} digits`));
+    if(mode==='compare'){
+      const d=ones/seq.length;
+      const r=Array.from({length:seq.length},()=>Math.random()<d?'1':'0').join('');
+      wrap.appendChild(makeCanvasBox(r,px,scheme,
+        `Random (${(d*100).toFixed(1)}% density) · ${r.length} digits`));
+    }
+    zkE.main.appendChild(wrap);
+  } else {
+    const tableN=Math.min(numP,200);
+    const wrap=document.createElement('div');
+    wrap.style.width='100%'; wrap.style.maxWidth='700px';
+    const bi=document.createElement('div'); bi.className='info-box';
+    bi.style.marginBottom='0.6rem';
+    bi.innerHTML=`<span class="gold">Fibonacci basis:</span> ${fibs.join(', ')}`;
+    wrap.appendChild(bi);
+    const tw=document.createElement('div'); tw.className='tbl-wrap';
+    const tbl=document.createElement('table'); tbl.className='dtbl';
+    tbl.innerHTML='<thead><tr><th>p</th><th>Zeckendorf</th><th>Summands</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    for(let i=0;i<tableN;i++){
+      const p=primes[i], rep=zReps[i];
+      const rev=rep.split('').reverse();
+      const summands=[];
+      for(let j=0;j<rev.length;j++) if(rev[j]==='1') summands.push(fibs[j]);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="color:var(--gold)">${p}</td><td>${rep}</td><td>${summands.join(' + ')}</td>`;
+      tb.appendChild(tr);
+    }
+    tbl.appendChild(tb); tw.appendChild(tbl); wrap.appendChild(tw);
+    zkE.main.appendChild(wrap);
+  }
+  zkE.run.disabled=false; zkE.run.textContent='Generate';
+}
+</script>
+</body>
+</html>
