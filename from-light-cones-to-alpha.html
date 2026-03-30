@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Light Cones to α — Why ε₀ Is Not a Property of the Vacuum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --bg-card: #151619;
+    --bg-card-hover: #1a1b1f;
+    --bg-reveal: #111215;
+    --gold: #c8a96e;
+    --gold-dim: #a08550;
+    --gold-glow: rgba(200, 169, 110, 0.12);
+    --text: #d4d0c8;
+    --text-dim: #8a8577;
+    --text-bright: #eae6dd;
+    --accent-blue: #6b8fad;
+    --accent-red: #ad6b6b;
+    --accent-green: #6bad7a;
+    --accent-violet: #9b7fba;
+    --border: #2a2b30;
+    --border-gold: rgba(200, 169, 110, 0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 5rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 30%, var(--gold-glow), transparent);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+    color: var(--text-bright);
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    margin-bottom: 0.6rem;
+    position: relative;
+  }
+  .header .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .header .epigraph {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 42rem;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── MAIN CONTAINER ── */
+  .container {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  /* ── STAGE SECTIONS ── */
+  .stage {
+    margin: 3rem 0;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .stage.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .stage-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .stage h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 1.65rem;
+    color: var(--text-bright);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  .stage p {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* ── KEY INSIGHT BOXES ── */
+  .insight {
+    background: var(--bg-card);
+    border-left: 3px solid var(--gold);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .insight p {
+    margin-bottom: 0.5rem;
+    font-size: 0.92rem;
+  }
+  .insight p:last-child { margin-bottom: 0; }
+  .insight .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── EQUATION BLOCKS ── */
+  .equation-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .equation-block::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+  .equation {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: var(--text-bright);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+  .equation .var { font-style: italic; }
+  .equation .unit-dep { color: var(--accent-blue); }
+  .equation .coupling { color: var(--accent-red); }
+  .equation .geometry { color: var(--accent-green); }
+  .equation .invariant { color: var(--gold); font-weight: 700; }
+  .equation-caption {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── ROLE TABLE ── */
+  .role-grid {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 0;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.88rem;
+  }
+  .role-grid .cell {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .role-grid .cell:nth-child(3n+1) {
+    border-right: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text-bright);
+  }
+  .role-grid .cell:nth-child(3n+2) {
+    border-right: 1px solid var(--border);
+  }
+  .role-grid .cell.header {
+    background: #1a1b20;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+  }
+  .role-grid .cell:last-child,
+  .role-grid .cell:nth-last-child(-n+3) {
+    border-bottom: none;
+  }
+
+  /* ── REVEAL BUTTONS ── */
+  .reveal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border-gold);
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+  }
+  .reveal-btn:hover {
+    background: var(--gold-glow);
+    border-color: var(--gold);
+  }
+  .reveal-btn .arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.6rem;
+  }
+  .reveal-btn.open .arrow {
+    transform: rotate(90deg);
+  }
+  .reveal-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.4s ease;
+    opacity: 0;
+  }
+  .reveal-content.open {
+    opacity: 1;
+  }
+
+  /* ── LAYER DIAGRAM ── */
+  .layer-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.5rem 0;
+  }
+  .layer {
+    display: flex;
+    align-items: stretch;
+    min-height: 4.5rem;
+  }
+  .layer-marker {
+    width: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .layer-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    z-index: 2;
+    margin-top: 1rem;
+    flex-shrink: 0;
+  }
+  .layer-line {
+    flex: 1;
+    width: 1px;
+    background: var(--border-gold);
+  }
+  .layer:last-child .layer-line { display: none; }
+  .layer-content {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+  .layer-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .layer-content p {
+    font-size: 0.88rem;
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+
+  /* ── PUNCHLINE BOX ── */
+  .punchline {
+    background: linear-gradient(135deg, rgba(200,169,110,0.08), rgba(200,169,110,0.03));
+    border: 1px solid var(--border-gold);
+    border-radius: 10px;
+    padding: 2rem 2rem;
+    margin: 2.5rem 0;
+    text-align: center;
+  }
+  .punchline p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--text-bright);
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .punchline .attribution {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin-top: 0.8rem;
+    font-style: normal;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1.5rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+  }
+  .flow-node {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.9rem;
+    color: var(--text-bright);
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    color: var(--gold-dim);
+    font-size: 0.9rem;
+  }
+  .flow-node.highlight {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-glow);
+  }
+
+  /* ── COMPARISON COLUMNS ── */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  @media (max-width: 600px) {
+    .comparison { grid-template-columns: 1fr; }
+  }
+  .comparison-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+  }
+  .comparison-col h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.6rem;
+  }
+  .comparison-col p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+  }
+  .comparison-col p:last-child { margin-bottom: 0; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 3rem 1.5rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .footer p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    line-height: 1.8;
+  }
+  .footer .gold { color: var(--gold-dim); }
+
+  /* ── ANNOTATION MARKERS ── */
+  .ann {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .ann.unit { background: rgba(107,143,173,0.15); color: var(--accent-blue); }
+  .ann.coup { background: rgba(173,107,107,0.15); color: var(--accent-red); }
+  .ann.geom { background: rgba(107,173,122,0.15); color: var(--accent-green); }
+  .ann.inv { background: var(--gold-glow); color: var(--gold); }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em;
+    color: var(--gold);
+    background: rgba(200,169,110,0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+
+  /* ── EMPHASIS ── */
+  em { color: var(--text-bright); font-style: italic; }
+  strong { color: var(--text-bright); font-weight: 600; }
+
+  /* ── INTERACTIVE LIGHT CONE SVG ── */
+  .cone-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+  .cone-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<header class="header">
+  <div class="subtitle">Conformal Electrodynamics</div>
+  <h1>From Light Cones to α</h1>
+  <p class="epigraph">
+    We don't introduce ε₀ because the vacuum has a property — we introduce it because measurement forces us to choose a scale.
+  </p>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════════ STAGE 0: OVERVIEW FLOW ═══════════════════════ -->
+<section class="stage" id="s0">
+  <div class="stage-number">Overview</div>
+  <h2>The Arc of This Argument</h2>
+  <div class="flow">
+    <span class="flow-node">Geometry</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node">Fields</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node">Sources</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node">Measurement</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node highlight">α</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node" style="border-color: var(--accent-violet); color: var(--accent-violet);">α(μ)</span>
+  </div>
+  <div class="flow" style="margin-top: 0.3rem; font-size: 0.72rem; color: var(--text-dim);">
+    <span style="opacity:0.6;">Erlangen:</span>
+    <span class="flow-node" style="padding: 0.25rem 0.6rem; font-size: 0.7rem; color: var(--accent-violet); border-color: rgba(155,127,186,0.3);">Projective</span>
+    <span class="flow-arrow" style="font-size: 0.7rem;">⊃</span>
+    <span class="flow-node" style="padding: 0.25rem 0.6rem; font-size: 0.7rem; color: var(--gold); border-color: var(--border-gold);">Conformal</span>
+    <span class="flow-arrow" style="font-size: 0.7rem;">⊃</span>
+    <span class="flow-node" style="padding: 0.25rem 0.6rem; font-size: 0.7rem; color: var(--accent-blue); border-color: rgba(107,143,173,0.3);">Metric</span>
+    <span class="flow-arrow" style="font-size: 0.7rem;">⊃</span>
+    <span class="flow-node" style="padding: 0.25rem 0.6rem; font-size: 0.7rem; color: var(--accent-red); border-color: rgba(173,107,107,0.3);">Empirical</span>
+  </div>
+  <p>
+    We begin with spacetime geometry, which fixes how light propagates. We then ask what happens when we try to <em>measure</em> the fields — and discover that measurement forces us to introduce constants that are not properties of the vacuum but artefacts of our choice of units. The fine-structure constant α is what remains when every such choice is stripped away. Quantum theory then reveals that α itself is not a fixed number but a function of the energy scale at which we probe — though it remains the sole carrier of physical content about interaction strength.
+  </p>
+  <p style="font-size: 0.88rem; color: var(--text-dim);">
+    Read through Klein's Erlangen programme, this is a descent from Platonic structure to empirical engagement — from the geometry that needs no measuring scale to the physics that cannot exist without one.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 1: CONFORMAL STRUCTURE ═══════════════════════ -->
+<section class="stage" id="s1">
+  <div class="stage-number">Stage I</div>
+  <h2>The Stage: Conformal Spacetime</h2>
+  <p>
+    Spacetime provides a <em>conformal structure</em>: the pattern of light cones at every event. This structure tells us which directions are null (lightlike), timelike, or spacelike — but it does not fix an absolute scale. It encodes <em>how space and time relate</em>, but not how big anything is.
+  </p>
+
+  <div class="cone-container">
+    <svg viewBox="0 0 360 280" width="360" height="280" xmlns="http://www.w3.org/2000/svg">
+      <!-- background grid -->
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e1f24" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="360" height="280" fill="#0e0f11"/>
+      <rect width="360" height="280" fill="url(#grid)"/>
+      <!-- axes -->
+      <line x1="180" y1="20" x2="180" y2="260" stroke="#2a2b30" stroke-width="1"/>
+      <line x1="40" y1="140" x2="320" y2="140" stroke="#2a2b30" stroke-width="1"/>
+      <!-- future cone -->
+      <polygon points="180,140 100,60 260,60" fill="rgba(200,169,110,0.06)" stroke="none"/>
+      <!-- past cone -->
+      <polygon points="180,140 100,220 260,220" fill="rgba(200,169,110,0.04)" stroke="none"/>
+      <!-- null lines -->
+      <line x1="100" y1="60" x2="260" y2="220" stroke="#c8a96e" stroke-width="1.5" opacity="0.6"/>
+      <line x1="260" y1="60" x2="100" y2="220" stroke="#c8a96e" stroke-width="1.5" opacity="0.6"/>
+      <!-- event dot -->
+      <circle cx="180" cy="140" r="4" fill="#c8a96e"/>
+      <!-- labels -->
+      <text x="180" y="48" text-anchor="middle" fill="#8a8577" font-family="IBM Plex Mono" font-size="10" letter-spacing="0.1em">FUTURE</text>
+      <text x="180" y="248" text-anchor="middle" fill="#8a8577" font-family="IBM Plex Mono" font-size="10" letter-spacing="0.1em">PAST</text>
+      <text x="306" y="136" text-anchor="end" fill="#8a8577" font-family="IBM Plex Mono" font-size="10">space</text>
+      <text x="195" y="30" fill="#8a8577" font-family="IBM Plex Mono" font-size="10">time</text>
+      <text x="268" y="76" fill="#c8a96e" font-family="IBM Plex Mono" font-size="9" opacity="0.8">null</text>
+      <!-- conformal note -->
+      <text x="180" y="272" text-anchor="middle" fill="#5a5750" font-family="IBM Plex Mono" font-size="8.5" letter-spacing="0.05em">g → Ω²g leaves this structure invariant</text>
+    </svg>
+  </div>
+
+  <p>
+    Maxwell's equations in vacuum can be written in two complementary forms. In vector calculus — the language most physicists meet first:
+  </p>
+
+  <div class="equation-block">
+    <div class="equation" style="font-size: 1.15rem; text-align: left; display: inline-block;">
+      <table style="border-collapse: collapse; margin: 0 auto;">
+        <tr><td style="padding: 0.2rem 1rem 0.2rem 0; color: var(--text-dim); font-size: 0.75rem; font-family: 'IBM Plex Mono', monospace; vertical-align: middle;">no charges</td><td style="padding: 0.2rem 0;">∇ · <span class="var">E</span> = 0</td></tr>
+        <tr><td style="padding: 0.2rem 1rem 0.2rem 0; color: var(--text-dim); font-size: 0.75rem; font-family: 'IBM Plex Mono', monospace; vertical-align: middle;">no currents</td><td style="padding: 0.2rem 0;">∇ × <span class="var">B</span> − ∂<span class="var">E</span>/∂t = 0</td></tr>
+        <tr><td style="padding: 0.2rem 1rem 0.2rem 0; color: var(--text-dim); font-size: 0.75rem; font-family: 'IBM Plex Mono', monospace; vertical-align: middle;">no monopoles</td><td style="padding: 0.2rem 0;">∇ · <span class="var">B</span> = 0</td></tr>
+        <tr><td style="padding: 0.2rem 1rem 0.2rem 0; color: var(--text-dim); font-size: 0.75rem; font-family: 'IBM Plex Mono', monospace; vertical-align: middle;">Faraday</td><td style="padding: 0.2rem 0;">∇ × <span class="var">E</span> + ∂<span class="var">B</span>/∂t = 0</td></tr>
+      </table>
+    </div>
+    <div class="equation-caption">Vacuum Maxwell — no ε₀, no μ₀, no charge, no scale</div>
+  </div>
+
+  <p>
+    In the language of differential forms, the same content compresses to two statements:
+  </p>
+
+  <div class="equation-block">
+    <div class="equation" style="font-size: 1.4rem;">
+      d<span class="var">F</span> = 0 &emsp;&emsp; d★<span class="var">F</span> = 0
+    </div>
+    <div class="equation-caption">Bianchi identity + vacuum field equation — pure geometry, no constants</div>
+  </div>
+
+  <p>
+    Notice what is <em>absent</em>. These equations contain no ε₀, no μ₀, no charge, no coupling. They are purely geometric — they describe how a field propagates on the conformal structure, nothing more.
+  </p>
+
+  <button class="reveal-btn" onclick="toggleReveal('r1a')">
+    <span class="arrow">▶</span> What about sources and constitutive relations?
+  </button>
+  <div class="reveal-content" id="r1a">
+    <div class="insight" style="margin-top:1rem;">
+      <div class="label">Source equations</div>
+      <p>When sources are present, the second equation becomes d★F = J (or equivalently ∇ · E = ρ/ε₀ and ∇ × B − ∂E/∂t = μ₀J). Now ε₀ and μ₀ appear — but only as the bridge between field quantities (E, B) and source quantities (ρ, J) in our chosen system of units.</p>
+    </div>
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">Constitutive relations — the "state" of the vacuum</div>
+      <p>In a material medium, constitutive relations describe the response: D = εE and B = μH. They encode the material's state — its polarisability, magnetisability, density.</p>
+      <p>In vacuum, the constitutive relations reduce to D = ε₀E and B = μ₀H. But this is deceptive. The vacuum has no polarisable molecules, no internal structure to respond. These are not describing a "state" of the vacuum — they are defining a <em>system of units</em>. They tell us how we have chosen to split the electromagnetic field into "field" and "response" components, not what the vacuum is doing.</p>
+      <p style="color: var(--gold);">The vacuum does not have a state. It has a causal structure. ε₀ and μ₀ are how we project that structure onto our measurement conventions.</p>
+    </div>
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">The identity c = 1/√(μ₀ε₀)</div>
+      <p>This relation is often presented as deriving the speed of light from vacuum properties. But read it the other way: ε₀ and μ₀ are <em>defined so that</em> Maxwell's equations reproduce a universe whose causal structure is set by c. The speed of light is the geometric fact; ε₀ and μ₀ are chosen to be consistent with it. Equivalently, we could define α via μ₀ and c just as naturally as via ε₀ — because α = e²μ₀c / (2h) — confirming that ε₀ and μ₀ carry the same information, packaged differently by unit convention.</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="label">Core claim</div>
+    <p>Vacuum Maxwell theory is a conformal, scale-free theory. Only null structure (light cones) matters. Rescaling spacetime by <code>g → Ω²g</code> leaves the equations invariant.</p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r1')">
+    <span class="arrow">▶</span> Why 4 dimensions?
+  </button>
+  <div class="reveal-content" id="r1">
+    <div class="insight" style="margin-top:1rem;">
+      <p>Conformal invariance of Maxwell's equations is <em>special to four dimensions</em>. The electromagnetic action ∫ F∧★F is conformally invariant only when the spacetime dimension equals four. In other dimensions, a scale creeps into the action and conformal symmetry breaks. This is not a coincidence — it is why electromagnetism has the mathematical structure it does.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 2: MASSLESSNESS AND NULL PROPAGATION ═══════════════════════ -->
+<section class="stage" id="s2">
+  <div class="stage-number">Stage II</div>
+  <h2>Masslessness, Scale, and Null Propagation</h2>
+  <p>
+    The electromagnetic field is <em>massless</em>. This is not an incidental property; it is the structural reason for everything in Stage I. A massless field has no rest frame, no intrinsic length, and no preferred energy scale. It therefore cannot distinguish large from small, and the theory must be scale-invariant.
+  </p>
+  <p>
+    The field equations force disturbances to propagate along null surfaces — the light cones themselves. Not timelike (massive propagation), not spacelike (superluminal). Only null.
+  </p>
+
+  <div class="insight">
+    <div class="label">Three views of one fact</div>
+    <p>Masslessness, conformal invariance, and null propagation are not three independent properties. They are the same structural statement seen from three angles:</p>
+    <p style="padding-left: 1rem; color: var(--text-bright);">
+      massless → no intrinsic scale → conformal invariance → null propagation
+    </p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r2')">
+    <span class="arrow">▶</span> What breaks if we add mass?
+  </button>
+  <div class="reveal-content" id="r2">
+    <div class="insight" style="margin-top:1rem;">
+      <p>Adding a mass term mA<sub>μ</sub>A<sup>μ</sup> (the Proca theory) destroys all three simultaneously: it introduces a length scale ℏ/mc, breaks conformal invariance, and permits timelike propagation. Even a tiny mass collapses the entire conformal structure — there is no smooth limit.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 3: INTRODUCING MEASUREMENT ═══════════════════════ -->
+<section class="stage" id="s3">
+  <div class="stage-number">Stage III</div>
+  <h2>The Problem of Measurement</h2>
+  <p>
+    If the vacuum theory is scale-free, a fundamental question arises: <em>how do we measure anything?</em>
+  </p>
+  <p>
+    To measure a field, we must relate it to sources — charges and currents. The moment we write Gauss's law with a source term, we introduce ingredients that the conformal geometry did not provide.
+  </p>
+
+  <div class="equation-block">
+    <div class="equation">
+      ∇ · <span class="var">E</span> &nbsp;=&nbsp; <span class="var">ρ</span> / <span class="unit-dep">ε₀</span>
+    </div>
+    <div class="equation-caption">Gauss's law — the moment measurement enters</div>
+  </div>
+
+  <p>
+    This equation forces us to introduce three conceptually distinct things. Each plays a different role, and conflating them obscures the physics:
+  </p>
+
+  <div class="role-grid">
+    <div class="cell header">Constant</div>
+    <div class="cell header">Role</div>
+    <div class="cell header">Status</div>
+
+    <div class="cell"><span class="ann unit">ε₀</span></div>
+    <div class="cell">How we <em>normalise</em> the field — relates field strength to charge in our chosen units</div>
+    <div class="cell">Unit-dependent. Not a vacuum property.</div>
+
+    <div class="cell"><span class="ann coup">e</span></div>
+    <div class="cell">How strongly the field <em>couples</em> to charge — the interaction strength</div>
+    <div class="cell">Dimensionful in SI, but encodes real physics.</div>
+
+    <div class="cell"><span class="ann geom">4π</span></div>
+    <div class="cell">How space <em>distributes</em> the field — the solid angle of a sphere</div>
+    <div class="cell">Geometric. Reflects spatial symmetry.</div>
+
+    <div class="cell"><span class="ann inv">c</span></div>
+    <div class="cell">How spacetime relates space to time — the conformal structure</div>
+    <div class="cell">Geometric. Fixes light cones.</div>
+  </div>
+
+  <div class="insight">
+    <div class="label">The pedagogical shift</div>
+    <p>ε₀ is not a property the vacuum <em>has</em>. It is a conversion factor that becomes necessary once we choose a system of units that separates electric and magnetic quantities. It is a <em>normalisation bridge</em> between fields and sources — not a material property, and not fixed by geometry.</p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r2a')">
+    <span class="arrow">▶</span> Conformal freedom vs unit freedom
+  </button>
+  <div class="reveal-content" id="r2a">
+    <div class="insight" style="margin-top:1rem;">
+      <div class="label">Two different kinds of freedom</div>
+      <p>It is easy to conflate these, but they are structurally different:</p>
+      <p style="margin-top:0.5rem;"><strong>Conformal symmetry</strong> says: only angles and causal structure matter. You can rescale the metric g → Ω²g and the physics is unchanged. This is a property of spacetime geometry.</p>
+      <p><strong>Unit freedom</strong> says: you can choose how strong a unit of charge or field is. You can absorb ε₀ into the definition of e, or trade ε₀ for μ₀ via c = 1/√(μ₀ε₀). This is a property of human convention.</p>
+      <p style="color: var(--gold); margin-top: 0.5rem;">ε₀ and μ₀ are not gauge freedoms of spacetime. They are conversion factors between human-defined units.</p>
+    </div>
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">Fields are primary, not sources</div>
+      <p>The traditional framing — "sources produce fields, and ε₀ controls how fields respond to sources" — inverts the modern understanding. In quantum field theory, fields are the fundamental objects. What we call "sources" (charges, currents) are localised excitations of <em>other</em> fields — the electron field, the quark fields. The coupling between the electromagnetic field and these matter fields is the interaction; ε₀ is how we choose to normalise the bookkeeping of that interaction in SI units.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 4: TWO LAYERS ═══════════════════════ -->
+<section class="stage" id="s4">
+  <div class="stage-number">Stage IV</div>
+  <h2>Two Layers of Structure</h2>
+  <p>
+    It helps to see this as a layered construction. The field itself has intrinsic properties; coupling to matter adds something on top.
+  </p>
+
+  <div class="layer-diagram">
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot"></div>
+        <div class="layer-line"></div>
+      </div>
+      <div class="layer-content">
+        <div class="layer-title">Layer 1 — The Field Itself</div>
+        <p>Maxwell field is massless. No intrinsic scale. Conformally invariant. Field normalisation is arbitrary. <em>This is the field's own nature, not an accident of emptiness.</em></p>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot"></div>
+        <div class="layer-line"></div>
+      </div>
+      <div class="layer-content">
+        <div class="layer-title">Layer 2 — Coupling to Matter</div>
+        <p>Introducing charge brings scale (mass, density, characteristic lengths). This forces a normalisation choice, introducing ε₀ and coupling strength e. Conformal symmetry is broken — not because the field changed, but because we now must compare fields to sources.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot"></div>
+      </div>
+      <div class="layer-content">
+        <div class="layer-title">What survives both layers</div>
+        <p>The fine-structure constant <span class="ann inv">α</span> — the dimensionless measure of how strongly the electromagnetic field interacts with charge. It cannot be absorbed, rescaled, or conventionalised away.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="label">Key distinction</div>
+    <p>It is not that vacuum <em>removes</em> scale — it reveals that the electromagnetic field never had one to begin with. Matter hides conformal symmetry by introducing scale; vacuum exposes the underlying scale-free nature of the massless field.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 5: DEFINING α ═══════════════════════ -->
+<section class="stage" id="s5">
+  <div class="stage-number">Stage V</div>
+  <h2>The Fine-Structure Constant</h2>
+
+  <div class="comparison">
+    <div class="comparison-col">
+      <h4>In SI Units</h4>
+      <div class="equation-block" style="border:none; padding: 1rem; margin: 0.5rem 0;">
+        <div class="equation" style="font-size:1.3rem;">
+          <span class="invariant">α</span> = <span class="coupling">e²</span> / (<span class="geometry">4π</span> <span class="unit-dep">ε₀</span> ℏ<span class="unit-dep">c</span>)
+        </div>
+      </div>
+      <p>ε₀ is visible. Normalisation is explicit. The underlying structure is obscured by bookkeeping.</p>
+    </div>
+    <div class="comparison-col">
+      <h4>In Natural Units</h4>
+      <div class="equation-block" style="border:none; padding: 1rem; margin: 0.5rem 0;">
+        <div class="equation" style="font-size:1.3rem;">
+          <span class="invariant">α</span> = <span class="coupling">e²</span> / <span class="geometry">4π</span>
+        </div>
+      </div>
+      <p>ε₀ disappears. The structure is clear: coupling over geometry. But the <em>need</em> for normalisation has not vanished — it is absorbed into the definition of e.</p>
+    </div>
+  </div>
+
+  <p>Annotating each factor's role, colour-coded:</p>
+  <p style="text-align:center; font-size: 1rem; margin: 1rem 0;">
+    <span class="ann coup">e</span> &nbsp;coupling strength&emsp;
+    <span class="ann geom">4π</span> &nbsp;spatial geometry&emsp;
+    <span class="ann unit">ε₀</span> &nbsp;normalisation&emsp;
+    <span class="ann inv">α</span> &nbsp;invariant
+  </p>
+
+  <div class="insight">
+    <div class="label">What can and cannot be removed</div>
+    <p><span class="ann unit">ε₀</span> can be absorbed — it is a unit choice.</p>
+    <p><span class="ann unit">c</span> converts space ↔ time — geometry, not scale.</p>
+    <p><span class="ann geom">4π</span> reflects spatial geometry — spherical symmetry.</p>
+    <p><span class="ann coup">e</span> can be rescaled with normalisation.</p>
+    <p style="margin-top:0.5rem;"><strong>But <span class="ann inv">α</span> cannot be removed.</strong> It is dimensionless, invariant, and measurable: α ≈ 1/137.036.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 6: SYNTHESIS ═══════════════════════ -->
+<section class="stage" id="s6">
+  <div class="stage-number">Stage VI</div>
+  <h2>Classical Synthesis</h2>
+
+  <div class="role-grid" style="grid-template-columns: auto 1fr;">
+    <div class="cell header">Constant</div>
+    <div class="cell header">What It Fixes</div>
+
+    <div class="cell"><span class="ann unit">ε₀</span></div>
+    <div class="cell">How we <em>measure</em> fields — normalisation</div>
+
+    <div class="cell"><span class="ann coup">e</span></div>
+    <div class="cell">How strongly fields <em>couple</em> — interaction</div>
+
+    <div class="cell"><span class="ann geom">4π</span></div>
+    <div class="cell">How space <em>distributes</em> fields — geometry</div>
+
+    <div class="cell"><span class="ann unit">c</span></div>
+    <div class="cell">How spacetime relates space and time — conformal structure</div>
+
+    <div class="cell"><span class="ann inv">α</span></div>
+    <div class="cell">What <em>survives</em> when normalisation, geometry, and units are disentangled</div>
+  </div>
+
+  <div class="punchline">
+    <p>Maxwell's equations live on light cones set by c; measurement introduces ε₀ and e; geometry contributes 4π — but only α remains when all conventions are stripped away.</p>
+  </div>
+
+  <div class="punchline" style="margin-top: 1.5rem;">
+    <p>Conformal structure fixes propagation. Geometry fixes distribution. Normalisation fixes measurement. But α alone fixes interaction.</p>
+    <div class="attribution">— The Invariant That Cannot Be Conventionalised Away</div>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r3')">
+    <span class="arrow">▶</span> The philosophical point
+  </button>
+  <div class="reveal-content" id="r3">
+    <div class="insight" style="margin-top:1rem;">
+      <p>This sequence is not merely a repackaging of known facts. It is a claim about what is fundamental and what is conventional. The traditional presentation — in which ε₀ and μ₀ appear as "properties of the vacuum" — conflates normalisation artefacts with physical constants. The conformal viewpoint reveals that only α carries physical content that survives all choices of convention. The rest is how we choose to talk about the physics, not the physics itself.</p>
+      <p style="margin-top: 0.8rem; color: var(--gold-dim);">But this is the classical picture. Quantum theory complicates it in a precise and important way — see Stage VII.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ APPENDIX: DIMENSIONAL FLOW ═══════════════════════ -->
+<section class="stage" id="s7">
+  <div class="stage-number">Appendix</div>
+  <h2>The Logical Flow (Diagrammatic)</h2>
+
+  <div class="flow" style="flex-direction: column; align-items: stretch; gap: 0;">
+    <div style="display:flex; align-items:center; gap: 0.6rem; margin-bottom: 0.3rem;">
+      <div class="flow-node" style="flex: 0 0 auto;">Spacetime</div>
+      <span class="flow-arrow">→</span>
+      <span style="font-size:0.82rem; color: var(--text-dim);">provides conformal structure (light cones)</span>
+    </div>
+    <div style="padding-left: 1.5rem; border-left: 1px solid var(--border-gold); margin-left: 0.75rem; margin-bottom: 0.3rem; padding-top: 0.3rem; padding-bottom: 0.3rem;">
+      <span style="font-size: 0.8rem; color: var(--text-dim);">only null directions, no scale</span>
+    </div>
+    <div style="display:flex; align-items:center; gap: 0.6rem; margin-bottom: 0.3rem;">
+      <div class="flow-node" style="flex: 0 0 auto;">Maxwell (vacuum)</div>
+      <span class="flow-arrow">→</span>
+      <span style="font-size:0.82rem; color: var(--text-dim);">lives on light cones: dF = 0, d★F = 0</span>
+    </div>
+    <div style="padding-left: 1.5rem; border-left: 1px solid var(--border-gold); margin-left: 0.75rem; margin-bottom: 0.3rem; padding-top: 0.3rem; padding-bottom: 0.3rem;">
+      <span style="font-size: 0.8rem; color: var(--text-dim);">conformally invariant, no scale, no ε₀</span>
+    </div>
+    <div style="display:flex; align-items:center; gap: 0.6rem; margin-bottom: 0.3rem;">
+      <div class="flow-node" style="flex: 0 0 auto;">Add sources</div>
+      <span class="flow-arrow">→</span>
+      <span style="font-size:0.82rem; color: var(--text-dim);">introduces charge, mass, scale</span>
+    </div>
+    <div style="padding-left: 1.5rem; border-left: 1px solid var(--border-gold); margin-left: 0.75rem; margin-bottom: 0.3rem; padding-top: 0.3rem; padding-bottom: 0.3rem;">
+      <span style="font-size: 0.8rem; color: var(--text-dim);">breaks conformal invariance</span>
+    </div>
+    <div style="display:flex; align-items:center; gap: 0.6rem; margin-bottom: 0.3rem;">
+      <div class="flow-node" style="flex: 0 0 auto;">Normalisation</div>
+      <span class="flow-arrow">→</span>
+      <span style="font-size:0.82rem; color: var(--text-dim);">ε₀ relates fields to sources (unit choice)</span>
+    </div>
+    <div style="padding-left: 1.5rem; border-left: 1px solid var(--border-gold); margin-left: 0.75rem; margin-bottom: 0.3rem; padding-top: 0.3rem; padding-bottom: 0.3rem;">
+      <span style="font-size: 0.8rem; color: var(--text-dim);">conventional, not geometric</span>
+    </div>
+    <div style="display:flex; align-items:center; gap: 0.6rem;">
+      <div class="flow-node highlight" style="flex: 0 0 auto;">α = e² / (4π ε₀ ħc)</div>
+      <span class="flow-arrow">→</span>
+      <span style="font-size:0.82rem; color: var(--gold);">the invariant that survives</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 7: QUANTUM CORRECTION ═══════════════════════ -->
+<section class="stage" id="s8">
+  <div class="stage-number">Stage VII</div>
+  <h2>The Quantum Complication: Vacuum Polarisation and Running α</h2>
+
+  <p>
+    Everything in Stages I–VI is correct classically. But quantum field theory introduces a complication that is not a technicality — it is structurally important, and ignoring it would leave the story incomplete.
+  </p>
+
+  <p>
+    In quantum theory, the vacuum is not empty. Charged fields (electrons, muons, quarks) fluctuate even in the absence of real particles, and these fluctuations <em>polarise</em> the vacuum. A virtual electron–positron pair, briefly pulled apart by an electric field, screens the bare charge — exactly as a dielectric medium screens a charge embedded in it.
+  </p>
+
+  <div class="insight">
+    <div class="label">The key distinction</div>
+    <p>This is not a breakdown of classical electrodynamics. The photon remains massless. Electromagnetic waves still propagate on null cones. The conformal structure of the <em>free field</em> is untouched.</p>
+    <p>What changes is the <em>interaction</em>. The coupling α, which classically is a fixed number, now depends on the energy scale at which it is measured.</p>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison-col">
+      <h4>What survives</h4>
+      <p><strong>Kinematics:</strong> null propagation, light cones, conformal structure of the free photon field. The propagation law remains scale-free.</p>
+      <p>Photons still travel on null geodesics. The causal structure is unmodified.</p>
+    </div>
+    <div class="comparison-col">
+      <h4>What acquires scale</h4>
+      <p><strong>Dynamics of interaction:</strong> the coupling α(μ) runs with energy scale μ. Vacuum polarisation introduces a logarithmic scale dependence.</p>
+      <p>At low energies: α ≈ 1/137. At the Z-boson mass: α ≈ 1/128. The interaction gets <em>stronger</em> at shorter distances.</p>
+    </div>
+  </div>
+
+  <div class="equation-block">
+    <div class="equation" style="font-size: 1.3rem;">
+      <span class="invariant">α</span>(μ) &nbsp;=&nbsp; <span class="invariant">α</span>(μ₀) &nbsp;/&nbsp; [ 1 − (<span class="invariant">α</span>(μ₀) / 3π) ln(μ² / μ₀²) + ⋯ ]
+    </div>
+    <div class="equation-caption">One-loop running of α — vacuum polarisation introduces logarithmic scale dependence</div>
+  </div>
+
+  <p>
+    This is the precise sense in which quantum theory complicates the classical picture. The conformal invariance of the free Maxwell field is preserved: photons are still massless, still null-propagating, still scale-free in isolation. But the <em>moment the field interacts with charged matter</em> — even the virtual matter of the quantum vacuum — scale enters the coupling.
+  </p>
+
+  <div class="layer-diagram">
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot"></div>
+        <div class="layer-line"></div>
+      </div>
+      <div class="layer-content">
+        <div class="layer-title">Free photon propagation</div>
+        <p>Conformal. Scale-free. Null cones. Survives quantisation unchanged.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot"></div>
+        <div class="layer-line"></div>
+      </div>
+      <div class="layer-content">
+        <div class="layer-title">Classical interaction</div>
+        <p>Coupling to charge introduces ε₀ (normalisation) and e (coupling). But α is fixed: one number, no scale dependence. This is the picture of Stages I–VI.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-marker">
+        <div class="layer-dot" style="background: var(--accent-violet);"></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(155,127,186,0.3);">
+        <div class="layer-title" style="color: var(--accent-violet);">Quantum interaction</div>
+        <p>Virtual charged pairs polarise the vacuum. The coupling α now runs: α = α(μ). Scale enters the dynamics — not the kinematics. The interaction is no longer conformally invariant, even though propagation still is.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="label">What this means for the classical story</div>
+    <p>Stages I–VI are not wrong. They are the correct classical picture, and they identify the right conceptual architecture: normalisation (ε₀) is conventional, geometry (4π, c) is structural, and α is the surviving physical content. Quantum theory refines this by revealing that α is not a single number but a <em>function of scale</em> — yet it remains dimensionless, invariant under unit changes, and the only quantity that carries physical content about the strength of interaction.</p>
+  </div>
+
+  <div class="punchline" style="background: linear-gradient(135deg, rgba(155,127,186,0.08), rgba(200,169,110,0.04));">
+    <p>The propagation law stays conformal; the interaction does not. Kinematics sees no scale; dynamics acquires one. α remains the irreducible measure of interaction — but quantum theory reveals it is a function, not a constant.</p>
+    <div class="attribution">— The Refined Punchline</div>
+  </div>
+
+  <div class="punchline" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(155,127,186,0.06), rgba(200,169,110,0.02));">
+    <p>Classical Maxwell theory is conformally invariant and scale-free, but the quantum vacuum breaks this symmetry subtly: fluctuations introduce a reference scale, and the fine-structure constant becomes energy-dependent — not because the laws change, but because the vacuum itself acquires structure.</p>
+  </div>
+
+  <div class="punchline" style="margin-top: 1rem; background: transparent; border-color: rgba(155,127,186,0.2);">
+    <p style="font-size: 1.05rem;">Conformal symmetry removes scale at the classical level, but quantum fluctuations reintroduce scale through the act of measurement itself.</p>
+    <div class="attribution">— The Philosophical Compression</div>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r4')">
+    <span class="arrow">▶</span> Why this matters philosophically
+  </button>
+  <div class="reveal-content" id="r4">
+    <div class="insight" style="margin-top:1rem;">
+      <p>The running of α is sometimes cited as evidence that "constants aren't really constant." This is misleading. What runs is the <em>effective coupling at a given energy scale</em> — the result of integrating out quantum fluctuations above that scale. The bare coupling (defined at infinite energy, or equivalently at zero distance) is a fixed parameter of the theory. What quantum field theory teaches us is that the physically measurable interaction strength depends on the resolution at which we probe — and this is a feature of the theory, not a failure of the concept of a coupling constant.</p>
+      <p style="margin-top: 0.6rem;">The deeper point: even in the quantum theory, α(μ) at any given scale μ remains dimensionless, convention-independent, and the sole carrier of physical content about interaction strength. The classical story identified the right object; quantum theory reveals its richer structure.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════ STAGE 8: ERLANGEN PROGRAMME ═══════════════════════ -->
+<section class="stage" id="s9">
+  <div class="stage-number">Stage VIII</div>
+  <h2>The Erlangen Programme: From Pure Structure to Empirical Engagement</h2>
+
+  <p>
+    There is a deeper way to see what has happened across Stages I–VII — one that reveals the entire arc as an epistemological descent, not just a physics construction. It comes from Klein's <em>Erlanger Programm</em> (1872), which classified geometries by their symmetry groups: the more symmetry you preserve, the less structure you have; the more you break, the more you can distinguish.
+  </p>
+  <p>
+    Map this hierarchy onto our story, and something striking emerges. Each stage of the explainer corresponds to a step down Klein's ladder — from maximal symmetry and minimal structure toward the point where we can finally make contact with experiment.
+  </p>
+
+  <!-- ── Erlangen Hierarchy Diagram ── -->
+  <div style="margin: 2rem 0;">
+
+    <!-- Level 1: Projective -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem 1.5rem; margin-bottom: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em;">Most symmetric</span>
+          <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--text-bright); margin: 0.2rem 0;">Projective Geometry</h3>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent-violet);">PGL(4)</span>
+      </div>
+      <p style="font-size: 0.88rem; margin-top: 0.5rem;">
+        Incidence, collinearity, cross-ratio. No notion of distance, angle, or parallelism. Only the question: <em>what can be connected to what?</em>
+      </p>
+      <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.3rem;">
+        Physical analogue → <strong style="color: var(--text);">Determinism.</strong> The bare topological and combinatorial structure of events. What is logically possible; what can influence what in principle.
+      </p>
+
+      <!-- Level 2: Conformal (nested) -->
+      <div style="background: var(--bg-reveal); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.3rem; margin-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.15em;">Break projective → keep angles</span>
+            <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--gold); margin: 0.2rem 0;">Conformal Geometry</h3>
+          </div>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--gold-dim);">SO(2,4)</span>
+        </div>
+        <p style="font-size: 0.88rem; margin-top: 0.5rem;">
+          Angles and null directions are defined. Light cones exist. No absolute distances. This is where vacuum Maxwell lives — Stages I and II of our story.
+        </p>
+        <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.3rem;">
+          Physical analogue → <strong style="color: var(--gold);">Causality.</strong> Which events can influence which. The causal structure of spacetime. What <em>does</em> propagate, and along what paths.
+        </p>
+
+        <!-- Level 3: Metric (nested deeper) -->
+        <div style="background: rgba(107,143,173,0.06); border: 1px solid rgba(107,143,173,0.2); border-radius: 6px; padding: 1.1rem 1.2rem; margin-top: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.15em;">Break conformal → fix scale</span>
+              <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--accent-blue); margin: 0.2rem 0;">Metric Geometry</h3>
+            </div>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: rgba(107,143,173,0.7);">SO(1,3) ⋉ ℝ⁴</span>
+          </div>
+          <p style="font-size: 0.88rem; margin-top: 0.5rem;">
+            Distances, proper times, and curvature are defined. The Lorentzian metric g<sub>μν</sub> is fixed, not just up to conformal rescaling. General relativity lives here.
+          </p>
+          <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.3rem;">
+            Physical analogue → <strong style="color: var(--accent-blue);">Metricity.</strong> How far, how long, how much curvature. Quantitative geometry. The ruler and the clock.
+          </p>
+
+          <!-- Level 4: Measurement (innermost) -->
+          <div style="background: rgba(173,107,107,0.06); border: 1px solid rgba(173,107,107,0.25); border-radius: 5px; padding: 1rem 1.1rem; margin-top: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--accent-red); text-transform: uppercase; letter-spacing: 0.15em;">Break scale freedom → fix coupling</span>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--accent-red); margin: 0.2rem 0;">Measurement — Empirical Engagement</h3>
+              </div>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: rgba(173,107,107,0.7);">α ≈ 1/137</span>
+            </div>
+            <p style="font-size: 0.88rem; margin-top: 0.5rem;">
+              Fields are coupled to sources. Normalisation is fixed (ε₀). Coupling strength is defined (e). The dimensionless ratio α emerges as the irreducible content of interaction. This is Stages III–VII.
+            </p>
+            <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.3rem;">
+              Physical analogue → <strong style="color: var(--accent-red);">Empiricism.</strong> Contact with experiment. The act of holding a measuring instrument to the world and reading off a number.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    The nesting is the point. Each inner box lives <em>inside</em> the symmetry of the outer one. Each step down the hierarchy breaks a symmetry and adds distinguishable structure. And the entire arc of this explainer — from light cones to α — <em>is</em> this descent.
+  </p>
+
+  <div class="insight">
+    <div class="label">The epistemological reading</div>
+    <p>At the top of the hierarchy, geometry is Platonic: pure incidence, pure structure, no empirical content. Nothing can be measured because nothing has been distinguished.</p>
+    <p style="margin-top: 0.4rem;">Conformal structure adds causality — the pattern of what can influence what — but still no scale. This is the world of vacuum Maxwell: beautiful, self-contained, and empirically inaccessible without further structure.</p>
+    <p style="margin-top: 0.4rem;">Metricity adds rulers and clocks. General relativity lives here. But electromagnetism still floats freely — its normalisation is not yet fixed.</p>
+    <p style="margin-top: 0.4rem;">Only at the final step — when we introduce coupling to charge, fix a normalisation, and extract α — do we leave the Platonic world of pure geometry and enter the empirical world of measurement. ε₀ is the price of admission; α is what we find on the other side.</p>
+  </div>
+
+  <div class="punchline">
+    <p>The Erlangen hierarchy is a map from structure to substance: from the Platonic realm of pure geometry, through causality and metricity, to the empirical world where we hold a measuring scale to nature and read off α.</p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r5')">
+    <span class="arrow">▶</span> Projective geometry and the measuring act
+  </button>
+  <div class="reveal-content" id="r5">
+    <div class="insight" style="margin-top:1rem;">
+      <div class="label">Why projective geometry is the right starting point</div>
+      <p>Projective geometry is not merely "geometry without distances." It is the geometry of perspective — of how structure looks from different vantage points, before any standard of comparison has been introduced. Its fundamental invariant, the cross-ratio, measures the relative position of four collinear points without needing a ruler. This is why it sits at the top: it captures what can be said about incidence and connection before any measurement apparatus exists.</p>
+      <p style="margin-top: 0.5rem;">The descent through conformal, metric, and finally measurement geometry is then precisely the progressive introduction of <em>standards of comparison</em>. Conformal geometry introduces a standard for angles (null vs timelike vs spacelike). Metricity introduces a standard for distances. And the final step — the coupling α — introduces a standard for <em>interaction strength</em>: how strongly the electromagnetic field responds when we bring a charged test particle into its presence.</p>
+      <p style="margin-top: 0.5rem; color: var(--gold);">Each step is an act of restricting symmetry in order to gain empirical traction. The entire Erlangen hierarchy is, in this reading, a map of the cost of making physics measurable.</p>
+    </div>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r6')">
+    <span class="arrow">▶</span> The philosophical punchline
+  </button>
+  <div class="reveal-content" id="r6">
+    <div class="insight" style="margin-top:1rem;">
+      <p>There is a sense in which the entire history of physics — from Euclid through Riemann and Klein to Einstein and Dirac — can be read as a negotiation between symmetry and measurability. Symmetry tells us what is structurally possible; measurement tells us what is actually the case. The Erlangen programme makes this negotiation explicit: each geometry is defined by what it <em>refuses to distinguish</em>, and physics progresses by choosing, at each level, which distinctions to impose.</p>
+      <p style="margin-top: 0.5rem;">The fine-structure constant sits at the bottom of this hierarchy — the final, irreducible distinction that no symmetry can absorb and no convention can remove. It is, in the deepest sense, the point where geometry ends and empirical physics begins.</p>
+    </div>
+  </div>
+</section>
+
+</div><!-- container -->
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="footer">
+  <p>Constructed by <span class="gold">Silicon</span> · Anthropic Claude — Architect <span class="gold">Carbon</span> · LeeMcCullochJames</p>
+</footer>
+
+<script>
+  // ── Scroll-triggered reveal ──
+  const stages = document.querySelectorAll('.stage');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  stages.forEach(s => observer.observe(s));
+
+  // ── Reveal toggles ──
+  function toggleReveal(id) {
+    const el = document.getElementById(id);
+    const btn = el.previousElementSibling;
+    const isOpen = el.classList.contains('open');
+    if (isOpen) {
+      el.style.maxHeight = '0';
+      el.classList.remove('open');
+      btn.classList.remove('open');
+    } else {
+      el.classList.add('open');
+      el.style.maxHeight = el.scrollHeight + 'px';
+      btn.classList.add('open');
+    }
+  }
+</script>
+</body>
+</html>
