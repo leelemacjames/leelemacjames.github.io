@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Differences as a Sierpiński Triangle</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --soft: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #f59e0b;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2, h3 { line-height: 1.15; }
+    h1 {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      margin: 0 0 10px;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.45rem;
+    }
+    p, li { color: var(--text); }
+    .lede {
+      color: var(--muted);
+      max-width: 900px;
+      font-size: 1.05rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.24);
+      backdrop-filter: blur(10px);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .controls {
+      position: sticky;
+      top: 20px;
+    }
+    .control {
+      margin-bottom: 14px;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+    input[type="range"], select, input[type="number"] {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text);
+      padding: 10px 12px;
+    }
+    .inline {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #020617;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s ease;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+    .pill.active {
+      background: linear-gradient(135deg, rgba(56,189,248,0.22), rgba(245,158,11,0.22));
+      border-color: var(--accent);
+    }
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    .accent { background: linear-gradient(135deg, rgba(56,189,248,0.18), rgba(56,189,248,0.08)); }
+    .accent2 { background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(245,158,11,0.08)); }
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: block;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stat {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .stat .k {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .stat .v {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+    }
+    .box {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.18);
+      flex: 0 0 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 9px;
+      text-align: center;
+      background: rgba(2, 6, 23, 0.65);
+    }
+    th { color: #cbd5e1; }
+    .note, .formula {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .formula {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    pre {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      color: #dbeafe;
+      overflow: auto;
+    }
+    .footer {
+      color: var(--muted);
+      font-size: 0.94rem;
+      margin-top: 18px;
+    }
+    @media (max-width: 1024px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .controls { position: static; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 14px; }
+      .stats { grid-template-columns: 1fr; }
+      .inline { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="card">
+        <h1>Prime differences and a Sierpiński-like triangle</h1>
+        <p class="lede">
+          Start with the primes, form successive rows of first differences, and colour each entry by its residue class.
+          With absolute differences and a binary-style colouring, a familiar triangular void pattern begins to appear.
+          It is not literally Pascal mod 2, but it is visually close enough to make the comparison mathematically suggestive.
+        </p>
+        <div class="formula">
+          Let <strong>p</strong><sub>n</sub> be the prime sequence. Define the difference rows by<br><br>
+          <strong>Δ</strong><sup>1</sup>p<sub>n</sub> = |p<sub>n+1</sub> - p<sub>n</sub>|,
+          &nbsp;&nbsp;
+          <strong>Δ</strong><sup>k+1</sup>p<sub>n</sub> = |<strong>Δ</strong><sup>k</sup>p<sub>n+1</sub> - <strong>Δ</strong><sup>k</sup>p<sub>n</sub>|.
+          <br><br>
+          Then colour <strong>Δ</strong><sup>k</sup>p<sub>n</sub> by its value modulo <em>m</em>.
+        </div>
+      </div>
+      <div class="card">
+        <h2>What to look for</h2>
+        <ul>
+          <li>Most prime gaps are even after 2, so parity dominates quickly.</li>
+          <li>Absolute differencing keeps values non-negative and sharpens repeated local structure.</li>
+          <li>Black/white parity-style colouring often reveals the strongest triangular lacunae.</li>
+          <li>Changing the seed sequence changes the texture: primes, semiprimes, and reptend primes do not behave alike.</li>
+        </ul>
+        <p class="note">
+          The page below lets you switch between absolute and signed differences, vary the modulus, and compare several number-theoretic sequences.
+        </p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <aside class="controls card">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="sequenceType"><span>Sequence</span><span id="sequenceLabel">Primes</span></label>
+          <select id="sequenceType">
+            <option value="primes">Primes</option>
+            <option value="semiprimes">Semiprimes</option>
+            <option value="reptend">Full reptend primes</option>
+            <option value="fibonacci">Fibonacci</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="termCount"><span>Number of terms</span><span id="termCountValue">96</span></label>
+          <input id="termCount" type="range" min="16" max="220" step="4" value="96" />
+        </div>
+
+        <div class="control inline">
+          <div>
+            <label for="modulus"><span>Modulus</span><span></span></label>
+            <input id="modulus" type="number" min="2" max="16" value="8" />
+          </div>
+          <div>
+            <label for="cellSize"><span>Cell size</span><span></span></label>
+            <input id="cellSize" type="number" min="2" max="16" value="7" />
+          </div>
+        </div>
+
+        <div class="control">
+          <label><span>Difference rule</span><span id="modeLabel">Absolute</span></label>
+          <div class="toggle-row" id="modeGroup">
+            <div class="pill active" data-mode="absolute">Absolute</div>
+            <div class="pill" data-mode="signed">Signed</div>
+          </div>
+        </div>
+
+        <div class="control">
+          <label><span>Colour scheme</span><span id="paletteLabel">Prime mod 8</span></label>
+          <div class="toggle-row" id="paletteGroup">
+            <div class="pill active" data-palette="prime8">Prime mod 8</div>
+            <div class="pill" data-palette="binary">Binary Sierpiński</div>
+            <div class="pill" data-palette="heat">Heat</div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="accent" id="renderBtn">Render</button>
+          <button class="accent2" id="downloadBtn">Download PNG</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Top row max</div><div class="v" id="topMax">–</div></div>
+          <div class="stat"><div class="k">Nonzero cells</div><div class="v" id="nonZero">–</div></div>
+          <div class="stat"><div class="k">Zero cells</div><div class="v" id="zeroCells">–</div></div>
+          <div class="stat"><div class="k">Distinct residues</div><div class="v" id="distinctResidues">–</div></div>
+        </div>
+
+        <div class="footer">
+          Suggested starting point: <strong>Primes</strong>, <strong>Absolute</strong>, modulus <strong>8</strong>, then switch to <strong>Binary Sierpiński</strong> for the starkest triangular pattern.
+        </div>
+      </aside>
+
+      <main>
+        <div class="card">
+          <h2>Difference triangle</h2>
+          <canvas id="triangleCanvas" width="900" height="720"></canvas>
+          <div class="legend" id="legend"></div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <h2>The first eleven primes</h2>
+          <p class="note">
+            This reproduces the style of the table in your draft, using absolute differences. Empty cells are left blank because each new row is one entry shorter.
+          </p>
+          <div id="sampleTable"></div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <h2>Interpretation</h2>
+          <p>
+            Once the initial prime <strong>2</strong> has passed, consecutive prime gaps are mostly even. That means parity information gets inherited down the table, and repeated differencing can create self-similar voids. In that restricted sense, the picture is reminiscent of a Sierpiński triangle: not because the primes satisfy Pascal's recurrence, but because modular cancellation produces triangular patches of uniform residue.
+          </p>
+          <p>
+            With absolute differences, the rule
+          </p>
+          <pre>currentDiff[i] = Math.abs(previousRow[i + 1] - previousRow[i]);</pre>
+          <p>
+            removes sign and emphasises magnitude classes. Under mod 8 colouring this often gives a comparatively “dull” but structured field for primes: many entries collapse into a small set of even residues. By contrast, Fibonacci or signed-difference variants usually show stronger alternation or mirror effects.
+          </p>
+          <p>
+            A good exercise is to compare three seeds:
+          </p>
+          <ul>
+            <li><strong>Primes</strong>: sparse, gap-driven, dominated by even behaviour after the first term.</li>
+            <li><strong>Semiprimes</strong>: denser composite structure, often rougher and less uniform.</li>
+            <li><strong>Full reptend primes</strong>: a thinner subsequence, useful if you want to test whether special multiplicative order conditions leave a visible signature in the difference triangle.</li>
+          </ul>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const controls = {
+      sequenceType: $("sequenceType"),
+      termCount: $("termCount"),
+      modulus: $("modulus"),
+      cellSize: $("cellSize"),
+      renderBtn: $("renderBtn"),
+      downloadBtn: $("downloadBtn")
+    };
+
+    let differenceMode = "absolute";
+    let paletteMode = "prime8";
+
+    const defaultPalette8 = {
+      0: "#000000",
+      1: "#ffffff",
+      2: "#facc15",
+      3: "#22c55e",
+      4: "#3b82f6",
+      5: "#ef4444",
+      6: "#06b6d4",
+      7: "#d946ef"
+    };
+
+    function gcd(a, b) {
+      while (b !== 0) [a, b] = [b, a % b];
+      return Math.abs(a);
+    }
+
+    function modPow(base, exp, mod) {
+      let result = 1;
+      let b = base % mod;
+      let e = exp;
+      while (e > 0) {
+        if (e & 1) result = (result * b) % mod;
+        b = (b * b) % mod;
+        e >>= 1;
+      }
+      return result;
+    }
+
+    function isPrime(n) {
+      if (n < 2) return false;
+      if (n === 2 || n === 3) return true;
+      if (n % 2 === 0 || n % 3 === 0) return false;
+      for (let i = 5; i * i <= n; i += 6) {
+        if (n % i === 0 || n % (i + 2) === 0) return false;
+      }
+      return true;
+    }
+
+    function factorize(n) {
+      const factors = [];
+      let x = n;
+      for (let p = 2; p * p <= x; p += (p === 2 ? 1 : 2)) {
+        while (x % p === 0) {
+          factors.push(p);
+          x /= p;
+        }
+      }
+      if (x > 1) factors.push(x);
+      return factors;
+    }
+
+    function isSemiprime(n) {
+      const f = factorize(n);
+      return f.length === 2;
+    }
+
+    function phi(n) {
+      let result = n;
+      let x = n;
+      for (let p = 2; p * p <= x; p++) {
+        if (x % p === 0) {
+          while (x % p === 0) x /= p;
+          result -= result / p;
+        }
+      }
+      if (x > 1) result -= result / x;
+      return result;
+    }
+
+    function primeFactorsDistinct(n) {
+      return [...new Set(factorize(n))];
+    }
+
+    function multiplicativeOrder(a, n) {
+      if (gcd(a, n) !== 1) return -1;
+      const ph = phi(n);
+      let order = ph;
+      const pf = primeFactorsDistinct(ph);
+      for (const q of pf) {
+        while (order % q === 0 && modPow(a, order / q, n) === 1) {
+          order /= q;
+        }
+      }
+      return order;
+    }
+
+    function isFullReptendPrime(p, base = 10) {
+      if (!isPrime(p) || gcd(base, p) !== 1) return false;
+      return multiplicativeOrder(base, p) === p - 1;
+    }
+
+    function firstNPrimes(n) {
+      const out = [];
+      let x = 2;
+      while (out.length < n) {
+        if (isPrime(x)) out.push(x);
+        x++;
+      }
+      return out;
+    }
+
+    function firstNSemiprimes(n) {
+      const out = [];
+      let x = 4;
+      while (out.length < n) {
+        if (isSemiprime(x)) out.push(x);
+        x++;
+      }
+      return out;
+    }
+
+    function firstNReptendPrimes(n) {
+      const out = [];
+      let x = 2;
+      while (out.length < n) {
+        if (isFullReptendPrime(x, 10)) out.push(x);
+        x++;
+      }
+      return out;
+    }
+
+    function firstNFibonacci(n) {
+      const out = [0, 1];
+      while (out.length < n) out.push(out[out.length - 1] + out[out.length - 2]);
+      return out.slice(0, n);
+    }
+
+    function getSequence(kind, n) {
+      if (kind === "semiprimes") return firstNSemiprimes(n);
+      if (kind === "reptend") return firstNReptendPrimes(n);
+      if (kind === "fibonacci") return firstNFibonacci(n);
+      return firstNPrimes(n);
+    }
+
+    function buildDifferenceRows(sequence, mode) {
+      const rows = [sequence.slice()];
+      while (rows[rows.length - 1].length > 1) {
+        const prev = rows[rows.length - 1];
+        const next = [];
+        for (let i = 0; i < prev.length - 1; i++) {
+          const d = prev[i + 1] - prev[i];
+          next.push(mode === "absolute" ? Math.abs(d) : d);
+        }
+        rows.push(next);
+      }
+      return rows;
+    }
+
+    function positiveMod(x, m) {
+      return ((x % m) + m) % m;
+    }
+
+    function getColor(value, modulus) {
+      const residue = positiveMod(value, modulus);
+      if (paletteMode === "binary") {
+        return residue === 0 ? "#111111" : "#f8fafc";
+      }
+      if (paletteMode === "heat") {
+        const hue = Math.round((360 * residue) / Math.max(1, modulus));
+        return `hsl(${hue}, 75%, ${residue === 0 ? 12 : 58}%)`;
+      }
+      if (modulus === 8 && defaultPalette8[residue] !== undefined) return defaultPalette8[residue];
+      const hue = Math.round((360 * residue) / Math.max(1, modulus));
+      return `hsl(${hue}, 72%, ${residue === 0 ? 10 : 55}%)`;
+    }
+
+    function textColor(bg) {
+      if (bg === "#ffffff" || bg === "#f8fafc" || bg === "white") return "#111827";
+      return "#e5e7eb";
+    }
+
+    function renderLegend(modulus) {
+      const legend = $("legend");
+      legend.innerHTML = "";
+      if (paletteMode === "binary") {
+        const items = [
+          { label: "0 mod m", color: "#111111" },
+          { label: "nonzero mod m", color: "#f8fafc" }
+        ];
+        items.forEach(item => {
+          const el = document.createElement("div");
+          el.className = "swatch";
+          el.innerHTML = `<span class="box" style="background:${item.color}"></span><span>${item.label}</span>`;
+          legend.appendChild(el);
+        });
+        return;
+      }
+      for (let r = 0; r < modulus; r++) {
+        const el = document.createElement("div");
+        el.className = "swatch";
+        el.innerHTML = `<span class="box" style="background:${getColor(r, modulus)}"></span><span>${r} mod ${modulus}</span>`;
+        legend.appendChild(el);
+      }
+    }
+
+    function renderStats(rows, modulus) {
+      const flat = rows.flat();
+      const residues = new Set(flat.map(v => positiveMod(v, modulus)));
+      const zeros = flat.filter(v => positiveMod(v, modulus) === 0).length;
+      $("topMax").textContent = Math.max(...rows[0]).toLocaleString();
+      $("nonZero").textContent = (flat.length - zeros).toLocaleString();
+      $("zeroCells").textContent = zeros.toLocaleString();
+      $("distinctResidues").textContent = residues.size.toString();
+    }
+
+    function renderTriangle() {
+      const kind = controls.sequenceType.value;
+      const n = parseInt(controls.termCount.value, 10);
+      const modulus = Math.max(2, Math.min(16, parseInt(controls.modulus.value, 10) || 8));
+      const cellSize = Math.max(2, Math.min(16, parseInt(controls.cellSize.value, 10) || 7));
+
+      $("termCountValue").textContent = n;
+      $("sequenceLabel").textContent = controls.sequenceType.options[controls.sequenceType.selectedIndex].text;
+      $("modeLabel").textContent = differenceMode === "absolute" ? "Absolute" : "Signed";
+      $("paletteLabel").textContent = paletteMode === "prime8" ? "Prime mod 8" : paletteMode === "binary" ? "Binary Sierpiński" : "Heat";
+
+      const seq = getSequence(kind, n);
+      const rows = buildDifferenceRows(seq, differenceMode);
+      const canvas = $("triangleCanvas");
+      const ctx = canvas.getContext("2d");
+      const width = Math.max(900, rows[0].length * cellSize + 120);
+      const height = Math.max(520, rows.length * cellSize + 80);
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const offsetX = 40;
+      const offsetY = 36;
+
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r];
+        const startX = offsetX + (r * cellSize) / 2;
+        const y = offsetY + r * cellSize;
+        for (let c = 0; c < row.length; c++) {
+          const value = row[c];
+          const x = startX + c * cellSize;
+          ctx.fillStyle = getColor(value, modulus);
+          ctx.fillRect(x, y, cellSize, cellSize);
+        }
+      }
+
+      ctx.strokeStyle = "rgba(15,23,42,0.06)";
+      ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
+
+      renderLegend(modulus);
+      renderStats(rows, modulus);
+      renderSampleTable();
+    }
+
+    function renderSampleTable() {
+      const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
+      const rows = buildDifferenceRows(primes, "absolute");
+      const labels = ["Primes", ...rows.slice(1).map((_, i) => `Δ<sup>${i + 1}</sup>p`)];
+      const allRows = [primes, ...rows.slice(1)];
+      const maxLen = primes.length;
+
+      let html = '<table><thead><tr><th>j</th>';
+      for (let j = 0; j < maxLen; j++) html += `<th>${j}</th>`;
+      html += '</tr></thead><tbody>';
+
+      allRows.forEach((row, idx) => {
+        html += `<tr><th>${labels[idx]}</th>`;
+        for (let j = 0; j < maxLen; j++) {
+          html += `<td>${row[j] ?? ""}</td>`;
+        }
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      $("sampleTable").innerHTML = html;
+    }
+
+    function setupPills(containerId, attr, onChange) {
+      const container = $(containerId);
+      container.querySelectorAll('.pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          container.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+          pill.classList.add('active');
+          onChange(pill.dataset[attr]);
+          renderTriangle();
+        });
+      });
+    }
+
+    controls.termCount.addEventListener('input', () => renderTriangle());
+    controls.modulus.addEventListener('input', () => renderTriangle());
+    controls.cellSize.addEventListener('input', () => renderTriangle());
+    controls.sequenceType.addEventListener('change', () => renderTriangle());
+    controls.renderBtn.addEventListener('click', renderTriangle);
+
+    controls.downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'prime-difference-triangle.png';
+      link.href = $('triangleCanvas').toDataURL('image/png');
+      link.click();
+    });
+
+    setupPills('modeGroup', 'mode', (value) => differenceMode = value);
+    setupPills('paletteGroup', 'palette', (value) => paletteMode = value);
+
+    renderTriangle();
+  </script>
+</body>
+</html>
