@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Gaussian Squares to Cuboid Diagonals — The Pell Bridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root {
+  --bg: #0c0d10;
+  --bg-card: #12131a;
+  --bg-card-2: #161824;
+  --gold: #c8a96e;
+  --gold-dim: #9a7d4a;
+  --gold-bright: #e8c97e;
+  --text: #d4d0c8;
+  --text-dim: #8a8578;
+  --text-bright: #f0ece4;
+  --blue: #5b8faa;
+  --green: #6a9a6a;
+  --red: #b05555;
+  --purple: #8a6aaa;
+  --teal: #5a9a8a;
+  --border: #2a2b33;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.7;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+
+h1 {
+  font-weight: 300; font-size: 2.6rem; color: var(--gold);
+  letter-spacing: 0.02em; margin-bottom: 0.3rem;
+}
+.subtitle {
+  font-family: var(--mono); font-size: 0.82rem; color: var(--text-dim);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2.5rem;
+}
+h2 {
+  font-weight: 400; font-size: 1.5rem; color: var(--gold-dim);
+  margin: 2.5rem 0 1rem; border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+}
+h3 {
+  font-weight: 500; font-size: 1.15rem; color: var(--teal);
+  margin: 1.5rem 0 0.6rem;
+}
+p { margin-bottom: 1rem; max-width: 780px; }
+.math-block { text-align: center; margin: 1.2rem 0; }
+.wide { max-width: 100%; }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.card-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+.card-grid-3 {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 900px) {
+  .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Callout */
+.callout {
+  border-left: 3px solid var(--gold-dim);
+  padding: 1rem 1.2rem;
+  background: rgba(200, 169, 110, 0.04);
+  margin: 1.2rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.callout.proof {
+  border-left-color: var(--red);
+  background: rgba(176, 85, 85, 0.05);
+}
+.callout.insight {
+  border-left-color: var(--teal);
+  background: rgba(90, 154, 138, 0.05);
+}
+.callout strong { color: var(--gold-bright); }
+.callout.proof strong { color: var(--red); }
+.callout.insight strong { color: var(--teal); }
+
+/* Table */
+.data-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--mono); font-size: 0.8rem;
+  margin: 1rem 0;
+}
+.data-table th {
+  text-align: left; color: var(--gold-dim); font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+}
+.data-table td {
+  padding: 0.4rem 0.6rem; border-bottom: 1px solid #1a1b22;
+}
+.data-table tr:hover td { background: var(--bg-card-2); }
+
+/* Pill */
+.pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.pill {
+  font-family: var(--mono); font-size: 0.75rem;
+  padding: 0.3rem 0.7rem; border-radius: 3px;
+  border: 1px solid var(--border); color: var(--text-dim);
+}
+.pill.gaussian { border-color: var(--blue); color: var(--blue); }
+.pill.eisenstein { border-color: var(--gold-dim); color: var(--gold-dim); }
+.pill.cuboid { border-color: var(--teal); color: var(--teal); }
+.pill.pell { border-color: var(--purple); color: var(--purple); }
+
+/* Canvas */
+.canvas-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.canvas-wrap canvas { width: 100%; display: block; }
+
+/* Controls */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  align-items: center; margin: 1rem 0;
+  font-family: var(--mono); font-size: 0.82rem;
+}
+.controls label { color: var(--gold-dim); }
+.controls select, .controls input[type="number"] {
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--gold-bright); font-family: var(--mono);
+  font-size: 0.82rem; padding: 0.3rem 0.5rem; border-radius: 2px;
+}
+.controls input[type="range"] {
+  -webkit-appearance: none; height: 3px;
+  background: var(--border); border-radius: 2px;
+}
+.controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--gold); cursor: pointer;
+}
+
+/* Links */
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Emphasis spans */
+.g { color: var(--blue); }       /* Gaussian */
+.e { color: var(--gold); }       /* Eisenstein */
+.c { color: var(--teal); }       /* Cuboid */
+.p { color: var(--purple); }     /* Pell */
+.r { color: var(--red); }        /* Blocked / negative result */
+
+.footer-stamp {
+  margin-top: 3rem; padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text-dim); letter-spacing: 0.06em;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>From Gaussian Squares to Cuboid Diagonals</h1>
+<div class="subtitle">The Pell bridge between Pythagorean triples and integral space diagonals</div>
+
+<div class="pill-row">
+  <span class="pill gaussian">Gaussian: x²+y² = z²</span>
+  <span class="pill eisenstein">Eisenstein: a²−ab+b² = c²</span>
+  <span class="pill cuboid">Cuboid: j² = a²+b²+(ab)²</span>
+  <span class="pill pell">Pell: u²−2v² = ±1</span>
+</div>
+
+<p>
+  The classical Pythagorean parametrisation arises from squaring a Gaussian integer.
+  The Eisenstein analogue arises from squaring an Eisenstein integer on the hexagonal lattice.
+  The integral cuboid construction belongs to the same family of norm-driven problems,
+  but with a multiplicative lift: starting from a Pythagorean pair
+  <span class="math-inline" data-tex="(a, b)"></span>, we form a cuboid with third edge
+  <span class="math-inline" data-tex="ab"></span>, so the space diagonal satisfies
+  <span class="math-inline" data-tex="j^2 = a^2 + b^2 + (ab)^2"></span>.
+</p>
+<p>
+  The integrality of this diagonal is not generic. It is controlled by a Pell recurrence
+  whose characteristic root is <span class="math-inline" data-tex="1 + \sqrt{2}"></span>,
+  the silver ratio. What makes this work for the Gaussian parametrisation and fail for
+  the Eisenstein one is the central result of this page.
+</p>
+
+<!-- ============================================ -->
+<h2>1. Two lattices, two norms</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h3 class="g" style="color:var(--blue)">Gaussian integers <span class="math-inline" data-tex="\mathbb{Z}[i]"></span></h3>
+    <p>Squaring <span class="math-inline" data-tex="(p + qi)^2"></span> gives</p>
+    <div class="math-block" data-tex="a = p^2 - q^2, \quad b = 2pq, \quad c = p^2 + q^2"></div>
+    <p>with <span class="math-inline" data-tex="a^2 + b^2 = c^2"></span>. The geometry lives on the unit circle
+       <span class="math-inline" data-tex="X^2 + Y^2 = 1"></span>.</p>
+    <div class="callout">
+      <strong>Slogan.</strong> A Pythagorean triple is the shadow of a Gaussian square.
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--gold)">Eisenstein integers <span class="math-inline" data-tex="\mathbb{Z}[\omega]"></span></h3>
+    <p>Squaring <span class="math-inline" data-tex="(m + n\omega)^2"></span> gives</p>
+    <div class="math-block" data-tex="a = m^2 - n^2, \quad b = n(2m - n), \quad c = m^2 - mn + n^2"></div>
+    <p>with <span class="math-inline" data-tex="a^2 - ab + b^2 = c^2"></span>. The geometry lives on the Eisenstein ellipse
+       <span class="math-inline" data-tex="X^2 - XY + Y^2 = 1"></span>.</p>
+    <div class="callout">
+      <strong>Slogan.</strong> An Eisenstein triple is the shadow of a hexagonal square.
+    </div>
+  </div>
+</div>
+
+<p>
+  Both parametrisations arise from the same mechanism — taking the norm of a squared
+  algebraic integer — but on different lattices: the square lattice
+  <span class="math-inline" data-tex="\mathbb{Z}[i]"></span> and the hexagonal lattice
+  <span class="math-inline" data-tex="\mathbb{Z}[\omega]"></span>, where
+  <span class="math-inline" data-tex="\omega = e^{2\pi i/3}"></span>.
+  For a detailed treatment of the Eisenstein side, see the
+  <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/">Gaussian–Eisenstein ellipse explorer</a>.
+</p>
+
+<!-- ============================================ -->
+<h2>2. The cuboid lift</h2>
+
+<p>
+  Take a Pythagorean pair <span class="math-inline" data-tex="(a, b)"></span> and build a cuboid with edges
+  <span class="math-inline" data-tex="a"></span>, <span class="math-inline" data-tex="b"></span>,
+  and <span class="math-inline" data-tex="ab"></span>. The space diagonal is
+</p>
+<div class="math-block" data-tex="j^2 = a^2 + b^2 + (ab)^2 = c^2 + (ab)^2"></div>
+<p>
+  The second form is the key: the cuboid condition asks whether
+  <span class="math-inline" data-tex="(c,\; ab,\; j)"></span> is itself Pythagorean. So the cuboid is a
+  <em>second-stage lift</em> — the Gaussian square gives
+  <span class="math-inline" data-tex="(a, b, c)"></span>, and we ask for the pair
+  <span class="math-inline" data-tex="(c, ab)"></span> to generate a second right triangle.
+</p>
+
+<div class="callout insight">
+  <strong>The Gaussian integer reformulation.</strong> There is a clean factorisation:
+  <div class="math-block" data-tex="j^2 + 1 = (a^2 + 1)(b^2 + 1) = N_{\mathbb{Z}[i]}\!\bigl((a+i)(b+i)\bigr)"></div>
+  Since <span class="math-inline" data-tex="(a+i)(b+i) = (ab - 1) + (a+b)i"></span>, we have
+  <span class="math-inline" data-tex="j^2 + 1 = (ab-1)^2 + (a+b)^2"></span>. The cuboid diagonal lives one unit below
+  a Gaussian norm.
+</div>
+
+<!-- ============================================ -->
+<h2>3. The Pell mechanism</h2>
+
+<p>
+  For which Pythagorean pairs <span class="math-inline" data-tex="(a, b)"></span> is the cuboid diagonal
+  <span class="math-inline" data-tex="j"></span> integral? Computing
+  <span class="math-inline" data-tex="a - b"></span> in the Gaussian parametrisation:
+</p>
+<div class="math-block" data-tex="a - b = (p^2 - q^2) - 2pq = (p - q)^2 - 2q^2"></div>
+<p>
+  This is a <em>Pell norm</em> in <span class="math-inline" data-tex="\mathbb{Z}[\sqrt{2}]"></span>.
+  The cuboid diagonal is integral precisely when
+  <span class="math-inline" data-tex="a - b = \pm 1"></span>, i.e. when the legs are
+  <strong>consecutive integers</strong>. Setting <span class="math-inline" data-tex="u = p - q"></span>
+  and <span class="math-inline" data-tex="v = q"></span>, this becomes
+</p>
+<div class="math-block" data-tex="u^2 - 2v^2 = \pm 1"></div>
+<p>
+  — Pell's equation for <span class="math-inline" data-tex="\sqrt{2}"></span>. The solutions are
+  the <a href="https://oeis.org/A001333">Pell companions</a>:
+</p>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr><th>n</th><th>u</th><th>v</th><th>p = u+v</th><th>q = v</th><th>a = p²−q²</th><th>b = 2pq</th><th>a−b</th><th>j</th></tr>
+    </thead>
+    <tbody id="pellTable"></tbody>
+  </table>
+</div>
+
+<p>
+  The recurrence <span class="math-inline" data-tex="p_n = 2p_{n-1} + p_{n-2}"></span> has characteristic
+  root <span class="math-inline" data-tex="\delta_S = 1 + \sqrt{2}"></span>, the <em>silver ratio</em>.
+  Each step multiplies by <span class="math-inline" data-tex="\delta_S"></span> in
+  <span class="math-inline" data-tex="\mathbb{Z}[\sqrt{2}]"></span>, so the cuboid family is an
+  <strong>orbit under the fundamental unit</strong> of this ring.
+</p>
+
+<!-- ============================================ -->
+<h2>4. Why Eisenstein triples are blocked</h2>
+
+<p>
+  Now try the same construction starting from an Eisenstein triple instead of a Pythagorean one.
+  The Eisenstein parametrisation gives <span class="math-inline" data-tex="a = m^2 - n^2"></span>,
+  <span class="math-inline" data-tex="b = n(2m - n)"></span>. Compute
+  <span class="math-inline" data-tex="a - b"></span>:
+</p>
+<div class="math-block" data-tex="a - b = m^2 - n^2 - 2mn + n^2 = m^2 - 2mn = m(m - 2n)"></div>
+
+<div class="callout proof">
+  <strong>Obstruction.</strong> For <span class="math-inline" data-tex="|a - b| = 1"></span> we would need
+  <span class="math-inline" data-tex="m(m - 2n) = \pm 1"></span>. But
+  <span class="math-inline" data-tex="m \geq 2"></span> in any non-degenerate triple, so
+  <span class="math-inline" data-tex="|m(m-2n)| \geq 2"></span>. The expression
+  <em>factors reducibly</em> — it is a product, not an irreducible quadratic form — and
+  therefore <strong>cannot represent <span class="math-inline" data-tex="\pm 1"></span></strong>.
+  No Eisenstein triple has consecutive legs.
+</div>
+
+<p>
+  Compare the two cases side by side:
+</p>
+
+<div class="card-grid">
+  <div class="card">
+    <h3 class="g" style="color:var(--blue)">Gaussian: <span class="math-inline" data-tex="a - b"></span> is irreducible</h3>
+    <div class="math-block" data-tex="a - b = (p-q)^2 - 2q^2"></div>
+    <p>An irreducible binary quadratic form in <span class="math-inline" data-tex="(p-q, q)"></span>.
+       It can represent <span class="math-inline" data-tex="\pm 1"></span> — and does so on the Pell orbit.
+       The cuboid construction <span class="g">succeeds</span>.</p>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--gold)">Eisenstein: <span class="math-inline" data-tex="a - b"></span> is reducible</h3>
+    <div class="math-block" data-tex="a - b = m(m - 2n)"></div>
+    <p>A reducible product of two factors. Since
+       <span class="math-inline" data-tex="m \geq 2"></span>, this product has
+       <span class="math-inline" data-tex="|a - b| \geq 2"></span> always.
+       The cuboid construction is <span class="r">algebraically blocked</span>.</p>
+  </div>
+</div>
+
+<p>
+  This is the precise sense in which the cuboid is <em>intrinsically Gaussian</em>:
+  it lives on the Pell orbit of <span class="math-inline" data-tex="\mathbb{Z}[\sqrt{2}]"></span>,
+  which threads through the Gaussian parametrisation but has no Eisenstein analogue.
+</p>
+
+<!-- ============================================ -->
+<h2>5. Interactive explorer</h2>
+
+<div class="canvas-wrap">
+  <canvas id="cuboidCanvas" width="1000" height="500"></canvas>
+</div>
+<div class="controls">
+  <label>Pell index n:</label>
+  <input type="range" id="pellIndex" min="0" max="7" value="0" step="1">
+  <span id="pellDisplay" style="color:var(--gold-bright); min-width:8rem;">n = 0: (p,q) = (2,1)</span>
+</div>
+
+<div class="card" id="cuboidReadout" style="font-family:var(--mono); font-size:0.82rem; line-height:1.9;">
+</div>
+
+<!-- ============================================ -->
+<h2>6. The conceptual chain</h2>
+
+<div class="card">
+  <table class="data-table" style="font-size:0.85rem;">
+    <thead>
+      <tr><th>Stage</th><th>Ring</th><th>Quadratic form</th><th>Integrality means</th><th>Sieve</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="g">Gaussian</td>
+        <td><span class="math-inline" data-tex="\mathbb{Z}[i]"></span></td>
+        <td><span class="math-inline" data-tex="x^2+y^2"></span></td>
+        <td>Pythagorean triple</td>
+        <td><span class="math-inline" data-tex="p \not\equiv q \pmod{2}"></span></td>
+      </tr>
+      <tr>
+        <td class="e">Eisenstein</td>
+        <td><span class="math-inline" data-tex="\mathbb{Z}[\omega]"></span></td>
+        <td><span class="math-inline" data-tex="a^2-ab+b^2"></span></td>
+        <td>hexagonal triple</td>
+        <td><span class="math-inline" data-tex="m+n \not\equiv 0 \pmod{3}"></span></td>
+      </tr>
+      <tr>
+        <td class="c">Cuboid lift</td>
+        <td><span class="math-inline" data-tex="\mathbb{Z}[\sqrt{2}]"></span> (via Pell)</td>
+        <td><span class="math-inline" data-tex="a^2+b^2+(ab)^2"></span></td>
+        <td>space diagonal integral</td>
+        <td><span class="math-inline" data-tex="(p-q)^2 - 2q^2 = \pm 1"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout">
+  <strong>The connection.</strong> Eisenstein gives the right 2D comparison class; the cuboid family is the 3D descendant
+  of the Gaussian mechanism; Pell is the hidden engine explaining why only a thin recursive family survives the extra
+  diagonal condition. The Eisenstein parametrisation is algebraically excluded from the cuboid lift because its
+  <span class="math-inline" data-tex="a - b"></span> factors reducibly.
+</div>
+
+<!-- ============================================ -->
+<h2>7. The semi-prime cuboid aside</h2>
+
+<p>
+  If instead we take <em>prime</em> edges <span class="math-inline" data-tex="p, q, pq"></span>, then
+  <span class="math-inline" data-tex="d^2 = p^2 + q^2 + (pq)^2"></span>. When one prime is 2, this becomes
+</p>
+<div class="math-block" data-tex="d^2 - 5q^2 = 4"></div>
+<p>
+  — a genuine Pell-type equation. The unique solution is
+  <span class="math-inline" data-tex="(p, q, d) = (2, 3, 7)"></span>, since
+  <span class="math-inline" data-tex="49 - 45 = 4"></span>. For general odd primes, the equation
+  <span class="math-inline" data-tex="d^2 = p^2 + q^2 + p^2 q^2"></span> no longer has Pell form, and
+  computational search is needed.
+</p>
+
+<!-- ============================================ -->
+<h2>Further reading</h2>
+<p class="wide">
+  <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/">Gaussian–Eisenstein ellipse explorer</a> —
+  the rational-point parametrisation that generates both Pythagorean and Eisenstein triples via pencils of lines
+  through on-curve base points.
+</p>
+
+<div class="footer-stamp">
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</div>
+
+</div><!-- .container -->
+
+<script>
+// === KaTeX ===
+document.querySelectorAll('.math-inline[data-tex]').forEach(el => {
+  katex.render(el.dataset.tex, el, { throwOnError: false });
+});
+document.querySelectorAll('.math-block[data-tex]').forEach(el => {
+  katex.render(el.dataset.tex, el, { throwOnError: false, displayMode: true });
+});
+
+// === PELL SEQUENCE ===
+const pellPairs = [];
+let u0 = 1, v0 = 1, u1, v1;
+// Generate Pell companions: u²-2v²=±1
+// (u,v): (1,1),(3,2),(7,5),(17,12),(41,29),(99,70),(239,169),(577,408)
+{
+  let u = 1, v = 1;
+  for (let i = 0; i < 8; i++) {
+    pellPairs.push({ u, v, p: u + v, q: v });
+    const nu = 3 * u + 4 * v;
+    const nv = 2 * u + 3 * v;
+    u = nu; v = nv;
+  }
+}
+
+// Populate Pell table
+const pellTbody = document.getElementById('pellTable');
+pellPairs.forEach((pp, i) => {
+  const { u, v, p, q } = pp;
+  const a = p * p - q * q;
+  const b = 2 * p * q;
+  const c = p * p + q * q;
+  const j2 = c * c + (a * b) * (a * b);
+  const j = Math.round(Math.sqrt(j2));
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${i}</td><td>${u}</td><td>${v}</td><td>${p}</td><td>${q}</td>` +
+    `<td>${a}</td><td>${b}</td><td>${a - b}</td><td>${j}</td>`;
+  pellTbody.appendChild(tr);
+});
+
+// === CUBOID CANVAS ===
+const canvas = document.getElementById('cuboidCanvas');
+const ctx = canvas.getContext('2d');
+
+function drawCuboid(idx) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = rect.width, H = rect.height;
+
+  ctx.fillStyle = '#0a0b0e';
+  ctx.fillRect(0, 0, W, H);
+
+  const { p, q } = pellPairs[idx];
+  const a = p * p - q * q;
+  const b = 2 * p * q;
+  const c = p * p + q * q;
+  const ab = a * b;
+  const j2 = a * a + b * b + ab * ab;
+  const j = Math.round(Math.sqrt(j2));
+
+  // === 3D ISOMETRIC CUBOID ===
+  // True proportions for small n, log-scaled for large n
+  // The three edges are a (width), b (depth-ish), ab (height)
+  // ab grows much faster, so use a cube-root scale for ab relative to a,b
+  
+  const useLog = (ab > 50);
+  const sa = useLog ? Math.log(a + 1) : a;
+  const sb = useLog ? Math.log(b + 1) : b;
+  const sab = useLog ? Math.log(ab + 1) * 0.7 : ab;
+  
+  const maxDim = Math.max(sa, sb, sab);
+  const targetSize = Math.min(W * 0.28, H * 0.38);
+  const sc = targetSize / maxDim;
+  
+  const ea = sa * sc;   // edge a (x-axis, going right)
+  const eb = sb * sc;   // edge b (y-axis, going into screen — oblique)
+  const eab = sab * sc; // edge ab (z-axis, going up)
+
+  // Isometric angles
+  const angX = 0;           // a-edge goes horizontal right
+  const angY = Math.PI * 0.78; // b-edge goes upper-left (oblique)
+  
+  // Direction vectors
+  const axX = Math.cos(angX), axY = Math.sin(angX);   // a-direction (right)
+  const ayX = Math.cos(angY) * 0.5, ayY = Math.sin(angY) * 0.5; // b-direction (oblique, foreshortened)
+  const azX = 0, azY = -1;  // ab-direction (up)
+
+  // Origin (bottom-front-left corner)
+  const ox = W * 0.3 - ea * 0.3, oy = H * 0.75;
+
+  // 8 vertices: combinations of (0 or ea)*(ax) + (0 or eb)*(ay) + (0 or eab)*(az)
+  function vtx(ia, ib, ic) {
+    return [
+      ox + ia * ea * axX + ib * eb * ayX + ic * eab * azX,
+      oy + ia * ea * axY + ib * eb * ayY + ic * eab * azY
+    ];
+  }
+  
+  // Vertices
+  const V = {
+    '000': vtx(0,0,0), '100': vtx(1,0,0), '110': vtx(1,1,0), '010': vtx(0,1,0),
+    '001': vtx(0,0,1), '101': vtx(1,0,1), '111': vtx(1,1,1), '011': vtx(0,1,1),
+  };
+
+  // Draw faces (back to front for painter's algorithm)
+  function drawFace(keys, fillColor) {
+    ctx.beginPath();
+    const pts = keys.map(k => V[k]);
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.strokeStyle = '#6a6b74';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Back faces (drawn first)
+  drawFace(['010','110','111','011'], 'rgba(90, 100, 130, 0.12)');  // back face
+  drawFace(['010','000','001','011'], 'rgba(80, 90, 120, 0.08)');   // left face
+  drawFace(['001','101','111','011'], 'rgba(100, 110, 140, 0.10)'); // top face
+
+  // Front faces
+  drawFace(['000','100','101','001'], 'rgba(70, 85, 120, 0.15)');   // front face
+  drawFace(['100','110','111','101'], 'rgba(85, 95, 130, 0.13)');   // right face
+  drawFace(['000','100','110','010'], 'rgba(60, 70, 100, 0.10)');   // bottom face
+
+  // Re-draw visible edges with stronger lines
+  ctx.strokeStyle = '#8a8b94';
+  ctx.lineWidth = 2;
+  // Front bottom edges
+  [['000','100'], ['000','010'], ['000','001']].forEach(([a,b]) => {
+    ctx.beginPath(); ctx.moveTo(V[a][0], V[a][1]); ctx.lineTo(V[b][0], V[b][1]); ctx.stroke();
+  });
+  // Other visible edges
+  ctx.strokeStyle = '#6a6b74';
+  ctx.lineWidth = 1.5;
+  [['100','110'], ['100','101'], ['010','110'], ['010','011'],
+   ['001','101'], ['001','011'], ['110','111'], ['101','111'], ['011','111']].forEach(([a,b]) => {
+    ctx.beginPath(); ctx.moveTo(V[a][0], V[a][1]); ctx.lineTo(V[b][0], V[b][1]); ctx.stroke();
+  });
+
+  // Vertices as dots
+  ctx.fillStyle = '#9aa0b0';
+  Object.values(V).forEach(([x,y]) => {
+    ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Origin and far corner highlighted
+  ctx.fillStyle = '#c8a96e';
+  ctx.beginPath(); ctx.arc(V['000'][0], V['000'][1], 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#c8a96e';
+  ctx.beginPath(); ctx.arc(V['111'][0], V['111'][1], 4, 0, Math.PI * 2); ctx.fill();
+
+  // === SPACE DIAGONAL ===
+  ctx.strokeStyle = '#c8a96e';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(V['000'][0], V['000'][1]);
+  ctx.lineTo(V['111'][0], V['111'][1]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Diagonal glow
+  ctx.strokeStyle = 'rgba(200, 169, 110, 0.15)';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(V['000'][0], V['000'][1]);
+  ctx.lineTo(V['111'][0], V['111'][1]);
+  ctx.stroke();
+
+  // === EDGE LABELS ===
+  ctx.font = 'bold 13px "IBM Plex Mono"';
+
+  // Edge a: 000→100 (bottom front, horizontal)
+  const midA = [(V['000'][0] + V['100'][0]) / 2, (V['000'][1] + V['100'][1]) / 2];
+  ctx.fillStyle = '#5b8faa';
+  ctx.textAlign = 'center';
+  ctx.fillText(`a = ${a}`, midA[0], midA[1] + 20);
+
+  // Edge b: 000→010 (bottom left, oblique)
+  const midB = [(V['000'][0] + V['010'][0]) / 2, (V['000'][1] + V['010'][1]) / 2];
+  ctx.fillStyle = '#6a9a6a';
+  ctx.textAlign = 'right';
+  ctx.fillText(`b = ${b}`, midB[0] - 8, midB[1] + 6);
+
+  // Edge ab: 000→001 (left vertical)
+  const midAB = [(V['000'][0] + V['001'][0]) / 2, (V['000'][1] + V['001'][1]) / 2];
+  ctx.fillStyle = '#8a6aaa';
+  ctx.textAlign = 'right';
+  ctx.fillText(`ab = ${ab}`, midAB[0] - 10, midAB[1]);
+
+  // Diagonal label
+  const midJ = [(V['000'][0] + V['111'][0]) / 2, (V['000'][1] + V['111'][1]) / 2];
+  ctx.fillStyle = '#c8a96e';
+  ctx.font = 'bold 14px "IBM Plex Mono"';
+  ctx.textAlign = 'left';
+  ctx.fillText(`j = ${j}`, midJ[0] + 12, midJ[1] - 8);
+
+  // Scale note
+  if (useLog) {
+    ctx.font = '10px "IBM Plex Mono"';
+    ctx.fillStyle = '#555';
+    ctx.textAlign = 'left';
+    ctx.fillText('(log-scaled for visibility)', ox, oy + 32);
+  }
+
+  // === RIGHT PANEL: PELL CHAIN ===
+  ctx.textAlign = 'left';
+  const rx = W * 0.68, ry = H * 0.08;
+  ctx.font = 'bold 15px "Cormorant Garamond"';
+  ctx.fillStyle = '#8a6aaa';
+  ctx.fillText('Pell chain  u² − 2v² = ±1', rx, ry);
+
+  ctx.font = '11px "IBM Plex Mono"';
+  for (let i = 0; i <= Math.min(idx + 2, pellPairs.length - 1); i++) {
+    const pp = pellPairs[i];
+    const ya = ry + 26 + i * 26;
+    const isCurrent = i === idx;
+    const aVal = pp.p * pp.p - pp.q * pp.q;
+    const bVal = 2 * pp.p * pp.q;
+    
+    if (isCurrent) {
+      // Highlight bar
+      ctx.fillStyle = 'rgba(200, 169, 110, 0.08)';
+      ctx.fillRect(rx - 6, ya - 14, W - rx - 10, 22);
+    }
+    
+    ctx.fillStyle = isCurrent ? '#f0ece4' : '#555';
+    ctx.fillText(
+      `n=${i}  (${pp.p},${pp.q}) → a=${aVal}, b=${bVal}, a−b=${aVal - bVal}`,
+      rx, ya
+    );
+    if (isCurrent) {
+      ctx.fillStyle = '#c8a96e';
+      ctx.fillText('◀', rx + 360, ya);
+    }
+  }
+
+  // === SECOND PYTHAGOREAN TRIPLE ===
+  const sx = W * 0.68, sy = H * 0.58;
+  ctx.font = 'bold 15px "Cormorant Garamond"';
+  ctx.fillStyle = '#5a9a8a';
+  ctx.fillText('Second Pythagorean triple', sx, sy);
+  
+  ctx.font = '12px "IBM Plex Mono"';
+  ctx.fillStyle = '#d4d0c8';
+  ctx.fillText(`c² + (ab)² = j²`, sx, sy + 24);
+  ctx.fillStyle = '#8a8578';
+  ctx.fillText(`${c}² + ${ab}² = ${j}²`, sx, sy + 46);
+  
+  // Gaussian factorisation
+  ctx.font = 'bold 15px "Cormorant Garamond"';
+  ctx.fillStyle = '#5b8faa';
+  ctx.fillText('Gaussian factorisation', sx, sy + 80);
+  ctx.font = '12px "IBM Plex Mono"';
+  ctx.fillStyle = '#d4d0c8';
+  ctx.fillText(`j² + 1 = (a²+1)(b²+1)`, sx, sy + 104);
+  ctx.fillStyle = '#8a8578';
+  const a2p1 = BigInt(a)*BigInt(a) + 1n;
+  const b2p1 = BigInt(b)*BigInt(b) + 1n;
+  ctx.fillText(`${a2p1} × ${b2p1}`, sx, sy + 126);
+
+  // Update readout
+  const readout = document.getElementById('cuboidReadout');
+  const pellVal = (p - q) * (p - q) - 2 * q * q;
+  readout.innerHTML =
+    `<span style="color:var(--gold-dim)">Pell index:</span> <span style="color:var(--gold-bright)">n = ${idx}</span> · ` +
+    `<span style="color:var(--gold-dim)">Parameters:</span> <span style="color:var(--gold-bright)">p = ${p}, q = ${q}</span> · ` +
+    `<span style="color:var(--gold-dim)">Pell:</span> <span style="color:var(--purple)">(p−q)² − 2q² = ${(p - q)}² − 2·${q}² = ${pellVal}</span><br>` +
+    `<span style="color:var(--gold-dim)">Edges:</span> <span style="color:var(--blue)">a = ${a}</span>, <span style="color:var(--green)">b = ${b}</span>, ` +
+    `<span style="color:var(--purple)">ab = ${ab}</span> · ` +
+    `<span style="color:var(--gold-dim)">a − b =</span> <span style="color:var(--gold-bright)">${a - b}</span> · ` +
+    `<span style="color:var(--gold-dim)">Diagonal:</span> <span style="color:var(--gold)">j = ${j}</span><br>` +
+    `<span style="color:var(--gold-dim)">Factorisation:</span> <span style="color:var(--text-dim)">j² + 1 = (a²+1)(b²+1) = ${a * a + 1} × ${b * b + 1} = ${(a * a + 1) * (b * b + 1)}</span>`;
+}
+
+// Event wiring
+const pellSlider = document.getElementById('pellIndex');
+const pellDisp = document.getElementById('pellDisplay');
+function updateExplorer() {
+  const idx = parseInt(pellSlider.value);
+  const { p, q } = pellPairs[idx];
+  pellDisp.textContent = `n = ${idx}: (p,q) = (${p},${q})`;
+  drawCuboid(idx);
+}
+pellSlider.addEventListener('input', updateExplorer);
+window.addEventListener('resize', updateExplorer);
+updateExplorer();
+</script>
+</body>
+</html>
