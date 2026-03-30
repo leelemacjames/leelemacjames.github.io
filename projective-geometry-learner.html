@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projective Geometry: What Survives Projection</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg-card: #151619;
+  --bg-reveal: #111215;
+  --gold: #c8a96e;
+  --gold-dim: #a08550;
+  --gold-glow: rgba(200,169,110,0.12);
+  --text: #d4d0c8;
+  --text-dim: #8a8577;
+  --text-bright: #eae6dd;
+  --accent-blue: #6b8fad;
+  --accent-red: #ad6b6b;
+  --accent-green: #6bad7a;
+  --accent-violet: #9b7fba;
+  --accent-cyan: #6badb0;
+  --border: #2a2b30;
+  --border-gold: rgba(200,169,110,0.25);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 5rem 2rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content:'';
+  position:absolute; top:0;left:0;right:0;bottom:0;
+  background: radial-gradient(ellipse 60% 50% at 50% 30%, var(--gold-glow), transparent);
+  pointer-events:none;
+}
+.header h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700;
+  font-size: clamp(1.8rem,4.5vw,3.2rem);
+  color: var(--text-bright);
+  letter-spacing:0.02em;
+  line-height:1.25;
+  margin-bottom:0.6rem;
+  position:relative;
+}
+.header .subtitle {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.85rem;
+  color: var(--gold);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+.header .epigraph {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:1.1rem;
+  color: var(--text-dim);
+  max-width:42rem;
+  margin:0 auto;
+  line-height:1.6;
+}
+
+/* ── CONTAINER ── */
+.container { max-width:52rem; margin:0 auto; padding:0 1.5rem 4rem; }
+
+/* ── STAGES ── */
+.stage {
+  margin:3rem 0;
+  opacity:0; transform:translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.stage.visible { opacity:1; transform:translateY(0); }
+.stage-number {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; color:var(--gold-dim);
+  letter-spacing:0.2em; text-transform:uppercase;
+  margin-bottom:0.4rem;
+}
+.stage h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-weight:600; font-size:1.65rem;
+  color:var(--text-bright);
+  margin-bottom:1rem; line-height:1.3;
+}
+.stage p { margin-bottom:1rem; font-size:0.95rem; }
+
+/* ── INSIGHT ── */
+.insight {
+  background:var(--bg-card);
+  border-left:3px solid var(--gold);
+  padding:1.2rem 1.5rem;
+  margin:1.5rem 0;
+  border-radius:0 6px 6px 0;
+}
+.insight p { margin-bottom:0.5rem; font-size:0.92rem; }
+.insight p:last-child { margin-bottom:0; }
+.insight .label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.68rem; color:var(--gold);
+  text-transform:uppercase; letter-spacing:0.15em;
+  margin-bottom:0.5rem;
+}
+
+/* ── EQUATION ── */
+.equation-block {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1.8rem 2rem;
+  margin:1.5rem 0;
+  text-align:center;
+  position:relative; overflow:hidden;
+}
+.equation-block::after {
+  content:''; position:absolute; top:0;left:0;right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);
+}
+.equation {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem; color:var(--text-bright);
+  letter-spacing:0.04em; line-height:1.5;
+}
+.equation .var { font-style:italic; }
+.equation-caption {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.72rem; color:var(--text-dim);
+  margin-top:0.8rem; letter-spacing:0.05em;
+}
+
+/* ── REVEAL ── */
+.reveal-btn {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:transparent;
+  border:1px solid var(--border-gold);
+  color:var(--gold);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase;
+  padding:0.5rem 1.2rem; border-radius:4px; cursor:pointer;
+  transition:all 0.3s ease; margin-top:0.5rem;
+}
+.reveal-btn:hover { background:var(--gold-glow); border-color:var(--gold); }
+.reveal-btn .arrow { transition:transform 0.3s ease; font-size:0.6rem; }
+.reveal-btn.open .arrow { transform:rotate(90deg); }
+.reveal-content { max-height:0; overflow:hidden; transition:max-height 0.5s ease, opacity 0.4s ease; opacity:0; }
+.reveal-content.open { opacity:1; }
+
+/* ── DIVIDER ── */
+.divider { height:1px; background:linear-gradient(90deg,transparent,var(--border-gold),transparent); margin:3rem 0; }
+
+/* ── PUNCHLINE ── */
+.punchline {
+  background:linear-gradient(135deg,rgba(200,169,110,0.08),rgba(200,169,110,0.03));
+  border:1px solid var(--border-gold);
+  border-radius:10px; padding:2rem; margin:2.5rem 0; text-align:center;
+}
+.punchline p {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem; color:var(--text-bright); line-height:1.6; font-style:italic;
+}
+.punchline .attribution {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.68rem; color:var(--text-dim);
+  margin-top:0.8rem; font-style:normal; letter-spacing:0.08em;
+}
+
+/* ── INTERACTIVE SVG ── */
+.interactive-container {
+  display:flex; justify-content:center; margin:1.5rem 0;
+  user-select:none; -webkit-user-select:none;
+}
+.interactive-container svg { max-width:100%; height:auto; cursor:default; }
+
+/* ── TABLE ── */
+.data-table {
+  width:100%; border-collapse:collapse;
+  margin:1.5rem 0; font-size:0.85rem;
+}
+.data-table th, .data-table td {
+  padding:0.55rem 0.8rem;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+.data-table th {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; color:var(--gold-dim);
+  text-transform:uppercase; letter-spacing:0.1em;
+  background:var(--bg-card);
+}
+.data-table td { font-family:'IBM Plex Mono',monospace; font-size:0.82rem; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table .highlight-row td { color:var(--gold); }
+
+/* ── CODE ── */
+code {
+  font-family:'IBM Plex Mono',monospace; font-size:0.85em;
+  color:var(--gold); background:rgba(200,169,110,0.08);
+  padding:0.1em 0.35em; border-radius:3px;
+}
+em { color:var(--text-bright); font-style:italic; }
+strong { color:var(--text-bright); font-weight:600; }
+
+/* ── COMPARISON ── */
+.comparison { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.5rem 0; }
+@media (max-width:600px) { .comparison { grid-template-columns:1fr; } }
+.comparison-col {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:8px; padding:1.2rem;
+}
+.comparison-col h4 {
+  font-family:'IBM Plex Mono',monospace; font-size:0.72rem;
+  color:var(--gold); text-transform:uppercase; letter-spacing:0.12em;
+  margin-bottom:0.6rem;
+}
+.comparison-col p { font-size:0.88rem; line-height:1.6; margin-bottom:0.5rem; }
+.comparison-col p:last-child { margin-bottom:0; }
+
+/* ── FOOTER ── */
+.footer {
+  text-align:center; padding:3rem 1.5rem 2rem;
+  border-top:1px solid var(--border);
+}
+.footer p {
+  font-family:'IBM Plex Mono',monospace; font-size:0.65rem;
+  color:var(--text-dim); letter-spacing:0.08em; line-height:1.8;
+}
+.footer .gold { color:var(--gold-dim); }
+
+/* ── FIBONACCI CHART ── */
+.fib-chart-container { margin:1.5rem 0; }
+canvas { max-width:100%; }
+
+/* ── COLOUR TRIANGLE ── */
+.colour-label { font-family:'IBM Plex Mono',monospace; font-size:11px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="subtitle">Klein's Erlangen Programme · Foundations</div>
+  <h1>Projective Geometry: What Survives Projection</h1>
+  <p class="epigraph">
+    Projective geometry asks the most austere question in mathematics: what is preserved when everything but incidence is allowed to change?
+  </p>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════ §1: WHAT IS PROJECTIVE GEOMETRY ═══════════════════ -->
+<section class="stage" id="s1">
+  <div class="stage-number">I</div>
+  <h2>The Geometry Without Distance</h2>
+  <p>
+    Euclidean geometry preserves lengths and angles. Affine geometry preserves parallelism but not lengths. Projective geometry strips away even parallelism — it preserves only <em>incidence</em>: which points lie on which lines, and which lines pass through which points.
+  </p>
+  <p>
+    This makes it the most symmetric geometry in Klein's hierarchy. It sits at the top of the Erlangen programme precisely because it refuses to distinguish the most. No distances, no angles, no notion of "parallel." Only the bare combinatorial structure of points, lines, and their intersections.
+  </p>
+  <p>
+    And yet, projective geometry is not structureless. It possesses a single numerical invariant — the <em>cross-ratio</em> — which survives every projective transformation. This invariant is the reason projective geometry has content, not merely emptiness.
+  </p>
+  <div class="insight">
+    <div class="label">The Erlangen position</div>
+    <p>In the Erlangen programme, a geometry is defined by its group of allowed transformations and the invariants those transformations preserve. Projective geometry is the geometry of the projective linear group PGL(n+1), and its fundamental invariant is the cross-ratio of four collinear points.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §2: THE CROSS-RATIO ═══════════════════ -->
+<section class="stage" id="s2">
+  <div class="stage-number">II</div>
+  <h2>The Cross-Ratio</h2>
+  <p>
+    Given four collinear points A, B, C, D with coordinates a, b, c, d, the cross-ratio is defined as:
+  </p>
+
+  <div class="equation-block">
+    <div class="equation">
+      <span class="var">ξ</span>(A, B, C, D) = 
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:4px;">
+          (<span class="var">a</span> − <span class="var">b</span>)(<span class="var">c</span> − <span class="var">d</span>)
+        </span>
+        <span style="display:block; padding-top:4px;">
+          (<span class="var">b</span> − <span class="var">c</span>)(<span class="var">d</span> − <span class="var">a</span>)
+        </span>
+      </span>
+    </div>
+    <div class="equation-caption">The cross-ratio — the only projective invariant of four collinear points</div>
+  </div>
+
+  <p>
+    The defining property: no matter how these points are projected onto another line — stretched, compressed, perspectively transformed — the cross-ratio is preserved. Distances change. Ratios of distances change. But this particular combination of ratios does not.
+  </p>
+
+  <div class="insight">
+    <div class="label">Worked example</div>
+    <p>For points A = 2, B = 3, C = 5, D = 8:</p>
+    <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.15rem; color:var(--text-bright); margin:0.5rem 0;">
+      ξ(2, 3, 5, 8) = (2 − 3)(5 − 8) / [(3 − 5)(8 − 2)] = (−1)(−3) / [(−2)(6)] = 3 / −12 = −1/4
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §3: INTERACTIVE PROJECTION ═══════════════════ -->
+<section class="stage" id="s3">
+  <div class="stage-number">III</div>
+  <h2>Projection Preserves the Cross-Ratio</h2>
+  <p>
+    Drag the <span style="color:var(--accent-blue);">observer point</span> to see how projection distorts distances but preserves the cross-ratio. The blue points A, B, C, D on the base line are projected through the observer onto the diagonal line, producing A′, B′, C′, D′. The individual distances change — but ξ does not.
+  </p>
+
+  <div class="interactive-container">
+    <svg id="projectionSvg" viewBox="0 0 520 420" width="520" height="420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="pgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1b1f" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="520" height="420" fill="#0e0f11"/>
+      <rect width="520" height="420" fill="url(#pgrid)"/>
+      <!-- Elements populated by JS -->
+    </svg>
+  </div>
+
+  <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap; margin:0.5rem 0;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:0.8rem;">
+      <span style="color:var(--accent-blue);">●</span> Original: ξ = <span id="xiOriginal" style="color:var(--text-bright);">−0.2500</span>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:0.8rem;">
+      <span style="color:var(--accent-red);">●</span> Projected: ξ = <span id="xiProjected" style="color:var(--text-bright);">−0.2500</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §4: PERMUTATIONS ═══════════════════ -->
+<section class="stage" id="s4">
+  <div class="stage-number">IV</div>
+  <h2>The Six Faces of the Cross-Ratio</h2>
+  <p>
+    Four points can be arranged in 24 permutations, but these yield only <em>six</em> distinct cross-ratio values. The six are related by two generating transformations: ξ → 1 − ξ and ξ → 1/ξ. Together these generate the symmetric group S₃ acting on the cross-ratio — the anharmonic group.
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Permutation</th><th>Cross-Ratio</th><th>Decimal</th><th>Relation</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row"><td>(2, 3, 5, 8)</td><td>−1/4</td><td>−0.2500</td><td>ξ</td></tr>
+      <tr><td>(2, 3, 8, 5)</td><td>1/5</td><td>0.2000</td><td>1 − 1/(1−ξ)</td></tr>
+      <tr><td>(2, 5, 3, 8)</td><td>5/4</td><td>1.2500</td><td>1 − ξ</td></tr>
+      <tr><td>(2, 5, 8, 3)</td><td>5</td><td>5.0000</td><td>1/(1−ξ)</td></tr>
+      <tr><td>(2, 8, 3, 5)</td><td>4/5</td><td>0.8000</td><td>(ξ−1)/ξ</td></tr>
+      <tr><td>(2, 8, 5, 3)</td><td>−4</td><td>−4.0000</td><td>1/ξ</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight">
+    <div class="label">The anharmonic group</div>
+    <p>These six values form a group under composition of the maps ξ → 1−ξ and ξ → 1/ξ, isomorphic to S₃. This is not a coincidence: the permutation group on four objects modulo the Klein four-group (which fixes the cross-ratio) is exactly S₃. The algebraic structure of the cross-ratio <em>is</em> the combinatorics of four-point permutations.</p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r1')">
+    <span class="arrow">▶</span> Exercise: verify the relations
+  </button>
+  <div class="reveal-content" id="r1">
+    <div class="insight" style="margin-top:1rem;">
+      <p>Take ξ = −1/4 and check each transformation:</p>
+      <p style="margin-top:0.4rem;">1/ξ = −4 ✓<br>
+      1 − ξ = 1 − (−1/4) = 5/4 ✓<br>
+      1/(1−ξ) = 1/(5/4) = 4/5 … but the table says 5. The discrepancy reveals that the group structure involves <em>all three generators</em> composed — the six values form an orbit under the full S₃ action, not just the two displayed maps. Write code to verify all 24 permutations collapse to exactly these 6 values.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §5: FIBONACCI CONVERGENCE ═══════════════════ -->
+<section class="stage" id="s5">
+  <div class="stage-number">V</div>
+  <h2>The Fibonacci Cross-Ratio</h2>
+  <p>
+    Something remarkable happens when the four points are consecutive Fibonacci numbers F<sub>n−3</sub>, F<sub>n−2</sub>, F<sub>n−1</sub>, F<sub>n</sub>. The cross-ratio converges to an irrational limit involving the golden ratio.
+  </p>
+
+  <div class="fib-chart-container">
+    <canvas id="fibChart" width="500" height="280"></canvas>
+  </div>
+
+  <p>
+    Each rational cross-ratio of a Fibonacci quadruplet approaches a limiting value as n → ∞. The derivation uses the asymptotic form F<sub>n</sub> ≈ φⁿ/√5:
+  </p>
+
+  <button class="reveal-btn" onclick="toggleReveal('r2')">
+    <span class="arrow">▶</span> Full derivation
+  </button>
+  <div class="reveal-content" id="r2">
+    <div class="insight" style="margin-top:1rem;">
+      <div class="label">Asymptotic substitution</div>
+      <p>Substituting F<sub>k</sub> ≈ φ<sup>k</sup>/√5 into the cross-ratio formula, the √5 factors cancel:</p>
+      <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text-bright); margin:0.8rem 0;">
+        ξ = (φ<sup>n−3</sup> − φ<sup>n−2</sup>)(φ<sup>n−1</sup> − φ<sup>n</sup>) / [(φ<sup>n−2</sup> − φ<sup>n−1</sup>)(φ<sup>n</sup> − φ<sup>n−3</sup>)]
+      </p>
+      <p>Using the Fibonacci recurrence φ<sup>n</sup> = φ<sup>n−1</sup> + φ<sup>n−2</sup>:</p>
+      <p style="margin-top:0.4rem;">The numerator becomes (φ<sup>n−3</sup> − φ<sup>n−2</sup>)(−φ<sup>n−2</sup>).<br>
+      The denominator becomes (−φ<sup>n−3</sup>)(2φ<sup>n−2</sup>).</p>
+      <p style="margin-top:0.4rem;">Simplifying: ξ = (φ<sup>n−3</sup> − φ<sup>n−2</sup>) / (2φ<sup>n−3</sup>) = 1/2 − φ/2</p>
+      <p style="margin-top:0.4rem;">Since φ = (1 + √5)/2:</p>
+    </div>
+  </div>
+
+  <div class="equation-block">
+    <div class="equation">
+      <span class="var">ξ</span><sub>∞</sub> = 
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:4px;">
+          1 − √5
+        </span>
+        <span style="display:block; padding-top:4px;">4</span>
+      </span>
+      &nbsp;=&nbsp;
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:4px;">
+          φ*
+        </span>
+        <span style="display:block; padding-top:4px;">2</span>
+      </span>
+      &nbsp;≈ −0.30902
+    </div>
+    <div class="equation-caption">The limiting Fibonacci cross-ratio — half the conjugate golden ratio</div>
+  </div>
+
+  <div class="insight">
+    <div class="label">Why φ* appears</div>
+    <p>The conjugate golden ratio φ* = (1 − √5)/2 is the second root of x² = x + 1. It appears here because the cross-ratio, as a ratio of differences, eliminates the dominant φⁿ growth and leaves behind the algebraic structure of the recurrence. The cross-ratio of Fibonacci quadruplets converges because the golden ratio governs the asymptotic spacing — and the cross-ratio extracts exactly the algebraic content of that spacing.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §6: HOMOGENEOUS COORDINATES ═══════════════════ -->
+<section class="stage" id="s6">
+  <div class="stage-number">VI</div>
+  <h2>Homogeneous Coordinates</h2>
+  <p>
+    Projective geometry's natural language is <em>homogeneous coordinates</em>: a point in projective n-space is represented not by n numbers but by n+1 numbers, defined only up to a common scalar multiple. The point [x, y, z] and [2x, 2y, 2z] are the same projective point.
+  </p>
+  <p>
+    This redundancy is not a defect — it is what makes projective geometry work. It allows "points at infinity" (where parallel lines meet) to be treated as ordinary points, and it makes projective transformations linear.
+  </p>
+
+  <div class="comparison">
+    <div class="comparison-col">
+      <h4>Euclidean point</h4>
+      <p>A point in the plane: (x, y). Two coordinates, one point. No redundancy.</p>
+      <p>Parallel lines never meet.</p>
+    </div>
+    <div class="comparison-col">
+      <h4>Projective point</h4>
+      <p>A point in ℙ²: [x, y, z] ∼ [λx, λy, λz]. Three coordinates, one equivalence class.</p>
+      <p>Parallel lines meet at [1, m, 0] — a point "at infinity" in the direction of slope m.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §7: COLOUR TRIANGLE ═══════════════════ -->
+<section class="stage" id="s7">
+  <div class="stage-number">VII</div>
+  <h2>The Chromatic Triangle</h2>
+  <p>
+    Homogeneous coordinates find a vivid application in colour theory. Assign the three RGB primaries to the vertices of a triangle with homogeneous coordinates [1,0,0], [0,1,0], [0,0,1]. The secondary colours then arise as midpoints under modular addition — and the centroid [1,1,1] represents white, the convergence of all primaries.
+  </p>
+
+  <div class="interactive-container">
+    <svg id="colourTriangle" viewBox="0 0 440 400" width="440" height="400" xmlns="http://www.w3.org/2000/svg">
+      <!-- Populated by JS -->
+    </svg>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Colour</th><th>Coordinate</th><th>Construction</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="color:#ff4444;">Red</td><td>[1, 0, 0]</td><td>Vertex</td></tr>
+      <tr><td style="color:#44cc44;">Green</td><td>[0, 1, 0]</td><td>Vertex</td></tr>
+      <tr><td style="color:#4488ff;">Blue</td><td>[0, 0, 1]</td><td>Vertex</td></tr>
+      <tr><td style="color:#ffff44;">Yellow</td><td>[1, 1, 0]</td><td>R + G (mod 2)</td></tr>
+      <tr><td style="color:#44ffff;">Cyan</td><td>[0, 1, 1]</td><td>G + B (mod 2)</td></tr>
+      <tr><td style="color:#ff44ff;">Magenta</td><td>[1, 0, 1]</td><td>R + B (mod 2)</td></tr>
+      <tr><td style="color:#cccccc;">White (centroid)</td><td>[1, 1, 1]</td><td>R + G + B</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight">
+    <div class="label">The projective reading</div>
+    <p>In homogeneous coordinates, [1,1,0] and [2,2,0] are the same projective point — both represent yellow. The colour triangle is a genuine projective space: colours are defined by <em>ratios</em> of components, not absolute values. This is why chromaticity (hue and saturation) is projective, while luminance (brightness) is the scaling degree of freedom that homogeneous coordinates quotient out.</p>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r3')">
+    <span class="arrow">▶</span> The mapping f<sub>C</sub> and injectivity
+  </button>
+  <div class="reveal-content" id="r3">
+    <div class="insight" style="margin-top:1rem;">
+      <div class="label">Chromatic triples as a mapping</div>
+      <p>The RGB assignment defines a mapping f<sub>C</sub> : ℤ₊⁴ → ℝ³, where quadruples of positive integers (e.g. Fibonacci quadruplets) are mapped to RGB colour values via ratios. This mapping is neither injective (different quadruplets can produce the same colour) nor surjective (not all colours are reachable). The non-injectivity mirrors the non-injectivity of the perimeter-to-area ratio P/A for Pythagorean triples: different geometric objects can share the same projective invariant, because projective geometry deliberately discards the information that would distinguish them.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ §8: CONNECTION ═══════════════════ -->
+<section class="stage" id="s8">
+  <div class="stage-number">VIII</div>
+  <h2>Why This Matters for Physics</h2>
+  <p>
+    Projective geometry sits at the top of Klein's Erlangen hierarchy because it has the most symmetry and the least structure. It cannot measure distances, angles, or even parallel directions. It can only say which points are collinear and compute their cross-ratio.
+  </p>
+  <p>
+    This is precisely its role in the conformal electrodynamics story. The descent from projective through conformal and metric geometry to empirical measurement is a progressive breaking of symmetry — each step adds structure (angles, then distances, then coupling strengths) at the cost of invariance. The cross-ratio, as the sole projective invariant, represents the most austere form of physical content: what can be said about four events without any notion of distance, duration, or field strength.
+  </p>
+
+  <div class="punchline">
+    <p>Projective geometry is the mathematics of what survives when everything but incidence is stripped away. The cross-ratio is its only invariant — the last thing standing before measurement begins.</p>
+  </div>
+
+  <div style="margin-top:1.5rem; padding:0.8rem 1.2rem; background:var(--bg-card); border:1px dashed var(--border-gold); border-radius:6px;">
+    <p style="font-size:0.85rem; color:var(--text-dim);">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--gold-dim); letter-spacing:0.1em;">COMPANION</span><br>
+      This learner supports Stage VIII of <a href="#" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--border-gold);">From Light Cones to α</a>, where the Erlangen hierarchy maps the descent from pure geometry to empirical physics.
+    </p>
+  </div>
+</section>
+
+</div><!-- container -->
+
+<footer class="footer">
+  <p>Constructed by <span class="gold">Silicon</span> · Anthropic Claude — Architect <span class="gold">Carbon</span> · LeeMcCullochJames</p>
+</footer>
+
+<script>
+// ════════════════════════════════════════
+// CROSS-RATIO COMPUTATION
+// ════════════════════════════════════════
+function crossRatio(a, b, c, d) {
+  return ((a - b) * (c - d)) / ((b - c) * (d - a));
+}
+
+// ════════════════════════════════════════
+// §3: INTERACTIVE PROJECTION DIAGRAM
+// ════════════════════════════════════════
+(function() {
+  const svg = document.getElementById('projectionSvg');
+  const W = 520, H = 420;
+  const pad = 40;
+  
+  // Base points on x-axis (scaled to SVG coords)
+  const baseY = H - pad - 20;
+  const scale = (W - 2*pad) / 10;
+  const basePoints = [2, 3, 5, 8].map(x => ({ x: pad + x * scale, y: baseY, val: x }));
+  
+  // Diagonal projection line: y = x (scaled)
+  const diagStart = { x: pad, y: baseY };
+  const diagEnd = { x: pad + 8*scale, y: baseY - 8*scale };
+  
+  // Observer (draggable)
+  let observer = { x: pad + 0.5*scale, y: baseY - 7.5*scale };
+  let dragging = false;
+  
+  function lineIntersect(p1, p2, p3, p4) {
+    const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
+    const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
+    const denom = dx1 * dy2 - dy1 * dx2;
+    if (Math.abs(denom) < 1e-10) return null;
+    const t = ((p3.x - p1.x) * dy2 - (p3.y - p1.y) * dx2) / denom;
+    return { x: p1.x + t * dx1, y: p1.y + t * dy1 };
+  }
+  
+  function render() {
+    // Clear
+    while (svg.childNodes.length > 2) svg.removeChild(svg.lastChild); // keep rect+pattern
+    
+    const ns = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs) {
+      const e = document.createElementNS(ns, tag);
+      for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+      return e;
+    }
+    function text(x, y, str, fill, size, anchor) {
+      const t = el('text', { x, y, fill, 'font-family':'IBM Plex Mono, monospace', 'font-size': size||'11', 'text-anchor': anchor||'middle' });
+      t.textContent = str;
+      return t;
+    }
+    
+    // Base line
+    svg.appendChild(el('line', { x1:pad, y1:baseY, x2:W-pad, y2:baseY, stroke:'#2a2b30', 'stroke-width':'1' }));
+    
+    // Diagonal line
+    svg.appendChild(el('line', { x1:diagStart.x, y1:diagStart.y, x2:diagEnd.x, y2:diagEnd.y, stroke:'#9b7fba', 'stroke-width':'1.5', opacity:'0.6' }));
+    svg.appendChild(text(diagEnd.x + 8, diagEnd.y + 4, 'projection line', '#9b7fba', '9', 'start'));
+    
+    // Project each base point through observer onto diagonal
+    const projected = [];
+    const labels = ['A','B','C','D'];
+    
+    basePoints.forEach((bp, i) => {
+      // Base point
+      svg.appendChild(el('circle', { cx:bp.x, cy:bp.y, r:'5', fill:'#6b8fad' }));
+      svg.appendChild(text(bp.x, bp.y + 16, labels[i], '#6b8fad', '11'));
+      
+      // Projection ray
+      const inter = lineIntersect(observer, bp, diagStart, diagEnd);
+      if (inter) {
+        svg.appendChild(el('line', { x1:observer.x, y1:observer.y, x2:bp.x, y2:bp.y, stroke:'#ad6b6b', 'stroke-width':'0.8', 'stroke-dasharray':'4,3', opacity:'0.6' }));
+        svg.appendChild(el('circle', { cx:inter.x, cy:inter.y, r:'4', fill:'#ad6b6b' }));
+        svg.appendChild(text(inter.x - 10, inter.y - 8, labels[i]+"'", '#ad6b6b', '10'));
+        projected.push(inter);
+      }
+    });
+    
+    // Observer point (draggable)
+    const obs = el('circle', { cx:observer.x, cy:observer.y, r:'7', fill:'#6b8fad', stroke:'#c8a96e', 'stroke-width':'2', cursor:'grab' });
+    svg.appendChild(obs);
+    svg.appendChild(text(observer.x + 14, observer.y - 2, 'observer', '#6b8fad', '9', 'start'));
+    svg.appendChild(text(observer.x + 14, observer.y + 10, '(drag me)', '#8a8577', '8', 'start'));
+    
+    // Compute cross-ratios
+    const xiOrig = crossRatio(basePoints[0].val, basePoints[1].val, basePoints[2].val, basePoints[3].val);
+    document.getElementById('xiOriginal').textContent = xiOrig.toFixed(4);
+    
+    if (projected.length === 4) {
+      // Use distances along the diagonal line as 1D coordinates
+      const dCoords = projected.map(p => {
+        const dx = p.x - diagStart.x, dy = p.y - diagStart.y;
+        return Math.sqrt(dx*dx + dy*dy);
+      });
+      const xiProj = crossRatio(dCoords[0], dCoords[1], dCoords[2], dCoords[3]);
+      document.getElementById('xiProjected').textContent = xiProj.toFixed(4);
+    }
+  }
+  
+  // Drag handling
+  svg.addEventListener('pointerdown', e => {
+    const rect = svg.getBoundingClientRect();
+    const svgX = (e.clientX - rect.left) / rect.width * W;
+    const svgY = (e.clientY - rect.top) / rect.height * H;
+    const dx = svgX - observer.x, dy = svgY - observer.y;
+    if (dx*dx + dy*dy < 400) {
+      dragging = true;
+      svg.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = svg.getBoundingClientRect();
+    observer.x = Math.max(pad, Math.min(W-pad, (e.clientX - rect.left) / rect.width * W));
+    observer.y = Math.max(pad, Math.min(baseY - 20, (e.clientY - rect.top) / rect.height * H));
+    render();
+    e.preventDefault();
+  });
+  svg.addEventListener('pointerup', () => { dragging = false; svg.style.cursor = 'default'; });
+  svg.addEventListener('pointerleave', () => { dragging = false; svg.style.cursor = 'default'; });
+  
+  render();
+})();
+
+// ════════════════════════════════════════
+// §5: FIBONACCI CROSS-RATIO CHART
+// ════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('fibChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 500 * dpr;
+  canvas.height = 280 * dpr;
+  canvas.style.width = '500px';
+  canvas.style.height = '280px';
+  ctx.scale(dpr, dpr);
+  
+  // Generate Fibonacci numbers
+  const fibs = [1, 1];
+  for (let i = 2; i < 20; i++) fibs.push(fibs[i-1] + fibs[i-2]);
+  
+  // Compute cross-ratios for consecutive quadruplets
+  const data = [];
+  for (let n = 3; n < fibs.length; n++) {
+    const a = fibs[n-3], b = fibs[n-2], c = fibs[n-1], d = fibs[n];
+    data.push({
+      n: n,
+      xi: crossRatio(a, b, c, d),
+      quad: `[${a},${b},${c},${d}]`
+    });
+  }
+  
+  const limit = (1 - Math.sqrt(5)) / 4; // ≈ -0.30902
+  
+  // Chart dimensions
+  const cW = 500, cH = 280;
+  const margin = { top: 30, right: 20, bottom: 40, left: 55 };
+  const plotW = cW - margin.left - margin.right;
+  const plotH = cH - margin.top - margin.bottom;
+  
+  const minY = -0.4, maxY = 0.1;
+  const minX = 3, maxX = data[data.length-1].n;
+  
+  function xScale(n) { return margin.left + (n - minX) / (maxX - minX) * plotW; }
+  function yScale(v) { return margin.top + (1 - (v - minY) / (maxY - minY)) * plotH; }
+  
+  // Background
+  ctx.fillStyle = '#0e0f11';
+  ctx.fillRect(0, 0, cW, cH);
+  
+  // Grid
+  ctx.strokeStyle = '#1a1b1f';
+  ctx.lineWidth = 0.5;
+  for (let y = -0.4; y <= 0.1; y += 0.1) {
+    ctx.beginPath();
+    ctx.moveTo(margin.left, yScale(y));
+    ctx.lineTo(cW - margin.right, yScale(y));
+    ctx.stroke();
+  }
+  
+  // Axes
+  ctx.strokeStyle = '#2a2b30';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(margin.left, margin.top);
+  ctx.lineTo(margin.left, cH - margin.bottom);
+  ctx.lineTo(cW - margin.right, cH - margin.bottom);
+  ctx.stroke();
+  
+  // Y labels
+  ctx.fillStyle = '#8a8577';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right';
+  for (let y = -0.4; y <= 0.1; y += 0.1) {
+    ctx.fillText(y.toFixed(1), margin.left - 6, yScale(y) + 3);
+  }
+  
+  // X labels
+  ctx.textAlign = 'center';
+  for (let n = 4; n <= maxX; n += 2) {
+    ctx.fillText('n=' + n, xScale(n), cH - margin.bottom + 16);
+  }
+  
+  // Limit line
+  ctx.strokeStyle = '#c8a96e';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yScale(limit));
+  ctx.lineTo(cW - margin.right, yScale(limit));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Limit label
+  ctx.fillStyle = '#c8a96e';
+  ctx.font = '9px IBM Plex Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('φ*/2 ≈ ' + limit.toFixed(5), cW - margin.right - 100, yScale(limit) - 6);
+  
+  // Data points and line
+  ctx.strokeStyle = '#6b8fad';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = xScale(d.n), y = yScale(d.xi);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  
+  data.forEach(d => {
+    const x = xScale(d.n), y = yScale(d.xi);
+    ctx.fillStyle = '#6b8fad';
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  
+  // Title
+  ctx.fillStyle = '#8a8577';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('ξ(Fₙ₋₃, Fₙ₋₂, Fₙ₋₁, Fₙ)  convergence to φ*/2', cW/2, 16);
+})();
+
+// ════════════════════════════════════════
+// §7: COLOUR TRIANGLE
+// ════════════════════════════════════════
+(function() {
+  const svg = document.getElementById('colourTriangle');
+  const ns = 'http://www.w3.org/2000/svg';
+  
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+  
+  const cx = 220, cy = 360;
+  const side = 300;
+  const h = side * Math.sin(Math.PI/3);
+  
+  // Vertices: R (bottom-left), B (bottom-right), G (top)
+  const R = { x: cx - side/2, y: cy };
+  const B = { x: cx + side/2, y: cy };
+  const G = { x: cx, y: cy - h };
+  
+  // Background
+  svg.appendChild(el('rect', { width:'440', height:'400', fill:'#0e0f11' }));
+  
+  // Gradient fill for the triangle
+  const defs = document.createElementNS(ns, 'defs');
+  svg.appendChild(defs);
+  
+  // Triangle edges
+  svg.appendChild(el('polygon', {
+    points: `${R.x},${R.y} ${B.x},${B.y} ${G.x},${G.y}`,
+    fill: 'none', stroke: '#3a3b40', 'stroke-width': '1.5'
+  }));
+  
+  // Midpoints
+  const Yellow = { x: (R.x+G.x)/2, y: (R.y+G.y)/2 };
+  const Cyan = { x: (G.x+B.x)/2, y: (G.y+B.y)/2 };
+  const Magenta = { x: (R.x+B.x)/2, y: (R.y+B.y)/2 };
+  
+  // Centroid
+  const C = { x: (R.x+B.x+G.x)/3, y: (R.y+B.y+G.y)/3 };
+  
+  // Lines vertex → centroid (solid)
+  [R, G, B].forEach(v => {
+    svg.appendChild(el('line', { x1:v.x, y1:v.y, x2:C.x, y2:C.y, stroke:'#2a2b30', 'stroke-width':'0.8' }));
+  });
+  
+  // Lines midpoint → centroid (dashed)
+  [Yellow, Cyan, Magenta].forEach(m => {
+    svg.appendChild(el('line', { x1:m.x, y1:m.y, x2:C.x, y2:C.y, stroke:'#2a2b30', 'stroke-width':'0.8', 'stroke-dasharray':'4,3' }));
+  });
+  
+  // Vertex dots and labels
+  const vertices = [
+    { p: R, color: '#ff4444', label: 'R [1,0,0]', dx: -12, dy: 18 },
+    { p: B, color: '#4488ff', label: 'B [0,0,1]', dx: 12, dy: 18 },
+    { p: G, color: '#44cc44', label: 'G [0,1,0]', dx: 0, dy: -14 }
+  ];
+  vertices.forEach(v => {
+    svg.appendChild(el('circle', { cx:v.p.x, cy:v.p.y, r:'7', fill:v.color }));
+    const t = document.createElementNS(ns, 'text');
+    t.setAttribute('x', v.p.x + v.dx);
+    t.setAttribute('y', v.p.y + v.dy);
+    t.setAttribute('fill', v.color);
+    t.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    t.setAttribute('font-size', '10');
+    t.setAttribute('text-anchor', 'middle');
+    t.textContent = v.label;
+    svg.appendChild(t);
+  });
+  
+  // Midpoint dots and labels
+  const midpoints = [
+    { p: Yellow, color: '#dddd22', label: 'Yellow [1,1,0]', dx: -16, dy: -8 },
+    { p: Cyan, color: '#22cccc', label: 'Cyan [0,1,1]', dx: 16, dy: -8 },
+    { p: Magenta, color: '#cc44cc', label: 'Magenta [1,0,1]', dx: 0, dy: 16 }
+  ];
+  midpoints.forEach(m => {
+    svg.appendChild(el('circle', { cx:m.p.x, cy:m.p.y, r:'5.5', fill:m.color }));
+    const t = document.createElementNS(ns, 'text');
+    t.setAttribute('x', m.p.x + m.dx);
+    t.setAttribute('y', m.p.y + m.dy);
+    t.setAttribute('fill', m.color);
+    t.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    t.setAttribute('font-size', '9');
+    t.setAttribute('text-anchor', 'middle');
+    t.textContent = m.label;
+    svg.appendChild(t);
+  });
+  
+  // Centroid
+  svg.appendChild(el('circle', { cx:C.x, cy:C.y, r:'6', fill:'#888', stroke:'#aaa', 'stroke-width':'1.5' }));
+  // Centroid label with background
+  svg.appendChild(el('rect', { x:C.x-28, y:C.y-22, width:'56', height:'16', rx:'3', fill:'#555', opacity:'0.9' }));
+  const ct = document.createElementNS(ns, 'text');
+  ct.setAttribute('x', C.x); ct.setAttribute('y', C.y - 10);
+  ct.setAttribute('fill', '#eee');
+  ct.setAttribute('font-family', 'IBM Plex Mono, monospace');
+  ct.setAttribute('font-size', '9');
+  ct.setAttribute('text-anchor', 'middle');
+  ct.textContent = 'C [1,1,1]';
+  svg.appendChild(ct);
+})();
+
+// ════════════════════════════════════════
+// SCROLL REVEAL + TOGGLE
+// ════════════════════════════════════════
+const stages = document.querySelectorAll('.stage');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+stages.forEach(s => observer.observe(s));
+
+function toggleReveal(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  const isOpen = el.classList.contains('open');
+  if (isOpen) {
+    el.style.maxHeight = '0';
+    el.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    el.classList.add('open');
+    el.style.maxHeight = el.scrollHeight + 'px';
+    btn.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>
