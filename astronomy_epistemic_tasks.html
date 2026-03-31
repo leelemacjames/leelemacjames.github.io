@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kepler, Bode, and Milankovitch: Reconstructing Patterns from Data</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --accent: #1d4ed8;
+      --accent-2: #0f766e;
+      --line: #d1d5db;
+      --soft: #eef2ff;
+      --warn: #fff7ed;
+    }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    h1 { font-size: 2rem; line-height: 1.1; }
+    h2 { font-size: 1.35rem; margin-top: 26px; }
+    h3 { font-size: 1.05rem; }
+    p { margin: 0 0 12px; }
+    .lede {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 900px;
+    }
+    .epigram {
+      margin: 18px 0 26px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      font-style: italic;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .canvas-card { padding-bottom: 8px; }
+    canvas {
+      width: 100%;
+      height: 260px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    th { font-weight: 700; font-size: 0.9rem; }
+    .pill {
+      display: inline-block;
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .task {
+      padding: 10px 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: #fafaf9;
+      border: 1px solid #ececec;
+    }
+    .task strong { display: block; margin-bottom: 4px; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 12px 0;
+      align-items: center;
+    }
+    label { font-size: 0.95rem; }
+    input[type="range"] { width: 220px; }
+    .note {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    .warning {
+      background: var(--warn);
+      border-left: 4px solid #f59e0b;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+    .footer {
+      margin-top: 28px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Kepler, Bode, and Milankovitch</h1>
+    <p class="lede">Three astronomy-rich task sequences designed to de-flatten knowledge: not just spotting patterns, but asking what kind of warrant the pattern carries, what assumptions the model hides, and how theory is reconstructed from difficult data.</p>
+    <div class="epigram">Mathematics begins where pattern stops being enough. In science, models hide assumptions; in mathematics, patterns hide warrants.</div>
+
+    <div class="grid">
+      <section class="card canvas-card">
+        <div class="pill">Kepler</div>
+        <h2>From planetary data to a law</h2>
+        <p>Kepler did not begin with a neat formula. He inherited irregular observations and searched for a relation between orbital period and distance. The modern log-log view shows why the law is a power law.</p>
+        <canvas id="keplerLinear" width="480" height="260"></canvas>
+        <p class="note">Linear plot: distance from Sun (AU) vs orbital period (Earth years).</p>
+        <canvas id="keplerLog" width="480" height="260"></canvas>
+        <p class="note">Log-log plot: the same data becomes close to a straight line, with slope near <code>3/2</code>.</p>
+      </section>
+
+      <section class="card">
+        <div class="pill">Bode</div>
+        <h2>Pattern, fit, or law?</h2>
+        <p>Bode's rule looks impressively structured. But what kind of success is it? Is this a law, a mnemonic, a curve fit, or a historical curiosity that happened to work surprisingly well for a subset of planets?</p>
+        <canvas id="bodeChart" width="480" height="260"></canvas>
+        <table>
+          <thead>
+            <tr><th>Planet</th><th>T–B prediction (AU)</th><th>Observed (AU)</th></tr>
+          </thead>
+          <tbody id="bodeTable"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:18px;">
+      <div class="pill">Milankovitch</div>
+      <h2>Cycles without a simple picture</h2>
+      <p>Orbital eccentricity, obliquity, and precession vary on different timescales. Here the challenge is not to spot a single law but to understand how several cycles combine, interfere, and shift climatic forcing over long intervals.</p>
+      <div class="controls">
+        <label><input type="checkbox" id="showEcc" checked> show eccentricity</label>
+        <label><input type="checkbox" id="showObl" checked> show obliquity</label>
+        <label><input type="checkbox" id="showPrec" checked> show precession angle</label>
+        <label>window: <input type="range" id="mRange" min="0" max="1000" value="220"> <span id="mLabel">220 kyr</span></label>
+      </div>
+      <canvas id="milankovitchChart" width="980" height="300"></canvas>
+      <p class="note">A useful prompt: unlike Kepler's relation, this is not one clean dependency but a composite of interacting periodicities.</p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h3>Task sequence A: Kepler from data</h3>
+        <div class="task"><strong>1. Pattern before proof</strong> Describe what seems to happen to period as distance increases. Why is this not yet a law?</div>
+        <div class="task"><strong>2. Reconstruct the warrant</strong> Use the log-log plot to estimate the slope. Why does a straight line on log-log axes suggest a power law rather than a random trend?</div>
+        <div class="task"><strong>3. Historical pressure</strong> Kepler did not have logarithms at the start. What does that tell you about the difference between discovery and later formalisation?</div>
+        <div class="task"><strong>4. Epistemic hinge</strong> If the exponent came out as 1.48 rather than exactly 1.50, would that weaken the law, the data, or the model linking them?</div>
+      </section>
+
+      <section class="card">
+        <h3>Task sequence B: Bode under suspicion</h3>
+        <div class="task"><strong>1. Fit or fiction?</strong> Explain why a tidy numerical pattern can be persuasive even when it lacks deep theoretical support.</div>
+        <div class="task"><strong>2. Historical reconstruction</strong> What would count as evidence that Bode's law is more than a numerical convenience?</div>
+        <div class="task"><strong>3. Missing planet logic</strong> Why was the apparent gap near 2.8 AU historically exciting? Does later discovery of Ceres vindicate the law or merely tempt us to think so?</div>
+        <div class="task"><strong>4. Epistemic hinge</strong> When does successful prediction count as explanation, and when is it only pattern-matching?</div>
+      </section>
+
+      <section class="card">
+        <h3>Task sequence C: Milankovitch and complexity</h3>
+        <div class="task"><strong>1. More than one rhythm</strong> Compare the three curves. Which varies most smoothly? Which looks most phase-shifted?</div>
+        <div class="task"><strong>2. Composite causation</strong> Why is it harder to teach Milankovitch cycles as a single law than Kepler's third law?</div>
+        <div class="task"><strong>3. Model under pressure</strong> If climatic data did not line up neatly with one orbital cycle, would you reject the theory, revise the forcing mechanism, or look for lag and feedback?</div>
+        <div class="task"><strong>4. Epistemic hinge</strong> Does complexity weaken explanation, or does it simply force us to give up on one-variable stories?</div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:18px;">
+      <h2>Teacher bridge</h2>
+      <p>These questions work because they move students from seeing pattern to asking what licenses the pattern. In Kepler, a relation emerges from messy celestial data and later becomes mathematically transparent. In Bode, an elegant regularity invites belief but may outrun its warrant. In Milankovitch, the difficulty is different again: not one law, but interacting cycles whose explanatory force depends on timing, feedback, and proxy interpretation.</p>
+      <div class="warning"><strong>Provocation:</strong> exercises fit rubrics; questions resist them. A good task here should leave the student unsure whether they have discovered a law, recognised a fit, or only learned how easily one can slide from one to the other.</div>
+    </section>
+
+    <p class="footer">Built from the uploaded Kepler, Bode, and Milankovitch spreadsheet material, reshaped as an HTML teaching prototype focused on reconstruction, warrant, and model pressure.</p>
+  </div>
+
+  <script>
+    const kepler = [
+      {name:'Mercury', a:0.387099, T:0.241},
+      {name:'Venus', a:0.723332, T:0.615},
+      {name:'Earth', a:1.0, T:1.0},
+      {name:'Mars', a:1.523688, T:1.881},
+      {name:'Jupiter', a:5.202833, T:11.86},
+      {name:'Saturn', a:9.5826, T:29.46},
+      {name:'Uranus', a:19.19126, T:84.01},
+      {name:'Neptune', a:30.06896, T:164.8}
+    ];
+
+    const bode = [
+      {planet:'Mercury', pred:0.4, obs:0.39},
+      {planet:'Venus', pred:0.7, obs:0.72},
+      {planet:'Earth', pred:1.0, obs:1.0},
+      {planet:'Mars', pred:1.6, obs:1.52},
+      {planet:'Ceres', pred:2.8, obs:2.77},
+      {planet:'Jupiter', pred:5.2, obs:5.2},
+      {planet:'Saturn', pred:10.0, obs:9.55},
+      {planet:'Uranus', pred:19.6, obs:19.2},
+      {planet:'Neptune', pred:38.8, obs:30.1}
+    ];
+
+    function generateMilankovitch(n=1001) {
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const t = -1000 + i; // kyr
+        const ecc = 0.03 + 0.015*Math.sin(2*Math.PI*t/100) + 0.005*Math.sin(2*Math.PI*t/413);
+        const obl = 23.3 + 1.15*Math.sin(2*Math.PI*t/41) + 0.15*Math.sin(2*Math.PI*t/54);
+        const prec = 180 + 160*Math.sin(2*Math.PI*t/23) + 20*Math.sin(2*Math.PI*t/19);
+        arr.push({t, ecc, obl, prec});
+      }
+      return arr;
+    }
+    const mil = generateMilankovitch();
+
+    function drawAxes(ctx, x, y, w, h, xLabel, yLabel) {
+      ctx.strokeStyle = '#9ca3af';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w, y+h); ctx.stroke();
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '12px Georgia';
+      ctx.fillText(xLabel, x+w-48, y+h+20);
+      ctx.save();
+      ctx.translate(x-36, y+18);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillText(yLabel, 0, 0);
+      ctx.restore();
+    }
+
+    function map(v, a1, a2, b1, b2) {
+      return b1 + (v-a1)*(b2-b1)/(a2-a1);
+    }
+
+    function linReg(points) {
+      const n = points.length;
+      let sx=0, sy=0, sxy=0, sxx=0;
+      points.forEach(p => { sx+=p.x; sy+=p.y; sxy+=p.x*p.y; sxx+=p.x*p.x; });
+      const m = (n*sxy - sx*sy)/(n*sxx - sx*sx);
+      const b = (sy - m*sx)/n;
+      return {m,b};
+    }
+
+    function drawKepler() {
+      const c1 = document.getElementById('keplerLinear');
+      const ctx1 = c1.getContext('2d');
+      ctx1.clearRect(0,0,c1.width,c1.height);
+      drawAxes(ctx1, 48, 18, 400, 200, 'a (AU)', 'T (yr)');
+      const maxA = Math.max(...kepler.map(d=>d.a));
+      const maxT = Math.max(...kepler.map(d=>d.T));
+      kepler.forEach(d => {
+        const x = map(d.a, 0, maxA*1.05, 48, 448);
+        const y = map(d.T, 0, maxT*1.05, 218, 18);
+        ctx1.fillStyle = '#1d4ed8';
+        ctx1.beginPath(); ctx1.arc(x,y,4,0,Math.PI*2); ctx1.fill();
+        ctx1.fillStyle = '#374151'; ctx1.font='12px Georgia'; ctx1.fillText(d.name, x+6, y-6);
+      });
+
+      const c2 = document.getElementById('keplerLog');
+      const ctx2 = c2.getContext('2d');
+      ctx2.clearRect(0,0,c2.width,c2.height);
+      drawAxes(ctx2, 48, 18, 400, 200, 'ln a', 'ln T');
+      const pts = kepler.map(d=>({name:d.name, x:Math.log(d.a), y:Math.log(d.T)}));
+      const minX = Math.min(...pts.map(p=>p.x)), maxX = Math.max(...pts.map(p=>p.x));
+      const minY = Math.min(...pts.map(p=>p.y)), maxY = Math.max(...pts.map(p=>p.y));
+      pts.forEach(p => {
+        const x = map(p.x, minX, maxX, 48, 448);
+        const y = map(p.y, minY, maxY, 218, 18);
+        ctx2.fillStyle = '#0f766e';
+        ctx2.beginPath(); ctx2.arc(x,y,4,0,Math.PI*2); ctx2.fill();
+      });
+      const {m,b} = linReg(pts);
+      const x1=minX, x2=maxX, y1=m*x1+b, y2=m*x2+b;
+      ctx2.strokeStyle = '#111827'; ctx2.lineWidth = 1.5;
+      ctx2.beginPath();
+      ctx2.moveTo(map(x1,minX,maxX,48,448), map(y1,minY,maxY,218,18));
+      ctx2.lineTo(map(x2,minX,maxX,48,448), map(y2,minY,maxY,218,18));
+      ctx2.stroke();
+      ctx2.fillStyle = '#111827'; ctx2.font = '12px Georgia';
+      ctx2.fillText(`slope ≈ ${m.toFixed(3)}`, 320, 34);
+    }
+
+    function drawBode() {
+      const tbody = document.getElementById('bodeTable');
+      tbody.innerHTML = '';
+      bode.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${d.planet}</td><td>${d.pred.toFixed(2)}</td><td>${d.obs.toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      const c = document.getElementById('bodeChart');
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      drawAxes(ctx, 48, 18, 400, 200, 'planet index', 'distance (AU)');
+      const maxY = Math.max(...bode.map(d => Math.max(d.pred,d.obs)));
+      bode.forEach((d,i) => {
+        const x = map(i, 0, bode.length-1, 70, 430);
+        const yPred = map(d.pred, 0, maxY*1.08, 218, 18);
+        const yObs = map(d.obs, 0, maxY*1.08, 218, 18);
+        ctx.strokeStyle = '#9ca3af';
+        ctx.beginPath(); ctx.moveTo(x,yPred); ctx.lineTo(x,yObs); ctx.stroke();
+        ctx.fillStyle = '#1d4ed8'; ctx.beginPath(); ctx.arc(x-4,yPred,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0f766e'; ctx.beginPath(); ctx.arc(x+4,yObs,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#374151'; ctx.font='11px Georgia'; ctx.fillText(d.planet, x-15, 235);
+      });
+      ctx.fillStyle = '#1d4ed8'; ctx.fillRect(300,24,10,10); ctx.fillStyle='#374151'; ctx.fillText('Bode prediction', 316, 33);
+      ctx.fillStyle = '#0f766e'; ctx.fillRect(300,42,10,10); ctx.fillStyle='#374151'; ctx.fillText('Observed', 316, 51);
+    }
+
+    function drawMilankovitch() {
+      const c = document.getElementById('milankovitchChart');
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      drawAxes(ctx, 54, 18, 890, 230, 'time (kyr)', 'normalised value');
+      const range = parseInt(document.getElementById('mRange').value, 10);
+      document.getElementById('mLabel').textContent = `${range} kyr`;
+      const subset = mil.filter(d => d.t >= -range && d.t <= 0);
+      const minT = -range, maxT = 0;
+      function drawSeries(values, color) {
+        const minV = Math.min(...values), maxV = Math.max(...values);
+        ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.beginPath();
+        subset.forEach((d,i) => {
+          const v = values[i];
+          const x = map(d.t, minT, maxT, 54, 944);
+          const y = map(v, minV, maxV, 238, 24);
+          if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+      }
+      const showE = document.getElementById('showEcc').checked;
+      const showO = document.getElementById('showObl').checked;
+      const showP = document.getElementById('showPrec').checked;
+      if (showE) drawSeries(subset.map(d=>d.ecc), '#1d4ed8');
+      if (showO) drawSeries(subset.map(d=>d.obl), '#0f766e');
+      if (showP) drawSeries(subset.map(d=>d.prec), '#b45309');
+      let yKey = 28;
+      [['eccentricity','#1d4ed8',showE],['obliquity','#0f766e',showO],['precession angle','#b45309',showP]].forEach(([lab,col,show])=>{
+        if (!show) return;
+        ctx.fillStyle=col; ctx.fillRect(740,yKey-8,12,12);
+        ctx.fillStyle='#374151'; ctx.fillText(lab, 758, yKey+2); yKey += 18;
+      });
+    }
+
+    drawKepler();
+    drawBode();
+    drawMilankovitch();
+    ['showEcc','showObl','showPrec','mRange'].forEach(id => document.getElementById(id).addEventListener('input', drawMilankovitch));
+  </script>
+</body>
+</html>
