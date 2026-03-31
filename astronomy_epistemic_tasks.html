@@ -1,379 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kepler, Bode, and Milankovitch: Reconstructing Patterns from Data</title>
-  <style>
-    :root {
-      --bg: #f7f7f5;
-      --card: #ffffff;
-      --ink: #1f2937;
-      --muted: #6b7280;
-      --accent: #1d4ed8;
-      --accent-2: #0f766e;
-      --line: #d1d5db;
-      --soft: #eef2ff;
-      --warn: #fff7ed;
-    }
-    body {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      color: var(--ink);
-      background: var(--bg);
-      line-height: 1.5;
-    }
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 18px 60px;
-    }
-    h1, h2, h3 { margin: 0 0 12px; }
-    h1 { font-size: 2rem; line-height: 1.1; }
-    h2 { font-size: 1.35rem; margin-top: 26px; }
-    h3 { font-size: 1.05rem; }
-    p { margin: 0 0 12px; }
-    .lede {
-      font-size: 1.05rem;
-      color: var(--muted);
-      max-width: 900px;
-    }
-    .epigram {
-      margin: 18px 0 26px;
-      padding: 14px 18px;
-      border-left: 4px solid var(--accent);
-      background: var(--soft);
-      font-style: italic;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 18px;
-      margin-top: 18px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .canvas-card { padding-bottom: 8px; }
-    canvas {
-      width: 100%;
-      height: 260px;
-      border-radius: 12px;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      display: block;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.94rem;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 7px 8px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-    }
-    th { font-weight: 700; font-size: 0.9rem; }
-    .pill {
-      display: inline-block;
-      font-size: 0.78rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: var(--soft);
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-    .task {
-      padding: 10px 12px;
-      margin: 10px 0;
-      border-radius: 12px;
-      background: #fafaf9;
-      border: 1px solid #ececec;
-    }
-    .task strong { display: block; margin-bottom: 4px; }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 12px 0;
-      align-items: center;
-    }
-    label { font-size: 0.95rem; }
-    input[type="range"] { width: 220px; }
-    .note {
-      font-size: 0.92rem;
-      color: var(--muted);
-    }
-    .warning {
-      background: var(--warn);
-      border-left: 4px solid #f59e0b;
-      padding: 10px 12px;
-      border-radius: 10px;
-      margin-top: 12px;
-    }
-    .footer {
-      margin-top: 28px;
-      font-size: 0.92rem;
-      color: var(--muted);
-    }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern, Warrant, and Law — Kepler, Bode, Milankovitch</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #8a7340;
+  --gold-dim: #6b5a35;
+  --bg: #faf9f6;
+  --bg-surface: #f5f4f0;
+  --bg-card: #f2f0ec;
+  --text: #2c2c2a;
+  --text-dim: #6b6963;
+  --text-faint: #a09d96;
+  --border: rgba(107,90,53,0.15);
+  --border-bright: rgba(107,90,53,0.25);
+  --kepler: #1d4ed8;
+  --bode-pred: #1d4ed8;
+  --bode-obs: #0f766e;
+  --warn-bg: #fef3e2;
+  --warn-border: #e8a838;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 300;
+  line-height: 1.7; -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 960px; margin: 0 auto; padding: 48px 28px 72px; }
+
+h1 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 28px; color: var(--gold); margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+.epigraph {
+  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px;
+  color: var(--gold-dim); line-height: 1.6; padding-left: 16px;
+  border-left: 2px solid var(--border); margin: 16px 0;
+}
+.prose { font-size: 14px; color: var(--text); line-height: 1.8; margin: 12px 0; max-width: 720px; }
+.section-head {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 20px;
+  color: var(--gold); margin: 36px 0 12px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+/* Task cards */
+.task-card {
+  border: 0.5px solid var(--border-bright); border-radius: 10px;
+  background: #fff; margin: 20px 0; overflow: hidden;
+}
+.task-header {
+  padding: 14px 18px 12px; cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center;
+}
+.task-header:hover { background: var(--bg-surface); }
+.task-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400;
+  color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.task-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--text); margin-top: 2px; }
+.task-chevron { font-size: 16px; color: var(--text-faint); transition: transform 0.3s; }
+.task-card.open .task-chevron { transform: rotate(90deg); }
+
+.task-question {
+  padding: 0 18px 16px; font-size: 13px; color: var(--text-dim); line-height: 1.7;
+}
+.task-question ol { padding-left: 20px; margin: 8px 0; }
+.task-question li { margin: 4px 0; }
+
+.task-canvas-wrap { padding: 0 18px 12px; }
+canvas { width: 100%; height: 280px; border-radius: 8px; background: #fff; border: 1px solid #eee; display: block; }
+.canvas-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 4px; }
+
+.task-reveal {
+  display: none; padding: 16px 18px; margin: 0 18px 16px;
+  border-radius: 8px; background: var(--bg-surface);
+  border: 0.5px solid var(--border);
+}
+.task-card.open .task-reveal { display: block; }
+.reveal-head {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.reveal-body { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+.reveal-body em { color: var(--text); font-style: italic; }
+.reveal-epigraph {
+  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 14px;
+  color: var(--gold-dim); margin-top: 10px; padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+.data-table th { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.data-table td { padding: 5px 8px; border-bottom: 1px solid #f0eeea; color: var(--text); }
+.data-table tr.fail td { color: #b91c1c; background: #fef2f2; }
+
+/* Warning box */
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  padding: 10px 14px; border-radius: 6px; margin: 12px 0;
+  font-size: 12px; color: var(--text-dim); line-height: 1.6;
+}
+.warn-box strong { color: var(--text); }
+
+a.gold-link { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--border); }
+a.gold-link:hover { border-color: var(--gold); }
+
+.footer {
+  margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--text-faint); text-align: center; letter-spacing: 0.04em;
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Kepler, Bode, and Milankovitch</h1>
-    <p class="lede">Three astronomy-rich task sequences designed to de-flatten knowledge: not just spotting patterns, but asking what kind of warrant the pattern carries, what assumptions the model hides, and how theory is reconstructed from difficult data.</p>
-    <div class="epigram">Mathematics begins where pattern stops being enough. In science, models hide assumptions; in mathematics, patterns hide warrants.</div>
+<div class="container">
 
-    <div class="grid">
-      <section class="card canvas-card">
-        <div class="pill">Kepler</div>
-        <h2>From planetary data to a law</h2>
-        <p>Kepler did not begin with a neat formula. He inherited irregular observations and searched for a relation between orbital period and distance. The modern log-log view shows why the law is a power law.</p>
-        <canvas id="keplerLinear" width="480" height="260"></canvas>
-        <p class="note">Linear plot: distance from Sun (AU) vs orbital period (Earth years).</p>
-        <canvas id="keplerLog" width="480" height="260"></canvas>
-        <p class="note">Log-log plot: the same data becomes close to a straight line, with slope near <code>3/2</code>.</p>
-      </section>
+  <h1>Pattern, Warrant, and Law</h1>
+  <div class="subtitle">Kepler, Bode, and Milankovitch — three cases where the data draws you in and the epistemology pulls you back</div>
 
-      <section class="card">
-        <div class="pill">Bode</div>
-        <h2>Pattern, fit, or law?</h2>
-        <p>Bode's rule looks impressively structured. But what kind of success is it? Is this a law, a mnemonic, a curve fit, or a historical curiosity that happened to work surprisingly well for a subset of planets?</p>
-        <canvas id="bodeChart" width="480" height="260"></canvas>
-        <table>
-          <thead>
-            <tr><th>Planet</th><th>T–B prediction (AU)</th><th>Observed (AU)</th></tr>
-          </thead>
-          <tbody id="bodeTable"></tbody>
-        </table>
-      </section>
-    </div>
+  <div class="epigraph">Mathematics begins where pattern stops being enough.</div>
 
-    <section class="card" style="margin-top:18px;">
-      <div class="pill">Milankovitch</div>
-      <h2>Cycles without a simple picture</h2>
-      <p>Orbital eccentricity, obliquity, and precession vary on different timescales. Here the challenge is not to spot a single law but to understand how several cycles combine, interfere, and shift climatic forcing over long intervals.</p>
-      <div class="controls">
-        <label><input type="checkbox" id="showEcc" checked> show eccentricity</label>
-        <label><input type="checkbox" id="showObl" checked> show obliquity</label>
-        <label><input type="checkbox" id="showPrec" checked> show precession angle</label>
-        <label>window: <input type="range" id="mRange" min="0" max="1000" value="220"> <span id="mLabel">220 kyr</span></label>
+  <p class="prose">These tasks are not exercises. They are questions. Exercises fit rubrics; questions resist them. Each presents real astronomical data and asks not just what pattern emerges, but what kind of warrant the pattern carries, what assumptions the model hides, and at what point a fit becomes a law — or fails to.</p>
+
+  <p class="prose">Click each task to reveal the epistemic point beneath.</p>
+
+  <hr class="divider">
+
+  <!-- ═══ TASK 1: KEPLER LINEAR ═══ -->
+  <div class="task-card" id="task1">
+    <div class="task-header" onclick="toggle('task1')">
+      <div>
+        <div class="task-label">Task 1 · Kepler</div>
+        <div class="task-title">From planetary data to a claim</div>
       </div>
-      <canvas id="milankovitchChart" width="980" height="300"></canvas>
-      <p class="note">A useful prompt: unlike Kepler's relation, this is not one clean dependency but a composite of interacting periodicities.</p>
-    </section>
-
-    <div class="grid">
-      <section class="card">
-        <h3>Task sequence A: Kepler from data</h3>
-        <div class="task"><strong>1. Pattern before proof</strong> Describe what seems to happen to period as distance increases. Why is this not yet a law?</div>
-        <div class="task"><strong>2. Reconstruct the warrant</strong> Use the log-log plot to estimate the slope. Why does a straight line on log-log axes suggest a power law rather than a random trend?</div>
-        <div class="task"><strong>3. Historical pressure</strong> Kepler did not have logarithms at the start. What does that tell you about the difference between discovery and later formalisation?</div>
-        <div class="task"><strong>4. Epistemic hinge</strong> If the exponent came out as 1.48 rather than exactly 1.50, would that weaken the law, the data, or the model linking them?</div>
-      </section>
-
-      <section class="card">
-        <h3>Task sequence B: Bode under suspicion</h3>
-        <div class="task"><strong>1. Fit or fiction?</strong> Explain why a tidy numerical pattern can be persuasive even when it lacks deep theoretical support.</div>
-        <div class="task"><strong>2. Historical reconstruction</strong> What would count as evidence that Bode's law is more than a numerical convenience?</div>
-        <div class="task"><strong>3. Missing planet logic</strong> Why was the apparent gap near 2.8 AU historically exciting? Does later discovery of Ceres vindicate the law or merely tempt us to think so?</div>
-        <div class="task"><strong>4. Epistemic hinge</strong> When does successful prediction count as explanation, and when is it only pattern-matching?</div>
-      </section>
-
-      <section class="card">
-        <h3>Task sequence C: Milankovitch and complexity</h3>
-        <div class="task"><strong>1. More than one rhythm</strong> Compare the three curves. Which varies most smoothly? Which looks most phase-shifted?</div>
-        <div class="task"><strong>2. Composite causation</strong> Why is it harder to teach Milankovitch cycles as a single law than Kepler's third law?</div>
-        <div class="task"><strong>3. Model under pressure</strong> If climatic data did not line up neatly with one orbital cycle, would you reject the theory, revise the forcing mechanism, or look for lag and feedback?</div>
-        <div class="task"><strong>4. Epistemic hinge</strong> Does complexity weaken explanation, or does it simply force us to give up on one-variable stories?</div>
-      </section>
+      <span class="task-chevron">&#9654;</span>
     </div>
-
-    <section class="card" style="margin-top:18px;">
-      <h2>Teacher bridge</h2>
-      <p>These questions work because they move students from seeing pattern to asking what licenses the pattern. In Kepler, a relation emerges from messy celestial data and later becomes mathematically transparent. In Bode, an elegant regularity invites belief but may outrun its warrant. In Milankovitch, the difficulty is different again: not one law, but interacting cycles whose explanatory force depends on timing, feedback, and proxy interpretation.</p>
-      <div class="warning"><strong>Provocation:</strong> exercises fit rubrics; questions resist them. A good task here should leave the student unsure whether they have discovered a law, recognised a fit, or only learned how easily one can slide from one to the other.</div>
-    </section>
-
-    <p class="footer">Built from the uploaded Kepler, Bode, and Milankovitch spreadsheet material, reshaped as an HTML teaching prototype focused on reconstruction, warrant, and model pressure.</p>
+    <div class="task-question">
+      <p>Here is the data Kepler inherited. Describe what seems to happen to period as distance increases.</p>
+      <ol>
+        <li>Is the relationship linear? How can you tell from the shape of the curve?</li>
+        <li>If you were Kepler — no logarithms, no computers — how would you test whether this is a power law?</li>
+        <li>At what point does "it seems to grow faster" become a mathematical claim?</li>
+      </ol>
+    </div>
+    <div class="task-canvas-wrap">
+      <canvas id="keplerLinear" width="900" height="280"></canvas>
+      <div class="canvas-note">Distance from Sun (AU) vs orbital period (Earth years). Data from Tycho Brahe via Kepler (1619).</div>
+    </div>
+    <div class="task-reveal">
+      <div class="reveal-head">The epistemic point</div>
+      <div class="reveal-body">
+        The curve <em>suggests</em> a power law, but suggestion is not warrant. Kepler had to work by ratio — computing T/a, T²/a³, testing which combination held constant across all six planets. He did this entirely by hand, without logarithms (Napier published them too late for Kepler's key work). The modern student who sees this data on a screen and "knows" it's T² = a³ has <em>retrieved a result without reconstructing the reasoning that licenses it</em>.
+        <div class="reveal-epigraph">Familiarity masquerades as understanding.</div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const kepler = [
-      {name:'Mercury', a:0.387099, T:0.241},
-      {name:'Venus', a:0.723332, T:0.615},
-      {name:'Earth', a:1.0, T:1.0},
-      {name:'Mars', a:1.523688, T:1.881},
-      {name:'Jupiter', a:5.202833, T:11.86},
-      {name:'Saturn', a:9.5826, T:29.46},
-      {name:'Uranus', a:19.19126, T:84.01},
-      {name:'Neptune', a:30.06896, T:164.8}
-    ];
+  <!-- ═══ TASK 2: KEPLER LOG-LOG ═══ -->
+  <div class="task-card" id="task2">
+    <div class="task-header" onclick="toggle('task2')">
+      <div>
+        <div class="task-label">Task 2 · Kepler</div>
+        <div class="task-title">The log-log reveal</div>
+      </div>
+      <span class="task-chevron">&#9654;</span>
+    </div>
+    <div class="task-question">
+      <p>The same data, transformed. Both axes are now logarithmic.</p>
+      <ol>
+        <li>Why does a straight line on log-log axes indicate a power law?</li>
+        <li>The slope comes out as 1.499. Is that 3/2, or merely close to it? What would you need to decide?</li>
+        <li>If the slope were 1.48 instead, would that weaken the law, the data, or the model linking them?</li>
+      </ol>
+    </div>
+    <div class="task-canvas-wrap">
+      <canvas id="keplerLog" width="900" height="280"></canvas>
+      <div class="canvas-note">ln(a) vs ln(T). Slope of best-fit line shown. Modern data including Pluto.</div>
+    </div>
+    <div class="task-reveal">
+      <div class="reveal-head">The epistemic point</div>
+      <div class="reveal-body">
+        The log-log transformation is not a neutral act — it is a <em>theoretical commitment</em>. You take logs because you suspect a power law; the straight line confirms the suspicion. But the warrant for claiming T² = a³ exactly (not T^1.998 = a^3) comes from Newton's derivation, not from the data alone. The data is consistent with the law; it does not prove the exponent is rational. <em>Students should distinguish resemblance from rule.</em>
+        <div class="reveal-epigraph">Results are path-independent; meaning is not.</div>
+      </div>
+    </div>
+  </div>
 
-    const bode = [
-      {planet:'Mercury', pred:0.4, obs:0.39},
-      {planet:'Venus', pred:0.7, obs:0.72},
-      {planet:'Earth', pred:1.0, obs:1.0},
-      {planet:'Mars', pred:1.6, obs:1.52},
-      {planet:'Ceres', pred:2.8, obs:2.77},
-      {planet:'Jupiter', pred:5.2, obs:5.2},
-      {planet:'Saturn', pred:10.0, obs:9.55},
-      {planet:'Uranus', pred:19.6, obs:19.2},
-      {planet:'Neptune', pred:38.8, obs:30.1}
-    ];
+  <!-- ═══ TASK 3: BODE ═══ -->
+  <div class="task-card" id="task3">
+    <div class="task-header" onclick="toggle('task3')">
+      <div>
+        <div class="task-label">Task 3 · Bode</div>
+        <div class="task-title">Pattern, fit, or law?</div>
+      </div>
+      <span class="task-chevron">&#9654;</span>
+    </div>
+    <div class="task-question">
+      <p>Bode's rule: d = 0.4 + 0.3 × 2<sup>m</sup>. It predicts planetary distances with eerie accuracy — for some planets.</p>
+      <ol>
+        <li>Examine the table. Where does Bode's rule work well? Where does it fail?</li>
+        <li>The gap at 2.8 AU predicted a missing planet. Ceres was later found there. Does this vindicate the law, or merely tempt us to think so?</li>
+        <li>What would count as evidence that Bode's rule is more than a numerical convenience?</li>
+        <li>Can a rule be useful without being true?</li>
+      </ol>
+    </div>
+    <div class="task-canvas-wrap">
+      <canvas id="bodeChart" width="900" height="280"></canvas>
+      <div class="canvas-note">Blue: Bode prediction. Teal: observed distance. Grey lines show deviation.</div>
+    </div>
+    <table class="data-table" style="margin: 0 18px 12px; width: calc(100% - 36px);">
+      <thead><tr><th>Planet</th><th>m</th><th>Bode (AU)</th><th>Observed (AU)</th><th>Deviation</th></tr></thead>
+      <tbody>
+        <tr><td>Mercury</td><td>-∞</td><td>0.40</td><td>0.39</td><td>+2.5%</td></tr>
+        <tr><td>Venus</td><td>0</td><td>0.70</td><td>0.72</td><td>-2.9%</td></tr>
+        <tr><td>Earth</td><td>1</td><td>1.00</td><td>1.00</td><td>0%</td></tr>
+        <tr><td>Mars</td><td>2</td><td>1.60</td><td>1.52</td><td>+5.0%</td></tr>
+        <tr><td>Ceres</td><td>3</td><td>2.80</td><td>2.77</td><td>+1.1%</td></tr>
+        <tr><td>Jupiter</td><td>4</td><td>5.20</td><td>5.20</td><td>0%</td></tr>
+        <tr><td>Saturn</td><td>5</td><td>10.00</td><td>9.55</td><td>+4.5%</td></tr>
+        <tr><td>Uranus</td><td>6</td><td>19.60</td><td>19.22</td><td>+1.9%</td></tr>
+        <tr class="fail"><td>Neptune</td><td>7</td><td>38.80</td><td>30.11</td><td>+22.4%</td></tr>
+        <tr class="fail"><td>Pluto</td><td>8</td><td>77.20</td><td>39.54</td><td>+48.8%</td></tr>
+      </tbody>
+    </table>
+    <div class="task-reveal">
+      <div class="reveal-head">The epistemic point</div>
+      <div class="reveal-body">
+        Bode's rule is the epistemological opposite of Kepler's law. Kepler's law has a <em>derivation</em> — Newton showed it follows from the inverse-square law. Bode's rule has only a <em>pattern</em>. It fits the inner planets beautifully, predicted Ceres, and then fails catastrophically for Neptune and beyond. A student who sees only the successes will call it a law. A student who sees Neptune will call it a coincidence. <em>The interesting question is: what kind of thing sits between law and coincidence?</em>
+        <div class="reveal-epigraph">Knowledge without provenance is indistinguishable from coincidence.</div>
+      </div>
+    </div>
+  </div>
 
-    function generateMilankovitch(n=1001) {
-      const arr = [];
-      for (let i = 0; i < n; i++) {
-        const t = -1000 + i; // kyr
-        const ecc = 0.03 + 0.015*Math.sin(2*Math.PI*t/100) + 0.005*Math.sin(2*Math.PI*t/413);
-        const obl = 23.3 + 1.15*Math.sin(2*Math.PI*t/41) + 0.15*Math.sin(2*Math.PI*t/54);
-        const prec = 180 + 160*Math.sin(2*Math.PI*t/23) + 20*Math.sin(2*Math.PI*t/19);
-        arr.push({t, ecc, obl, prec});
-      }
-      return arr;
-    }
-    const mil = generateMilankovitch();
+  <!-- ═══ TASK 4: GALILEAN MOONS ═══ -->
+  <div class="task-card" id="task4">
+    <div class="task-header" onclick="toggle('task4')">
+      <div>
+        <div class="task-label">Task 4 · Kepler extended</div>
+        <div class="task-title">Does the law travel?</div>
+      </div>
+      <span class="task-chevron">&#9654;</span>
+    </div>
+    <div class="task-question">
+      <p>Kepler's law was discovered for planets orbiting the Sun. Here are Jupiter's four Galilean moons.</p>
+      <ol>
+        <li>If Kepler's law is truly a law, it should hold here too. Does it?</li>
+        <li>What quantity changes between the solar system and the Jovian system?</li>
+        <li>Newton used this to estimate Jupiter's mass. What assumption is he making?</li>
+        <li>When does a pattern that "works again" strengthen a law, and when is it just the same fit wearing different clothes?</li>
+      </ol>
+    </div>
+    <div class="task-canvas-wrap">
+      <canvas id="galileanChart" width="900" height="280"></canvas>
+      <div class="canvas-note">Galilean moons: ln(a) vs ln(T). If Kepler holds, the slope should again be near 3/2.</div>
+    </div>
+    <table class="data-table" style="margin: 0 18px 12px; width: calc(100% - 36px);">
+      <thead><tr><th>Moon</th><th>Semi-axis (km)</th><th>Period (days)</th></tr></thead>
+      <tbody>
+        <tr><td>Io</td><td>421,600</td><td>1.769</td></tr>
+        <tr><td>Europa</td><td>670,900</td><td>3.551</td></tr>
+        <tr><td>Ganymede</td><td>1,070,400</td><td>7.155</td></tr>
+        <tr><td>Callisto</td><td>1,882,700</td><td>16.689</td></tr>
+      </tbody>
+    </table>
+    <div class="task-reveal">
+      <div class="reveal-head">The epistemic point</div>
+      <div class="reveal-body">
+        A pattern that replicates in a new system is stronger than one that merely fits the original data — but only if the replication is <em>independent</em>. Newton's insight was that the same inverse-square law governs both systems, so T² ∝ a³ must hold for any central-force orbit. The Kepler constant changes (because the central mass changes), but the exponent is fixed by the physics. <em>This is what separates Kepler from Bode: one has a derivation that predicts its universality; the other has only a pattern that happens to recur.</em>
+        <div class="reveal-epigraph">If your method cannot fail, your knowledge cannot grow.</div>
+      </div>
+    </div>
+  </div>
 
-    function drawAxes(ctx, x, y, w, h, xLabel, yLabel) {
-      ctx.strokeStyle = '#9ca3af';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w, y+h); ctx.stroke();
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '12px Georgia';
-      ctx.fillText(xLabel, x+w-48, y+h+20);
-      ctx.save();
-      ctx.translate(x-36, y+18);
-      ctx.rotate(-Math.PI/2);
-      ctx.fillText(yLabel, 0, 0);
-      ctx.restore();
-    }
+  <!-- ═══ TASK 5: MILANKOVITCH ═══ -->
+  <div class="task-card" id="task5">
+    <div class="task-header" onclick="toggle('task5')">
+      <div>
+        <div class="task-label">Task 5 · Milankovitch</div>
+        <div class="task-title">Cycles without a simple picture</div>
+      </div>
+      <span class="task-chevron">&#9654;</span>
+    </div>
+    <div class="task-question">
+      <p>Earth's orbital eccentricity, axial tilt, and precession each vary on different timescales. Toggle the cycles below.</p>
+      <ol>
+        <li>Can you identify a single dominant period? Why or why not?</li>
+        <li>Unlike Kepler's law, there is no single clean dependency here. What makes composite models harder to falsify?</li>
+        <li>If the model has three free parameters (one per cycle), at what point does a fit become overfitting?</li>
+      </ol>
+      <div style="margin: 10px 0; font-size: 12px; color: var(--text-dim);">
+        <label><input type="checkbox" id="showEcc" checked> eccentricity (~100 kyr)</label>&ensp;
+        <label><input type="checkbox" id="showObl" checked> obliquity (~41 kyr)</label>&ensp;
+        <label><input type="checkbox" id="showPrec" checked> precession (~23 kyr)</label>&ensp;
+        <label>window: <input type="range" id="mRange" min="50" max="800" value="300" style="width:140px;vertical-align:middle;"> <span id="mLabel">300</span> kyr</label>
+      </div>
+    </div>
+    <div class="task-canvas-wrap">
+      <canvas id="milanChart" width="900" height="280"></canvas>
+      <div class="canvas-note">Normalised Milankovitch cycles. Not one law — interacting periodicities.</div>
+    </div>
+    <div class="task-reveal">
+      <div class="reveal-head">The epistemic point</div>
+      <div class="reveal-body">
+        Milankovitch cycles represent a fundamentally different epistemic challenge. Kepler gives you one clean relationship to test. Bode gives you a fit to evaluate. Milankovitch gives you <em>a composite of interacting cycles whose explanatory force depends on timing, feedback, and proxy interpretation</em>. A student who can handle Kepler and dismiss Bode may still be defeated by the honest complexity of climate forcing — where no single test confirms or refutes the model.
+        <div class="reveal-epigraph">Good tasks withhold closure.</div>
+      </div>
+    </div>
+  </div>
 
-    function map(v, a1, a2, b1, b2) {
-      return b1 + (v-a1)*(b2-b1)/(a2-a1);
-    }
+  <hr class="divider">
 
-    function linReg(points) {
-      const n = points.length;
-      let sx=0, sy=0, sxy=0, sxx=0;
-      points.forEach(p => { sx+=p.x; sy+=p.y; sxy+=p.x*p.y; sxx+=p.x*p.x; });
-      const m = (n*sxy - sx*sy)/(n*sxx - sx*sx);
-      const b = (sy - m*sx)/n;
-      return {m,b};
-    }
+  <div class="warn-box">
+    <strong>Provocation:</strong> exercises fit rubrics; questions resist them. A good task here should leave the student unsure whether they have discovered a law, recognised a fit, or only learned how easily one can slide from one to the other. They should have the scars of the practitioner, not just the vocabulary of the skeptic.
+  </div>
 
-    function drawKepler() {
-      const c1 = document.getElementById('keplerLinear');
-      const ctx1 = c1.getContext('2d');
-      ctx1.clearRect(0,0,c1.width,c1.height);
-      drawAxes(ctx1, 48, 18, 400, 200, 'a (AU)', 'T (yr)');
-      const maxA = Math.max(...kepler.map(d=>d.a));
-      const maxT = Math.max(...kepler.map(d=>d.T));
-      kepler.forEach(d => {
-        const x = map(d.a, 0, maxA*1.05, 48, 448);
-        const y = map(d.T, 0, maxT*1.05, 218, 18);
-        ctx1.fillStyle = '#1d4ed8';
-        ctx1.beginPath(); ctx1.arc(x,y,4,0,Math.PI*2); ctx1.fill();
-        ctx1.fillStyle = '#374151'; ctx1.font='12px Georgia'; ctx1.fillText(d.name, x+6, y-6);
+  <p class="prose" style="margin-top: 20px;">
+    These tasks connect to the wider argument in
+    <a class="gold-link" href="https://leelemacjames.github.io/rumsfeld.pdf" target="_blank">Just Enough to Perform</a>
+    — a paper on knowledge, provenance, and epistemic flattening — and to the
+    <a class="gold-link" href="https://leelemacjames.github.io/epistemic_opacity_full_framework.html" target="_blank">interactive four-column framework</a>
+    that stress-tests each rubric dimension against the recursion it produces.
+  </p>
+
+  <div class="epigraph" style="margin-top: 24px;">To teach is to steepen the incline, to lower the drawbridge.</div>
+
+  <div class="footer">
+    Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+  </div>
+</div>
+
+<script>
+// Data
+const kepler = [
+  {name:'Mercury', a:0.387099, T:0.241},
+  {name:'Venus', a:0.723332, T:0.615},
+  {name:'Earth', a:1.0, T:1.0},
+  {name:'Mars', a:1.523688, T:1.881},
+  {name:'Jupiter', a:5.202833, T:11.86},
+  {name:'Saturn', a:9.538762, T:29.46},
+  {name:'Uranus', a:19.191391, T:84.32},
+  {name:'Neptune', a:30.061069, T:164.8},
+  {name:'Pluto', a:39.529402, T:248.1}
+];
+
+const galilean = [
+  {name:'Io', a:421600, T:1.769138},
+  {name:'Europa', a:670900, T:3.551181},
+  {name:'Ganymede', a:1070400, T:7.154553},
+  {name:'Callisto', a:1882700, T:16.689018}
+];
+
+const bode = [
+  {planet:'Mercury', pred:0.4, obs:0.39},
+  {planet:'Venus', pred:0.7, obs:0.72},
+  {planet:'Earth', pred:1.0, obs:1.0},
+  {planet:'Mars', pred:1.6, obs:1.52},
+  {planet:'Ceres', pred:2.8, obs:2.77},
+  {planet:'Jupiter', pred:5.2, obs:5.2},
+  {planet:'Saturn', pred:10.0, obs:9.55},
+  {planet:'Uranus', pred:19.6, obs:19.22},
+  {planet:'Neptune', pred:38.8, obs:30.11}
+];
+
+// Helpers
+function mp(v,a1,a2,b1,b2){ return b1+(v-a1)*(b2-b1)/(a2-a1); }
+function linReg(pts){
+  let n=pts.length, sx=0,sy=0,sxy=0,sxx=0;
+  pts.forEach(p=>{sx+=p.x;sy+=p.y;sxy+=p.x*p.y;sxx+=p.x*p.x;});
+  const m=(n*sxy-sx*sy)/(n*sxx-sx*sx), b=(sy-m*sx)/n;
+  return {m,b};
+}
+
+function setupCanvas(id){
+  const c=document.getElementById(id);
+  const dpr=window.devicePixelRatio||1;
+  const rect=c.getBoundingClientRect();
+  c.width=rect.width*dpr; c.height=rect.height*dpr;
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  return {ctx, w:rect.width, h:rect.height};
+}
+
+function axes(ctx,x,y,w,h,xL,yL){
+  ctx.strokeStyle='#c4c1ba'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+h); ctx.lineTo(x+w,y+h); ctx.stroke();
+  ctx.fillStyle='#8a8780'; ctx.font='11px IBM Plex Mono';
+  ctx.fillText(xL,x+w-ctx.measureText(xL).width-4,y+h+16);
+  ctx.save(); ctx.translate(x-10,y+h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(yL,-ctx.measureText(yL).width/2,0); ctx.restore();
+}
+
+function dot(ctx,x,y,r,col){
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+}
+
+// Draw functions
+function drawKeplerLinear(){
+  const {ctx,w,h}=setupCanvas('keplerLinear');
+  const pad={l:52,r:20,t:16,b:30};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  axes(ctx,pad.l,pad.t,pw,ph,'a (AU)','T (yr)');
+  const maxA=Math.max(...kepler.map(d=>d.a))*1.05;
+  const maxT=Math.max(...kepler.map(d=>d.T))*1.05;
+  kepler.forEach(d=>{
+    const x=mp(d.a,0,maxA,pad.l,pad.l+pw);
+    const y=mp(d.T,0,maxT,pad.t+ph,pad.t);
+    dot(ctx,x,y,4,'#1d4ed8');
+    ctx.fillStyle='#4b5563'; ctx.font='11px IBM Plex Sans';
+    ctx.fillText(d.name,x+7,y-5);
+  });
+}
+
+function drawKeplerLog(){
+  const {ctx,w,h}=setupCanvas('keplerLog');
+  const pad={l:52,r:20,t:16,b:30};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  axes(ctx,pad.l,pad.t,pw,ph,'ln a','ln T');
+  const pts=kepler.map(d=>({name:d.name,x:Math.log(d.a),y:Math.log(d.T)}));
+  const minX=Math.min(...pts.map(p=>p.x)), maxX=Math.max(...pts.map(p=>p.x));
+  const minY=Math.min(...pts.map(p=>p.y)), maxY=Math.max(...pts.map(p=>p.y));
+  pts.forEach(p=>{
+    const x=mp(p.x,minX-0.2,maxX+0.2,pad.l,pad.l+pw);
+    const y=mp(p.y,minY-0.2,maxY+0.2,pad.t+ph,pad.t);
+    dot(ctx,x,y,4,'#0f766e');
+  });
+  const {m,b}=linReg(pts);
+  const x1=minX-0.2,x2=maxX+0.2;
+  ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.moveTo(mp(x1,minX-0.2,maxX+0.2,pad.l,pad.l+pw), mp(m*x1+b,minY-0.2,maxY+0.2,pad.t+ph,pad.t));
+  ctx.lineTo(mp(x2,minX-0.2,maxX+0.2,pad.l,pad.l+pw), mp(m*x2+b,minY-0.2,maxY+0.2,pad.t+ph,pad.t));
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#2c2c2a'; ctx.font='12px IBM Plex Mono';
+  ctx.fillText('slope = '+m.toFixed(3), pw-80, pad.t+20);
+}
+
+function drawBode(){
+  const {ctx,w,h}=setupCanvas('bodeChart');
+  const pad={l:52,r:20,t:16,b:30};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  axes(ctx,pad.l,pad.t,pw,ph,'planet','distance (AU)');
+  const maxY=Math.max(...bode.map(d=>Math.max(d.pred,d.obs)))*1.08;
+  bode.forEach((d,i)=>{
+    const x=mp(i,0,bode.length-1,pad.l+20,pad.l+pw-20);
+    const yP=mp(d.pred,0,maxY,pad.t+ph,pad.t);
+    const yO=mp(d.obs,0,maxY,pad.t+ph,pad.t);
+    ctx.strokeStyle='#d4cfc4'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,yP); ctx.lineTo(x,yO); ctx.stroke();
+    dot(ctx,x-3,yP,3.5,'#1d4ed8');
+    dot(ctx,x+3,yO,3.5,'#0f766e');
+    ctx.fillStyle='#6b6963'; ctx.font='10px IBM Plex Sans';
+    const tw=ctx.measureText(d.planet).width;
+    ctx.fillText(d.planet,x-tw/2,pad.t+ph+14);
+  });
+  ctx.fillStyle='#1d4ed8'; ctx.fillRect(pw-60,pad.t+8,8,8);
+  ctx.fillStyle='#6b6963'; ctx.font='10px IBM Plex Mono'; ctx.fillText('Bode',pw-48,pad.t+16);
+  ctx.fillStyle='#0f766e'; ctx.fillRect(pw-60,pad.t+22,8,8);
+  ctx.fillText('observed',pw-48,pad.t+30);
+}
+
+function drawGalilean(){
+  const {ctx,w,h}=setupCanvas('galileanChart');
+  const pad={l:52,r:20,t:16,b:30};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  axes(ctx,pad.l,pad.t,pw,ph,'ln a','ln T');
+  const pts=galilean.map(d=>({name:d.name,x:Math.log(d.a),y:Math.log(d.T)}));
+  const minX=Math.min(...pts.map(p=>p.x))-0.2, maxX=Math.max(...pts.map(p=>p.x))+0.2;
+  const minY=Math.min(...pts.map(p=>p.y))-0.2, maxY=Math.max(...pts.map(p=>p.y))+0.2;
+  pts.forEach(p=>{
+    const x=mp(p.x,minX,maxX,pad.l,pad.l+pw);
+    const y=mp(p.y,minY,maxY,pad.t+ph,pad.t);
+    dot(ctx,x,y,5,'#8a7340');
+    ctx.fillStyle='#4b5563'; ctx.font='11px IBM Plex Sans';
+    ctx.fillText(p.name,x+8,y-6);
+  });
+  const {m,b}=linReg(pts);
+  ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.moveTo(mp(minX,minX,maxX,pad.l,pad.l+pw), mp(m*minX+b,minY,maxY,pad.t+ph,pad.t));
+  ctx.lineTo(mp(maxX,minX,maxX,pad.l,pad.l+pw), mp(m*maxX+b,minY,maxY,pad.t+ph,pad.t));
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#2c2c2a'; ctx.font='12px IBM Plex Mono';
+  ctx.fillText('slope = '+m.toFixed(3), pw-80, pad.t+20);
+}
+
+function drawMilankovitch(){
+  const {ctx,w,h}=setupCanvas('milanChart');
+  const pad={l:52,r:20,t:16,b:30};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  const range=parseInt(document.getElementById('mRange').value);
+  document.getElementById('mLabel').textContent=range;
+  axes(ctx,pad.l,pad.t,pw,ph,'time (kyr)','normalised');
+
+  const n=800;
+  function gen(tMin,tMax){
+    const arr=[];
+    for(let i=0;i<n;i++){
+      const t=tMin+(tMax-tMin)*i/(n-1);
+      arr.push({
+        t,
+        ecc: 0.03+0.015*Math.sin(2*Math.PI*t/100)+0.005*Math.sin(2*Math.PI*t/413),
+        obl: 23.3+1.15*Math.sin(2*Math.PI*t/41)+0.15*Math.sin(2*Math.PI*t/54),
+        prec: 180+160*Math.sin(2*Math.PI*t/23)+20*Math.sin(2*Math.PI*t/19)
       });
-
-      const c2 = document.getElementById('keplerLog');
-      const ctx2 = c2.getContext('2d');
-      ctx2.clearRect(0,0,c2.width,c2.height);
-      drawAxes(ctx2, 48, 18, 400, 200, 'ln a', 'ln T');
-      const pts = kepler.map(d=>({name:d.name, x:Math.log(d.a), y:Math.log(d.T)}));
-      const minX = Math.min(...pts.map(p=>p.x)), maxX = Math.max(...pts.map(p=>p.x));
-      const minY = Math.min(...pts.map(p=>p.y)), maxY = Math.max(...pts.map(p=>p.y));
-      pts.forEach(p => {
-        const x = map(p.x, minX, maxX, 48, 448);
-        const y = map(p.y, minY, maxY, 218, 18);
-        ctx2.fillStyle = '#0f766e';
-        ctx2.beginPath(); ctx2.arc(x,y,4,0,Math.PI*2); ctx2.fill();
-      });
-      const {m,b} = linReg(pts);
-      const x1=minX, x2=maxX, y1=m*x1+b, y2=m*x2+b;
-      ctx2.strokeStyle = '#111827'; ctx2.lineWidth = 1.5;
-      ctx2.beginPath();
-      ctx2.moveTo(map(x1,minX,maxX,48,448), map(y1,minY,maxY,218,18));
-      ctx2.lineTo(map(x2,minX,maxX,48,448), map(y2,minY,maxY,218,18));
-      ctx2.stroke();
-      ctx2.fillStyle = '#111827'; ctx2.font = '12px Georgia';
-      ctx2.fillText(`slope ≈ ${m.toFixed(3)}`, 320, 34);
     }
+    return arr;
+  }
+  const data=gen(-range,0);
+  function series(vals,color){
+    const mn=Math.min(...vals), mx=Math.max(...vals);
+    if(mx===mn) return;
+    ctx.strokeStyle=color; ctx.lineWidth=1.4; ctx.beginPath();
+    vals.forEach((v,i)=>{
+      const x=mp(i,0,n-1,pad.l,pad.l+pw);
+      const y=mp(v,mn,mx,pad.t+ph-4,pad.t+4);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  if(document.getElementById('showEcc').checked) series(data.map(d=>d.ecc),'#1d4ed8');
+  if(document.getElementById('showObl').checked) series(data.map(d=>d.obl),'#0f766e');
+  if(document.getElementById('showPrec').checked) series(data.map(d=>d.prec),'#b45309');
+}
 
-    function drawBode() {
-      const tbody = document.getElementById('bodeTable');
-      tbody.innerHTML = '';
-      bode.forEach(d => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${d.planet}</td><td>${d.pred.toFixed(2)}</td><td>${d.obs.toFixed(2)}</td>`;
-        tbody.appendChild(tr);
-      });
+// Toggle
+function toggle(id){
+  document.getElementById(id).classList.toggle('open');
+}
 
-      const c = document.getElementById('bodeChart');
-      const ctx = c.getContext('2d');
-      ctx.clearRect(0,0,c.width,c.height);
-      drawAxes(ctx, 48, 18, 400, 200, 'planet index', 'distance (AU)');
-      const maxY = Math.max(...bode.map(d => Math.max(d.pred,d.obs)));
-      bode.forEach((d,i) => {
-        const x = map(i, 0, bode.length-1, 70, 430);
-        const yPred = map(d.pred, 0, maxY*1.08, 218, 18);
-        const yObs = map(d.obs, 0, maxY*1.08, 218, 18);
-        ctx.strokeStyle = '#9ca3af';
-        ctx.beginPath(); ctx.moveTo(x,yPred); ctx.lineTo(x,yObs); ctx.stroke();
-        ctx.fillStyle = '#1d4ed8'; ctx.beginPath(); ctx.arc(x-4,yPred,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#0f766e'; ctx.beginPath(); ctx.arc(x+4,yObs,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#374151'; ctx.font='11px Georgia'; ctx.fillText(d.planet, x-15, 235);
-      });
-      ctx.fillStyle = '#1d4ed8'; ctx.fillRect(300,24,10,10); ctx.fillStyle='#374151'; ctx.fillText('Bode prediction', 316, 33);
-      ctx.fillStyle = '#0f766e'; ctx.fillRect(300,42,10,10); ctx.fillStyle='#374151'; ctx.fillText('Observed', 316, 51);
-    }
-
-    function drawMilankovitch() {
-      const c = document.getElementById('milankovitchChart');
-      const ctx = c.getContext('2d');
-      ctx.clearRect(0,0,c.width,c.height);
-      drawAxes(ctx, 54, 18, 890, 230, 'time (kyr)', 'normalised value');
-      const range = parseInt(document.getElementById('mRange').value, 10);
-      document.getElementById('mLabel').textContent = `${range} kyr`;
-      const subset = mil.filter(d => d.t >= -range && d.t <= 0);
-      const minT = -range, maxT = 0;
-      function drawSeries(values, color) {
-        const minV = Math.min(...values), maxV = Math.max(...values);
-        ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.beginPath();
-        subset.forEach((d,i) => {
-          const v = values[i];
-          const x = map(d.t, minT, maxT, 54, 944);
-          const y = map(v, minV, maxV, 238, 24);
-          if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        });
-        ctx.stroke();
-      }
-      const showE = document.getElementById('showEcc').checked;
-      const showO = document.getElementById('showObl').checked;
-      const showP = document.getElementById('showPrec').checked;
-      if (showE) drawSeries(subset.map(d=>d.ecc), '#1d4ed8');
-      if (showO) drawSeries(subset.map(d=>d.obl), '#0f766e');
-      if (showP) drawSeries(subset.map(d=>d.prec), '#b45309');
-      let yKey = 28;
-      [['eccentricity','#1d4ed8',showE],['obliquity','#0f766e',showO],['precession angle','#b45309',showP]].forEach(([lab,col,show])=>{
-        if (!show) return;
-        ctx.fillStyle=col; ctx.fillRect(740,yKey-8,12,12);
-        ctx.fillStyle='#374151'; ctx.fillText(lab, 758, yKey+2); yKey += 18;
-      });
-    }
-
-    drawKepler();
-    drawBode();
-    drawMilankovitch();
-    ['showEcc','showObl','showPrec','mRange'].forEach(id => document.getElementById(id).addEventListener('input', drawMilankovitch));
-  </script>
+// Init
+function init(){
+  drawKeplerLinear(); drawKeplerLog(); drawBode(); drawGalilean(); drawMilankovitch();
+}
+window.addEventListener('load', init);
+window.addEventListener('resize', init);
+['showEcc','showObl','showPrec','mRange'].forEach(id=>
+  document.getElementById(id).addEventListener('input', drawMilankovitch)
+);
+</script>
 </body>
 </html>
