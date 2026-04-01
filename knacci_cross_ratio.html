@@ -6,539 +6,235 @@
 <title>The k-nacci Cross-Ratio: What Survives the Recurrence</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0e0f11; --bg-card:#151619; --gold:#c8a96e; --gold-dim:#a08550;
-  --gold-glow:rgba(200,169,110,0.12); --text:#d4d0c8; --text-dim:#8a8577;
-  --text-bright:#eae6dd; --accent-blue:#6b8fad; --accent-red:#ad6b6b;
-  --accent-green:#6bad7a; --accent-violet:#9b7fba; --border:#2a2b30;
-  --border-gold:rgba(200,169,110,0.25);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.75;overflow-x:hidden;}
-.header{padding:4.5rem 2rem 2.5rem;text-align:center;position:relative;overflow:hidden;}
-.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,var(--gold-glow),transparent);pointer-events:none;}
-.header h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.6rem,4vw,2.8rem);color:var(--text-bright);letter-spacing:0.02em;line-height:1.25;margin-bottom:0.5rem;position:relative;}
-.header .subtitle{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1.2rem;}
-.header .epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--text-dim);max-width:46rem;margin:0 auto;line-height:1.6;}
-.container{max-width:54rem;margin:0 auto;padding:0 1.5rem 4rem;}
-.stage{margin:2.5rem 0;opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
-.stage.visible{opacity:1;transform:translateY(0);}
-.sn{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gold-dim);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.4rem;}
-.stage h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.55rem;color:var(--text-bright);margin-bottom:0.9rem;line-height:1.3;}
-.stage p{margin-bottom:0.9rem;font-size:0.93rem;}
-.insight{background:var(--bg-card);border-left:3px solid var(--gold);padding:1.1rem 1.4rem;margin:1.3rem 0;border-radius:0 6px 6px 0;}
-.insight p{margin-bottom:0.45rem;font-size:0.9rem;}
-.insight p:last-child{margin-bottom:0;}
-.insight .label{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:0.45rem;}
-.eq-block{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:1.6rem 1.8rem;margin:1.4rem 0;text-align:center;position:relative;overflow:hidden;}
-.eq-block::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
-.eq{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text-bright);letter-spacing:0.04em;line-height:1.5;}
-.eq .v{font-style:italic;}
-.eq-cap{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-top:0.7rem;letter-spacing:0.05em;}
-.eq-inline{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-bright);text-align:center;margin:0.5rem 0;}
-.frac{display:inline-block;text-align:center;vertical-align:middle;}
-.frac-n{display:block;border-bottom:1px solid var(--text-dim);padding-bottom:3px;}
-.frac-d{display:block;padding-top:3px;}
-.reveal-btn{display:inline-flex;align-items:center;gap:0.5rem;background:transparent;border:1px solid var(--border-gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.73rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.45rem 1.1rem;border-radius:4px;cursor:pointer;transition:all 0.3s ease;margin-top:0.4rem;}
-.reveal-btn:hover{background:var(--gold-glow);border-color:var(--gold);}
-.reveal-btn .arrow{transition:transform 0.3s ease;font-size:0.6rem;}
-.reveal-btn.open .arrow{transform:rotate(90deg);}
-.reveal-content{max-height:0;overflow:hidden;transition:max-height 0.5s ease,opacity 0.4s ease;opacity:0;}
-.reveal-content.open{opacity:1;}
-.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent);margin:2.5rem 0;}
-.punchline{background:linear-gradient(135deg,rgba(200,169,110,0.08),rgba(200,169,110,0.03));border:1px solid var(--border-gold);border-radius:10px;padding:1.8rem;margin:2rem 0;text-align:center;}
-.punchline p{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text-bright);line-height:1.6;font-style:italic;}
-.chart-wrap{margin:1.4rem 0;display:flex;justify-content:center;}
-canvas{max-width:100%;}
-.dtable{width:100%;border-collapse:collapse;margin:1.3rem 0;font-size:0.84rem;}
-.dtable th,.dtable td{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);text-align:left;}
-.dtable th{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:0.1em;background:var(--bg-card);}
-.dtable td{font-family:'IBM Plex Mono',monospace;font-size:0.8rem;}
-.dtable tr:last-child td{border-bottom:none;}
-.hl td{color:var(--gold);}
-code{font-family:'IBM Plex Mono',monospace;font-size:0.85em;color:var(--gold);background:rgba(200,169,110,0.08);padding:0.1em 0.35em;border-radius:3px;}
-em{color:var(--text-bright);font-style:italic;}
-strong{color:var(--text-bright);font-weight:600;}
-.k-sel{display:flex;justify-content:center;gap:0.5rem;margin:1.2rem 0;flex-wrap:wrap;}
-.k-btn{padding:0.4rem 1rem;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;cursor:pointer;transition:all 0.25s;}
-.k-btn:hover{border-color:var(--gold-dim);color:var(--text);}
-.k-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-glow);}
-.readout{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:0.8rem 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;}
-.readout .val{color:var(--text-bright);}
-.cmp{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.4rem 0;}
-@media(max-width:600px){.cmp{grid-template-columns:1fr;}}
-.cmp-col{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:1.2rem;}
-.cmp-col h4{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.6rem;}
-.cmp-col p{font-size:0.88rem;line-height:1.6;margin-bottom:0.5rem;}
-.cmp-col p:last-child{margin-bottom:0;}
-.interactive-container{display:flex;justify-content:center;margin:1.4rem 0;user-select:none;-webkit-user-select:none;}
-.interactive-container svg{max-width:100%;height:auto;}
-.footer{text-align:center;padding:2.5rem 1.5rem 1.5rem;border-top:1px solid var(--border);}
-.footer p{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.08em;line-height:1.8;}
-.footer .gold{color:var(--gold-dim);}
+:root{--bg:#0e0f11;--bg-card:#151619;--gold:#c8a96e;--gold-dim:#a08550;--gold-glow:rgba(200,169,110,0.12);--text:#d4d0c8;--text-dim:#8a8577;--text-bright:#eae6dd;--accent-blue:#6b8fad;--accent-red:#ad6b6b;--accent-green:#6bad7a;--accent-violet:#9b7fba;--border:#2a2b30;--border-gold:rgba(200,169,110,0.25);}
+*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.75;overflow-x:hidden;}
+.header{padding:4.5rem 2rem 2.5rem;text-align:center;position:relative;overflow:hidden;}.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,var(--gold-glow),transparent);pointer-events:none;}.header h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.6rem,4vw,2.8rem);color:var(--text-bright);letter-spacing:0.02em;line-height:1.25;margin-bottom:0.5rem;position:relative;}.header .subtitle{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1.2rem;}.header .epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--text-dim);max-width:46rem;margin:0 auto;line-height:1.6;}
+.container{max-width:54rem;margin:0 auto;padding:0 1.5rem 4rem;}.stage{margin:2.5rem 0;opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}.stage.visible{opacity:1;transform:translateY(0);}.sn{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gold-dim);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.4rem;}.stage h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.55rem;color:var(--text-bright);margin-bottom:0.9rem;line-height:1.3;}.stage p{margin-bottom:0.9rem;font-size:0.93rem;}
+.insight{background:var(--bg-card);border-left:3px solid var(--gold);padding:1.1rem 1.4rem;margin:1.3rem 0;border-radius:0 6px 6px 0;}.insight p{margin-bottom:0.45rem;font-size:0.9rem;}.insight p:last-child{margin-bottom:0;}.insight .label{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:0.45rem;}
+.eq-block{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:1.6rem 1.8rem;margin:1.4rem 0;text-align:center;position:relative;overflow:hidden;}.eq-block::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}.eq{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text-bright);letter-spacing:0.04em;line-height:1.5;}.eq .v{font-style:italic;}.eq-cap{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-top:0.7rem;letter-spacing:0.05em;}.eq-inline{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-bright);text-align:center;margin:0.5rem 0;}.frac{display:inline-block;text-align:center;vertical-align:middle;}.frac-n{display:block;border-bottom:1px solid var(--text-dim);padding-bottom:3px;}.frac-d{display:block;padding-top:3px;}
+.reveal-btn{display:inline-flex;align-items:center;gap:0.5rem;background:transparent;border:1px solid var(--border-gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.73rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.45rem 1.1rem;border-radius:4px;cursor:pointer;transition:all 0.3s ease;margin-top:0.4rem;}.reveal-btn:hover{background:var(--gold-glow);border-color:var(--gold);}.reveal-btn .arrow{transition:transform 0.3s ease;font-size:0.6rem;}.reveal-btn.open .arrow{transform:rotate(90deg);}.reveal-content{max-height:0;overflow:hidden;transition:max-height 0.5s ease,opacity 0.4s ease;opacity:0;}.reveal-content.open{opacity:1;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent);margin:2.5rem 0;}.punchline{background:linear-gradient(135deg,rgba(200,169,110,0.08),rgba(200,169,110,0.03));border:1px solid var(--border-gold);border-radius:10px;padding:1.8rem;margin:2rem 0;text-align:center;}.punchline p{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text-bright);line-height:1.6;font-style:italic;}
+.chart-wrap{margin:1.4rem 0;display:flex;justify-content:center;}canvas{max-width:100%;}
+.dtable{width:100%;border-collapse:collapse;margin:1.3rem 0;font-size:0.84rem;}.dtable th,.dtable td{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);text-align:left;}.dtable th{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:0.1em;background:var(--bg-card);}.dtable td{font-family:'IBM Plex Mono',monospace;font-size:0.8rem;}.dtable tr:last-child td{border-bottom:none;}.hl td{color:var(--gold);}
+code{font-family:'IBM Plex Mono',monospace;font-size:0.85em;color:var(--gold);background:rgba(200,169,110,0.08);padding:0.1em 0.35em;border-radius:3px;}em{color:var(--text-bright);font-style:italic;}strong{color:var(--text-bright);font-weight:600;}
+.k-sel{display:flex;justify-content:center;gap:0.5rem;margin:1.2rem 0;flex-wrap:wrap;}.k-btn{padding:0.4rem 1rem;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;cursor:pointer;transition:all 0.25s;}.k-btn:hover{border-color:var(--gold-dim);color:var(--text);}.k-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-glow);}
+.readout{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:0.8rem 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;}.readout .val{color:var(--text-bright);}
+.interactive-container{display:flex;justify-content:center;margin:1.4rem 0;user-select:none;-webkit-user-select:none;}.interactive-container svg{max-width:100%;height:auto;}
+.exercise{background:var(--bg-card);border:1px solid var(--border-gold);border-radius:8px;padding:1.3rem 1.5rem;margin:1.4rem 0;}.exercise .ex-label{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--accent-blue);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:0.5rem;}.exercise p{font-size:0.9rem;margin-bottom:0.4rem;}
+.footer{text-align:center;padding:2.5rem 1.5rem 1.5rem;border-top:1px solid var(--border);}.footer p{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.08em;line-height:1.8;}.footer .gold{color:var(--gold-dim);}
 @media(max-width:600px){.container{padding:0 1rem 3rem;}.header{padding:3rem 1rem 2rem;}}
 </style>
 </head>
 <body>
-
+ 
 <header class="header">
   <div class="subtitle">Projective Geometry · Companion</div>
   <h1>The <em>k</em>-nacci Cross-Ratio</h1>
-  <p class="epigraph">
-    The cross-ratio of a linear recurrence strips away the dominant growth and exposes the conjugate roots — the algebraic structure that doesn't dominate but does determine the projective invariant.
-  </p>
+  <p class="epigraph">The cross-ratio of a linear recurrence strips away the dominant growth and exposes the conjugate roots — the algebraic structure that doesn't dominate but does determine the projective invariant.</p>
 </header>
-
+ 
 <div class="container">
-
-<!-- ═══ §I: CROSS-RATIO PREAMBLE ═══ -->
-<section class="stage" id="s1">
-  <div class="sn">I</div>
+ 
+<!-- §I -->
+<section class="stage" id="s1"><div class="sn">I</div>
   <h2>The Cross-Ratio</h2>
-  <p>
-    The cross-ratio is the sole numerical invariant of projective geometry. Given four collinear points A, B, C, D with coordinates a, b, c, d:
-  </p>
-  <div class="eq-block">
-    <div class="eq">
-      <span class="v">ξ</span>(A, B, C, D) = 
-      <span class="frac">
-        <span class="frac-n">(<span class="v">a</span> − <span class="v">b</span>)(<span class="v">c</span> − <span class="v">d</span>)</span>
-        <span class="frac-d">(<span class="v">b</span> − <span class="v">c</span>)(<span class="v">d</span> − <span class="v">a</span>)</span>
-      </span>
-    </div>
-    <div class="eq-cap">The only quantity preserved by every projective transformation</div>
-  </div>
-  <p>
-    Distances change under projection. Ratios of distances change. But this particular combination of ratios does not. Drag the <span style="color:var(--accent-blue);">observer point</span> below to see how projection distorts the spacing of four points while preserving their cross-ratio exactly.
-  </p>
-
-  <div class="interactive-container">
-    <svg id="projSvg" viewBox="0 0 520 380" width="520" height="380" xmlns="http://www.w3.org/2000/svg">
-      <defs><pattern id="pgrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1b1f" stroke-width="0.5"/></pattern></defs>
-      <rect width="520" height="380" fill="#0e0f11"/><rect width="520" height="380" fill="url(#pgrid)"/>
-    </svg>
-  </div>
-  <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:0.3rem 0;">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;">
-      <span style="color:var(--accent-blue);">●</span> Original: ξ = <span id="xiOrig" style="color:var(--text-bright);">−0.2500</span>
-    </div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;">
-      <span style="color:var(--accent-red);">●</span> Projected: ξ = <span id="xiProj" style="color:var(--text-bright);">−0.2500</span>
-    </div>
-  </div>
-
-  <p>
-    In Klein's Erlangen programme, a geometry is defined by its group of allowed transformations and the invariants those transformations preserve. Projective geometry — the geometry of PGL(n+1) — sits at the top of the hierarchy: maximum symmetry, minimum structure. The cross-ratio is its only invariant, the last quantity standing before measurement begins.
-  </p>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §II: FIBONACCI ═══ -->
-<section class="stage" id="s2">
-  <div class="sn">II</div>
+  <p>The cross-ratio is the sole numerical invariant of projective geometry. Given four collinear points with coordinates a, b, c, d:</p>
+  <div class="eq-block"><div class="eq"><span class="v">ξ</span>(A,B,C,D) = <span class="frac"><span class="frac-n">(<span class="v">a</span> − <span class="v">b</span>)(<span class="v">c</span> − <span class="v">d</span>)</span><span class="frac-d">(<span class="v">b</span> − <span class="v">c</span>)(<span class="v">d</span> − <span class="v">a</span>)</span></span></div><div class="eq-cap">The only quantity preserved by every projective transformation</div></div>
+  <p>Distances change under projection. Ratios of distances change. But this combination does not. Drag the <span style="color:var(--accent-blue);">observer</span> to verify.</p>
+  <div class="interactive-container"><svg id="projSvg" viewBox="0 0 520 380" width="520" height="380" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="pgrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1b1f" stroke-width="0.5"/></pattern></defs><rect width="520" height="380" fill="#0e0f11"/><rect width="520" height="380" fill="url(#pgrid)"/></svg></div>
+  <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:0.3rem 0;"><div style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;"><span style="color:var(--accent-blue);">●</span> Original: ξ = <span id="xiOrig" style="color:var(--text-bright);">−0.2500</span></div><div style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;"><span style="color:var(--accent-red);">●</span> Projected: ξ = <span id="xiProj" style="color:var(--text-bright);">−0.2500</span></div></div>
+</section><div class="divider"></div>
+ 
+<!-- §II -->
+<section class="stage" id="s2"><div class="sn">II</div>
   <h2>The Fibonacci Cross-Ratio</h2>
-  <p>
-    The cross-ratio of four consecutive Fibonacci numbers F<sub>n−3</sub>, F<sub>n−2</sub>, F<sub>n−1</sub>, F<sub>n</sub> converges as n → ∞. Asymptotically F<sub>n</sub> ≈ Cφ<sup>n</sup>, where φ = (1+√5)/2 is the golden ratio. Substituting into the cross-ratio formula, the constant C cancels (it appears equally in every factor), and the remaining powers of φ simplify:
-  </p>
-  <div class="insight">
-    <div class="label">Derivation</div>
-    <p>Set a = φ<sup>n−3</sup>, b = φ<sup>n−2</sup>, c = φ<sup>n−1</sup>, d = φ<sup>n</sup>. Then:</p>
-    <p class="eq-inline">(a−b)(c−d) / [(b−c)(d−a)] = (1−φ)(φ²−φ³) / [(φ−φ²)(φ³−1)]</p>
-    <p>Factoring: the numerator gives φ²(1−φ)², the denominator gives φ(1−φ)(φ³−1). One factor of (1−φ) and one power of φ cancel, leaving φ(1−φ)/(φ³−1).</p>
-    <p style="margin-top:0.4rem;">Now the characteristic equation φ² = φ + 1 implies φ³ = 2φ + 1, so φ³ − 1 = 2φ. The formula collapses:</p>
+  <p>The cross-ratio of four consecutive Fibonacci numbers converges as n → ∞. Asymptotically F<sub>n</sub> ≈ Cφ<sup>n</sup>. Substituting, C cancels, and the remaining powers of φ simplify:</p>
+  <div class="insight"><div class="label">Derivation</div>
+    <p>Set a = φ<sup>n−3</sup>, b = φ<sup>n−2</sup>, c = φ<sup>n−1</sup>, d = φ<sup>n</sup>:</p>
+    <p class="eq-inline">(1−φ)(φ²−φ³) / [(φ−φ²)(φ³−1)] = φ²(1−φ)² / [φ(1−φ)(φ³−1)]</p>
+    <p>One (1−φ) and one φ cancel, leaving φ(1−φ)/(φ³−1). The characteristic equation φ² = φ + 1 gives φ³ = 2φ + 1, so φ³ − 1 = 2φ:</p>
     <p class="eq-inline">ξ = φ(1−φ)/(2φ) = (1−φ)/2</p>
   </div>
-  <p>
-    Since Vieta's formula for x² − x − 1 = 0 gives φ + φ* = 1, so 1 − φ = φ* = (1−√5)/2, the conjugate golden ratio. The Fibonacci cross-ratio limit is:
-  </p>
-  <div class="eq-block">
-    <div class="eq">
-      <span class="v">ξ</span><sub>Fib</sub> = 
-      <span class="frac"><span class="frac-n">φ*</span><span class="frac-d">2</span></span>
-      &nbsp;=&nbsp;
-      <span class="frac"><span class="frac-n">−1</span><span class="frac-d">2φ</span></span>
-      &nbsp;≈ −0.30902
-    </div>
-    <div class="eq-cap">Half the conjugate golden ratio — the projective invariant of the Fibonacci recurrence</div>
-  </div>
-  <p>
-    The second form, −1/(2φ), uses φ · φ* = −1 (the product-of-roots relation). Both expressions make the same point: the cross-ratio is built from the <em>subordinate</em> root — the one that doesn't dominate the growth.
-  </p>
+  <p>Vieta gives φ + φ* = 1, so 1 − φ = φ*:</p>
+  <div class="eq-block"><div class="eq"><span class="v">ξ</span><sub>Fib</sub> = <span class="frac"><span class="frac-n">φ*</span><span class="frac-d">2</span></span> = <span class="frac"><span class="frac-n">−1</span><span class="frac-d">2φ</span></span> ≈ −0.30902</div><div class="eq-cap">Half the conjugate golden ratio</div></div>
   <div class="chart-wrap"><canvas id="fibChart" width="560" height="280"></canvas></div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §III: GENERAL FORMULA ═══ -->
-<section class="stage" id="s3">
-  <div class="sn">III</div>
+</section><div class="divider"></div>
+ 
+<!-- §III -->
+<section class="stage" id="s3"><div class="sn">III</div>
   <h2>The General Formula</h2>
-  <p>
-    The Fibonacci derivation depends on φ only through the asymptotic form T<sub>n</sub> ≈ Cλ<sup>n</sup>. Any linear recurrence whose dominant characteristic root is λ produces the same structure. Setting a = Cλ<sup>n−3</sup>, b = Cλ<sup>n−2</sup>, c = Cλ<sup>n−1</sup>, d = Cλ<sup>n</sup>:
-  </p>
-  <div class="insight">
-    <div class="label">The cancellation</div>
-    <p>The constant C cancels immediately — it appears equally in every factor of (a−b), (c−d), (b−c), (d−a). After extracting common powers of λ, the cross-ratio becomes:</p>
+  <p>The derivation depends on φ only through T<sub>n</sub> ≈ Cλ<sup>n</sup>. For any dominant root λ:</p>
+  <div class="insight"><div class="label">The cancellation</div>
+    <p>C cancels. After extracting powers of λ:</p>
     <p class="eq-inline">(1 − λ)(λ² − λ³) / [(λ − λ²)(λ³ − 1)] = λ²(1−λ)² / [λ(1−λ)(λ³−1)]</p>
-    <p>One factor of (1−λ) cancels between numerator and denominator. One power of λ cancels. What remains is:</p>
-    <p class="eq-inline">λ(1 − λ) / (λ³ − 1)</p>
+    <p>One (1−λ) and one λ cancel, giving λ(1−λ)/(λ³−1). Factor λ³−1 = (λ−1)(λ²+λ+1) and cancel (λ−1):</p>
   </div>
-  <p>
-    The denominator factors as λ³ − 1 = (λ − 1)(λ² + λ + 1). Since 1 − λ = −(λ − 1), the (λ − 1) factors cancel, leaving the master formula:
-  </p>
-  <div class="eq-block">
-    <div class="eq">
-      <span class="v">ξ</span><sub>∞</sub> = 
-      <span class="frac"><span class="frac-n">−λ</span><span class="frac-d">λ² + λ + 1</span></span>
-    </div>
-    <div class="eq-cap">Cross-ratio limit for any recurrence with dominant root λ</div>
-  </div>
-  <p>
-    The denominator λ² + λ + 1 is the cyclotomic-adjacent factor from the difference-of-cubes factorisation. For each specific k-nacci family, the characteristic equation expresses this quantity in terms of powers of λ, producing a simplified closed form. The characteristic equation <em>is</em> the simplification engine.
-  </p>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §IV: TRIBONACCI ═══ -->
-<section class="stage" id="s4">
-  <div class="sn">IV</div>
+  <div class="eq-block"><div class="eq"><span class="v">ξ</span><sub>∞</sub> = <span class="frac"><span class="frac-n">−λ</span><span class="frac-d">λ² + λ + 1</span></span></div><div class="eq-cap">Cross-ratio limit for any recurrence with dominant root λ</div></div>
+</section><div class="divider"></div>
+ 
+<!-- §IV -->
+<section class="stage" id="s4"><div class="sn">IV</div>
   <h2>Tribonacci: −1/τ²</h2>
-  <p>
-    The Tribonacci recurrence T<sub>n</sub> = T<sub>n−1</sub> + T<sub>n−2</sub> + T<sub>n−3</sub> has the characteristic equation τ³ = τ² + τ + 1, where τ ≈ 1.83929 is the Tribonacci constant. This hands over the denominator directly:
-  </p>
-  <p class="eq-inline">τ² + τ + 1 = τ³</p>
-  <p>Substituting into the master formula:</p>
-  <div class="eq-block">
-    <div class="eq">
-      <span class="v">ξ</span><sub>Trib</sub> = 
-      <span class="frac"><span class="frac-n">−τ</span><span class="frac-d">τ³</span></span>
-      &nbsp;=&nbsp;
-      <span class="frac"><span class="frac-n">−1</span><span class="frac-d">τ²</span></span>
-      &nbsp;≈ −0.29560
-    </div>
-    <div class="eq-cap">The Tribonacci cross-ratio limit — the negative inverse square of the Tribonacci constant</div>
+  <p>The Tribonacci characteristic equation τ³ = τ² + τ + 1 gives τ² + τ + 1 = τ³ directly:</p>
+  <div class="eq-block"><div class="eq"><span class="v">ξ</span><sub>Trib</sub> = <span class="frac"><span class="frac-n">−τ</span><span class="frac-d">τ³</span></span> = <span class="frac"><span class="frac-n">−1</span><span class="frac-d">τ²</span></span> ≈ −0.29560</div><div class="eq-cap">A pure inverse-square expression in the Tribonacci constant</div></div>
+</section><div class="divider"></div>
+ 
+<!-- §V -->
+<section class="stage" id="s5"><div class="sn">V</div>
+  <h2>The Inverse-Square Reading</h2>
+  <div class="exercise"><div class="ex-label">Exercise</div>
+    <p>Starting from ξ<sub>Fib</sub> = (1−φ)/2, use φ = 2 − 1/φ² (from φ² = φ+1) to derive:</p>
+    <p class="eq-inline" style="color:var(--gold);">ξ<sub>Fib</sub> = −1/2 + 1/(2φ²)</p>
   </div>
-  <p>
-    The parallel with Fibonacci is exact in structure: the characteristic equation simplifies the denominator, and the result is a clean algebraic function of the dominant root. For Fibonacci, ξ = −1/(2φ); for Tribonacci, ξ = −1/τ².
-  </p>
-
-  <button class="reveal-btn" onclick="toggleReveal('r1')"><span class="arrow">▶</span> The conjugate root interpretation</button>
-  <div class="reveal-content" id="r1">
-    <div class="insight" style="margin-top:0.8rem;">
-      <div class="label">Subordinate roots and what the cross-ratio measures</div>
-      <p>The Tribonacci polynomial x³ − x² − x − 1 has one real root τ and two complex conjugate roots α, ᾱ. Vieta's formulas give τ · α · ᾱ = 1, so |α|² = 1/τ. It follows that <strong>−1/τ² = −|α|⁴</strong>: the cross-ratio limit is the negative fourth power of the modulus of the complex conjugate roots.</p>
-      <p style="margin-top:0.4rem;">For Fibonacci, the analogy is cleaner because both roots are real: φ · φ* = −1, so −1/φ = φ*, and ξ = φ*/2.</p>
-      <p style="margin-top:0.4rem;">A second Vieta relation illuminates the un-simplified form (1−τ)/(τ+1). Since τ + α + ᾱ = 1 (sum of roots), the numerator 1 − τ equals α + ᾱ = 2Re(α) — the sum of the complex conjugate roots. The cross-ratio computes a ratio of conjugate-root quantities. It strips away the dominant growth and leaves behind the algebraic structure of the roots that don't dominate.</p>
-    </div>
+  <button class="reveal-btn" onclick="toggleReveal('r2')"><span class="arrow">▶</span> Solution</button>
+  <div class="reveal-content" id="r2"><div class="insight" style="margin-top:0.8rem;"><div class="label">Derivation</div>
+    <p>ξ = (1−φ)/2. Substitute φ = 2 − 1/φ²:</p>
+    <p class="eq-inline">ξ = (1 − 2 + 1/φ²)/2 = (−1 + 1/φ²)/2 = −1/2 + 1/(2φ²) ✓</p>
+    <p>Numerically: −0.5 + 0.19098… = −0.30902… ✓</p>
+  </div></div>
+  <table class="dtable"><thead><tr><th>Recurrence</th><th>ξ<sub>∞</sub></th><th>Inverse-square form</th><th>Conjugate form</th></tr></thead><tbody>
+    <tr class="hl"><td>Fibonacci</td><td>−0.30902</td><td>−1/2 + 1/(2λ²)  [affine]</td><td>φ*/2</td></tr>
+    <tr class="hl"><td>Tribonacci</td><td>−0.29560</td><td>−1/λ²  [pure]</td><td>−|α|⁴</td></tr>
+  </tbody></table>
+  <p>Both are readable through 1/λ², but Fibonacci carries an offset of −1/2. The offset arises because the Fibonacci characteristic equation is quadratic — it provides one substitution step — while the Tribonacci equation is cubic and absorbs the denominator completely.</p>
+</section><div class="divider"></div>
+ 
+<!-- §VI: COMPANION MATRIX -->
+<section class="stage" id="s6"><div class="sn">VI</div>
+  <h2>The Companion Matrix</h2>
+  <p>Every k-nacci recurrence is generated by a k × k companion matrix M: first row all 1s, subdiagonal all 1s, everything else zero. The eigenvalues of M are exactly the roots of the characteristic polynomial — and this is where φ* enters the picture concretely.</p>
+ 
+  <div class="insight"><div class="label">Fibonacci: M is 2 × 2</div>
+    <p style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text-bright);margin:0.5rem 0;">M = <span style="font-size:0.95rem;">⎡</span><span style="display:inline-block;text-align:center;vertical-align:middle;line-height:1.4;">1 &nbsp;1<br>1 &nbsp;0</span><span style="font-size:0.95rem;">⎤</span></p>
+    <p>This matrix has <em>two</em> eigenvalues: φ ≈ 1.618 and φ* ≈ −0.618. They are both eigenvalues of the <em>same</em> matrix — not of different matrices or submatrices. Their product is the determinant: φ · φ* = det(M) = −1. Their sum is the trace: φ + φ* = tr(M) = 1.</p>
+    <p style="margin-top:0.4rem;">The corresponding eigenvectors are [φ, 1]<sup>T</sup> and [φ*, 1]<sup>T</sup>. This is straightforward to verify:</p>
+    <p class="eq-inline">M · [φ, 1]<sup>T</sup> = [φ+1, φ]<sup>T</sup> = [φ², φ]<sup>T</sup> = φ · [φ, 1]<sup>T</sup></p>
+    <p>using φ² = φ + 1; and identically for φ* since (φ*)² = φ* + 1 (same characteristic equation).</p>
   </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §V: FAMILY TABLE ═══ -->
-<section class="stage" id="s5">
-  <div class="sn">V</div>
-  <h2>The Family of k-nacci Limits</h2>
-  <p>
-    The pattern continues through Tetranacci, Pentanacci, and beyond. In each case the characteristic equation reduces the denominator λ² + λ + 1, and the cross-ratio limit takes a form expressible in the dominant root. The expressions grow less tidy as k increases — the Tetranacci case yields −1/[μ²(μ−1)] — even though they are all instances of the same master formula.
-  </p>
-  <table class="dtable">
-    <thead><tr><th>Recurrence</th><th>Characteristic</th><th>λ²+λ+1 =</th><th>ξ<sub>∞</sub></th><th>Decimal</th></tr></thead>
-    <tbody>
-      <tr class="hl"><td>Fibonacci (k=2)</td><td>λ²=λ+1</td><td>2λ²</td><td>−1/(2φ) = φ*/2</td><td>−0.30902</td></tr>
-      <tr class="hl"><td>Tribonacci (k=3)</td><td>λ³=λ²+λ+1</td><td>λ³</td><td>−1/τ²</td><td>−0.29560</td></tr>
-      <tr><td>Tetranacci (k=4)</td><td>λ⁴=λ³+λ²+λ+1</td><td>λ³(λ−1)</td><td>−1/[μ²(μ−1)]</td><td>−0.29016</td></tr>
-      <tr><td>Pentanacci (k=5)</td><td>λ⁵=λ⁴+⋯+1</td><td>—</td><td>−λ/(λ²+λ+1)</td><td>−0.28780</td></tr>
-      <tr style="color:var(--text-dim);"><td>k → ∞</td><td>λ → 2</td><td>7</td><td>−2/7</td><td>−0.28571</td></tr>
-    </tbody>
-  </table>
-  <p>
-    As k increases, the dominant root λ<sub>k</sub> approaches 2 (the sum of the geometric series 1 + 1/2 + 1/4 + ⋯), and the cross-ratio limits converge monotonically toward −2/7.
-  </p>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §VI: CONVERGENCE ═══ -->
-<section class="stage" id="s6">
-  <div class="sn">VI</div>
+ 
+  <p>The state vector [F<sub>n</sub>, F<sub>n−1</sub>]<sup>T</sup> decomposes in this eigenbasis as:</p>
+  <p class="eq-inline">c₁ · φⁿ · [φ, 1]<sup>T</sup> &nbsp;+&nbsp; c₂ · (φ*)<sup>n</sup> · [φ*, 1]<sup>T</sup></p>
+  <p>The first term dominates; the second decays as |φ*/φ|<sup>n</sup> = (1/φ²)<sup>n</sup> ≈ (0.382)<sup>n</sup>. This ratio |φ*/φ| — the <em>spectral ratio</em> — determines how fast the subdominant contribution vanishes. It is the single number that controls how quickly the cross-ratio converges to its limit.</p>
+ 
+  <div class="insight"><div class="label">Tribonacci: M is 3 × 3</div>
+    <p style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text-bright);margin:0.5rem 0;">M = <span style="font-size:0.95rem;">⎡</span><span style="display:inline-block;text-align:center;vertical-align:middle;line-height:1.4;">1 &nbsp;1 &nbsp;1<br>1 &nbsp;0 &nbsp;0<br>0 &nbsp;1 &nbsp;0</span><span style="font-size:0.95rem;">⎤</span></p>
+    <p>This matrix has <em>three</em> eigenvalues: the real dominant root τ ≈ 1.839, and a complex conjugate pair α ≈ −0.420 + 0.606<em>i</em> and ᾱ ≈ −0.420 − 0.606<em>i</em>, with |α| = |ᾱ| ≈ 0.737.</p>
+    <p style="margin-top:0.3rem;">Again, all three are eigenvalues of the same matrix. Vieta's formulas read off the matrix invariants: τ + α + ᾱ = tr(M) = 1, and τ · α · ᾱ = det(M) = 1. The last relation gives |α|² = 1/τ — the bridge between the dominant root and the subordinate modulus.</p>
+    <p style="margin-top:0.3rem;">The spectral ratio is |α/τ| ≈ 0.401, larger than Fibonacci's 0.382. The subdominant contribution decays more slowly: convergence to the cross-ratio limit is slower for Tribonacci than for Fibonacci.</p>
+  </div>
+</section><div class="divider"></div>
+ 
+<!-- §VII: M³ AND SPECTRAL GAP -->
+<section class="stage" id="s7"><div class="sn">VII</div>
+  <h2>The Span Matrix M³</h2>
+  <p>The cross-ratio uses four consecutive terms F<sub>n−3</sub>, F<sub>n−2</sub>, F<sub>n−1</sub>, F<sub>n</sub> — a window of three transitions. The matrix connecting the state at step n−3 to the state at step n is M³.</p>
+ 
+  <div class="insight"><div class="label">Fibonacci M³</div>
+    <p style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text-bright);margin:0.5rem 0;">M³ = <span style="font-size:0.95rem;">⎡</span><span style="display:inline-block;text-align:center;vertical-align:middle;line-height:1.4;">3 &nbsp;2<br>2 &nbsp;1</span><span style="font-size:0.95rem;">⎤</span></p>
+    <p>The eigenvalues of M³ are the cubes of the eigenvalues of M: φ³ ≈ 4.236 and (φ*)³ ≈ −0.236. The determinant det(M³) = (det M)³ = (−1)³ = −1. The trace tr(M³) = φ³ + (φ*)³ = 4.</p>
+    <p style="margin-top:0.3rem;">The ratio of subdominant to dominant eigenvalue is |(φ*)³/φ³| = |φ*/φ|³ ≈ 0.056. After three applications of M, the subdominant eigenvector's contribution has been suppressed by a factor of ~18 relative to the dominant. This is the <em>mixing rate over the cross-ratio window</em>: by the time four consecutive terms are used, the state is already 94% aligned with the dominant eigenvector. The cross-ratio, as a projective quantity, sees only the algebraic relationship between the eigenvalues — it is a projective invariant of the transition structure that M³ represents.</p>
+  </div>
+ 
+  <button class="reveal-btn" onclick="toggleReveal('r3')"><span class="arrow">▶</span> Tribonacci M³</button>
+  <div class="reveal-content" id="r3"><div class="insight" style="margin-top:0.8rem;"><div class="label">Tribonacci M³</div>
+    <p>The eigenvalues of M³ are τ³ ≈ 6.222, α³ ≈ 0.389 + 0.097<em>i</em>, ᾱ³ ≈ 0.389 − 0.097<em>i</em>. The spectral ratio |α³/τ³| = |α/τ|³ ≈ 0.064. Mixing is slightly slower than Fibonacci — the complex subdominant roots decay less aggressively over three steps. The trace tr(M³) = τ³ + α³ + ᾱ³ = 7; the determinant det(M³) = 1.</p>
+  </div></div>
+ 
+  <p>Dividing the master formula through by λ² yields a form that makes the approach to −2/7 transparent:</p>
+  <div class="eq-block"><div class="eq"><span class="v">ξ</span><sub>∞</sub> = <span class="frac"><span class="frac-n">−1</span><span class="frac-d">λ + 1 + 1/λ</span></span></div><div class="eq-cap">When λ → 2, the denominator → 2 + 1 + ½ = 7/2, giving ξ → −2/7</div></div>
+</section><div class="divider"></div>
+ 
+<!-- §VIII -->
+<section class="stage" id="s8"><div class="sn">VIII</div>
+  <h2>The Family</h2>
+  <table class="dtable"><thead><tr><th>k</th><th>Recurrence</th><th>λ</th><th>|α|</th><th>|α/λ|³</th><th>det(M)</th><th>ξ<sub>∞</sub></th></tr></thead><tbody>
+    <tr class="hl"><td>2</td><td>Fibonacci</td><td>1.61803</td><td>0.61803</td><td>0.0557</td><td>−1</td><td>−0.30902</td></tr>
+    <tr class="hl"><td>3</td><td>Tribonacci</td><td>1.83929</td><td>0.73735</td><td>0.0644</td><td>+1</td><td>−0.29560</td></tr>
+    <tr><td>4</td><td>Tetranacci</td><td>1.92756</td><td>0.81828</td><td>0.0765</td><td>−1</td><td>−0.29016</td></tr>
+    <tr><td>5</td><td>Pentanacci</td><td>1.96595</td><td>0.87105</td><td>0.0870</td><td>+1</td><td>−0.28780</td></tr>
+    <tr style="color:var(--text-dim);"><td>∞</td><td>—</td><td>2</td><td>1</td><td>0.125</td><td>—</td><td>−0.28571</td></tr>
+  </tbody></table>
+  <p>As k increases, the dominant root approaches 2, the subdominant modulus approaches 1, the spectral ratio |α/λ|³ increases (mixing slows), and the cross-ratio limits converge toward −2/7.</p>
+</section><div class="divider"></div>
+ 
+<!-- §IX -->
+<section class="stage" id="s9"><div class="sn">IX</div>
   <h2>Convergence</h2>
-  <p>
-    The oscillation pattern differs by recurrence. Fibonacci alternates cleanly above and below its limit — the subdominant root φ* is real and negative, so the correction term (φ*)<sup>n</sup> alternates in sign. Tribonacci's approach is more dampened: its subdominant roots are complex conjugates, and the transient oscillation reflects their argument in the complex plane.
-  </p>
-  <div class="k-sel" id="kSel">
-    <button class="k-btn active" data-k="2">Fibonacci</button>
-    <button class="k-btn" data-k="3">Tribonacci</button>
-    <button class="k-btn" data-k="4">Tetranacci</button>
-    <button class="k-btn" data-k="5">Pentanacci</button>
-    <button class="k-btn" data-k="all">All overlaid</button>
-  </div>
+  <p>The oscillation pattern differs by recurrence. Fibonacci alternates cleanly — φ* is real and negative, so (φ*)<sup>n</sup> alternates sign. Tribonacci's approach is dampened: the subdominant roots are complex, and the transient reflects their argument.</p>
+  <div class="k-sel"><button class="k-btn active" data-k="2">Fibonacci</button><button class="k-btn" data-k="3">Tribonacci</button><button class="k-btn" data-k="4">Tetranacci</button><button class="k-btn" data-k="5">Pentanacci</button><button class="k-btn" data-k="all">All overlaid</button></div>
   <div class="chart-wrap"><canvas id="convChart" width="560" height="310"></canvas></div>
-  <div class="readout">
-    <div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="rdL">1.61803</span></div>
-    <div><span style="color:var(--gold);">●</span> ξ<sub>∞</sub> = <span class="val" id="rdX">−0.30902</span></div>
-    <div><span style="color:var(--text-dim);">⋯</span> −2/7 = <span class="val" style="color:var(--text-dim);">−0.28571</span></div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §VII: LANDSCAPE ═══ -->
-<section class="stage" id="s7">
-  <div class="sn">VII</div>
+  <div class="readout"><div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="rdL">1.61803</span></div><div><span style="color:var(--gold);">●</span> ξ<sub>∞</sub> = <span class="val" id="rdX">−0.30902</span></div><div><span style="color:var(--text-dim);">⋯</span> −2/7 = <span class="val" style="color:var(--text-dim);">−0.28571</span></div></div>
+</section><div class="divider"></div>
+ 
+<!-- §X -->
+<section class="stage" id="s10"><div class="sn">X</div>
   <h2>The Limit Landscape</h2>
-  <p>
-    The master formula ξ = −λ/(λ²+λ+1) defines a continuous curve in the (λ, ξ) plane. Each k-nacci recurrence picks out a specific point on this curve, determined by its dominant root. The relevant domain is λ ∈ (1, 2], where all k-nacci dominant roots reside.
-  </p>
+  <p>ξ = −λ/(λ²+λ+1) defines a continuous curve. Each k-nacci picks out a point on it.</p>
   <div class="chart-wrap"><canvas id="landChart" width="560" height="320"></canvas></div>
-  <div class="readout">
-    <div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="drL">1.61803</span></div>
-    <div><span style="color:var(--gold);">●</span> ξ(λ) = <span class="val" id="drX">−0.30902</span></div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §VIII: ACCUMULATION ═══ -->
-<section class="stage" id="s8">
-  <div class="sn">VIII</div>
-  <h2>−2/7 as an Accumulation Point</h2>
-  <p>
-    The sequence of k-nacci cross-ratio limits ξ<sub>2</sub>, ξ<sub>3</sub>, ξ<sub>4</sub>, … converges to −2/7 as k → ∞. The approach is geometric: each successive difference δ<sub>k</sub> = ξ<sub>k</sub> − ξ<sub>k+1</sub> shrinks by a factor that converges to <strong>2</strong>.
-  </p>
+  <div class="readout"><div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="drL">1.61803</span></div><div><span style="color:var(--gold);">●</span> ξ(λ) = <span class="val" id="drX">−0.30902</span></div></div>
+</section><div class="divider"></div>
+ 
+<!-- §XI: FEIGENBAUM -->
+<section class="stage" id="s11"><div class="sn">XI</div>
+  <h2>−2/7 and the Feigenbaum Allusion</h2>
+  <p>The differences δ<sub>k</sub> = ξ<sub>k</sub> − ξ<sub>k+1</sub> shrink geometrically, with their ratio converging to <strong>2</strong>.</p>
   <div class="chart-wrap"><canvas id="scaleChart" width="560" height="280"></canvas></div>
-  <p>
-    The scaling ratio 2 arises because the dominant root deviation λ<sub>k</sub> − 2 scales as ~1/2<sup>k</sup> (a consequence of the geometric series underlying the k-nacci characteristic equation). Since ξ is a smooth function of λ, the cross-ratio deviations inherit this rate.
-  </p>
-  <p>This structure invites comparison with Feigenbaum's universal constant in period-doubling bifurcations.</p>
-  <div class="cmp">
-    <div class="cmp-col">
-      <h4>Period-doubling (Feigenbaum)</h4>
-      <p>A one-parameter family of maps x → f<sub>r</sub>(x) undergoes bifurcations at parameter values r₁, r₂, r₃, …</p>
-      <p>The differences shrink geometrically with ratio <strong style="color:var(--gold);">δ<sub>F</sub> ≈ 4.669</strong>, a universal constant arising from a fixed point of the renormalisation operator on function space.</p>
-    </div>
-    <div class="cmp-col">
-      <h4>k-nacci cross-ratios</h4>
-      <p>A one-parameter family of recurrences indexed by k has projective invariants ξ<sub>2</sub>, ξ<sub>3</sub>, ξ<sub>4</sub>, …</p>
-      <p>The differences shrink geometrically with ratio <strong style="color:var(--gold);">2</strong>, determined by the binary convergence rate of the dominant root sequence λ<sub>k</sub> → 2.</p>
-    </div>
+  <p>The companion-matrix formulation makes the parallel with Feigenbaum's period-doubling picture more vivid. As k increases, the matrix M grows by one dimension, the memory depth of the Markov chain extends by one step, and the spectral gap narrows (|α/λ| moves closer to 1). Each increment is a structural change in the transition matrix — a kind of bifurcation — that shifts the projective invariant toward its accumulation point −2/7. The cross-ratio functions as a bifurcation measure: a single number assigned to each member of the family, converging geometrically to a universal limit with a characteristic scaling constant.</p>
+ 
+  <div class="insight"><div class="label">Where the analogy breaks</div>
+    <p>The structural parallel is genuine, but the universality classes are different. Feigenbaum's δ<sub>F</sub> ≈ 4.669 arises from a fixed point of the renormalisation operator on function space — a nonlinear mechanism that is the same for any smooth unimodal map. The scaling ratio 2 follows from elementary analysis: λ<sub>k</sub> − 2 ~ 1/2<sup>k</sup> (a consequence of the geometric series in the characteristic equation), and ξ is smooth in λ, so δ<sub>k</sub> inherits the rate.</p>
+    <p style="margin-top:0.4rem;">Attempts to enrich the scaling by normalising with the subdominant eigenvalue — dividing δ<sub>k</sub> by some power of |α<sub>k</sub>| — do not produce a new constant. The subdominant modulus 1 − |α<sub>k</sub>| decays at a fundamentally different rate from ξ<sub>k</sub> + 2/7, and no fixed power of |α| can match the exponential convergence rate of the dominant root. The cross-ratio lives in a linear world; Feigenbaum's constant lives in a nonlinear one.</p>
+    <p style="margin-top:0.4rem;">The allusion is instructive precisely because it clarifies the boundary. The k-nacci cross-ratio is a projective invariant of a linear transition structure with variable memory depth, converging to a universal limit through algebraic exhaustion. Feigenbaum's constant is a projective-like invariant of a nonlinear dynamical system, converging through renormalisation. Same shape of convergence; different engine driving it.</p>
   </div>
-  <div class="insight">
-    <div class="label">The structural parallel</div>
-    <p>Both settings exhibit a one-parameter family, an invariant computed at each parameter value, geometric convergence to a universal accumulation point, and a characteristic scaling ratio. The difference is in the origin of the universality: Feigenbaum's constant emerges from renormalisation-group fixed-point theory, while the scaling ratio 2 follows from elementary analysis of λ<sub>k</sub> − 2. The universality is algebraic rather than dynamical.</p>
-    <p style="margin-top:0.4rem;">Nonetheless, −2/7 plays a structural role analogous to the Feigenbaum accumulation point: it is the value beyond which no finite-depth recurrence can reach. The cross-ratio functions as a bifurcation measure in the sense that it assigns a single projective invariant to each member of the family, and these invariants converge geometrically to a universal limit with a characteristic scaling constant.</p>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ═══ §IX: SUMMARY ═══ -->
-<section class="stage" id="s9">
-  <div class="sn">IX</div>
+</section><div class="divider"></div>
+ 
+<!-- §XII -->
+<section class="stage" id="s12"><div class="sn">XII</div>
   <h2>The Conjugate Soul</h2>
-  <div class="punchline">
-    <p>The cross-ratio of a linear recurrence extracts its algebraic soul: the dominant root of the characteristic polynomial, disguised as a projective invariant. The limiting value is always expressible through the subordinate roots — the conjugate structure that growth conceals.</p>
-  </div>
-  <table class="dtable">
-    <thead><tr><th>Recurrence</th><th>ξ<sub>∞</sub></th><th>Conjugate reading</th></tr></thead>
-    <tbody>
-      <tr class="hl"><td>Fibonacci</td><td>−1/(2φ) = φ*/2</td><td>φ* is the real algebraic conjugate; ξ is half of it</td></tr>
-      <tr class="hl"><td>Tribonacci</td><td>−1/τ² = −|α|⁴</td><td>|α|² = 1/τ is the modulus² of the complex conjugate pair</td></tr>
-      <tr><td>k → ∞</td><td>−2/7</td><td>Universal accumulation point; scaling ratio 2</td></tr>
-    </tbody>
-  </table>
-  <div style="margin-top:1.5rem;padding:0.8rem 1.2rem;background:var(--bg-card);border:1px dashed var(--border-gold);border-radius:6px;">
-    <p style="font-size:0.84rem;color:var(--text-dim);">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gold-dim);letter-spacing:0.1em;">COMPANION TO</span><br>
-      <span style="color:var(--gold);">Projective Geometry: What Survives Projection</span> — the cross-ratio, homogeneous coordinates, and Klein's Erlangen programme.
-    </p>
-  </div>
+  <div class="punchline"><p>The cross-ratio of a linear recurrence extracts its algebraic soul: the dominant root of the characteristic polynomial, disguised as a projective invariant. The limiting value is always expressible through the subordinate eigenvalues of the companion matrix — the conjugate structure that growth conceals.</p></div>
+  <table class="dtable"><thead><tr><th>Recurrence</th><th>ξ<sub>∞</sub></th><th>Conjugate reading</th><th>Inverse-square form</th></tr></thead><tbody>
+    <tr class="hl"><td>Fibonacci</td><td>−1/(2φ) = φ*/2</td><td>Half the subdominant eigenvalue of M</td><td>−1/2 + 1/(2λ²)</td></tr>
+    <tr class="hl"><td>Tribonacci</td><td>−1/τ² = −|α|⁴</td><td>4th power of subdominant eigenvalue modulus</td><td>−1/λ²</td></tr>
+    <tr><td>k → ∞</td><td>−2/7</td><td colspan="2">Universal accumulation point; scaling ratio 2</td></tr>
+  </tbody></table>
+  <div style="margin-top:1.5rem;padding:0.8rem 1.2rem;background:var(--bg-card);border:1px dashed var(--border-gold);border-radius:6px;"><p style="font-size:0.84rem;color:var(--text-dim);"><span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gold-dim);letter-spacing:0.1em;">COMPANION TO</span><br><span style="color:var(--gold);">Projective Geometry: What Survives Projection</span> — the cross-ratio, homogeneous coordinates, and Klein's Erlangen programme.</p></div>
 </section>
-
 </div>
-
-<footer class="footer">
-  <p>Constructed by <span class="gold">Silicon</span> · Anthropic Claude — Architect <span class="gold">Carbon</span> · LeeMcCullochJames</p>
-</footer>
-
+ 
+<footer class="footer"><p>Constructed by <span class="gold">Silicon</span> · Anthropic Claude — Architect <span class="gold">Carbon</span> · LeeMcCullochJames</p></footer>
+ 
 <script>
-// ════════════════════════════════════
-// MATHEMATICS
-// ════════════════════════════════════
 function cr(a,b,c,d){return((a-b)*(c-d))/((b-c)*(d-a));}
 function crLim(l){return -l/(l*l+l+1);}
 function knacci(k,len){const s=new Array(len).fill(0);s[k-1]=1;for(let i=k;i<len;i++){let v=0;for(let j=1;j<=k;j++)v+=s[i-j];s[i]=v;}return s;}
 function knacciRoot(k){let x=2-1/(1<<k);for(let it=0;it<200;it++){let f=Math.pow(x,k),df=k*Math.pow(x,k-1);for(let j=0;j<k;j++){f-=Math.pow(x,k-1-j);if(j<k-1)df-=(k-1-j)*Math.pow(x,k-2-j);}const s=f/df;x-=s;if(Math.abs(s)<1e-15)break;}return x;}
 function knacciCR(k){const s=knacci(k,35),d=[];for(let n=k+1;n<s.length;n++){const a=s[n-3],b=s[n-2],c=s[n-1],e=s[n];if(a>0&&b>0&&c>0&&e>0)d.push({n,xi:cr(a,b,c,e)});}return d;}
-const COL={2:'#6b8fad',3:'#ad6b6b',4:'#6bad7a',5:'#9b7fba'};
-const NM={2:'Fibonacci',3:'Tribonacci',4:'Tetranacci',5:'Pentanacci'};
-const RT={};for(let k=2;k<=5;k++)RT[k]=knacciRoot(k);
-const dpr=window.devicePixelRatio||1;
-function sC(c,x,w,h){c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.scale(dpr,dpr);}
-
-// ════ §I: PROJECTION DIAGRAM ════
-(function(){
-  const svg=document.getElementById('projSvg');
-  const W=520,H=380,pad=40,ns='http://www.w3.org/2000/svg';
-  const baseY=H-pad-20,scale=(W-2*pad)/10;
-  const bp=[2,3,5,8].map(x=>({x:pad+x*scale,y:baseY,val:x}));
-  const dS={x:pad,y:baseY},dE={x:pad+8*scale,y:baseY-8*scale};
-  let obs={x:pad+0.5*scale,y:baseY-7.5*scale},drag=false;
-
-  function lineInt(p1,p2,p3,p4){
-    const dx1=p2.x-p1.x,dy1=p2.y-p1.y,dx2=p4.x-p3.x,dy2=p4.y-p3.y;
-    const den=dx1*dy2-dy1*dx2;if(Math.abs(den)<1e-10)return null;
-    const t=((p3.x-p1.x)*dy2-(p3.y-p1.y)*dx2)/den;
-    return{x:p1.x+t*dx1,y:p1.y+t*dy1};
-  }
-  function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);return e;}
-  function txt(x,y,s,fill,sz,anc){const t=el('text',{x,y,fill,'font-family':'IBM Plex Mono,monospace','font-size':sz||'11','text-anchor':anc||'middle'});t.textContent=s;return t;}
-
-  function render(){
-    while(svg.childNodes.length>2)svg.removeChild(svg.lastChild);
-    svg.appendChild(el('line',{x1:pad,y1:baseY,x2:W-pad,y2:baseY,stroke:'#2a2b30','stroke-width':'1'}));
-    svg.appendChild(el('line',{x1:dS.x,y1:dS.y,x2:dE.x,y2:dE.y,stroke:'#9b7fba','stroke-width':'1.5',opacity:'0.6'}));
-    svg.appendChild(txt(dE.x+8,dE.y+4,'projection line','#9b7fba','9','start'));
-    const proj=[],lbl=['A','B','C','D'];
-    bp.forEach((b,i)=>{
-      svg.appendChild(el('circle',{cx:b.x,cy:b.y,r:'5',fill:'#6b8fad'}));
-      svg.appendChild(txt(b.x,b.y+16,lbl[i],'#6b8fad','11'));
-      const inter=lineInt(obs,b,dS,dE);
-      if(inter){
-        svg.appendChild(el('line',{x1:obs.x,y1:obs.y,x2:b.x,y2:b.y,stroke:'#ad6b6b','stroke-width':'0.8','stroke-dasharray':'4,3',opacity:'0.6'}));
-        svg.appendChild(el('circle',{cx:inter.x,cy:inter.y,r:'4',fill:'#ad6b6b'}));
-        svg.appendChild(txt(inter.x-10,inter.y-8,lbl[i]+"'",'#ad6b6b','10'));
-        proj.push(inter);
-      }
-    });
-    const o=el('circle',{cx:obs.x,cy:obs.y,r:'7',fill:'#6b8fad',stroke:'#c8a96e','stroke-width':'2',cursor:'grab'});
-    svg.appendChild(o);
-    svg.appendChild(txt(obs.x+14,obs.y-2,'observer','#6b8fad','9','start'));
-    svg.appendChild(txt(obs.x+14,obs.y+10,'(drag me)','#8a8577','8','start'));
-    document.getElementById('xiOrig').textContent=cr(bp[0].val,bp[1].val,bp[2].val,bp[3].val).toFixed(4);
-    if(proj.length===4){
-      const dc=proj.map(p=>{const dx=p.x-dS.x,dy=p.y-dS.y;return Math.sqrt(dx*dx+dy*dy);});
-      document.getElementById('xiProj').textContent=cr(dc[0],dc[1],dc[2],dc[3]).toFixed(4);
-    }
-  }
-  svg.addEventListener('pointerdown',e=>{const r=svg.getBoundingClientRect();const sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;if((sx-obs.x)**2+(sy-obs.y)**2<400){drag=true;svg.style.cursor='grabbing';e.preventDefault();}});
-  svg.addEventListener('pointermove',e=>{if(!drag)return;const r=svg.getBoundingClientRect();obs.x=Math.max(pad,Math.min(W-pad,(e.clientX-r.left)/r.width*W));obs.y=Math.max(pad,Math.min(baseY-20,(e.clientY-r.top)/r.height*H));render();e.preventDefault();});
-  svg.addEventListener('pointerup',()=>{drag=false;svg.style.cursor='default';});
-  svg.addEventListener('pointerleave',()=>{drag=false;svg.style.cursor='default';});
-  render();
-})();
-
-// ════ §II: FIB CHART ════
-(function(){
-  const c=document.getElementById('fibChart'),x=c.getContext('2d');sC(c,x,560,280);
-  const W=560,H=280,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;
-  const fibs=[1,1];for(let i=2;i<22;i++)fibs.push(fibs[i-1]+fibs[i-2]);
-  const data=[];for(let n=3;n<fibs.length;n++)data.push({n,xi:cr(fibs[n-3],fibs[n-2],fibs[n-1],fibs[n])});
-  const lim=(1-Math.sqrt(5))/4,yMin=-0.55,yMax=0.1,xMin=3,xMax=data[data.length-1].n;
-  const xS=n=>m.left+(n-xMin)/(xMax-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;
-  x.fillStyle='#0e0f11';x.fillRect(0,0,W,H);
-  x.strokeStyle='#1a1b1f';x.lineWidth=0.5;for(let y=-0.5;y<=0.1;y+=0.1){x.beginPath();x.moveTo(m.left,yS(y));x.lineTo(W-m.right,yS(y));x.stroke();}
-  x.strokeStyle='#2a2b30';x.lineWidth=1;x.beginPath();x.moveTo(m.left,m.top);x.lineTo(m.left,H-m.bottom);x.lineTo(W-m.right,H-m.bottom);x.stroke();
-  x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='right';for(let y=-0.5;y<=0.1;y+=0.1)x.fillText(y.toFixed(1),m.left-6,yS(y)+3);
-  x.textAlign='center';for(let n=4;n<=xMax;n+=2)x.fillText('n='+n,xS(n),H-m.bottom+16);
-  x.strokeStyle='#c8a96e';x.lineWidth=1;x.setLineDash([6,4]);x.beginPath();x.moveTo(m.left,yS(lim));x.lineTo(W-m.right,yS(lim));x.stroke();x.setLineDash([]);
-  x.fillStyle='#c8a96e';x.font='9px IBM Plex Mono,monospace';x.textAlign='left';x.fillText('φ*/2 ≈ '+lim.toFixed(5),W-m.right-120,yS(lim)-6);
-  x.strokeStyle='#6b8fad';x.lineWidth=1.5;x.beginPath();data.forEach((d,i)=>{const px=xS(d.n),py=yS(d.xi);if(i===0)x.moveTo(px,py);else x.lineTo(px,py);});x.stroke();
-  data.forEach(d=>{x.fillStyle='#6b8fad';x.beginPath();x.arc(xS(d.n),yS(d.xi),3.5,0,Math.PI*2);x.fill();});
-  x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='center';x.fillText('ξ(Fₙ₋₃, Fₙ₋₂, Fₙ₋₁, Fₙ) — convergence to φ*/2',W/2,16);
-})();
-
-// ════ §VI: k-NACCI CONVERGENCE ════
+const COL={2:'#6b8fad',3:'#ad6b6b',4:'#6bad7a',5:'#9b7fba'},NM={2:'Fibonacci',3:'Tribonacci',4:'Tetranacci',5:'Pentanacci'},RT={};for(let k=2;k<=5;k++)RT[k]=knacciRoot(k);
+const dpr=window.devicePixelRatio||1;function sC(c,x,w,h){c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.scale(dpr,dpr);}
+ 
+// §I projection
+(function(){const svg=document.getElementById('projSvg'),W=520,H=380,pad=40,ns='http://www.w3.org/2000/svg',baseY=H-pad-20,scale=(W-2*pad)/10;const bp=[2,3,5,8].map(x=>({x:pad+x*scale,y:baseY,val:x})),dS={x:pad,y:baseY},dE={x:pad+8*scale,y:baseY-8*scale};let obs={x:pad+0.5*scale,y:baseY-7.5*scale},drg=false;function lineInt(p1,p2,p3,p4){const dx1=p2.x-p1.x,dy1=p2.y-p1.y,dx2=p4.x-p3.x,dy2=p4.y-p3.y,den=dx1*dy2-dy1*dx2;if(Math.abs(den)<1e-10)return null;const t=((p3.x-p1.x)*dy2-(p3.y-p1.y)*dx2)/den;return{x:p1.x+t*dx1,y:p1.y+t*dy1};}function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);return e;}function txt(x,y,s,fill,sz,anc){const t=el('text',{x,y,fill,'font-family':'IBM Plex Mono,monospace','font-size':sz||'11','text-anchor':anc||'middle'});t.textContent=s;return t;}function render(){while(svg.childNodes.length>2)svg.removeChild(svg.lastChild);svg.appendChild(el('line',{x1:pad,y1:baseY,x2:W-pad,y2:baseY,stroke:'#2a2b30','stroke-width':'1'}));svg.appendChild(el('line',{x1:dS.x,y1:dS.y,x2:dE.x,y2:dE.y,stroke:'#9b7fba','stroke-width':'1.5',opacity:'0.6'}));svg.appendChild(txt(dE.x+8,dE.y+4,'projection line','#9b7fba','9','start'));const proj=[],lbl=['A','B','C','D'];bp.forEach((b,i)=>{svg.appendChild(el('circle',{cx:b.x,cy:b.y,r:'5',fill:'#6b8fad'}));svg.appendChild(txt(b.x,b.y+16,lbl[i],'#6b8fad','11'));const inter=lineInt(obs,b,dS,dE);if(inter){svg.appendChild(el('line',{x1:obs.x,y1:obs.y,x2:b.x,y2:b.y,stroke:'#ad6b6b','stroke-width':'0.8','stroke-dasharray':'4,3',opacity:'0.6'}));svg.appendChild(el('circle',{cx:inter.x,cy:inter.y,r:'4',fill:'#ad6b6b'}));svg.appendChild(txt(inter.x-10,inter.y-8,lbl[i]+"'",'#ad6b6b','10'));proj.push(inter);}});svg.appendChild(el('circle',{cx:obs.x,cy:obs.y,r:'7',fill:'#6b8fad',stroke:'#c8a96e','stroke-width':'2',cursor:'grab'}));svg.appendChild(txt(obs.x+14,obs.y-2,'observer','#6b8fad','9','start'));svg.appendChild(txt(obs.x+14,obs.y+10,'(drag me)','#8a8577','8','start'));document.getElementById('xiOrig').textContent=cr(bp[0].val,bp[1].val,bp[2].val,bp[3].val).toFixed(4);if(proj.length===4){const dc=proj.map(p=>{const dx=p.x-dS.x,dy=p.y-dS.y;return Math.sqrt(dx*dx+dy*dy);});document.getElementById('xiProj').textContent=cr(dc[0],dc[1],dc[2],dc[3]).toFixed(4);}}svg.addEventListener('pointerdown',e=>{const r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;if((sx-obs.x)**2+(sy-obs.y)**2<400){drg=true;svg.style.cursor='grabbing';e.preventDefault();}});svg.addEventListener('pointermove',e=>{if(!drg)return;const r=svg.getBoundingClientRect();obs.x=Math.max(pad,Math.min(W-pad,(e.clientX-r.left)/r.width*W));obs.y=Math.max(pad,Math.min(baseY-20,(e.clientY-r.top)/r.height*H));render();e.preventDefault();});svg.addEventListener('pointerup',()=>{drg=false;svg.style.cursor='default';});svg.addEventListener('pointerleave',()=>{drg=false;svg.style.cursor='default';});render();})();
+ 
+// §II fib chart
+(function(){const c=document.getElementById('fibChart'),x=c.getContext('2d');sC(c,x,560,280);const W=560,H=280,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;const fibs=[1,1];for(let i=2;i<22;i++)fibs.push(fibs[i-1]+fibs[i-2]);const data=[];for(let n=3;n<fibs.length;n++)data.push({n,xi:cr(fibs[n-3],fibs[n-2],fibs[n-1],fibs[n])});const lim=(1-Math.sqrt(5))/4,yMin=-0.55,yMax=0.1,xMin=3,xMax=data[data.length-1].n;const xS=n=>m.left+(n-xMin)/(xMax-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;x.fillStyle='#0e0f11';x.fillRect(0,0,W,H);x.strokeStyle='#1a1b1f';x.lineWidth=0.5;for(let y=-0.5;y<=0.1;y+=0.1){x.beginPath();x.moveTo(m.left,yS(y));x.lineTo(W-m.right,yS(y));x.stroke();}x.strokeStyle='#2a2b30';x.lineWidth=1;x.beginPath();x.moveTo(m.left,m.top);x.lineTo(m.left,H-m.bottom);x.lineTo(W-m.right,H-m.bottom);x.stroke();x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='right';for(let y=-0.5;y<=0.1;y+=0.1)x.fillText(y.toFixed(1),m.left-6,yS(y)+3);x.textAlign='center';for(let n=4;n<=xMax;n+=2)x.fillText('n='+n,xS(n),H-m.bottom+16);x.strokeStyle='#c8a96e';x.lineWidth=1;x.setLineDash([6,4]);x.beginPath();x.moveTo(m.left,yS(lim));x.lineTo(W-m.right,yS(lim));x.stroke();x.setLineDash([]);x.fillStyle='#c8a96e';x.font='9px IBM Plex Mono,monospace';x.textAlign='left';x.fillText('φ*/2 ≈ '+lim.toFixed(5),W-m.right-120,yS(lim)-6);x.strokeStyle='#6b8fad';x.lineWidth=1.5;x.beginPath();data.forEach((d,i)=>{const px=xS(d.n),py=yS(d.xi);if(i===0)x.moveTo(px,py);else x.lineTo(px,py);});x.stroke();data.forEach(d=>{x.fillStyle='#6b8fad';x.beginPath();x.arc(xS(d.n),yS(d.xi),3.5,0,Math.PI*2);x.fill();});x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='center';x.fillText('ξ(Fₙ₋₃, Fₙ₋₂, Fₙ₋₁, Fₙ) — convergence to φ*/2',W/2,16);})();
+ 
+// §IX conv
 const cc=document.getElementById('convChart'),ccx=cc.getContext('2d');sC(cc,ccx,560,310);
-function drawConv(sel){
-  const W=560,H=310,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;
-  const yMin=-0.52,yMax=0.05,xMin=3,xMax=28;
-  const xS=n=>m.left+(n-xMin)/(xMax-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;
-  ccx.clearRect(0,0,W,H);ccx.fillStyle='#0e0f11';ccx.fillRect(0,0,W,H);
-  ccx.strokeStyle='#1a1b1f';ccx.lineWidth=0.5;for(let y=-0.5;y<=0.05;y+=0.1){ccx.beginPath();ccx.moveTo(m.left,yS(y));ccx.lineTo(W-m.right,yS(y));ccx.stroke();}
-  ccx.strokeStyle='#2a2b30';ccx.lineWidth=1;ccx.beginPath();ccx.moveTo(m.left,m.top);ccx.lineTo(m.left,H-m.bottom);ccx.lineTo(W-m.right,H-m.bottom);ccx.stroke();
-  ccx.fillStyle='#8a8577';ccx.font='10px IBM Plex Mono,monospace';ccx.textAlign='right';for(let y=-0.5;y<=0.05;y+=0.1)ccx.fillText(y.toFixed(1),m.left-6,yS(y)+3);
-  ccx.textAlign='center';for(let n=4;n<=xMax;n+=3)ccx.fillText('n='+n,xS(n),H-m.bottom+16);
-  ccx.strokeStyle='#444';ccx.lineWidth=0.8;ccx.setLineDash([3,5]);ccx.beginPath();ccx.moveTo(m.left,yS(-2/7));ccx.lineTo(W-m.right,yS(-2/7));ccx.stroke();ccx.setLineDash([]);
-  ccx.fillStyle='#555';ccx.font='8px IBM Plex Mono,monospace';ccx.textAlign='right';ccx.fillText('−2/7',W-m.right-2,yS(-2/7)-5);
-  const ks=sel==='all'?[2,3,4,5]:[sel];
-  ks.forEach(k=>{const data=knacciCR(k),lm=crLim(RT[k]),c=COL[k];
-    ccx.strokeStyle=c;ccx.lineWidth=1;ccx.globalAlpha=0.4;ccx.setLineDash([6,4]);ccx.beginPath();ccx.moveTo(m.left,yS(lm));ccx.lineTo(W-m.right,yS(lm));ccx.stroke();ccx.setLineDash([]);ccx.globalAlpha=1;
-    ccx.fillStyle=c;ccx.font='8px IBM Plex Mono,monospace';ccx.textAlign='left';ccx.fillText(NM[k]+' → '+lm.toFixed(5),m.left+4,yS(lm)-6);
-    ccx.strokeStyle=c;ccx.lineWidth=1.5;ccx.beginPath();data.forEach((d,i)=>{const px=xS(d.n),py=yS(d.xi);if(py>m.top-5&&py<H-m.bottom+5){if(i===0)ccx.moveTo(px,py);else ccx.lineTo(px,py);}});ccx.stroke();
-    data.forEach(d=>{const px=xS(d.n),py=yS(d.xi);if(py>m.top-5&&py<H-m.bottom+5){ccx.fillStyle=c;ccx.beginPath();ccx.arc(px,py,3,0,Math.PI*2);ccx.fill();}});
-  });
-  ccx.fillStyle='#8a8577';ccx.font='10px IBM Plex Mono,monospace';ccx.textAlign='center';
-  ccx.fillText(sel==='all'?'ξ convergence — all k-nacci overlaid':'ξ convergence — '+NM[sel],W/2,16);
-  if(sel!=='all'){document.getElementById('rdL').textContent=RT[sel].toFixed(5);document.getElementById('rdX').textContent=crLim(RT[sel]).toFixed(5);}
-  else{document.getElementById('rdL').textContent='—';document.getElementById('rdX').textContent='—';}
-}
-document.querySelectorAll('.k-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.k-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');drawConv(b.dataset.k==='all'?'all':+b.dataset.k);}));
-drawConv(2);
-
-// ════ §VII: LANDSCAPE ════
-const lc=document.getElementById('landChart'),lcx=lc.getContext('2d');sC(lc,lcx,560,320);
-let drLam=(1+Math.sqrt(5))/2,drg=false;
-function drawLand(){
-  const W=560,H=320,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;
-  const lMin=1.05,lMax=2.15,xMin=-0.55,xMax=0.05;
-  const xS=l=>m.left+(l-lMin)/(lMax-lMin)*pW,yS=v=>m.top+(1-(v-xMin)/(xMax-xMin))*pH,xInv=px=>lMin+(px-m.left)/pW*(lMax-lMin);
-  lcx.clearRect(0,0,W,H);lcx.fillStyle='#0e0f11';lcx.fillRect(0,0,W,H);
-  lcx.strokeStyle='#1a1b1f';lcx.lineWidth=0.5;
-  for(let y=-0.5;y<=0.05;y+=0.1){lcx.beginPath();lcx.moveTo(m.left,yS(y));lcx.lineTo(W-m.right,yS(y));lcx.stroke();}
-  for(let x=1.2;x<=2.1;x+=0.2){lcx.beginPath();lcx.moveTo(xS(x),m.top);lcx.lineTo(xS(x),H-m.bottom);lcx.stroke();}
-  lcx.strokeStyle='#2a2b30';lcx.lineWidth=1;lcx.beginPath();lcx.moveTo(m.left,m.top);lcx.lineTo(m.left,H-m.bottom);lcx.lineTo(W-m.right,H-m.bottom);lcx.stroke();
-  lcx.fillStyle='#8a8577';lcx.font='10px IBM Plex Mono,monospace';lcx.textAlign='right';
-  for(let y=-0.5;y<=0.05;y+=0.1)lcx.fillText(y.toFixed(1),m.left-6,yS(y)+3);
-  lcx.textAlign='center';for(let x=1.2;x<=2.1;x+=0.2)lcx.fillText('λ='+x.toFixed(1),xS(x),H-m.bottom+16);
-  lcx.strokeStyle='#c8a96e';lcx.lineWidth=2;lcx.beginPath();let f=true;
-  for(let l=lMin;l<=lMax;l+=0.005){const xi=crLim(l);if(xi>xMin&&xi<xMax){const px=xS(l),py=yS(xi);if(f){lcx.moveTo(px,py);f=false;}else lcx.lineTo(px,py);}}lcx.stroke();
-  lcx.strokeStyle='#444';lcx.lineWidth=0.8;lcx.setLineDash([3,5]);lcx.beginPath();lcx.moveTo(m.left,yS(-2/7));lcx.lineTo(W-m.right,yS(-2/7));lcx.stroke();lcx.setLineDash([]);
-  lcx.fillStyle='#555';lcx.font='8px IBM Plex Mono,monospace';lcx.textAlign='right';lcx.fillText('−2/7',W-m.right-2,yS(-2/7)-5);
-  for(let k=2;k<=5;k++){const lam=RT[k],xi=crLim(lam),px=xS(lam),py=yS(xi);lcx.fillStyle=COL[k];lcx.beginPath();lcx.arc(px,py,5,0,Math.PI*2);lcx.fill();lcx.font='9px IBM Plex Mono,monospace';lcx.textAlign='left';lcx.fillText(NM[k],px+8,py+3);}
-  const cl=Math.max(lMin+0.01,Math.min(lMax-0.01,drLam)),xi=crLim(cl),dx=xS(cl),dy=yS(xi);
-  lcx.strokeStyle='#6b8fad';lcx.lineWidth=0.8;lcx.globalAlpha=0.5;lcx.setLineDash([3,3]);
-  lcx.beginPath();lcx.moveTo(dx,m.top);lcx.lineTo(dx,H-m.bottom);lcx.stroke();
-  lcx.beginPath();lcx.moveTo(m.left,dy);lcx.lineTo(W-m.right,dy);lcx.stroke();lcx.setLineDash([]);lcx.globalAlpha=1;
-  lcx.fillStyle='#6b8fad';lcx.beginPath();lcx.arc(dx,dy,6,0,Math.PI*2);lcx.fill();lcx.strokeStyle='#c8a96e';lcx.lineWidth=2;lcx.stroke();
-  lcx.fillStyle='#8a8577';lcx.font='10px IBM Plex Mono,monospace';lcx.textAlign='center';lcx.fillText('ξ = −λ/(λ²+λ+1)',W/2,16);
-  lcx.fillStyle='#555';lcx.font='8px IBM Plex Mono,monospace';lcx.fillText('drag the blue point',W/2,H-5);
-  document.getElementById('drL').textContent=cl.toFixed(5);document.getElementById('drX').textContent=xi.toFixed(5);
-  lc._m={xS,xInv,m,lMin,lMax,W,H};
-}
-lc.addEventListener('pointerdown',e=>{const M=lc._m;if(!M)return;const r=lc.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*560,l=M.xInv(px);if(l>=M.lMin&&l<=M.lMax){drg=true;drLam=l;drawLand();lc.setPointerCapture(e.pointerId);e.preventDefault();}});
-lc.addEventListener('pointermove',e=>{if(!drg)return;const M=lc._m;if(!M)return;const r=lc.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*560;drLam=Math.max(M.lMin+0.01,Math.min(M.lMax-0.01,M.xInv(px)));drawLand();e.preventDefault();});
-lc.addEventListener('pointerup',()=>{drg=false;});lc.addEventListener('pointerleave',()=>{drg=false;});
-drawLand();
-
-// ════ §VIII: SCALING ════
-(function(){
-  const c=document.getElementById('scaleChart'),x=c.getContext('2d');sC(c,x,560,280);
-  const W=560,H=280,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;
-  const xis=[];for(let k=2;k<=12;k++){const l=knacciRoot(k);xis.push({k,xi:crLim(l)});}
-  const diffs=[];for(let i=0;i<xis.length-1;i++)diffs.push(xis[i].xi-xis[i+1].xi);
-  const ratios=[];for(let i=0;i<diffs.length-1;i++)if(Math.abs(diffs[i+1])>1e-15)ratios.push({k:xis[i].k,r:diffs[i]/diffs[i+1]});
-  const xMin=1.5,xMax2=11.5,yMin=1.5,yMax=3.0;
-  const xS=n=>m.left+(n-xMin)/(xMax2-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;
-  x.fillStyle='#0e0f11';x.fillRect(0,0,W,H);
-  x.strokeStyle='#1a1b1f';x.lineWidth=0.5;for(let y=1.5;y<=3;y+=0.25){x.beginPath();x.moveTo(m.left,yS(y));x.lineTo(W-m.right,yS(y));x.stroke();}
-  x.strokeStyle='#2a2b30';x.lineWidth=1;x.beginPath();x.moveTo(m.left,m.top);x.lineTo(m.left,H-m.bottom);x.lineTo(W-m.right,H-m.bottom);x.stroke();
-  x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='right';for(let y=1.5;y<=3;y+=0.5)x.fillText(y.toFixed(1),m.left-6,yS(y)+3);
-  x.textAlign='center';for(let n=2;n<=11;n++)x.fillText('k='+n,xS(n),H-m.bottom+16);
-  x.strokeStyle='#c8a96e';x.lineWidth=1;x.setLineDash([6,4]);x.beginPath();x.moveTo(m.left,yS(2));x.lineTo(W-m.right,yS(2));x.stroke();x.setLineDash([]);
-  x.fillStyle='#c8a96e';x.font='9px IBM Plex Mono,monospace';x.textAlign='left';x.fillText('δₖ/δₖ₊₁ → 2',W-m.right-100,yS(2)-7);
-  x.strokeStyle='#6b8fad';x.lineWidth=1.5;x.beginPath();ratios.forEach((r,i)=>{const px=xS(r.k),py=yS(r.r);if(i===0)x.moveTo(px,py);else x.lineTo(px,py);});x.stroke();
-  ratios.forEach(r=>{x.fillStyle='#6b8fad';x.beginPath();x.arc(xS(r.k),yS(r.r),4,0,Math.PI*2);x.fill();});
-  x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='center';x.fillText('Scaling ratio of successive cross-ratio differences',W/2,16);
-})();
-
-// ════ SCROLL + TOGGLES ════
-const stages=document.querySelectorAll('.stage');
-const ob=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
-stages.forEach(s=>ob.observe(s));
+function drawConv(sel){const W=560,H=310,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom,yMin=-0.52,yMax=0.05,xMin=3,xMax=28;const xS=n=>m.left+(n-xMin)/(xMax-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;ccx.clearRect(0,0,W,H);ccx.fillStyle='#0e0f11';ccx.fillRect(0,0,W,H);ccx.strokeStyle='#1a1b1f';ccx.lineWidth=0.5;for(let y=-0.5;y<=0.05;y+=0.1){ccx.beginPath();ccx.moveTo(m.left,yS(y));ccx.lineTo(W-m.right,yS(y));ccx.stroke();}ccx.strokeStyle='#2a2b30';ccx.lineWidth=1;ccx.beginPath();ccx.moveTo(m.left,m.top);ccx.lineTo(m.left,H-m.bottom);ccx.lineTo(W-m.right,H-m.bottom);ccx.stroke();ccx.fillStyle='#8a8577';ccx.font='10px IBM Plex Mono,monospace';ccx.textAlign='right';for(let y=-0.5;y<=0.05;y+=0.1)ccx.fillText(y.toFixed(1),m.left-6,yS(y)+3);ccx.textAlign='center';for(let n=4;n<=xMax;n+=3)ccx.fillText('n='+n,xS(n),H-m.bottom+16);ccx.strokeStyle='#444';ccx.lineWidth=0.8;ccx.setLineDash([3,5]);ccx.beginPath();ccx.moveTo(m.left,yS(-2/7));ccx.lineTo(W-m.right,yS(-2/7));ccx.stroke();ccx.setLineDash([]);ccx.fillStyle='#555';ccx.font='8px IBM Plex Mono,monospace';ccx.textAlign='right';ccx.fillText('−2/7',W-m.right-2,yS(-2/7)-5);const ks=sel==='all'?[2,3,4,5]:[sel];ks.forEach(k=>{const data=knacciCR(k),lm=crLim(RT[k]),c=COL[k];ccx.strokeStyle=c;ccx.lineWidth=1;ccx.globalAlpha=0.4;ccx.setLineDash([6,4]);ccx.beginPath();ccx.moveTo(m.left,yS(lm));ccx.lineTo(W-m.right,yS(lm));ccx.stroke();ccx.setLineDash([]);ccx.globalAlpha=1;ccx.fillStyle=c;ccx.font='8px IBM Plex Mono,monospace';ccx.textAlign='left';ccx.fillText(NM[k]+' → '+lm.toFixed(5),m.left+4,yS(lm)-6);ccx.strokeStyle=c;ccx.lineWidth=1.5;ccx.beginPath();data.forEach((d,i)=>{const px=xS(d.n),py=yS(d.xi);if(py>m.top-5&&py<H-m.bottom+5){if(i===0)ccx.moveTo(px,py);else ccx.lineTo(px,py);}});ccx.stroke();data.forEach(d=>{const px=xS(d.n),py=yS(d.xi);if(py>m.top-5&&py<H-m.bottom+5){ccx.fillStyle=c;ccx.beginPath();ccx.arc(px,py,3,0,Math.PI*2);ccx.fill();}});});ccx.fillStyle='#8a8577';ccx.font='10px IBM Plex Mono,monospace';ccx.textAlign='center';ccx.fillText(sel==='all'?'ξ convergence — all k-nacci overlaid':'ξ convergence — '+NM[sel],W/2,16);if(sel!=='all'){document.getElementById('rdL').textContent=RT[sel].toFixed(5);document.getElementById('rdX').textContent=crLim(RT[sel]).toFixed(5);}else{document.getElementById('rdL').textContent='—';document.getElementById('rdX').textContent='—';}}
+document.querySelectorAll('.k-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.k-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');drawConv(b.dataset.k==='all'?'all':+b.dataset.k);}));drawConv(2);
+ 
+// §X landscape
+const lc=document.getElementById('landChart'),lcx=lc.getContext('2d');sC(lc,lcx,560,320);let drLam=(1+Math.sqrt(5))/2,drg2=false;
+function drawLand(){const W=560,H=320,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom,lMin=1.05,lMax=2.15,xMin=-0.55,xMax=0.05;const xS=l=>m.left+(l-lMin)/(lMax-lMin)*pW,yS=v=>m.top+(1-(v-xMin)/(xMax-xMin))*pH,xInv=px=>lMin+(px-m.left)/pW*(lMax-lMin);lcx.clearRect(0,0,W,H);lcx.fillStyle='#0e0f11';lcx.fillRect(0,0,W,H);lcx.strokeStyle='#1a1b1f';lcx.lineWidth=0.5;for(let y=-0.5;y<=0.05;y+=0.1){lcx.beginPath();lcx.moveTo(m.left,yS(y));lcx.lineTo(W-m.right,yS(y));lcx.stroke();}for(let x=1.2;x<=2.1;x+=0.2){lcx.beginPath();lcx.moveTo(xS(x),m.top);lcx.lineTo(xS(x),H-m.bottom);lcx.stroke();}lcx.strokeStyle='#2a2b30';lcx.lineWidth=1;lcx.beginPath();lcx.moveTo(m.left,m.top);lcx.lineTo(m.left,H-m.bottom);lcx.lineTo(W-m.right,H-m.bottom);lcx.stroke();lcx.fillStyle='#8a8577';lcx.font='10px IBM Plex Mono,monospace';lcx.textAlign='right';for(let y=-0.5;y<=0.05;y+=0.1)lcx.fillText(y.toFixed(1),m.left-6,yS(y)+3);lcx.textAlign='center';for(let x=1.2;x<=2.1;x+=0.2)lcx.fillText('λ='+x.toFixed(1),xS(x),H-m.bottom+16);lcx.strokeStyle='#c8a96e';lcx.lineWidth=2;lcx.beginPath();let f=true;for(let l=lMin;l<=lMax;l+=0.005){const xi=crLim(l);if(xi>xMin&&xi<xMax){const px=xS(l),py=yS(xi);if(f){lcx.moveTo(px,py);f=false;}else lcx.lineTo(px,py);}}lcx.stroke();lcx.strokeStyle='#444';lcx.lineWidth=0.8;lcx.setLineDash([3,5]);lcx.beginPath();lcx.moveTo(m.left,yS(-2/7));lcx.lineTo(W-m.right,yS(-2/7));lcx.stroke();lcx.setLineDash([]);lcx.fillStyle='#555';lcx.font='8px IBM Plex Mono,monospace';lcx.textAlign='right';lcx.fillText('−2/7',W-m.right-2,yS(-2/7)-5);for(let k=2;k<=5;k++){const lam=RT[k],xi=crLim(lam),px=xS(lam),py=yS(xi);lcx.fillStyle=COL[k];lcx.beginPath();lcx.arc(px,py,5,0,Math.PI*2);lcx.fill();lcx.font='9px IBM Plex Mono,monospace';lcx.textAlign='left';lcx.fillText(NM[k],px+8,py+3);}const cl=Math.max(lMin+0.01,Math.min(lMax-0.01,drLam)),xi=crLim(cl),dx=xS(cl),dy=yS(xi);lcx.strokeStyle='#6b8fad';lcx.lineWidth=0.8;lcx.globalAlpha=0.5;lcx.setLineDash([3,3]);lcx.beginPath();lcx.moveTo(dx,m.top);lcx.lineTo(dx,H-m.bottom);lcx.stroke();lcx.beginPath();lcx.moveTo(m.left,dy);lcx.lineTo(W-m.right,dy);lcx.stroke();lcx.setLineDash([]);lcx.globalAlpha=1;lcx.fillStyle='#6b8fad';lcx.beginPath();lcx.arc(dx,dy,6,0,Math.PI*2);lcx.fill();lcx.strokeStyle='#c8a96e';lcx.lineWidth=2;lcx.stroke();lcx.fillStyle='#8a8577';lcx.font='10px IBM Plex Mono,monospace';lcx.textAlign='center';lcx.fillText('ξ = −λ/(λ²+λ+1)',W/2,16);lcx.fillStyle='#555';lcx.font='8px IBM Plex Mono,monospace';lcx.fillText('drag the blue point',W/2,H-5);document.getElementById('drL').textContent=cl.toFixed(5);document.getElementById('drX').textContent=xi.toFixed(5);lc._m={xS,xInv,m,lMin,lMax,W,H};}
+lc.addEventListener('pointerdown',e=>{const M=lc._m;if(!M)return;const r=lc.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*560,l=M.xInv(px);if(l>=M.lMin&&l<=M.lMax){drg2=true;drLam=l;drawLand();lc.setPointerCapture(e.pointerId);e.preventDefault();}});lc.addEventListener('pointermove',e=>{if(!drg2)return;const M=lc._m;if(!M)return;const r=lc.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*560;drLam=Math.max(M.lMin+0.01,Math.min(M.lMax-0.01,M.xInv(px)));drawLand();e.preventDefault();});lc.addEventListener('pointerup',()=>{drg2=false;});lc.addEventListener('pointerleave',()=>{drg2=false;});drawLand();
+ 
+// §XI scaling
+(function(){const c=document.getElementById('scaleChart'),x=c.getContext('2d');sC(c,x,560,280);const W=560,H=280,m={top:30,right:25,bottom:40,left:60},pW=W-m.left-m.right,pH=H-m.top-m.bottom;const xis=[];for(let k=2;k<=12;k++){const l=knacciRoot(k);xis.push({k,xi:crLim(l)});}const diffs=[];for(let i=0;i<xis.length-1;i++)diffs.push(xis[i].xi-xis[i+1].xi);const ratios=[];for(let i=0;i<diffs.length-1;i++)if(Math.abs(diffs[i+1])>1e-15)ratios.push({k:xis[i].k,r:diffs[i]/diffs[i+1]});const xMin=1.5,xMax2=11.5,yMin=1.5,yMax=3.0;const xS=n=>m.left+(n-xMin)/(xMax2-xMin)*pW,yS=v=>m.top+(1-(v-yMin)/(yMax-yMin))*pH;x.fillStyle='#0e0f11';x.fillRect(0,0,W,H);x.strokeStyle='#1a1b1f';x.lineWidth=0.5;for(let y=1.5;y<=3;y+=0.25){x.beginPath();x.moveTo(m.left,yS(y));x.lineTo(W-m.right,yS(y));x.stroke();}x.strokeStyle='#2a2b30';x.lineWidth=1;x.beginPath();x.moveTo(m.left,m.top);x.lineTo(m.left,H-m.bottom);x.lineTo(W-m.right,H-m.bottom);x.stroke();x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='right';for(let y=1.5;y<=3;y+=0.5)x.fillText(y.toFixed(1),m.left-6,yS(y)+3);x.textAlign='center';for(let n=2;n<=11;n++)x.fillText('k='+n,xS(n),H-m.bottom+16);x.strokeStyle='#c8a96e';x.lineWidth=1;x.setLineDash([6,4]);x.beginPath();x.moveTo(m.left,yS(2));x.lineTo(W-m.right,yS(2));x.stroke();x.setLineDash([]);x.fillStyle='#c8a96e';x.font='9px IBM Plex Mono,monospace';x.textAlign='left';x.fillText('δₖ/δₖ₊₁ → 2',W-m.right-100,yS(2)-7);x.strokeStyle='#6b8fad';x.lineWidth=1.5;x.beginPath();ratios.forEach((r,i)=>{const px=xS(r.k),py=yS(r.r);if(i===0)x.moveTo(px,py);else x.lineTo(px,py);});x.stroke();ratios.forEach(r=>{x.fillStyle='#6b8fad';x.beginPath();x.arc(xS(r.k),yS(r.r),4,0,Math.PI*2);x.fill();});x.fillStyle='#8a8577';x.font='10px IBM Plex Mono,monospace';x.textAlign='center';x.fillText('Scaling ratio of successive cross-ratio differences',W/2,16);})();
+ 
+// scroll + toggles
+const stages=document.querySelectorAll('.stage');const ob=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.12,rootMargin:'0px 0px -40px 0px'});stages.forEach(s=>ob.observe(s));
 function toggleReveal(id){const el=document.getElementById(id),btn=el.previousElementSibling;if(el.classList.contains('open')){el.style.maxHeight='0';el.classList.remove('open');btn.classList.remove('open');}else{el.classList.add('open');el.style.maxHeight=el.scrollHeight+'px';btn.classList.add('open');}}
 </script>
 </body>
 </html>
+ 
