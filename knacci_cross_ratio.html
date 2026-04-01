@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The k-nacci Cross-Ratio: What Survives the Recurrence</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg-card: #151619;
+  --bg-reveal: #111215;
+  --gold: #c8a96e;
+  --gold-dim: #a08550;
+  --gold-glow: rgba(200,169,110,0.12);
+  --text: #d4d0c8;
+  --text-dim: #8a8577;
+  --text-bright: #eae6dd;
+  --accent-blue: #6b8fad;
+  --accent-red: #ad6b6b;
+  --accent-green: #6bad7a;
+  --accent-violet: #9b7fba;
+  --accent-cyan: #6badb0;
+  --accent-orange: #c49a4e;
+  --accent-rose: #b87a8a;
+  --border: #2a2b30;
+  --border-gold: rgba(200,169,110,0.25);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+.header {
+  padding: 4.5rem 2rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content:'';
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 30%,var(--gold-glow),transparent);
+  pointer-events:none;
+}
+.header h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700;
+  font-size:clamp(1.6rem,4vw,2.8rem);
+  color:var(--text-bright);
+  letter-spacing:0.02em;
+  line-height:1.25;
+  margin-bottom:0.5rem;
+  position:relative;
+}
+.header .subtitle {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.82rem;
+  color:var(--gold);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:1.2rem;
+}
+.header .epigraph {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:1.05rem;
+  color:var(--text-dim);
+  max-width:44rem;
+  margin:0 auto;
+  line-height:1.6;
+}
+
+.container { max-width:54rem; margin:0 auto; padding:0 1.5rem 4rem; }
+
+.stage {
+  margin:2.5rem 0;
+  opacity:0; transform:translateY(24px);
+  transition:opacity 0.7s ease, transform 0.7s ease;
+}
+.stage.visible { opacity:1; transform:translateY(0); }
+.stage-number {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; color:var(--gold-dim);
+  letter-spacing:0.2em; text-transform:uppercase;
+  margin-bottom:0.4rem;
+}
+.stage h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-weight:600; font-size:1.55rem;
+  color:var(--text-bright);
+  margin-bottom:0.9rem; line-height:1.3;
+}
+.stage p { margin-bottom:0.9rem; font-size:0.93rem; }
+
+.insight {
+  background:var(--bg-card);
+  border-left:3px solid var(--gold);
+  padding:1.1rem 1.4rem;
+  margin:1.3rem 0;
+  border-radius:0 6px 6px 0;
+}
+.insight p { margin-bottom:0.45rem; font-size:0.9rem; }
+.insight p:last-child { margin-bottom:0; }
+.insight .label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.68rem; color:var(--gold);
+  text-transform:uppercase; letter-spacing:0.15em;
+  margin-bottom:0.45rem;
+}
+
+.equation-block {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1.6rem 1.8rem;
+  margin:1.4rem 0;
+  text-align:center;
+  position:relative; overflow:hidden;
+}
+.equation-block::after {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);
+}
+.equation {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.4rem; color:var(--text-bright);
+  letter-spacing:0.04em; line-height:1.5;
+}
+.equation .var { font-style:italic; }
+.equation-caption {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; color:var(--text-dim);
+  margin-top:0.7rem; letter-spacing:0.05em;
+}
+
+.reveal-btn {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:transparent;
+  border:1px solid var(--border-gold);
+  color:var(--gold);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.73rem; letter-spacing:0.1em; text-transform:uppercase;
+  padding:0.45rem 1.1rem; border-radius:4px; cursor:pointer;
+  transition:all 0.3s ease; margin-top:0.4rem;
+}
+.reveal-btn:hover { background:var(--gold-glow); border-color:var(--gold); }
+.reveal-btn .arrow { transition:transform 0.3s ease; font-size:0.6rem; }
+.reveal-btn.open .arrow { transform:rotate(90deg); }
+.reveal-content { max-height:0; overflow:hidden; transition:max-height 0.5s ease, opacity 0.4s ease; opacity:0; }
+.reveal-content.open { opacity:1; }
+
+.divider { height:1px; background:linear-gradient(90deg,transparent,var(--border-gold),transparent); margin:2.5rem 0; }
+
+.punchline {
+  background:linear-gradient(135deg,rgba(200,169,110,0.08),rgba(200,169,110,0.03));
+  border:1px solid var(--border-gold);
+  border-radius:10px; padding:1.8rem; margin:2rem 0; text-align:center;
+}
+.punchline p {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem; color:var(--text-bright); line-height:1.6; font-style:italic;
+}
+
+.chart-container { margin:1.4rem 0; display:flex; justify-content:center; }
+canvas { max-width:100%; }
+
+.data-table {
+  width:100%; border-collapse:collapse; margin:1.3rem 0; font-size:0.84rem;
+}
+.data-table th, .data-table td {
+  padding:0.5rem 0.75rem; border-bottom:1px solid var(--border); text-align:left;
+}
+.data-table th {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.68rem; color:var(--gold-dim);
+  text-transform:uppercase; letter-spacing:0.1em;
+  background:var(--bg-card);
+}
+.data-table td { font-family:'IBM Plex Mono',monospace; font-size:0.8rem; }
+.data-table tr:last-child td { border-bottom:none; }
+.highlight-row td { color:var(--gold); }
+
+code {
+  font-family:'IBM Plex Mono',monospace; font-size:0.85em;
+  color:var(--gold); background:rgba(200,169,110,0.08);
+  padding:0.1em 0.35em; border-radius:3px;
+}
+em { color:var(--text-bright); font-style:italic; }
+strong { color:var(--text-bright); font-weight:600; }
+
+/* ── k-selector ── */
+.k-selector {
+  display:flex; justify-content:center; gap:0.5rem; margin:1.2rem 0; flex-wrap:wrap;
+}
+.k-btn {
+  padding:0.4rem 1rem;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.75rem; letter-spacing:0.06em;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  border-radius:4px; cursor:pointer;
+  transition:all 0.25s;
+}
+.k-btn:hover { border-color:var(--gold-dim); color:var(--text); }
+.k-btn.active { border-color:var(--gold); color:var(--gold); background:var(--gold-glow); }
+
+.limit-readout {
+  display:flex; justify-content:center; gap:2rem; flex-wrap:wrap;
+  margin:0.8rem 0;
+  font-family:'IBM Plex Mono',monospace; font-size:0.8rem;
+}
+.limit-readout .val { color:var(--text-bright); }
+
+.footer {
+  text-align:center; padding:2.5rem 1.5rem 1.5rem;
+  border-top:1px solid var(--border);
+}
+.footer p {
+  font-family:'IBM Plex Mono',monospace; font-size:0.62rem;
+  color:var(--text-dim); letter-spacing:0.08em; line-height:1.8;
+}
+.footer .gold { color:var(--gold-dim); }
+
+@media (max-width:600px) {
+  .container { padding:0 1rem 3rem; }
+  .header { padding:3rem 1rem 2rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="subtitle">Projective Geometry · Companion</div>
+  <h1>The <em>k</em>-nacci Cross-Ratio</h1>
+  <p class="epigraph">
+    The cross-ratio of four consecutive terms of a linear recurrence converges to a limit determined entirely by the dominant root. The recurrence controls the algebra; the cross-ratio extracts it.
+  </p>
+</header>
+
+<div class="container">
+
+<!-- ═══ §1 ═══ -->
+<section class="stage" id="s1">
+  <div class="stage-number">I</div>
+  <h2>Recap: The Fibonacci Limit</h2>
+  <p>
+    In the projective geometry learner, we saw that the cross-ratio of four consecutive Fibonacci numbers F<sub>n−3</sub>, F<sub>n−2</sub>, F<sub>n−1</sub>, F<sub>n</sub> converges as n → ∞ to a value involving the conjugate golden ratio:
+  </p>
+
+  <div class="equation-block">
+    <div class="equation">
+      <span class="var">ξ</span><sub>Fib</sub> = 
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:3px;">
+          1 − φ
+        </span>
+        <span style="display:block; padding-top:3px;">2</span>
+      </span>
+      &nbsp;=&nbsp;
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:3px;">
+          φ*
+        </span>
+        <span style="display:block; padding-top:3px;">2</span>
+      </span>
+      &nbsp;≈ −0.30902
+    </div>
+    <div class="equation-caption">where φ = (1+√5)/2 and φ* = (1−√5)/2 is the conjugate golden ratio</div>
+  </div>
+
+  <p>
+    But why <em>this</em> value? The answer lies in a general formula that applies to <em>any</em> linear recurrence — and seeing how it specialises to Fibonacci, Tribonacci, Tetranacci, and beyond reveals the algebraic structure at work.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ §2 ═══ -->
+<section class="stage" id="s2">
+  <div class="stage-number">II</div>
+  <h2>The General Formula</h2>
+  <p>
+    Consider any linear recurrence whose dominant characteristic root is λ. Asymptotically, the n-th term behaves as T<sub>n</sub> ≈ Cλ<sup>n</sup> for some constant C. The cross-ratio of four consecutive terms T<sub>n−3</sub>, T<sub>n−2</sub>, T<sub>n−1</sub>, T<sub>n</sub> then simplifies by substituting a = Cλ<sup>n−3</sup>, b = Cλ<sup>n−2</sup>, c = Cλ<sup>n−1</sup>, d = Cλ<sup>n</sup>:
+  </p>
+
+  <div class="insight">
+    <div class="label">The cancellation</div>
+    <p>The constant C cancels immediately (appearing equally in every factor). The powers of λ factor as:</p>
+    <p style="font-family:'Cormorant Garamond',serif; font-size:1.05rem; color:var(--text-bright); text-align:center; margin:0.6rem 0;">
+      (1 − λ)(λ² − λ³) / [(λ − λ²)(λ³ − 1)] = λ²(1−λ)² / [λ(1−λ)(λ³−1)]
+    </p>
+    <p>One factor of (1−λ) cancels, one power of λ cancels, leaving:</p>
+  </div>
+
+  <div class="equation-block">
+    <div class="equation">
+      <span class="var">ξ</span><sub>∞</sub> = 
+      <span style="display:inline-block; text-align:center; vertical-align:middle;">
+        <span style="display:block; border-bottom:1px solid var(--text-dim); padding-bottom:3px;">
+          λ(1 − λ)
+        </span>
+        <span style="display:block; padding-top:3px;">λ³ − 1</span>
+      </span>
+    </div>
+    <div class="equation-caption">General cross-ratio limit for any recurrence with dominant root λ</div>
+  </div>
+
+  <p>
+    This is the master formula. Everything else follows by substituting the characteristic equation of the specific recurrence, which lets us simplify the denominator λ³ − 1 in terms of lower powers of λ.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ §3 ═══ -->
+<section class="stage" id="s3">
+  <div class="stage-number">III</div>
+  <h2>Specialisation by Recurrence</h2>
+
+  <p>
+    Each k-nacci recurrence — T<sub>n</sub> = T<sub>n−1</sub> + T<sub>n−2</sub> + ⋯ + T<sub>n−k</sub> — has a characteristic polynomial whose largest real root λ<sub>k</sub> determines the asymptotic growth. Plugging each λ<sub>k</sub> into the master formula and using the characteristic equation to simplify:
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Recurrence</th><th>Char. equation</th><th>Dominant root λ</th><th>Simplified ξ<sub>∞</sub></th><th>Decimal</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td>Fibonacci (k=2)</td>
+        <td>λ² = λ + 1</td>
+        <td>φ = (1+√5)/2</td>
+        <td>(1 − φ)/2</td>
+        <td>−0.30902</td>
+      </tr>
+      <tr>
+        <td>Tribonacci (k=3)</td>
+        <td>λ³ = λ² + λ + 1</td>
+        <td>τ ≈ 1.83929</td>
+        <td>(1 − τ)/(τ + 1)</td>
+        <td>−0.29560</td>
+      </tr>
+      <tr>
+        <td>Tetranacci (k=4)</td>
+        <td>λ⁴ = λ³ + λ² + λ + 1</td>
+        <td>μ ≈ 1.92756</td>
+        <td>μ(1−μ)/(μ³−1)</td>
+        <td>−0.29016</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">k → ∞</td>
+        <td style="color:var(--text-dim);">λ → 2</td>
+        <td style="color:var(--text-dim);">2</td>
+        <td style="color:var(--text-dim);">−2/7</td>
+        <td style="color:var(--text-dim);">−0.28571</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="reveal-btn" onclick="toggleReveal('r1')">
+    <span class="arrow">▶</span> Fibonacci simplification
+  </button>
+  <div class="reveal-content" id="r1">
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">λ² = λ + 1 → φ³ = 2φ + 1</div>
+      <p>From φ² = φ + 1, multiply by φ: φ³ = φ² + φ = (φ+1) + φ = 2φ + 1.</p>
+      <p>So λ³ − 1 = 2φ + 1 − 1 = 2φ, and:</p>
+      <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text-bright);">
+        ξ = φ(1−φ)/(2φ) = (1−φ)/2 = φ*/2 ✓
+      </p>
+      <p>The φ in numerator and denominator cancels — leaving a rational function of φ alone.</p>
+    </div>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r2')" style="margin-left:0.5rem;">
+    <span class="arrow">▶</span> Tribonacci simplification
+  </button>
+  <div class="reveal-content" id="r2">
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">λ³ = λ² + λ + 1 → λ³ − 1 = λ² + λ = λ(λ+1)</div>
+      <p>The characteristic equation directly gives λ³ − 1 = λ² + λ = λ(λ+1), so:</p>
+      <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text-bright);">
+        ξ = λ(1−λ)/[λ(λ+1)] = (1−τ)/(τ+1)
+      </p>
+      <p>Again the λ cancels. The limit depends only on the Tribonacci constant τ — the unique real root of x³ − x² − x − 1 = 0 — and the formula is algebraically clean.</p>
+    </div>
+  </div>
+
+  <button class="reveal-btn" onclick="toggleReveal('r3')" style="margin-left:0.5rem;">
+    <span class="arrow">▶</span> Why k → ∞ gives −2/7
+  </button>
+  <div class="reveal-content" id="r3">
+    <div class="insight" style="margin-top:0.8rem;">
+      <div class="label">The k-nacci dominant root approaches 2</div>
+      <p>As k → ∞, the characteristic polynomial x<sup>k</sup> = x<sup>k−1</sup> + x<sup>k−2</sup> + ⋯ + 1 has a dominant root that approaches 2 (the sum of a geometric series 1 + 1/2 + 1/4 + ⋯ = 2 acts as the "attractor"). Substituting λ = 2:</p>
+      <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text-bright);">
+        ξ = 2(1−2)/(8−1) = −2/7
+      </p>
+      <p>The cross-ratio limits converge monotonically from φ*/2 ≈ −0.309 toward −2/7 ≈ −0.286 as the recurrence depth increases. The cross-ratio "feels" how many terms participate in the recurrence.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ §4: INTERACTIVE CHART ═══ -->
+<section class="stage" id="s4">
+  <div class="stage-number">IV</div>
+  <h2>Convergence: Watch the Cross-Ratio Settle</h2>
+  <p>
+    Select a recurrence below to see the cross-ratio of consecutive quadruplets converge to its limit. The oscillation pattern differs: Fibonacci alternates above and below the limit (characteristic of a two-term recurrence with an alternating subdominant root), while higher-order recurrences show more complex transient behaviour before settling.
+  </p>
+
+  <div class="k-selector" id="kSelector">
+    <button class="k-btn active" data-k="2">Fibonacci (k=2)</button>
+    <button class="k-btn" data-k="3">Tribonacci (k=3)</button>
+    <button class="k-btn" data-k="4">Tetranacci (k=4)</button>
+    <button class="k-btn" data-k="5">Pentanacci (k=5)</button>
+    <button class="k-btn" data-k="all">All overlaid</button>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="convChart" width="560" height="310"></canvas>
+  </div>
+
+  <div class="limit-readout" id="limitReadout">
+    <div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="readLambda">1.61803</span></div>
+    <div><span style="color:var(--gold);">●</span> ξ<sub>∞</sub> = <span class="val" id="readLimit">−0.30902</span></div>
+    <div><span style="color:var(--text-dim);">⋯</span> −2/7 = <span class="val" style="color:var(--text-dim);">−0.28571</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ §5: LIMIT LANDSCAPE ═══ -->
+<section class="stage" id="s5">
+  <div class="stage-number">V</div>
+  <h2>The Limit Landscape</h2>
+  <p>
+    The master formula ξ = λ(1−λ)/(λ³−1) defines a curve in the (λ, ξ) plane. Each k-nacci recurrence picks out a specific point on this curve — determined by its dominant root λ<sub>k</sub>. The curve is a hyperbola with a vertical asymptote at λ = 1 (where the denominator vanishes) and the horizontal asymptote ξ → 0 as λ → ∞.
+  </p>
+  <p>
+    The physically relevant portion is the interval λ ∈ (1, 2], where all k-nacci dominant roots live. Drag the <span style="color:var(--accent-blue);">λ indicator</span> to see how the cross-ratio limit varies continuously with the dominant root.
+  </p>
+
+  <div class="chart-container">
+    <canvas id="landscapeChart" width="560" height="320"></canvas>
+  </div>
+
+  <div class="limit-readout">
+    <div><span style="color:var(--accent-blue);">●</span> λ = <span class="val" id="dragLambda">1.61803</span></div>
+    <div><span style="color:var(--gold);">●</span> ξ(λ) = <span class="val" id="dragXi">−0.30902</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ §6 ═══ -->
+<section class="stage" id="s6">
+  <div class="stage-number">VI</div>
+  <h2>What This Tells Us</h2>
+  <p>
+    The cross-ratio is a projective invariant — it sees through all the stretching and compression that projection introduces. Applied to recurrence sequences, it strips away the exponential growth (which is an artefact of scale) and the multiplicative constant (which depends on initial conditions), leaving only the algebraic content of the characteristic equation.
+  </p>
+  <p>
+    The formula ξ = λ(1−λ)/(λ³−1) says: <em>the cross-ratio limit depends on exactly one number — the dominant root — and nothing else.</em> Not the initial conditions. Not the normalisation. Not which four consecutive terms you pick (provided n is large enough). Just the root of the characteristic polynomial.
+  </p>
+
+  <div class="punchline">
+    <p>The cross-ratio of a linear recurrence extracts its algebraic soul: the dominant root of the characteristic polynomial, disguised as a projective invariant.</p>
+  </div>
+
+  <div class="insight">
+    <div class="label">Connection to Digital Fibonacci</div>
+    <p>In the Zeckendorf–Ulam explorer, the mortality parameter g modifies the Fibonacci recurrence: finite g truncates the lineage, effectively changing the characteristic equation. The dominant root shifts, and with it the cross-ratio limit. The visual texture of the Ulam spiral changes because the underlying algebraic structure — encoded in λ — changes. The cross-ratio is the invariant that quantifies this shift.</p>
+  </div>
+
+  <div style="margin-top:1.5rem; padding:0.8rem 1.2rem; background:var(--bg-card); border:1px dashed var(--border-gold); border-radius:6px;">
+    <p style="font-size:0.84rem; color:var(--text-dim);">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--gold-dim); letter-spacing:0.1em;">COMPANION TO</span><br>
+      <span style="color:var(--gold);">Projective Geometry: What Survives Projection</span> — the cross-ratio, homogeneous coordinates, and Klein's Erlangen programme.
+    </p>
+  </div>
+</section>
+
+</div>
+
+<footer class="footer">
+  <p>Constructed by <span class="gold">Silicon</span> · Anthropic Claude — Architect <span class="gold">Carbon</span> · LeeMcCullochJames</p>
+</footer>
+
+<script>
+// ════════════════════════════════════
+// MATHEMATICS
+// ════════════════════════════════════
+function crossRatio(a, b, c, d) {
+  return ((a - b) * (c - d)) / ((b - c) * (d - a));
+}
+
+function crLimit(lambda) {
+  return lambda * (1 - lambda) / (lambda * lambda * lambda - 1);
+}
+
+// Generate k-nacci sequence
+function knacci(k, len) {
+  const seq = new Array(len).fill(0);
+  seq[k - 1] = 1; // seed: 0,0,...,0,1
+  for (let i = k; i < len; i++) {
+    let s = 0;
+    for (let j = 1; j <= k; j++) s += seq[i - j];
+    seq[i] = s;
+  }
+  return seq;
+}
+
+// Dominant root of k-nacci (Newton's method on x^k - x^{k-1} - ... - 1 = 0)
+function knacciRoot(k) {
+  let x = 2 - 1 / (1 << k); // start near 2
+  for (let iter = 0; iter < 100; iter++) {
+    // f(x) = x^k - x^{k-1} - x^{k-2} - ... - 1
+    // = x^k - (x^{k-1} - 1)/(x - 1) for x ≠ 1
+    let f = Math.pow(x, k);
+    let df = k * Math.pow(x, k - 1);
+    for (let j = 0; j < k; j++) {
+      f -= Math.pow(x, k - 1 - j);
+      if (j < k - 1) df -= (k - 1 - j) * Math.pow(x, k - 2 - j);
+    }
+    const step = f / df;
+    x -= step;
+    if (Math.abs(step) < 1e-15) break;
+  }
+  return x;
+}
+
+// Cross-ratio data for k-nacci
+function knacciCRData(k) {
+  const seq = knacci(k, 35);
+  const data = [];
+  for (let n = k + 1; n < seq.length; n++) {
+    const a = seq[n-3], b = seq[n-2], c = seq[n-1], d = seq[n];
+    if (a > 0 && b > 0 && c > 0 && d > 0) {
+      data.push({ n, xi: crossRatio(a, b, c, d) });
+    }
+  }
+  return data;
+}
+
+const COLORS = {
+  2: '#6b8fad',  // blue
+  3: '#ad6b6b',  // red
+  4: '#6bad7a',  // green
+  5: '#9b7fba',  // violet
+};
+const NAMES = { 2:'Fibonacci', 3:'Tribonacci', 4:'Tetranacci', 5:'Pentanacci' };
+const ROOTS = {};
+for (let k = 2; k <= 5; k++) ROOTS[k] = knacciRoot(k);
+
+// ════════════════════════════════════
+// §4: CONVERGENCE CHART
+// ════════════════════════════════════
+const convCanvas = document.getElementById('convChart');
+const convCtx = convCanvas.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
+
+function setupCanvas(canvas, ctx, w, h) {
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+}
+setupCanvas(convCanvas, convCtx, 560, 310);
+
+let currentK = 2;
+
+function drawConvergence(selectedK) {
+  currentK = selectedK;
+  const cW = 560, cH = 310;
+  const m = { top: 30, right: 25, bottom: 40, left: 60 };
+  const pW = cW - m.left - m.right, pH = cH - m.top - m.bottom;
+
+  convCtx.clearRect(0, 0, cW, cH);
+  convCtx.fillStyle = '#0e0f11';
+  convCtx.fillRect(0, 0, cW, cH);
+
+  const minY = -0.52, maxY = 0.05;
+  const minX = 3, maxX = 28;
+
+  function xS(n) { return m.left + (n - minX) / (maxX - minX) * pW; }
+  function yS(v) { return m.top + (1 - (v - minY) / (maxY - minY)) * pH; }
+
+  // Grid
+  convCtx.strokeStyle = '#1a1b1f';
+  convCtx.lineWidth = 0.5;
+  for (let y = -0.5; y <= 0.05; y += 0.1) {
+    convCtx.beginPath(); convCtx.moveTo(m.left, yS(y)); convCtx.lineTo(cW - m.right, yS(y)); convCtx.stroke();
+  }
+
+  // Axes
+  convCtx.strokeStyle = '#2a2b30';
+  convCtx.lineWidth = 1;
+  convCtx.beginPath();
+  convCtx.moveTo(m.left, m.top); convCtx.lineTo(m.left, cH - m.bottom);
+  convCtx.lineTo(cW - m.right, cH - m.bottom); convCtx.stroke();
+
+  // Y labels
+  convCtx.fillStyle = '#8a8577';
+  convCtx.font = '10px IBM Plex Mono, monospace';
+  convCtx.textAlign = 'right';
+  for (let y = -0.5; y <= 0.05; y += 0.1) {
+    convCtx.fillText(y.toFixed(1), m.left - 6, yS(y) + 3);
+  }
+
+  // X labels
+  convCtx.textAlign = 'center';
+  for (let n = 4; n <= maxX; n += 3) {
+    convCtx.fillText('n=' + n, xS(n), cH - m.bottom + 16);
+  }
+
+  // −2/7 asymptote
+  convCtx.strokeStyle = '#555';
+  convCtx.lineWidth = 0.8;
+  convCtx.setLineDash([3, 5]);
+  convCtx.beginPath();
+  convCtx.moveTo(m.left, yS(-2/7)); convCtx.lineTo(cW - m.right, yS(-2/7));
+  convCtx.stroke();
+  convCtx.setLineDash([]);
+  convCtx.fillStyle = '#555';
+  convCtx.font = '8px IBM Plex Mono, monospace';
+  convCtx.textAlign = 'right';
+  convCtx.fillText('−2/7', cW - m.right - 2, yS(-2/7) - 5);
+
+  const ks = selectedK === 'all' ? [2, 3, 4, 5] : [selectedK];
+
+  ks.forEach(k => {
+    const data = knacciCRData(k);
+    const lim = crLimit(ROOTS[k]);
+    const color = COLORS[k];
+
+    // Limit line
+    convCtx.strokeStyle = color;
+    convCtx.lineWidth = 1;
+    convCtx.globalAlpha = 0.4;
+    convCtx.setLineDash([6, 4]);
+    convCtx.beginPath();
+    convCtx.moveTo(m.left, yS(lim));
+    convCtx.lineTo(cW - m.right, yS(lim));
+    convCtx.stroke();
+    convCtx.setLineDash([]);
+    convCtx.globalAlpha = 1;
+
+    // Label
+    convCtx.fillStyle = color;
+    convCtx.font = '8px IBM Plex Mono, monospace';
+    convCtx.textAlign = 'left';
+    const labelY = yS(lim) + (k === 2 ? -6 : k === 3 ? -6 : k === 4 ? -6 : -6);
+    convCtx.fillText(`${NAMES[k]} → ${lim.toFixed(5)}`, m.left + 4, labelY);
+
+    // Data line
+    convCtx.strokeStyle = color;
+    convCtx.lineWidth = 1.5;
+    convCtx.beginPath();
+    data.forEach((d, i) => {
+      const x = xS(d.n), y = yS(d.xi);
+      if (y > m.top - 5 && y < cH - m.bottom + 5) {
+        if (i === 0) convCtx.moveTo(x, y); else convCtx.lineTo(x, y);
+      }
+    });
+    convCtx.stroke();
+
+    // Data points
+    data.forEach(d => {
+      const x = xS(d.n), y = yS(d.xi);
+      if (y > m.top - 5 && y < cH - m.bottom + 5) {
+        convCtx.fillStyle = color;
+        convCtx.beginPath();
+        convCtx.arc(x, y, 3, 0, Math.PI * 2);
+        convCtx.fill();
+      }
+    });
+  });
+
+  // Title
+  convCtx.fillStyle = '#8a8577';
+  convCtx.font = '10px IBM Plex Mono, monospace';
+  convCtx.textAlign = 'center';
+  const titleStr = selectedK === 'all'
+    ? 'ξ(T_{n-3}, T_{n-2}, T_{n-1}, T_n) — all k-nacci overlaid'
+    : `ξ(T_{n-3}, T_{n-2}, T_{n-1}, T_n) — ${NAMES[selectedK]}`;
+  convCtx.fillText(titleStr, cW / 2, 16);
+
+  // Update readout
+  if (selectedK !== 'all') {
+    document.getElementById('readLambda').textContent = ROOTS[selectedK].toFixed(5);
+    document.getElementById('readLimit').textContent = crLimit(ROOTS[selectedK]).toFixed(5);
+  } else {
+    document.getElementById('readLambda').textContent = '—';
+    document.getElementById('readLimit').textContent = '—';
+  }
+}
+
+// k-selector buttons
+document.querySelectorAll('.k-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.k-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const k = btn.dataset.k === 'all' ? 'all' : +btn.dataset.k;
+    drawConvergence(k);
+  });
+});
+drawConvergence(2);
+
+// ════════════════════════════════════
+// §5: LIMIT LANDSCAPE (draggable)
+// ════════════════════════════════════
+const lCanvas = document.getElementById('landscapeChart');
+const lCtx = lCanvas.getContext('2d');
+setupCanvas(lCanvas, lCtx, 560, 320);
+
+let dragLambda = (1 + Math.sqrt(5)) / 2; // start at φ
+let dragging = false;
+
+function drawLandscape() {
+  const cW = 560, cH = 320;
+  const m = { top: 30, right: 25, bottom: 40, left: 60 };
+  const pW = cW - m.left - m.right, pH = cH - m.top - m.bottom;
+
+  const lambdaMin = 1.05, lambdaMax = 2.15;
+  const xiMin = -0.55, xiMax = 0.05;
+
+  function xS(l) { return m.left + (l - lambdaMin) / (lambdaMax - lambdaMin) * pW; }
+  function yS(v) { return m.top + (1 - (v - xiMin) / (xiMax - xiMin)) * pH; }
+  function xInv(px) { return lambdaMin + (px - m.left) / pW * (lambdaMax - lambdaMin); }
+
+  lCtx.clearRect(0, 0, cW, cH);
+  lCtx.fillStyle = '#0e0f11';
+  lCtx.fillRect(0, 0, cW, cH);
+
+  // Grid
+  lCtx.strokeStyle = '#1a1b1f';
+  lCtx.lineWidth = 0.5;
+  for (let y = -0.5; y <= 0.05; y += 0.1) {
+    lCtx.beginPath(); lCtx.moveTo(m.left, yS(y)); lCtx.lineTo(cW - m.right, yS(y)); lCtx.stroke();
+  }
+  for (let x = 1.2; x <= 2.1; x += 0.2) {
+    lCtx.beginPath(); lCtx.moveTo(xS(x), m.top); lCtx.lineTo(xS(x), cH - m.bottom); lCtx.stroke();
+  }
+
+  // Axes
+  lCtx.strokeStyle = '#2a2b30';
+  lCtx.lineWidth = 1;
+  lCtx.beginPath();
+  lCtx.moveTo(m.left, m.top); lCtx.lineTo(m.left, cH - m.bottom);
+  lCtx.lineTo(cW - m.right, cH - m.bottom); lCtx.stroke();
+
+  // Y labels
+  lCtx.fillStyle = '#8a8577';
+  lCtx.font = '10px IBM Plex Mono, monospace';
+  lCtx.textAlign = 'right';
+  for (let y = -0.5; y <= 0.05; y += 0.1) {
+    lCtx.fillText(y.toFixed(1), m.left - 6, yS(y) + 3);
+  }
+
+  // X labels
+  lCtx.textAlign = 'center';
+  for (let x = 1.2; x <= 2.1; x += 0.2) {
+    lCtx.fillText('λ=' + x.toFixed(1), xS(x), cH - m.bottom + 16);
+  }
+
+  // The curve ξ = λ(1-λ)/(λ³-1)
+  lCtx.strokeStyle = var_gold();
+  lCtx.lineWidth = 2;
+  lCtx.beginPath();
+  let first = true;
+  for (let l = lambdaMin; l <= lambdaMax; l += 0.005) {
+    const xi = crLimit(l);
+    if (xi > xiMin && xi < xiMax) {
+      const x = xS(l), y = yS(xi);
+      if (first) { lCtx.moveTo(x, y); first = false; } else lCtx.lineTo(x, y);
+    }
+  }
+  lCtx.stroke();
+
+  // −2/7 asymptote
+  lCtx.strokeStyle = '#444';
+  lCtx.lineWidth = 0.8;
+  lCtx.setLineDash([3, 5]);
+  lCtx.beginPath();
+  lCtx.moveTo(m.left, yS(-2/7)); lCtx.lineTo(cW - m.right, yS(-2/7));
+  lCtx.stroke();
+  lCtx.setLineDash([]);
+  lCtx.fillStyle = '#555';
+  lCtx.font = '8px IBM Plex Mono, monospace';
+  lCtx.textAlign = 'right';
+  lCtx.fillText('−2/7 (k→∞)', cW - m.right - 2, yS(-2/7) - 5);
+
+  // k-nacci markers
+  for (let k = 2; k <= 5; k++) {
+    const lam = ROOTS[k];
+    const xi = crLimit(lam);
+    const x = xS(lam), y = yS(xi);
+    lCtx.fillStyle = COLORS[k];
+    lCtx.beginPath();
+    lCtx.arc(x, y, 5, 0, Math.PI * 2);
+    lCtx.fill();
+    lCtx.fillStyle = COLORS[k];
+    lCtx.font = '9px IBM Plex Mono, monospace';
+    lCtx.textAlign = 'left';
+    lCtx.fillText(NAMES[k], x + 8, y + 3);
+  }
+
+  // Draggable indicator
+  const clampedLambda = Math.max(lambdaMin + 0.01, Math.min(lambdaMax - 0.01, dragLambda));
+  const xi = crLimit(clampedLambda);
+  const dx = xS(clampedLambda), dy = yS(xi);
+
+  // Crosshair
+  lCtx.strokeStyle = '#6b8fad';
+  lCtx.lineWidth = 0.8;
+  lCtx.globalAlpha = 0.5;
+  lCtx.setLineDash([3, 3]);
+  lCtx.beginPath(); lCtx.moveTo(dx, m.top); lCtx.lineTo(dx, cH - m.bottom); lCtx.stroke();
+  lCtx.beginPath(); lCtx.moveTo(m.left, dy); lCtx.lineTo(cW - m.right, dy); lCtx.stroke();
+  lCtx.setLineDash([]);
+  lCtx.globalAlpha = 1;
+
+  // Point
+  lCtx.fillStyle = '#6b8fad';
+  lCtx.beginPath();
+  lCtx.arc(dx, dy, 6, 0, Math.PI * 2);
+  lCtx.fill();
+  lCtx.strokeStyle = '#c8a96e';
+  lCtx.lineWidth = 2;
+  lCtx.stroke();
+
+  // Title
+  lCtx.fillStyle = '#8a8577';
+  lCtx.font = '10px IBM Plex Mono, monospace';
+  lCtx.textAlign = 'center';
+  lCtx.fillText('ξ = λ(1−λ)/(λ³−1) — the limit landscape', cW / 2, 16);
+
+  // Drag hint
+  lCtx.fillStyle = '#555';
+  lCtx.font = '8px IBM Plex Mono, monospace';
+  lCtx.textAlign = 'center';
+  lCtx.fillText('drag the blue point', cW / 2, cH - 5);
+
+  // Readouts
+  document.getElementById('dragLambda').textContent = clampedLambda.toFixed(5);
+  document.getElementById('dragXi').textContent = xi.toFixed(5);
+
+  // Store for hit-testing
+  lCanvas._meta = { xS, xInv, m, lambdaMin, lambdaMax, cW, cH };
+}
+
+function var_gold() { return '#c8a96e'; }
+
+lCanvas.addEventListener('pointerdown', e => {
+  const meta = lCanvas._meta; if (!meta) return;
+  const rect = lCanvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width * 560;
+  const lam = meta.xInv(px);
+  if (lam >= meta.lambdaMin && lam <= meta.lambdaMax) {
+    dragging = true;
+    dragLambda = lam;
+    drawLandscape();
+    lCanvas.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+});
+lCanvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const meta = lCanvas._meta; if (!meta) return;
+  const rect = lCanvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width * 560;
+  dragLambda = Math.max(meta.lambdaMin + 0.01, Math.min(meta.lambdaMax - 0.01, meta.xInv(px)));
+  drawLandscape();
+  e.preventDefault();
+});
+lCanvas.addEventListener('pointerup', () => { dragging = false; });
+lCanvas.addEventListener('pointerleave', () => { dragging = false; });
+
+drawLandscape();
+
+// ════════════════════════════════════
+// SCROLL REVEAL + TOGGLE
+// ════════════════════════════════════
+const stages = document.querySelectorAll('.stage');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+stages.forEach(s => obs.observe(s));
+
+function toggleReveal(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  const isOpen = el.classList.contains('open');
+  if (isOpen) {
+    el.style.maxHeight = '0'; el.classList.remove('open'); btn.classList.remove('open');
+  } else {
+    el.classList.add('open'); el.style.maxHeight = el.scrollHeight + 'px'; btn.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>
