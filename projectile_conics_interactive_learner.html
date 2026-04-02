@@ -4,13 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>From Conics to Projectile Motion</title>
+
+  <!-- MathJax for proper LaTeX rendering -->
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
   <style>
     :root {
       --bg: #f8fafc;
       --card: #ffffff;
       --text: #0f172a;
       --muted: #475569;
-      --line: #cbd5e1;
       --soft: #e2e8f0;
       --accent: #0f172a;
       --blue: #dbeafe;
@@ -19,168 +28,67 @@
       --violet: #ede9fe;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .wrap {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
     h1, h2, h3 { margin-top: 0; }
-    p { margin: 0 0 14px; }
-    .badge {
-      display: inline-block;
-      background: var(--card);
-      border: 1px solid var(--soft);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 18px 0 22px;
-    }
-    .tab {
-      border: 1px solid var(--soft);
-      background: #e2e8f0;
-      color: #334155;
-      padding: 10px 14px;
-      border-radius: 14px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
-    }
-    .tab.active {
-      background: var(--accent);
-      color: white;
-    }
+    p { margin: 0 0 12px; }
+    .badge { display: inline-block; background: var(--card); border: 1px solid var(--soft); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px; }
+    .tab { border: 1px solid var(--soft); background: #e2e8f0; color: #334155; padding: 10px 14px; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .tab.active { background: var(--accent); color: white; }
     .panel { display: none; }
     .panel.active { display: block; }
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 22px;
-      align-items: start;
-    }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
     .stack { display: grid; gap: 18px; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--soft);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    .mini-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-    .mini {
-      border: 1px solid var(--soft);
-      border-radius: 16px;
-      padding: 14px;
-      background: #f8fafc;
-      cursor: pointer;
-      transition: 0.18s ease;
-    }
-    .mini.active {
-      border-color: #94a3b8;
-      box-shadow: inset 0 0 0 1px #94a3b8;
-      background: #f1f5f9;
-    }
-    .note {
-      border-radius: 16px;
-      padding: 14px;
-      font-size: 15px;
-      color: #334155;
-      border: 1px solid transparent;
-    }
+    .card { background: var(--card); border: 1px solid var(--soft); border-radius: 20px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .mini { border: 1px solid var(--soft); border-radius: 16px; padding: 14px; background: #f8fafc; cursor: pointer; transition: 0.18s ease; }
+    .mini.active { border-color: #94a3b8; box-shadow: inset 0 0 0 1px #94a3b8; background: #f1f5f9; }
+    .mini.nocursor { cursor: default; }
+    .note { border-radius: 16px; padding: 14px; font-size: 15px; color: #334155; border: 1px solid transparent; }
     .note.blue { background: var(--blue); border-color: #bfdbfe; }
     .note.green { background: var(--green); border-color: #bbf7d0; }
     .note.amber { background: var(--amber); border-color: #fde68a; }
     .note.violet { background: var(--violet); border-color: #ddd6fe; }
-    .math {
-      font-family: "Courier New", monospace;
-      background: #f8fafc;
-      padding: 2px 6px;
-      border-radius: 8px;
-      white-space: nowrap;
-    }
-    .equation-block {
-      font-family: "Courier New", monospace;
-      font-size: 18px;
+    .imath { font-family: "Courier New", monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 6px; white-space: nowrap; font-size: 0.95em; }
+
+    /* LaTeX display equation block */
+    .eq {
       background: #f8fafc;
       border: 1px solid var(--soft);
       border-radius: 14px;
-      padding: 14px;
+      padding: 14px 18px;
+      margin: 10px 0;
       overflow-x: auto;
+      font-size: 1.05em;
+      line-height: 2;
+      text-align: center;
     }
-    .controls label {
-      display: block;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
+    .eq.left { text-align: left; }
+    .eq.sm { font-size: 0.92em; }
+
+    .controls label { display: block; margin-bottom: 16px; font-size: 14px; }
     .controls input[type="range"] { width: 100%; }
-    .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 4px;
-    }
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .toggle {
-      border: 1px solid var(--soft);
-      background: #e2e8f0;
-      padding: 10px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
-    }
+    .row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+    .toggle { border: 1px solid var(--soft); background: #e2e8f0; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 13px; }
     .hidden { display: none; }
-    svg {
-      width: 100%;
-      height: auto;
-      display: block;
-      background: #f8fafc;
-      border: 1px solid var(--soft);
-      border-radius: 16px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      margin-top: 8px;
-      color: #334155;
-    }
-    .line-solid, .line-dashed, .line-dotted {
-      width: 34px;
-      height: 0;
-      border-top: 3px solid #0f172a;
-    }
+    svg { width: 100%; height: auto; display: block; background: #f8fafc; border: 1px solid var(--soft); border-radius: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-top: 8px; color: #334155; }
+    .line-solid, .line-dashed, .line-dotted { width: 34px; height: 0; border-top: 3px solid #0f172a; flex-shrink: 0; }
     .line-dashed { border-top-style: dashed; border-top-width: 2px; }
     .line-dotted { border-top-style: dotted; border-top-width: 3px; }
-    .caption {
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 10px;
-    }
+    .caption { font-size: 14px; color: var(--muted); margin-top: 10px; }
     ul, ol { padding-left: 22px; margin: 10px 0; }
+    .orbit-selector { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .orbit-btn { border: 1px solid var(--soft); background: #e2e8f0; color: #334155; padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .orbit-btn.active { background: var(--accent); color: white; }
+    .deriv-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; flex-wrap: wrap; }
+    .taylor-controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .term-btn { border: 1px solid var(--soft); background: #f8fafc; padding: 6px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-family: "Courier New", monospace; font-weight: 600; }
+    .term-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .approx-display { font-family: "Courier New", monospace; font-size: 14px; background: #f8fafc; border: 1px solid var(--soft); border-radius: 10px; padding: 8px 14px; margin: 10px 0; }
+    footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--soft); font-size: 12px; color: var(--muted); text-align: center; }
     @media (max-width: 980px) {
       .layout { grid-template-columns: 1fr; }
       .mini-grid { grid-template-columns: 1fr; }
@@ -188,603 +96,736 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="badge">Interactive learner</div>
-    <h1>From conic sections to projectile motion</h1>
-    <p style="max-width: 980px; color: var(--muted);">
-      Begin with conic sections in a familiar maths style, then move into the school projectile model, the local-flat approximation to gravity, and finally the exact conic picture as an extension.
-    </p>
+<div class="wrap">
+  <div class="badge">Interactive learner</div>
+  <h1>From conic sections to projectile motion</h1>
+  <p style="max-width: 980px; color: var(--muted);">
+    Begin with conic sections as pure geometry, then see how local flatness of gravity and Taylor approximation produce the school parabola, and finally explore the exact orbital conics with their energy derivations.
+  </p>
 
-    <div class="tabs">
-      <button class="tab active" data-tab="tab-conics">1. Conics</button>
-      <button class="tab" data-tab="tab-projectile">2. School Projectile Model</button>
-      <button class="tab" data-tab="tab-approx">3. Why the Approximation Works</button>
-      <button class="tab" data-tab="tab-extension">4. Extension</button>
-    </div>
-
-    <section class="panel active" id="tab-conics">
-      <div class="layout">
-        <div class="stack">
-          <div class="card">
-            <h2>Conic sections in a maths-class style</h2>
-            <p style="color: var(--muted);">Click an equation card to see the corresponding curve on the right.</p>
-            <div class="mini-grid" id="conicCards">
-              <div class="mini active" data-conic="circle">
-                <h3>Circle</h3>
-                <div class="equation-block">x² + y² = r²</div>
-                <p>All points a fixed distance from the centre.</p>
-              </div>
-              <div class="mini" data-conic="ellipse">
-                <h3>Ellipse</h3>
-                <div class="equation-block">x²/a² + y²/b² = 1</div>
-                <p>A stretched circle. Bound orbital motion lives here.</p>
-              </div>
-              <div class="mini" data-conic="parabola">
-                <h3>Parabola</h3>
-                <div class="equation-block">y = ax² + bx + c</div>
-                <p>The familiar school projectile shape in a uniform gravitational field.</p>
-              </div>
-              <div class="mini" data-conic="hyperbola">
-                <h3>Hyperbola</h3>
-                <div class="equation-block">x²/a² − y²/b² = 1</div>
-                <p>An open curve. In orbital physics it appears for more-than-escape energy.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-              <h3 style="margin:0;">Hint at parametric form</h3>
-              <button class="toggle" id="toggle-parametric">Show</button>
-            </div>
-            <div id="parametric-box" class="hidden" style="margin-top:12px;">
-              <p><strong>Circle:</strong> <span class="math">x = r cos t, y = r sin t</span></p>
-              <p><strong>Ellipse:</strong> <span class="math">x = a cos t, y = b sin t</span></p>
-              <p><strong>Parabola:</strong> <span class="math">x = t, y = at² + bt + c</span></p>
-              <p><strong>Hyperbola:</strong> <span class="math">x = a cosh t, y = b sinh t</span></p>
-              <p>These are useful later because physics often tracks position using a parameter such as time.</p>
-            </div>
-          </div>
-
-          <div class="note amber">
-            <strong>Bridge to physics</strong><br>
-            In maths, these equations describe shapes. In physics, the same shapes can describe trajectories. The key question is: which assumptions make a moving object trace a parabola, and which lead instead to an ellipse or some other conic?
-          </div>
-        </div>
-
-        <div class="stack">
-          <div class="card">
-            <h2 id="conicTitle">Circle</h2>
-            <svg id="conicPlot" viewBox="0 0 520 420" aria-label="Conic section plot"></svg>
-            <div class="caption" id="conicCaption">A circle is the set of points a fixed distance from the centre.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" id="tab-projectile">
-      <div class="layout">
-        <div class="stack">
-          <div class="card">
-            <h2>Why school projectile motion gives a parabola</h2>
-            <p>In school physics, gravity is modelled as a <strong>uniform field</strong>: straight downward and the same strength everywhere nearby.</p>
-            <p>This lets us split the motion into two independent parts.</p>
-            <div class="mini-grid">
-              <div class="mini" style="cursor:default;">
-                <h3>Horizontal</h3>
-                <div class="equation-block">x = vₓ t</div>
-                <p>No horizontal acceleration, so the speed stays constant.</p>
-              </div>
-              <div class="mini" style="cursor:default;">
-                <h3>Vertical</h3>
-                <div class="equation-block">y = vᵧ t − ½gt²</div>
-                <p>Constant downward acceleration from gravity.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>Exercise: eliminate <span class="math">t</span></h3>
-            <p>Use the two equations above to write <span class="math">y</span> directly in terms of <span class="math">x</span>.</p>
-            <div class="button-row">
-              <button class="toggle" id="toggle-eliminate-method">Reveal method</button>
-              <button class="toggle" id="toggle-eliminate-solution">Reveal solution</button>
-            </div>
-            <div id="eliminate-method-box" class="hidden">
-              <p><strong>Method</strong></p>
-              <ol>
-                <li>Start with <span class="math">x = vₓ t</span>.</li>
-                <li>Rearrange it to make <span class="math">t</span> the subject: <span class="math">t = x / vₓ</span>.</li>
-                <li>Substitute that expression into <span class="math">y = vᵧ t − ½gt²</span>.</li>
-                <li>Simplify carefully.</li>
-              </ol>
-            </div>
-            <div id="eliminate-solution-box" class="hidden">
-              <p><strong>Worked solution</strong></p>
-              <p><span class="math">x = vₓ t</span> gives <span class="math">t = x / vₓ</span>.</p>
-              <p>Substitute into the vertical equation:</p>
-              <div class="equation-block">y = vᵧ(x / vₓ) − ½g(x / vₓ)²</div>
-              <p>Then simplify:</p>
-              <div class="equation-block">y = (vᵧ/vₓ)x − g x²/(2vₓ²)</div>
-              <p>This has the form <span class="math">y = ax² + bx + c</span>, so the path is a parabola.</p>
-            </div>
-          </div>
-
-          <div class="note green">
-            <strong>Important idea</strong><br>
-            The reason <span class="math">x</span> and <span class="math">y</span> can be treated independently is that the field is being approximated as locally flat and non-converging. The force is taken to be vertical and nearly the same at every nearby point.
-          </div>
-        </div>
-
-        <div class="stack">
-          <div class="card controls">
-            <h2>Interactive parabola</h2>
-            <label>
-              <div class="row"><span>Horizontal speed vₓ</span><span id="vxVal">18.0</span></div>
-              <input id="vx" type="range" min="8" max="30" step="0.5" value="18">
-            </label>
-            <label>
-              <div class="row"><span>Vertical speed vᵧ</span><span id="vyVal">14.0</span></div>
-              <input id="vy" type="range" min="4" max="24" step="0.5" value="14">
-            </label>
-            <label>
-              <div class="row"><span>Gravity g</span><span id="gVal">9.8</span></div>
-              <input id="g" type="range" min="4" max="16" step="0.1" value="9.8">
-            </label>
-            <label>
-              <div class="row"><span>Scaled Earth radius R</span><span id="RVal">120</span></div>
-              <input id="R" type="range" min="50" max="300" step="1" value="120">
-            </label>
-          </div>
-
-          <div class="card">
-            <svg id="projectilePlot" viewBox="0 0 720 420" aria-label="Projectile comparison plot"></svg>
-            <div class="legend-item"><span class="line-solid"></span> School parabola (constant g)</div>
-            <div class="legend-item"><span class="line-dashed"></span> Elliptical arc idea</div>
-            <div class="legend-item"><span class="line-dotted"></span> Taylor correction</div>
-          </div>
-
-          <div class="card">
-            <h3>What to notice</h3>
-            <ul>
-              <li>Changing <span class="math">vₓ</span> stretches the path horizontally.</li>
-              <li>Changing <span class="math">vᵧ</span> changes the maximum height.</li>
-              <li>For large radius <span class="math">R</span>, the three curves become harder to tell apart.</li>
-              <li>The extra curves show how the simple classroom parabola sits inside a fuller near-Earth picture.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" id="tab-approx">
-      <div class="layout">
-        <div class="stack">
-          <div class="card">
-            <h2>Why the approximation works near Earth</h2>
-            <p>Real gravity points toward the centre of the Earth, so the field lines converge. That means the true path is part of a conic, usually an ellipse for ordinary launch speeds.</p>
-            <p>But over a short distance compared with the Earth’s radius, the field barely changes. So we replace the curved, converging field by a flat local patch.</p>
-            <p>This is why a small arc of an ellipse can look almost exactly like a parabola.</p>
-          </div>
-
-          <div class="card">
-            <h3>Preamble: what a Taylor series does</h3>
-            <p>A Taylor series replaces a complicated function by a polynomial that matches it closely near one chosen point.</p>
-            <div class="equation-block">1/(1-u) ≈ 1 + u + u² + u³ + ...</div>
-            <p>for small <span class="math">u</span>.</p>
-            <p>Another standard example is the sine function for small angles:</p>
-            <div class="equation-block">sin θ ≈ θ − θ³/3! + θ⁵/5! − ...</div>
-            <p>Near <span class="math">θ = 0</span>, the first approximation is just <span class="math">sin θ ≈ θ</span>. Adding more terms gives a better fit.</p>
-          </div>
-
-          <div class="card">
-            <h3>Applying the same idea to gravity</h3>
-            <p>Write the height above the surface as <span class="math">y</span>. Then the gravitational strength at radius <span class="math">R + y</span> can be expanded near the surface as:</p>
-            <div class="equation-block">g(R + y) ≈ g(R)(1 − 2y/R + ...)</div>
-            <p>Keeping only the first term gives constant gravity. That is the school model. Keeping the next term gives a small correction to the parabola.</p>
-          </div>
-        </div>
-
-        <div class="stack">
-          <div class="card">
-            <h2>Sine and its polynomial approximations</h2>
-            <svg id="taylorPlot" viewBox="0 0 560 340" aria-label="Taylor approximation to sine"></svg>
-            <div class="legend-item"><span class="line-solid"></span> sin θ</div>
-            <div class="legend-item"><span class="line-dashed"></span> θ</div>
-            <div class="legend-item"><span class="line-dotted"></span> θ − θ³/6 + θ⁵/120</div>
-          </div>
-
-          <div class="card">
-            <h2>Global and local gravity picture</h2>
-            <svg id="gravityPlot" viewBox="0 0 560 400" aria-label="Converging gravity field and local flat approximation"></svg>
-            <div class="caption">Globally, gravity arrows converge toward the centre of the Earth. Locally, over a small patch, those arrows are nearly parallel, which is why the school model can separate horizontal and vertical motion.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" id="tab-extension">
-      <div class="layout">
-        <div class="stack">
-          <div class="card">
-            <h2>Extension: exact conics in orbital motion</h2>
-            <p>In the exact inverse-square theory, conics are not approximations. They are the true orbit shapes.</p>
-            <div class="mini-grid">
-              <div class="mini" style="cursor:default;">
-                <h3>Ellipse</h3>
-                <p>Bound motion. Ordinary projectiles are tiny pieces of this, interrupted by the ground.</p>
-              </div>
-              <div class="mini" style="cursor:default;">
-                <h3>Parabola</h3>
-                <p>The exact escape-energy case: right on the border between bound and unbound motion.</p>
-              </div>
-              <div class="mini" style="cursor:default;">
-                <h3>Hyperbola</h3>
-                <p>More than escape energy. The object flies by and never returns.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>Energy classification</h3>
-            <div class="equation-block">negative energy → ellipse
-zero energy → parabola
-positive energy → hyperbola</div>
-            <p>This is a different use of the word <em>parabola</em> from the school projectile approximation. There, the parabola comes from assuming constant vertical acceleration in a local flat field.</p>
-          </div>
-
-          <div class="note blue">
-            <strong>Big idea</strong><br>
-            The school parabola is a local approximation. The exact orbital parabola is a true conic that appears at exactly escape energy.
-          </div>
-        </div>
-
-        <div class="stack">
-          <div class="card">
-            <h2>Orbit families</h2>
-            <svg id="extensionPlot" viewBox="0 0 560 420" aria-label="Ellipse parabola hyperbola around Earth"></svg>
-            <div class="legend-item"><span class="line-solid"></span> Ellipse</div>
-            <div class="legend-item"><span class="line-dashed"></span> Parabola</div>
-            <div class="legend-item"><span class="line-dotted"></span> Hyperbola</div>
-          </div>
-        </div>
-      </div>
-    </section>
+  <div class="tabs">
+    <button class="tab active" data-tab="tab-conics">1. Conics</button>
+    <button class="tab" data-tab="tab-local">2. Local Flatness &amp; Taylor</button>
+    <button class="tab" data-tab="tab-projectile">3. School Projectile Model</button>
+    <button class="tab" data-tab="tab-extension">4. Orbital Mechanics</button>
   </div>
 
-  <script>
-    const svgNS = 'http://www.w3.org/2000/svg';
+  <!-- ===== TAB 1: CONICS ===== -->
+  <section class="panel active" id="tab-conics">
+    <div class="layout">
+      <div class="stack">
+        <div class="card">
+          <h2>Conic sections in a maths-class style</h2>
+          <p style="color: var(--muted);">Click an equation card to see the corresponding curve on the right.</p>
+          <div class="mini-grid" id="conicCards">
+            <div class="mini active" data-conic="circle">
+              <h3>Circle</h3>
+              <div class="eq">\( x^2 + y^2 = r^2 \)</div>
+              <p>All points a fixed distance from the centre.</p>
+            </div>
+            <div class="mini" data-conic="ellipse">
+              <h3>Ellipse</h3>
+              <div class="eq">\( \dfrac{x^2}{a^2} + \dfrac{y^2}{b^2} = 1 \)</div>
+              <p>A stretched circle. Bound orbital motion lives here.</p>
+            </div>
+            <div class="mini" data-conic="parabola">
+              <h3>Parabola</h3>
+              <div class="eq">\( y = ax^2 + bx + c \)</div>
+              <p>The school projectile shape in a uniform field.</p>
+            </div>
+            <div class="mini" data-conic="hyperbola">
+              <h3>Hyperbola</h3>
+              <div class="eq">\( \dfrac{x^2}{a^2} - \dfrac{y^2}{b^2} = 1 \)</div>
+              <p>An open curve. Appears for more-than-escape energy.</p>
+            </div>
+          </div>
+        </div>
 
-    function clearSvg(svg) {
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-    }
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <h3 style="margin:0;">Parametric forms</h3>
+            <button class="toggle" id="toggle-parametric">Show</button>
+          </div>
+          <div id="parametric-box" class="hidden" style="margin-top:12px;">
+            <p><strong>Circle:</strong> \( x = r\cos t,\; y = r\sin t \)</p>
+            <p><strong>Ellipse:</strong> \( x = a\cos t,\; y = b\sin t \)</p>
+            <p><strong>Parabola:</strong> \( x = t,\; y = at^2 + bt + c \)</p>
+            <p><strong>Hyperbola:</strong> \( x = a\cosh t,\; y = b\sinh t \)</p>
+            <p>Physics often tracks position with time as the parameter, so these forms become natural in dynamics.</p>
+          </div>
+        </div>
 
-    function addLine(svg, x1, y1, x2, y2, opts = {}) {
-      const el = document.createElementNS(svgNS, 'line');
-      el.setAttribute('x1', x1); el.setAttribute('y1', y1);
-      el.setAttribute('x2', x2); el.setAttribute('y2', y2);
-      el.setAttribute('stroke', opts.stroke || '#0f172a');
-      el.setAttribute('stroke-width', opts.strokeWidth || 2);
-      if (opts.dash) el.setAttribute('stroke-dasharray', opts.dash);
-      if (opts.opacity) el.setAttribute('opacity', opts.opacity);
-      svg.appendChild(el);
-      return el;
-    }
+        <div class="note amber">
+          <strong>Bridge to physics</strong><br>
+          In maths, these equations describe shapes. In physics, the same shapes describe trajectories. Which shape appears depends entirely on the energy and the force law.
+        </div>
+      </div>
 
-    function addText(svg, x, y, text, opts = {}) {
-      const el = document.createElementNS(svgNS, 'text');
-      el.setAttribute('x', x); el.setAttribute('y', y);
-      el.setAttribute('fill', opts.fill || '#64748b');
-      el.setAttribute('font-size', opts.size || 13);
-      el.textContent = text;
-      svg.appendChild(el);
-      return el;
-    }
+      <div class="stack">
+        <div class="card">
+          <h2 id="conicTitle">Circle</h2>
+          <svg id="conicPlot" viewBox="0 0 520 420" aria-label="Conic section plot"></svg>
+          <div class="caption" id="conicCaption">A circle is the set of points a fixed distance from the centre.</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    function addCircle(svg, cx, cy, r, opts = {}) {
-      const el = document.createElementNS(svgNS, 'circle');
-      el.setAttribute('cx', cx); el.setAttribute('cy', cy); el.setAttribute('r', r);
-      el.setAttribute('fill', opts.fill || 'none');
-      el.setAttribute('stroke', opts.stroke || '#0f172a');
-      el.setAttribute('stroke-width', opts.strokeWidth || 2);
-      if (opts.opacity) el.setAttribute('opacity', opts.opacity);
-      svg.appendChild(el);
-      return el;
-    }
+  <!-- ===== TAB 2: LOCAL FLATNESS & TAYLOR ===== -->
+  <section class="panel" id="tab-local">
+    <div class="layout">
+      <div class="stack">
+        <div class="card">
+          <h2>Why gravity looks flat locally</h2>
+          <p>Real gravity points toward Earth's centre: the field lines <em>converge</em>. Over a short distance compared to Earth's radius \(R \approx 6400\,\text{km}\), those lines are nearly parallel.</p>
+          <p>The diagram shows the global converging picture on the left and the local flat-field approximation on the right.</p>
+          <div class="note green" style="margin-top:8px;">
+            <strong>Key ratio</strong><br>
+            A typical projectile travels a few hundred metres. The ratio of range to \(R\) is of order \(10^{-4}\): curvature is negligible at human scales.
+          </div>
+        </div>
 
-    function addPath(svg, d, opts = {}) {
-      const el = document.createElementNS(svgNS, 'path');
-      el.setAttribute('d', d);
-      el.setAttribute('fill', opts.fill || 'none');
-      el.setAttribute('stroke', opts.stroke || '#0f172a');
-      el.setAttribute('stroke-width', opts.strokeWidth || 2.5);
-      if (opts.dash) el.setAttribute('stroke-dasharray', opts.dash);
-      if (opts.opacity) el.setAttribute('opacity', opts.opacity);
-      svg.appendChild(el);
-      return el;
-    }
+        <div class="card">
+          <h3>What a Taylor series does</h3>
+          <p>Any smooth function near \(x = 0\) can be written as a polynomial whose coefficients are the successive derivatives at that point:</p>
+          <div class="eq left">\[ f(x) = f(0) + f'(0)\,x + \frac{f''(0)}{2!}x^2 + \frac{f'''(0)}{3!}x^3 + \cdots \]</div>
+          <p>Keeping only a few terms gives a local approximation.</p>
+          <div class="note violet" style="margin-top:8px;">
+            <strong>Gravity as a Taylor series</strong><br>
+            At height \(y\) above the surface, gravitational acceleration is \(g(R+y) = \dfrac{GM}{(R+y)^2}\). Expanding for small \(y/R\):
+            <div class="eq">\[ g(R+y) = g_0\!\left(1 - \frac{2y}{R} + \frac{3y^2}{R^2} - \cdots\right) \]</div>
+            Keeping only the leading term gives \(g = g_0 = \text{const}\): the school approximation. The next term curves the true path away from a parabola.
+          </div>
+        </div>
+      </div>
 
-    function pathFromPoints(points) {
-      return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(' ');
-    }
+      <div class="stack">
+        <div class="card">
+          <h2>Global and local gravity field</h2>
+          <svg id="gravityPlot" viewBox="0 0 600 420" aria-label="Converging gravity field and local flat approximation"></svg>
+          <div class="caption">Left: globally converging field pointing to Earth's centre. Right: over a local patch the field lines are nearly parallel — this is why the school model treats horizontal and vertical motion independently.</div>
+        </div>
 
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-      });
+        <div class="card">
+          <h2>Sine and its Taylor approximations</h2>
+          <p style="color:var(--muted); font-size:14px;">Toggle terms to see how successive corrections extend the range of agreement with the exact sine.</p>
+          <div class="taylor-controls">
+            <button class="term-btn active" id="term1">&theta; (1st)</button>
+            <button class="term-btn" id="term3">&minus;&theta;&sup3;/6 (3rd)</button>
+            <button class="term-btn" id="term5">+&theta;&sup5;/120 (5th)</button>
+            <button class="term-btn" id="term7">&minus;&theta;&sup7;/5040 (7th)</button>
+          </div>
+          <div class="approx-display" id="approxDisplay">sin &theta; &asymp; &theta;</div>
+          <svg id="taylorPlot" viewBox="0 0 580 320" aria-label="Taylor approximation to sine"></svg>
+          <div class="legend-item"><span class="line-solid"></span> \(\sin\theta\) (exact)</div>
+          <div class="legend-item"><span class="line-dashed" style="border-color:#2563eb"></span> polynomial approximation</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAB 3: SCHOOL PROJECTILE ===== -->
+  <section class="panel" id="tab-projectile">
+    <div class="layout">
+      <div class="stack">
+        <div class="card">
+          <h2>Why school projectile motion gives a parabola</h2>
+          <p>In school physics gravity is modelled as a <strong>uniform field</strong>: straight downward, same strength everywhere. This is the leading term of the Taylor expansion from Tab 2.</p>
+          <div class="mini-grid">
+            <div class="mini nocursor">
+              <h3>Horizontal</h3>
+              <div class="eq">\( x = v_x\, t \)</div>
+              <p>No horizontal acceleration: constant speed.</p>
+            </div>
+            <div class="mini nocursor">
+              <h3>Vertical</h3>
+              <div class="eq">\( y = v_y\, t - \tfrac{1}{2}g t^2 \)</div>
+              <p>Constant downward acceleration \(g\).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Exercise: eliminate \(t\)</h3>
+          <p>Use the two equations above to write \(y\) directly in terms of \(x\).</p>
+          <div class="button-row">
+            <button class="toggle" id="toggle-eliminate-method">Reveal method</button>
+            <button class="toggle" id="toggle-eliminate-solution">Reveal solution</button>
+          </div>
+          <div id="eliminate-method-box" class="hidden">
+            <p><strong>Method</strong></p>
+            <ol>
+              <li>From \(x = v_x t\), rearrange to get \(t = x/v_x\).</li>
+              <li>Substitute into \(y = v_y t - \frac{1}{2}gt^2\).</li>
+              <li>Simplify.</li>
+            </ol>
+          </div>
+          <div id="eliminate-solution-box" class="hidden">
+            <p><strong>Worked solution</strong></p>
+            <div class="eq">\[ y = \frac{v_y}{v_x}\,x - \frac{g}{2v_x^2}\,x^2 \]</div>
+            <p>This has the form \(y = Ax + Bx^2\): a parabola through the origin.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>How the parabola relates to an ellipse</h3>
+          <p>The true orbit for any projectile is an ellipse (the ground interrupts it). The Taylor expansion of the conic polar equation, keeping only leading terms in \(y/R\), recovers the parabola.</p>
+          <div class="button-row">
+            <button class="toggle" id="toggle-ellipse-deriv">Show derivation</button>
+          </div>
+          <div id="ellipse-deriv-box" class="hidden">
+            <p>The polar equation of a conic with focus at the origin is:</p>
+            <div class="eq">\[ r = \frac{a(1-e^2)}{1 + e\cos\theta} \]</div>
+            <p>For a nearly circular orbit with small eccentricity, set \(r = R + y\) and expand for small \(y/R\). The leading quadratic correction in \(x\) is precisely:</p>
+            <div class="eq">\[ -\frac{g}{2v_x^2}\,x^2 \]</div>
+            <p>The school parabola is a Taylor approximation of a small arc of an ellipse.</p>
+          </div>
+        </div>
+
+        <div class="note green">
+          <strong>Important idea</strong><br>
+          The parabola is not exact physics. It is the first non-trivial term in a Taylor expansion of elliptical motion, valid when the projectile range is tiny compared to Earth's radius.
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card controls">
+          <h2>Interactive parabola</h2>
+          <label>
+            <div class="row"><span>Horizontal speed \(v_x\)</span><span id="vxVal">18.0</span></div>
+            <input id="vx" type="range" min="8" max="30" step="0.5" value="18">
+          </label>
+          <label>
+            <div class="row"><span>Vertical speed \(v_y\)</span><span id="vyVal">14.0</span></div>
+            <input id="vy" type="range" min="4" max="24" step="0.5" value="14">
+          </label>
+          <label>
+            <div class="row"><span>Gravity \(g\)</span><span id="gVal">9.8</span></div>
+            <input id="g" type="range" min="4" max="16" step="0.1" value="9.8">
+          </label>
+          <label>
+            <div class="row"><span>Scaled Earth radius \(R\)</span><span id="RVal">120</span></div>
+            <input id="R" type="range" min="50" max="300" step="1" value="120">
+          </label>
+        </div>
+
+        <div class="card">
+          <svg id="projectilePlot" viewBox="0 0 720 420" aria-label="Projectile comparison plot"></svg>
+          <div class="legend-item"><span class="line-solid"></span> School parabola (constant \(g\))</div>
+          <div class="legend-item"><span class="line-dashed"></span> Elliptical arc</div>
+          <div class="legend-item"><span class="line-dotted"></span> Taylor correction (first order in \(y/R\))</div>
+        </div>
+
+        <div class="card">
+          <h3>What to notice</h3>
+          <ul>
+            <li>For large \(R\), all three curves converge: the flat-Earth limit.</li>
+            <li>Smaller \(R\) exposes the divergence between the parabola and the true elliptical arc.</li>
+            <li>The Taylor correction sits between the other two.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAB 4: ORBITAL MECHANICS ===== -->
+  <section class="panel" id="tab-extension">
+    <div class="layout">
+      <div class="stack">
+        <div class="card">
+          <h2>Exact conics in orbital motion</h2>
+          <p>In the exact inverse-square law, conics are not approximations. Each orbit family corresponds to a specific total energy.</p>
+          <p>Total mechanical energy: \(\displaystyle E = \tfrac{1}{2}mv^2 - \frac{GMm}{r}\)</p>
+
+          <div class="orbit-selector">
+            <button class="orbit-btn active" data-orbit="ellipse">Ellipse</button>
+            <button class="orbit-btn" data-orbit="parabola">Parabola</button>
+            <button class="orbit-btn" data-orbit="hyperbola">Hyperbola</button>
+          </div>
+
+          <!-- ELLIPSE -->
+          <div id="orbit-ellipse" class="orbit-content">
+            <div class="mini nocursor" style="margin-bottom:12px;">
+              <h3>Ellipse &mdash; bound motion \((E < 0)\)</h3>
+              <p>All closed orbits. Ordinary projectiles are tiny arcs of ellipses, interrupted by the ground.</p>
+            </div>
+            <div class="deriv-row">
+              <button class="toggle" id="tog-ell-cent">Central force &amp; elliptical orbits</button>
+              <button class="toggle" id="tog-ell-orb">Circular orbit speed</button>
+              <button class="toggle" id="tog-ell-proj">Link to projectile</button>
+            </div>
+            <div id="box-ell-cent" class="hidden">
+              <p><strong>Central force gives elliptical orbits (Newton's theorem)</strong></p>
+              <p>Gravity is a central force: it always points directly toward one fixed point (the focus). Newton showed that an inverse-square central force produces conic section orbits.</p>
+              <p>For a bound orbit (\(E < 0\)), the conic is an ellipse with the central body at one focus. The equation of motion in polar coordinates \((r, \theta)\) is:</p>
+              <div class="eq">\[ \ddot{r} - r\dot{\theta}^2 = -\frac{GM}{r^2} \]</div>
+              <p>The conserved angular momentum \(L = mr^2\dot{\theta}\) allows this to be solved. The trajectory satisfies:</p>
+              <div class="eq">\[ r(\theta) = \frac{\ell}{1 + e\cos\theta}, \qquad \ell = \frac{L^2}{GMm^2} \]</div>
+              <p>For \(e < 1\) this is an ellipse. The eccentricity is related to energy by:</p>
+              <div class="eq">\[ e = \sqrt{1 + \frac{2EL^2}{G^2M^2m^3}} \]</div>
+              <p>Since \(E < 0\), we get \(e < 1\): a closed ellipse.</p>
+            </div>
+            <div id="box-ell-orb" class="hidden">
+              <p><strong>Circular orbit: centripetal balance</strong></p>
+              <p>For a perfectly circular orbit of radius \(r\), gravity provides the centripetal acceleration:</p>
+              <div class="eq">\[ \frac{GMm}{r^2} = \frac{mv_c^2}{r} \quad\Rightarrow\quad v_c = \sqrt{\frac{GM}{r}} \]</div>
+              <p>The total energy of a circular orbit is:</p>
+              <div class="eq">\[ E_c = \tfrac{1}{2}mv_c^2 - \frac{GMm}{r} = -\frac{GMm}{2r} \]</div>
+              <p>This is negative (bound) and equals \(-\frac{1}{2}|U|\): the virial theorem. Compare with escape speed \(v_\text{esc} = \sqrt{2GM/r}\):</p>
+              <div class="eq">\[ \frac{v_\text{esc}}{v_c} = \sqrt{2} \]</div>
+            </div>
+            <div id="box-ell-proj" class="hidden">
+              <p><strong>Link to the school projectile</strong></p>
+              <p>A ball thrown from Earth's surface is on an elliptical orbit. The orbit is so slightly eccentric, and the horizontal range so small compared to \(R = 6371\,\text{km}\), that the ground interrupts the ellipse long before it closes. The error from using the parabolic approximation is of order \(10^{-4}\).</p>
+            </div>
+          </div>
+
+          <!-- PARABOLA -->
+          <div id="orbit-parabola" class="orbit-content hidden">
+            <div class="mini nocursor" style="margin-bottom:12px;">
+              <h3>Parabola &mdash; marginal escape \((E = 0)\)</h3>
+              <p>The exact boundary between bound and unbound motion. The object reaches infinity with zero speed.</p>
+            </div>
+            <div class="deriv-row">
+              <button class="toggle" id="tog-par-esc">Escape speed derivation</button>
+              <button class="toggle" id="tog-par-orb">Why no closed orbit exists</button>
+              <button class="toggle" id="tog-par-proj">Contrast with school parabola</button>
+            </div>
+            <div id="box-par-esc" class="hidden">
+              <p><strong>Escape speed from energy conservation</strong></p>
+              <p>Set \(E = 0\): the object just reaches \(r \to \infty\) with \(v = 0\).</p>
+              <div class="eq">\[ \tfrac{1}{2}mv^2 - \frac{GMm}{r} = 0 \quad\Rightarrow\quad v = \sqrt{\frac{2GM}{r}} \]</div>
+              <p>At Earth's surface \((r = R)\):</p>
+              <div class="eq">\[ v_\text{esc} = \sqrt{\frac{2GM}{R}} \approx 11.2\,\text{km\,s}^{-1} \]</div>
+              <p>At this exact speed the orbit is a parabola: an open path extending to infinity, reaching zero speed asymptotically.</p>
+            </div>
+            <div id="box-par-orb" class="hidden">
+              <p><strong>No closed orbit at \(E = 0\)</strong></p>
+              <p>A circular orbit requires \(E = -GMm/(2r) < 0\). The parabolic condition \(E = 0\) is incompatible with any closed orbit. The parabola is a one-time flyby with the central body at the focus.</p>
+            </div>
+            <div id="box-par-proj" class="hidden">
+              <p><strong>Two different parabolas</strong></p>
+              <p>The school projectile parabola arises from approximating a small arc of an ellipse in a locally flat field. The orbital parabola arises from setting total energy exactly to zero in the true inverse-square law.</p>
+              <div class="note amber" style="margin-top:8px;">The school parabola is an approximation. The orbital parabola is exact.</div>
+            </div>
+          </div>
+
+          <!-- HYPERBOLA -->
+          <div id="orbit-hyperbola" class="orbit-content hidden">
+            <div class="mini nocursor" style="margin-bottom:12px;">
+              <h3>Hyperbola &mdash; unbound motion \((E > 0)\)</h3>
+              <p>The object has more than escape energy. It flies past and never returns.</p>
+            </div>
+            <div class="deriv-row">
+              <button class="toggle" id="tog-hyp-esc">Escape speed &amp; excess energy</button>
+              <button class="toggle" id="tog-hyp-orb">Deflection angle</button>
+              <button class="toggle" id="tog-hyp-proj">Physical examples</button>
+            </div>
+            <div id="box-hyp-esc" class="hidden">
+              <p><strong>Energy above escape: the hyperbolic condition</strong></p>
+              <p>For a launch speed \(v > v_\text{esc}\) the total energy is positive. Using energy conservation between the launch point \((r = R)\) and infinity:</p>
+              <div class="eq">\[ \tfrac{1}{2}mv^2 - \frac{GMm}{R} = \tfrac{1}{2}mv_\infty^2 > 0 \]</div>
+              <p>where \(v_\infty\) is the speed at infinite distance (the <em>hyperbolic excess speed</em>). Therefore:</p>
+              <div class="eq">\[ v^2 = v_\text{esc}^2 + v_\infty^2 \]</div>
+              <p>Any launch speed above \(v_\text{esc} = \sqrt{2GM/R}\) produces a hyperbolic orbit.</p>
+            </div>
+            <div id="box-hyp-orb" class="hidden">
+              <p><strong>Deflection angle</strong></p>
+              <p>The hyperbola has eccentricity \(e > 1\). The total deflection angle \(\delta\) satisfies:</p>
+              <div class="eq">\[ \sin\!\left(\frac{\delta}{2}\right) = \frac{1}{e} \]</div>
+              <p>Barely above escape speed gives \(e\) just above 1: large deflection, near-parabolic path. Very fast flyby gives \(e \gg 1\): almost no deflection, nearly straight.</p>
+            </div>
+            <div id="box-hyp-proj" class="hidden">
+              <p><strong>Physical examples</strong></p>
+              <ul>
+                <li><strong>Voyager 1 &amp; 2:</strong> on hyperbolic trajectories relative to the Sun after Jupiter flybys. They will never return.</li>
+                <li><strong>1I/ʻOumuamua:</strong> first detected interstellar object, \(e \approx 1.20\) on its solar flyby in 2017.</li>
+                <li><strong>Gravitational slingshot:</strong> spacecraft use planetary hyperbolic flybys to change speed relative to the Sun.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="note blue">
+          <strong>Energy classification</strong>
+          <div class="eq sm left" style="margin-top:8px;">\[
+            E < 0 \;\Rightarrow\; \text{ellipse (bound)} \\
+            E = 0 \;\Rightarrow\; \text{parabola (marginal)} \\
+            E > 0 \;\Rightarrow\; \text{hyperbola (unbound)}
+          \]</div>
+          <p style="margin-bottom:0;">In all three cases \(\displaystyle E = \tfrac{1}{2}mv^2 - \frac{GMm}{r}\), with potential energy zero at infinity.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h2>Orbit families</h2>
+          <svg id="extensionPlot" viewBox="0 0 580 500" aria-label="Ellipse parabola hyperbola around Earth"></svg>
+          <div class="legend-item"><span class="line-solid"></span> Ellipse &nbsp;\((E < 0)\)</div>
+          <div class="legend-item"><span class="line-dashed"></span> Parabola \((E = 0)\)</div>
+          <div class="legend-item"><span class="line-dotted"></span> Hyperbola \((E > 0)\)</div>
+        </div>
+
+        <div class="card">
+          <h3>Speed comparison at Earth's surface</h3>
+          <div class="eq sm left">\[
+            v_c = \sqrt{\frac{GM}{R}} \approx 7.9\,\text{km\,s}^{-1} \quad\text{(circular orbit)}\\[6pt]
+            v_\text{esc} = \sqrt{\frac{2GM}{R}} \approx 11.2\,\text{km\,s}^{-1} \quad\text{(escape)}\\[6pt]
+            \frac{v_\text{esc}}{v_c} = \sqrt{2}
+          \]</div>
+          <p style="margin-top:8px;">Below \(7.9\,\text{km/s}\): ellipse clipped by the ground. Between \(7.9\) and \(11.2\,\text{km/s}\): orbit closes. Above \(11.2\,\text{km/s}\): hyperbolic path.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</footer>
+</div>
+
+<script>
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function clearSvg(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function addLine(s, x1, y1, x2, y2, o = {}) {
+    const el = document.createElementNS(svgNS, 'line');
+    el.setAttribute('x1', x1); el.setAttribute('y1', y1); el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+    el.setAttribute('stroke', o.stroke || '#0f172a'); el.setAttribute('stroke-width', o.strokeWidth || 2);
+    if (o.dash) el.setAttribute('stroke-dasharray', o.dash);
+    if (o.opacity) el.setAttribute('opacity', o.opacity);
+    s.appendChild(el); return el;
+  }
+  function addText(s, x, y, text, o = {}) {
+    const el = document.createElementNS(svgNS, 'text');
+    el.setAttribute('x', x); el.setAttribute('y', y);
+    el.setAttribute('fill', o.fill || '#64748b'); el.setAttribute('font-size', o.size || 13);
+    if (o.anchor) el.setAttribute('text-anchor', o.anchor);
+    el.textContent = text; s.appendChild(el); return el;
+  }
+  function addCircle(s, cx, cy, r, o = {}) {
+    const el = document.createElementNS(svgNS, 'circle');
+    el.setAttribute('cx', cx); el.setAttribute('cy', cy); el.setAttribute('r', r);
+    el.setAttribute('fill', o.fill || 'none'); el.setAttribute('stroke', o.stroke || '#0f172a'); el.setAttribute('stroke-width', o.strokeWidth || 2);
+    if (o.opacity) el.setAttribute('opacity', o.opacity);
+    s.appendChild(el); return el;
+  }
+  function addPath(s, d, o = {}) {
+    const el = document.createElementNS(svgNS, 'path');
+    el.setAttribute('d', d); el.setAttribute('fill', o.fill || 'none');
+    el.setAttribute('stroke', o.stroke || '#0f172a'); el.setAttribute('stroke-width', o.strokeWidth || 2.5);
+    if (o.dash) el.setAttribute('stroke-dasharray', o.dash);
+    if (o.opacity) el.setAttribute('opacity', o.opacity);
+    s.appendChild(el); return el;
+  }
+  function addArrow(s, x1, y1, x2, y2, o = {}) {
+    const stroke = o.stroke || '#0f172a', sw = o.strokeWidth || 1.8;
+    const mid = 'arr' + Math.random().toString(36).slice(2, 8);
+    let defs = s.querySelector('defs');
+    if (!defs) { defs = document.createElementNS(svgNS, 'defs'); s.insertBefore(defs, s.firstChild); }
+    const marker = document.createElementNS(svgNS, 'marker');
+    marker.setAttribute('id', mid); marker.setAttribute('markerWidth', '8'); marker.setAttribute('markerHeight', '6');
+    marker.setAttribute('refX', '7'); marker.setAttribute('refY', '3'); marker.setAttribute('orient', 'auto');
+    const poly = document.createElementNS(svgNS, 'polygon');
+    poly.setAttribute('points', '0 0, 8 3, 0 6'); poly.setAttribute('fill', stroke);
+    marker.appendChild(poly); defs.appendChild(marker);
+    const line = addLine(s, x1, y1, x2, y2, { stroke, strokeWidth: sw });
+    line.setAttribute('marker-end', `url(#${mid})`); return line;
+  }
+  function pts2path(pts) {
+    return pts.map((p, i) => `${i ? 'L' : 'M'} ${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(' ');
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+      if (window.MathJax) MathJax.typesetPromise();
     });
+  });
 
-    const parametricBtn = document.getElementById('toggle-parametric');
-    const parametricBox = document.getElementById('parametric-box');
-    parametricBtn.addEventListener('click', () => {
-      const hidden = parametricBox.classList.toggle('hidden');
-      parametricBtn.textContent = hidden ? 'Show' : 'Hide';
+  // Generic toggle
+  function attachToggle(btnId, boxId, show = 'Show', hide = 'Hide') {
+    const btn = document.getElementById(btnId), box = document.getElementById(boxId);
+    if (!btn || !box) return;
+    btn.addEventListener('click', () => {
+      const wasHidden = box.classList.toggle('hidden');
+      btn.textContent = wasHidden ? show : hide;
+      if (!wasHidden && window.MathJax) MathJax.typesetPromise([box]);
     });
+  }
 
-    function attachToggle(buttonId, boxId, showText, hideText) {
-      const btn = document.getElementById(buttonId);
-      const box = document.getElementById(boxId);
-      btn.addEventListener('click', () => {
-        const hidden = box.classList.toggle('hidden');
-        btn.textContent = hidden ? showText : hideText;
-      });
-    }
+  const parametricBtn = document.getElementById('toggle-parametric');
+  const parametricBox = document.getElementById('parametric-box');
+  parametricBtn.addEventListener('click', () => {
+    const h = parametricBox.classList.toggle('hidden');
+    parametricBtn.textContent = h ? 'Show' : 'Hide';
+    if (!h && window.MathJax) MathJax.typesetPromise([parametricBox]);
+  });
 
-    attachToggle('toggle-eliminate-method', 'eliminate-method-box', 'Reveal method', 'Hide method');
-    attachToggle('toggle-eliminate-solution', 'eliminate-solution-box', 'Reveal solution', 'Hide solution');
+  attachToggle('toggle-eliminate-method', 'eliminate-method-box', 'Reveal method', 'Hide method');
+  attachToggle('toggle-eliminate-solution', 'eliminate-solution-box', 'Reveal solution', 'Hide solution');
+  attachToggle('toggle-ellipse-deriv', 'ellipse-deriv-box', 'Show derivation', 'Hide derivation');
 
-    const conicInfo = {
-      circle: {
-        title: 'Circle',
-        caption: 'A circle is the set of points a fixed distance from the centre.'
-      },
-      ellipse: {
-        title: 'Ellipse',
-        caption: 'An ellipse is a stretched circle. In orbital motion, bound paths are elliptical.'
-      },
-      parabola: {
-        title: 'Parabola',
-        caption: 'A parabola is the familiar classroom projectile shape under constant vertical acceleration.'
-      },
-      hyperbola: {
-        title: 'Hyperbola',
-        caption: 'A hyperbola is an open conic. In orbital motion, it corresponds to more than escape energy.'
-      }
-    };
+  ['ell-cent','ell-orb','ell-proj','par-esc','par-orb','par-proj','hyp-esc','hyp-orb','hyp-proj'].forEach(id => {
+    attachToggle(`tog-${id}`, `box-${id}`);
+  });
 
-    function drawConic(kind) {
-      const svg = document.getElementById('conicPlot');
-      clearSvg(svg);
-      const w = 520, h = 420, cx = 260, cy = 210;
-      addLine(svg, 60, cy, 470, cy, { strokeWidth: 1.6 });
-      addLine(svg, cx, 40, cx, 370, { strokeWidth: 1.6 });
-      addText(svg, 475, cy - 8, 'x');
-      addText(svg, cx + 8, 52, 'y');
-
-      let pts = [];
-      if (kind === 'circle') {
-        for (let t = 0; t <= Math.PI * 2 + 0.02; t += 0.03) pts.push([cx + 110 * Math.cos(t), cy - 110 * Math.sin(t)]);
-      }
-      if (kind === 'ellipse') {
-        for (let t = 0; t <= Math.PI * 2 + 0.02; t += 0.03) pts.push([cx + 150 * Math.cos(t), cy - 95 * Math.sin(t)]);
-      }
-      if (kind === 'parabola') {
-        for (let x = -170; x <= 170; x += 4) {
-          const y = 0.0055 * x * x;
-          pts.push([cx + x, cy + 120 - y]);
-        }
-      }
-      if (kind === 'hyperbola') {
-        for (let x = -170; x <= -70; x += 3) {
-          const y = Math.sqrt(Math.max(0, (x * x) / (70 * 70) - 1)) * 55;
-          pts.push([cx + x, cy - y]);
-        }
-        addPath(svg, pathFromPoints(pts));
-        pts = [];
-        for (let x = -170; x <= -70; x += 3) {
-          const y = Math.sqrt(Math.max(0, (x * x) / (70 * 70) - 1)) * 55;
-          pts.push([cx + x, cy + y]);
-        }
-        addPath(svg, pathFromPoints(pts));
-        pts = [];
-        for (let x = 70; x <= 170; x += 3) {
-          const y = Math.sqrt(Math.max(0, (x * x) / (70 * 70) - 1)) * 55;
-          pts.push([cx + x, cy - y]);
-        }
-        addPath(svg, pathFromPoints(pts));
-        pts = [];
-        for (let x = 70; x <= 170; x += 3) {
-          const y = Math.sqrt(Math.max(0, (x * x) / (70 * 70) - 1)) * 55;
-          pts.push([cx + x, cy + y]);
-        }
-        addPath(svg, pathFromPoints(pts));
-      } else {
-        addPath(svg, pathFromPoints(pts));
-      }
-      document.getElementById('conicTitle').textContent = conicInfo[kind].title;
-      document.getElementById('conicCaption').textContent = conicInfo[kind].caption;
-    }
-
-    document.querySelectorAll('#conicCards .mini').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('#conicCards .mini').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-        drawConic(card.dataset.conic);
-      });
+  // Orbit selector
+  document.querySelectorAll('.orbit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.orbit-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.orbit-content').forEach(c => c.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById('orbit-' + btn.dataset.orbit).classList.remove('hidden');
     });
+  });
 
-    drawConic('circle');
+  // ---- CONIC PLOT ----
+  const conicInfo = {
+    circle: { title: 'Circle', caption: 'A circle: all points equidistant from the centre.' },
+    ellipse: { title: 'Ellipse', caption: 'An ellipse: a stretched circle. Red dots mark the two foci. Bound orbits are ellipses with the central body at one focus.' },
+    parabola: { title: 'Parabola', caption: 'A parabola: the shape of a projectile path in a uniform gravitational field.' },
+    hyperbola: { title: 'Hyperbola', caption: 'A hyperbola: an open conic. Appears in unbound orbits with more than escape energy.' }
+  };
 
-    const values = {
-      vx: document.getElementById('vx'),
-      vy: document.getElementById('vy'),
-      g: document.getElementById('g'),
-      R: document.getElementById('R')
-    };
-    const labels = {
-      vx: document.getElementById('vxVal'),
-      vy: document.getElementById('vyVal'),
-      g: document.getElementById('gVal'),
-      R: document.getElementById('RVal')
-    };
-
-    function drawProjectile() {
-      const svg = document.getElementById('projectilePlot');
-      clearSvg(svg);
-      const width = 720, height = 420, pad = 40;
-      addLine(svg, pad, height - pad, width - 20, height - pad, { strokeWidth: 1.6 });
-      addLine(svg, pad, 20, pad, height - pad, { strokeWidth: 1.6 });
-      addText(svg, width - 28, height - pad - 8, 'x');
-      addText(svg, pad + 10, 34, 'y');
-
-      const vx = parseFloat(values.vx.value);
-      const vy = parseFloat(values.vy.value);
-      const g = parseFloat(values.g.value);
-      const R = parseFloat(values.R.value);
-      labels.vx.textContent = vx.toFixed(1);
-      labels.vy.textContent = vy.toFixed(1);
-      labels.g.textContent = g.toFixed(1);
-      labels.R.textContent = R.toFixed(0);
-
-      const samples = 220;
-      const maxTime = Math.max(0.8, (2 * vy / g) * 1.15);
-      const parabola = [];
-      const taylor = [[0,0]];
-      const dt = maxTime / samples;
-      let x = 0, y = 0, ux = vx, uy = vy;
-
-      for (let i = 0; i <= samples; i++) {
-        const t = (i / samples) * maxTime;
-        const px = vx * t;
-        const py = vy * t - 0.5 * g * t * t;
-        if (py >= -2) parabola.push({ x: px, y: py });
-        if (i > 0) {
-          const ay = -g + (2 * g * y) / R;
-          x += ux * dt;
-          y += uy * dt;
-          uy += ay * dt;
-          if (y >= -2) taylor.push([x, y]);
+  function drawConic(kind) {
+    const svg = document.getElementById('conicPlot');
+    clearSvg(svg);
+    const w = 520, h = 420, cx = 260, cy = 210;
+    addLine(svg, 60, cy, 470, cy, { strokeWidth: 1.3, stroke: '#94a3b8' });
+    addLine(svg, cx, 40, cx, 380, { strokeWidth: 1.3, stroke: '#94a3b8' });
+    addText(svg, 462, cy - 8, 'x'); addText(svg, cx + 8, 50, 'y');
+    if (kind === 'circle') {
+      const pts = []; for (let t = 0; t <= Math.PI*2+0.02; t += 0.03) pts.push([cx+110*Math.cos(t), cy-110*Math.sin(t)]);
+      addPath(svg, pts2path(pts), { strokeWidth: 3 });
+    } else if (kind === 'ellipse') {
+      const a = 160, b = 90, c = Math.sqrt(a*a-b*b);
+      const pts = []; for (let t = 0; t <= Math.PI*2+0.02; t += 0.03) pts.push([cx+a*Math.cos(t), cy-b*Math.sin(t)]);
+      addPath(svg, pts2path(pts), { strokeWidth: 3 });
+      addCircle(svg, cx+c, cy, 5, { fill: '#dc2626', stroke: 'none' });
+      addCircle(svg, cx-c, cy, 5, { fill: '#dc2626', stroke: 'none' });
+      addText(svg, cx+c-4, cy+18, 'F', { fill: '#dc2626', size: 13 });
+      addText(svg, cx-c-4, cy+18, 'F', { fill: '#dc2626', size: 13 });
+    } else if (kind === 'parabola') {
+      const pts = []; for (let x = -170; x <= 170; x += 4) pts.push([cx+x, cy+130-0.006*x*x]);
+      addPath(svg, pts2path(pts), { strokeWidth: 3 });
+    } else if (kind === 'hyperbola') {
+      for (const sgn of [1, -1]) {
+        for (const br of [1, -1]) {
+          const pts = []; for (let x = 70; x <= 180; x += 3) { const y = Math.sqrt(Math.max(0,(x*x)/(70*70)-1))*55; pts.push([cx+sgn*x, cy+br*y]); }
+          addPath(svg, pts2path(pts), { strokeWidth: 3 });
         }
       }
-
-      const m = vy / vx;
-      const k = g / (2 * vx * vx);
-      const b = Math.max(8, R * 0.82);
-      const denom = Math.max(0.0001, 2 * k * b);
-      const a = Math.sqrt(Math.max(20, (b * b) / denom));
-      const ellipse = [];
-      for (const p of parabola) {
-        if (Math.abs(p.x) > a) break;
-        const inside = Math.max(0, 1 - (p.x * p.x) / (a * a));
-        const yy = -b + b * Math.sqrt(inside);
-        const yShifted = yy + m * p.x;
-        if (yShifted >= -2) ellipse.push([p.x, yShifted]);
-      }
-
-      const xMax = Math.max(10, ...parabola.map(p => p.x), ...taylor.map(p => p[0]), ...ellipse.map(p => p[0]));
-      const yMax = Math.max(10, ...parabola.map(p => p.y), ...taylor.map(p => p[1]), ...ellipse.map(p => p[1]));
-      const yMin = Math.min(-2, ...parabola.map(p => p.y), ...taylor.map(p => p[1]), ...ellipse.map(p => p[1]));
-
-      function mapPoint(px, py) {
-        const sx = pad + (px / xMax) * (width - 2 * pad);
-        const sy = height - pad - ((py - yMin) / (yMax - yMin + 1e-9)) * (height - 2 * pad);
-        return [sx, sy];
-      }
-
-      addPath(svg, pathFromPoints(parabola.map(p => mapPoint(p.x, p.y))), { strokeWidth: 3 });
-      addPath(svg, pathFromPoints(ellipse.map(p => mapPoint(p[0], p[1]))), { dash: '8 6', strokeWidth: 2, opacity: 0.8 });
-      addPath(svg, pathFromPoints(taylor.map(p => mapPoint(p[0], p[1]))), { dash: '2 6', strokeWidth: 2, opacity: 0.8 });
     }
+    document.getElementById('conicTitle').textContent = conicInfo[kind].title;
+    document.getElementById('conicCaption').textContent = conicInfo[kind].caption;
+  }
 
-    Object.values(values).forEach(input => input.addEventListener('input', drawProjectile));
-    drawProjectile();
+  document.querySelectorAll('#conicCards .mini').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#conicCards .mini').forEach(c => c.classList.remove('active'));
+      card.classList.add('active'); drawConic(card.dataset.conic);
+    });
+  });
+  drawConic('circle');
 
-    function drawTaylorPlot() {
-      const svg = document.getElementById('taylorPlot');
-      clearSvg(svg);
-      const w = 560, h = 340, pad = 40;
-      addLine(svg, pad, h/2, w-pad, h/2, { strokeWidth: 1.6 });
-      addLine(svg, w/2, 25, w/2, h-25, { strokeWidth: 1.6 });
-      addText(svg, w-pad+6, h/2-8, 'θ');
-      addText(svg, w/2+8, 36, 'y');
-      const xmin = -2.4, xmax = 2.4, ymin = -1.4, ymax = 1.4;
-      const map = (x, y) => [pad + ((x-xmin)/(xmax-xmin))*(w-2*pad), h-pad - ((y-ymin)/(ymax-ymin))*(h-2*pad)];
-      const sinPts = [], linePts = [], polyPts = [];
-      for (let x = xmin; x <= xmax; x += 0.02) {
-        sinPts.push(map(x, Math.sin(x)));
-        linePts.push(map(x, x));
-        polyPts.push(map(x, x - (x*x*x)/6 + (x*x*x*x*x)/120));
-      }
-      addPath(svg, pathFromPoints(sinPts), { strokeWidth: 3 });
-      addPath(svg, pathFromPoints(linePts), { dash: '8 6', strokeWidth: 2, opacity: 0.8 });
-      addPath(svg, pathFromPoints(polyPts), { dash: '2 6', strokeWidth: 2, opacity: 0.8 });
+  // ---- GRAVITY PLOT ----
+  function drawGravityPlot() {
+    const svg = document.getElementById('gravityPlot');
+    clearSvg(svg);
+    const cx = 150, cy = 215, R = 100;
+    addCircle(svg, cx, cy, R, { fill: '#dbeafe', stroke: '#64748b', strokeWidth: 2 });
+    addText(svg, cx-20, cy+5, 'Earth', { fill: '#0f172a', size: 15 });
+    // Converging arrows
+    const angles = [-1.05, -0.68, -0.32, 0.04, 0.40, 0.76, 1.12];
+    for (const ang of angles) {
+      const r1 = R + 108, r2 = R + 14;
+      addArrow(svg, cx+r1*Math.cos(ang), cy+r1*Math.sin(ang), cx+r2*Math.cos(ang), cy+r2*Math.sin(ang), { stroke: '#334155', strokeWidth: 1.7 });
     }
-    drawTaylorPlot();
+    addText(svg, 10, 26, 'Global: converging field', { fill: '#0f172a', size: 14 });
+    // Divider
+    addLine(svg, 292, 38, 292, 400, { stroke: '#cbd5e1', strokeWidth: 1.4, dash: '6 4' });
+    // Local patch
+    addText(svg, 355, 26, 'Local flat patch', { fill: '#0f172a', size: 14 });
+    addLine(svg, 308, 316, 582, 316, { stroke: '#94a3b8', strokeWidth: 1.5 }); // ground
+    for (let x = 335; x <= 570; x += 52) addArrow(svg, x, 138, x, 300, { stroke: '#334155', strokeWidth: 1.9 });
+    addText(svg, 312, 352, 'Locally: nearly parallel', { fill: '#475569', size: 13 });
+    // Connector dashes
+    addLine(svg, cx+R*Math.cos(-0.12), cy+R*Math.sin(-0.12), 308, 138, { stroke: '#94a3b8', strokeWidth: 1, dash: '4 4' });
+    addLine(svg, cx+R*Math.cos(0.52), cy+R*Math.sin(0.52), 308, 316, { stroke: '#94a3b8', strokeWidth: 1, dash: '4 4' });
+  }
+  drawGravityPlot();
 
-    function drawGravityPlot() {
-      const svg = document.getElementById('gravityPlot');
-      clearSvg(svg);
-      const w = 560, h = 400;
-      const cx = 160, cy = 230, R = 110;
-      addCircle(svg, cx, cy, R, { fill: '#dbeafe', stroke: '#64748b', strokeWidth: 2 });
-      addText(svg, cx-22, cy+5, 'Earth', { fill: '#0f172a', size: 16 });
-
-      for (let ang = -1.2; ang <= 1.0; ang += 0.35) {
-        for (let rr = R + 30; rr <= R + 95; rr += 28) {
-          const px = cx + rr * Math.cos(ang);
-          const py = cy + rr * Math.sin(ang);
-          const qx = cx + (rr - 22) * Math.cos(ang);
-          const qy = cy + (rr - 22) * Math.sin(ang);
-          addLine(svg, px, py, qx, qy, { stroke: '#0f172a', strokeWidth: 1.8 });
-        }
-      }
-
-      addText(svg, 310, 56, 'Local flat patch', { fill: '#0f172a', size: 16 });
-      addLine(svg, 330, 290, 520, 290, { strokeWidth: 2.2 });
-      addLine(svg, 350, 175, 350, 270, { stroke: '#0f172a', strokeWidth: 2 });
-      addLine(svg, 390, 175, 390, 270, { stroke: '#0f172a', strokeWidth: 2 });
-      addLine(svg, 430, 175, 430, 270, { stroke: '#0f172a', strokeWidth: 2 });
-      addLine(svg, 470, 175, 470, 270, { stroke: '#0f172a', strokeWidth: 2 });
-      addText(svg, 40, 32, 'Global: converging field', { fill: '#0f172a', size: 16 });
-      addText(svg, 330, 320, 'Locally: nearly parallel field lines', { fill: '#475569', size: 14 });
+  // ---- TAYLOR SINE ----
+  let taylorTerms = [1];
+  function sineTaylor(x, terms) {
+    let s = 0;
+    if (terms.includes(1)) s += x;
+    if (terms.includes(3)) s -= x**3/6;
+    if (terms.includes(5)) s += x**5/120;
+    if (terms.includes(7)) s -= x**7/5040;
+    return s;
+  }
+  function approxStr(terms) {
+    const parts = [];
+    if (terms.includes(1)) parts.push('\u03b8');
+    if (terms.includes(3)) parts.push('\u2212\u03b8\u00b3/6');
+    if (terms.includes(5)) parts.push('+\u03b8\u2075/120');
+    if (terms.includes(7)) parts.push('\u2212\u03b8\u2077/5040');
+    return 'sin \u03b8 \u2248 ' + parts.join(' ');
+  }
+  function drawTaylorPlot() {
+    const svg = document.getElementById('taylorPlot');
+    clearSvg(svg);
+    const w = 580, h = 320, pad = 44;
+    const xmin = -2.8, xmax = 2.8, ymin = -1.5, ymax = 1.5;
+    const map = (x, y) => [pad + ((x-xmin)/(xmax-xmin))*(w-2*pad), h-pad-((y-ymin)/(ymax-ymin))*(h-2*pad)];
+    const [ox, oy] = map(0, 0);
+    addLine(svg, pad, oy, w-pad, oy, { strokeWidth: 1.3, stroke: '#94a3b8' });
+    addLine(svg, ox, pad, ox, h-pad, { strokeWidth: 1.3, stroke: '#94a3b8' });
+    addText(svg, w-pad+4, oy-6, '\u03b8', { fill: '#64748b', size: 14 });
+    addText(svg, ox+6, pad+4, 'y', { fill: '#64748b', size: 14 });
+    for (const xv of [-Math.PI, -Math.PI/2, Math.PI/2, Math.PI]) {
+      const [lx] = map(xv, 0);
+      addLine(svg, lx, pad, lx, h-pad, { stroke: '#e2e8f0', strokeWidth: 1 });
     }
-    drawGravityPlot();
-
-    function drawExtensionPlot() {
-      const svg = document.getElementById('extensionPlot');
-      clearSvg(svg);
-      const w = 560, h = 420;
-      const cx = 170, cy = 220;
-      addCircle(svg, cx, cy, 42, { fill: '#dbeafe', stroke: '#64748b', strokeWidth: 2 });
-      addText(svg, cx-18, cy+5, 'Earth', { fill: '#0f172a', size: 14 });
-
-      const ellipse = [];
-      for (let t = 0.2; t < 5.5; t += 0.03) ellipse.push([cx + 150*Math.cos(t)+20, cy - 90*Math.sin(t)]);
-      addPath(svg, pathFromPoints(ellipse), { strokeWidth: 3 });
-
-      const parabola = [];
-      for (let x = 0; x <= 220; x += 4) parabola.push([cx + 48 + x, cy - 5 - 0.0035*(x-20)*(x-20)]);
-      addPath(svg, pathFromPoints(parabola), { dash: '8 6', strokeWidth: 2, opacity: 0.9 });
-
-      const hyper1 = [];
-      for (let x = 85; x <= 250; x += 4) {
-        const y = Math.sqrt(Math.max(0, (x*x)/(80*80) - 1))*55;
-        hyper1.push([cx + x, cy - y]);
-      }
-      const hyper2 = [];
-      for (let x = 85; x <= 250; x += 4) {
-        const y = Math.sqrt(Math.max(0, (x*x)/(80*80) - 1))*55;
-        hyper2.push([cx + x, cy + y]);
-      }
-      addPath(svg, pathFromPoints(hyper1), { dash: '2 6', strokeWidth: 2, opacity: 0.9 });
-      addPath(svg, pathFromPoints(hyper2), { dash: '2 6', strokeWidth: 2, opacity: 0.9 });
-      addText(svg, 22, 30, 'True orbit families in inverse-square gravity', { fill: '#0f172a', size: 16 });
+    const sinPts = [];
+    for (let x = xmin; x <= xmax; x += 0.02) sinPts.push(map(x, Math.sin(x)));
+    addPath(svg, pts2path(sinPts), { strokeWidth: 3 });
+    let run = [];
+    for (let x = xmin; x <= xmax; x += 0.02) {
+      const y = sineTaylor(x, taylorTerms);
+      if (y > ymin-0.3 && y < ymax+0.3) { run.push(map(x, Math.max(ymin-0.2, Math.min(ymax+0.2, y)))); }
+      else if (run.length > 0) { addPath(svg, pts2path(run), { strokeWidth: 2.2, dash: '8 5', stroke: '#2563eb' }); run = []; }
     }
-    drawExtensionPlot();
-  </script>
+    if (run.length > 0) addPath(svg, pts2path(run), { strokeWidth: 2.2, dash: '8 5', stroke: '#2563eb' });
+    document.getElementById('approxDisplay').textContent = approxStr(taylorTerms);
+  }
+  drawTaylorPlot();
+  const termMap = { term1: 1, term3: 3, term5: 5, term7: 7 };
+  Object.entries(termMap).forEach(([id, term]) => {
+    document.getElementById(id).addEventListener('click', function() {
+      const idx = taylorTerms.indexOf(term);
+      if (idx >= 0 && taylorTerms.length > 1) { taylorTerms.splice(idx, 1); this.classList.remove('active'); }
+      else if (idx < 0) { taylorTerms.push(term); taylorTerms.sort((a,b)=>a-b); this.classList.add('active'); }
+      drawTaylorPlot();
+    });
+  });
+
+  // ---- PROJECTILE PLOT ----
+  const vals = { vx: document.getElementById('vx'), vy: document.getElementById('vy'), g: document.getElementById('g'), R: document.getElementById('R') };
+  const lbs = { vx: document.getElementById('vxVal'), vy: document.getElementById('vyVal'), g: document.getElementById('gVal'), R: document.getElementById('RVal') };
+
+  function drawProjectile() {
+    const svg = document.getElementById('projectilePlot');
+    clearSvg(svg);
+    const W = 720, H = 420, pad = 40;
+    addLine(svg, pad, H-pad, W-20, H-pad, { strokeWidth: 1.4, stroke: '#94a3b8' });
+    addLine(svg, pad, 20, pad, H-pad, { strokeWidth: 1.4, stroke: '#94a3b8' });
+    addText(svg, W-28, H-pad-8, 'x'); addText(svg, pad+10, 34, 'y');
+    const vx = +vals.vx.value, vy = +vals.vy.value, g = +vals.g.value, R = +vals.R.value;
+    lbs.vx.textContent = vx.toFixed(1); lbs.vy.textContent = vy.toFixed(1);
+    lbs.g.textContent = g.toFixed(1); lbs.R.textContent = R.toFixed(0);
+    const N = 220, maxT = Math.max(0.8, (2*vy/g)*1.15), dt = maxT/N;
+    const parab = [], taylor = [[0,0]];
+    let x = 0, y = 0, ux = vx, uy = vy;
+    for (let i = 0; i <= N; i++) {
+      const t = (i/N)*maxT;
+      const py = vy*t - 0.5*g*t*t;
+      if (py >= -2) parab.push({ x: vx*t, y: py });
+      if (i > 0) {
+        const ay = -g + (2*g*y)/R;
+        x += ux*dt; y += uy*dt; uy += ay*dt;
+        if (y >= -2) taylor.push([x, y]);
+      }
+    }
+    const m = vy/vx, k = g/(2*vx*vx), b = Math.max(8, R*0.82);
+    const a = Math.sqrt(Math.max(20, (b*b)/(Math.max(0.0001, 2*k*b))));
+    const ellipse = [];
+    for (const p of parab) {
+      if (Math.abs(p.x) > a) break;
+      const inside = Math.max(0, 1-(p.x*p.x)/(a*a));
+      const ys = -b + b*Math.sqrt(inside) + m*p.x;
+      if (ys >= -2) ellipse.push([p.x, ys]);
+    }
+    const xMax = Math.max(10, ...parab.map(p=>p.x), ...taylor.map(p=>p[0]), ...ellipse.map(p=>p[0]));
+    const yMax = Math.max(10, ...parab.map(p=>p.y), ...taylor.map(p=>p[1]), ...ellipse.map(p=>p[1]));
+    const yMin = Math.min(-2, ...parab.map(p=>p.y), ...taylor.map(p=>p[1]), ...ellipse.map(p=>p[1]));
+    const mp = (px, py) => [pad+(px/xMax)*(W-2*pad), H-pad-((py-yMin)/(yMax-yMin+1e-9))*(H-2*pad)];
+    addPath(svg, pts2path(parab.map(p=>mp(p.x,p.y))), { strokeWidth: 3 });
+    addPath(svg, pts2path(ellipse.map(p=>mp(p[0],p[1]))), { dash: '8 6', strokeWidth: 2, opacity: 0.8 });
+    addPath(svg, pts2path(taylor.map(p=>mp(p[0],p[1]))), { dash: '2 6', strokeWidth: 2, opacity: 0.8 });
+  }
+  Object.values(vals).forEach(inp => inp.addEventListener('input', drawProjectile));
+  drawProjectile();
+
+  // ---- EXTENSION ORBIT PLOT (proper focus geometry) ----
+  function drawExtensionPlot() {
+    const svg = document.getElementById('extensionPlot');
+    clearSvg(svg);
+    const W = 580, H = 500;
+    // Focus (Earth) position
+    const fx = 165, fy = 260;
+    const earthR = 40;
+
+    addText(svg, 16, 24, 'True orbit families — Earth at focus', { fill: '#0f172a', size: 14 });
+
+    // ---- ELLIPSE: focus at (fx, fy), semi-major a, semi-minor b, centre at (fx + ae, fy) ----
+    // Choose a=190, e=0.45, so c=ae=85.5, b=sqrt(a²-c²)≈170
+    const ae = 190, ee = 0.45, ce = ae*ee;
+    const be = Math.sqrt(ae*ae - ce*ce);
+    const ellCx = fx + ce; // ellipse centre (focus is left focus)
+    const ellPts = [];
+    for (let t = 0; t < 2*Math.PI; t += 0.03)
+      ellPts.push([ellCx + ae*Math.cos(t), fy - be*Math.sin(t)]);
+    addPath(svg, pts2path(ellPts), { strokeWidth: 3 });
+
+    // ---- PARABOLA: focus at (fx, fy), opens right, vertex at (fx - p, fy) ----
+    // y² = 4p(x - vertex_x) => x = fx - p + y²/(4p)
+    const pp = 90;
+    const parPts = [];
+    for (let dY = -240; dY <= 240; dY += 3) {
+      const px = fx - pp + dY*dY/(4*pp);
+      const py = fy + dY;
+      if (px >= 0 && px <= W-10 && py >= 20 && py <= H-20) parPts.push([px, py]);
+    }
+    addPath(svg, pts2path(parPts), { dash: '9 6', strokeWidth: 2.3, opacity: 0.92 });
+
+    // ---- HYPERBOLA: focus at (fx, fy), opens right, a_h, b_h ----
+    // focus is right focus: c_h = ah + extra, use focus-to-centre distance
+    const ah = 60, bh = 80, ch = Math.sqrt(ah*ah + bh*bh);
+    // centre at (fx - ch, fy), right focus at (fx, fy)
+    const hcx = fx - ch;
+    // Right branch: x = hcx + ah*cosh(t), y = fy ± bh*sinh(t)
+    const hPts1 = [], hPts2 = [];
+    for (let t = -2.2; t <= 2.2; t += 0.05) {
+      const hx = hcx + ah*Math.cosh(t);
+      const hy_off = bh*Math.sinh(t);
+      if (hx >= 0 && hx <= W-10) {
+        hPts1.push([hx, fy + hy_off]);
+        hPts2.push([hx, fy - hy_off]);
+      }
+    }
+    // draw as one path (goes up then comes back reversed for closed stroke)
+    const hAll = [...hPts1, ...hPts2.slice().reverse()];
+    addPath(svg, pts2path(hPts1), { dash: '3 5', strokeWidth: 2.3, opacity: 0.92 });
+    addPath(svg, pts2path(hPts2), { dash: '3 5', strokeWidth: 2.3, opacity: 0.92 });
+
+    // ---- Earth ----
+    addCircle(svg, fx, fy, earthR, { fill: '#dbeafe', stroke: '#64748b', strokeWidth: 2 });
+    addText(svg, fx-18, fy+5, 'Earth', { fill: '#0f172a', size: 13 });
+    // Focus dot (red)
+    addCircle(svg, fx, fy, 4, { fill: '#dc2626', stroke: 'none' });
+
+    // Energy labels
+    addText(svg, W-120, H-70, 'E < 0  (ellipse)', { fill: '#0f172a', size: 13 });
+    addText(svg, W-140, H-50, 'E = 0  (parabola)', { fill: '#475569', size: 13 });
+    addText(svg, W-140, H-30, 'E > 0  (hyperbola)', { fill: '#475569', size: 13 });
+  }
+  drawExtensionPlot();
+</script>
 </body>
 </html>
+
 
