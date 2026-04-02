@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Conics to Projectile Motion</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --soft: #e2e8f0;
+      --accent: #0f172a;
+      --blue: #dbeafe;
+      --green: #dcfce7;
+      --amber: #fef3c7;
+      --violet: #ede9fe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2, h3 { margin-top: 0; }
+    .badge {
+      display: inline-block;
+      background: var(--card);
+      border: 1px solid var(--soft);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0;
+    }
+    .tab {
+      border: 1px solid var(--soft);
+      background: #e2e8f0;
+      color: #334155;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .tab.active {
+      background: var(--accent);
+      color: white;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--soft);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .mini {
+      border: 1px solid var(--soft);
+      border-radius: 16px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+    .note {
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 14px;
+      color: #334155;
+      border: 1px solid transparent;
+    }
+    .note.blue { background: var(--blue); border-color: #bfdbfe; }
+    .note.green { background: var(--green); border-color: #bbf7d0; }
+    .note.amber { background: var(--amber); border-color: #fde68a; }
+    .note.violet { background: var(--violet); border-color: #ddd6fe; }
+    .math {
+      font-family: "Courier New", monospace;
+      background: #f8fafc;
+      padding: 2px 6px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .controls label {
+      display: block;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .controls input[type="range"] { width: 100%; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      background: #f8fafc;
+      border: 1px solid var(--soft);
+      border-radius: 14px;
+      display: block;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      margin-top: 8px;
+      color: #334155;
+    }
+    .line-solid, .line-dashed, .line-dotted {
+      width: 34px;
+      height: 0;
+      border-top: 3px solid #0f172a;
+    }
+    .line-dashed { border-top-style: dashed; border-top-width: 2px; }
+    .line-dotted { border-top-style: dotted; border-top-width: 3px; }
+    .toggle {
+      border: 1px solid var(--soft);
+      background: #e2e8f0;
+      padding: 8px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .hidden { display: none; }
+    ul { padding-left: 20px; }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .mini-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Interactive learner</div>
+    <h1>From conic sections to projectile motion</h1>
+    <p style="max-width: 900px; color: var(--muted);">
+      Start with the maths of conics, then move into the physics story: why school projectile motion is drawn as a parabola,
+      why that works locally, and why the fuller inverse-square picture gives an arc of an ellipse instead.
+    </p>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="conics">1. Conics</button>
+      <button class="tab" data-tab="physics">2. School Projectile Model</button>
+      <button class="tab" data-tab="approx">3. Why the Approximation Works</button>
+      <button class="tab" data-tab="extension">4. Extension</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <section class="panel" id="conics">
+          <h2>Conic sections in a maths-class style</h2>
+          <p style="color: var(--muted);">A conic is the curve made by slicing a cone. In school maths, they usually appear first through their standard Cartesian equations.</p>
+          <div class="mini-grid">
+            <div class="mini">
+              <h3>Circle</h3>
+              <div class="math">x² + y² = r²</div>
+              <p>All points a fixed distance from the centre.</p>
+            </div>
+            <div class="mini">
+              <h3>Ellipse</h3>
+              <div class="math">x²/a² + y²/b² = 1</div>
+              <p>A stretched circle. Planetary and projectile orbits live here in the bound case.</p>
+            </div>
+            <div class="mini">
+              <h3>Parabola</h3>
+              <div class="math">y = ax² + bx + c</div>
+              <p>The familiar school projectile shape in a uniform gravitational field.</p>
+            </div>
+            <div class="mini">
+              <h3>Hyperbola</h3>
+              <div class="math">x²/a² − y²/b² = 1</div>
+              <p>An open curve. In orbital physics it appears for more-than-escape energy.</p>
+            </div>
+          </div>
+          <div class="note blue" style="margin-top: 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <strong>Hint at parametric form</strong>
+              <button class="toggle" id="toggle-parametric">Show</button>
+            </div>
+            <div id="parametric-box" class="hidden" style="margin-top:10px;">
+              <p><strong>Circle:</strong> <span class="math">x = r cos t, y = r sin t</span></p>
+              <p><strong>Ellipse:</strong> <span class="math">x = a cos t, y = b sin t</span></p>
+              <p><strong>Parabola:</strong> <span class="math">x = t, y = at² + bt + c</span></p>
+              <p>These forms are useful later because physics often tracks motion using a parameter such as time rather than solving first for y in terms of x.</p>
+            </div>
+          </div>
+          <div class="note amber" style="margin-top: 14px;">
+            <strong>Bridge to physics</strong><br>
+            In maths, the equations describe shapes. In physics, the same shapes appear as trajectories. The key question becomes: which assumptions make a moving object trace a parabola, and which make it trace an ellipse instead?
+          </div>
+        </section>
+
+        <section class="panel hidden" id="physics">
+          <h2>Why school projectile motion gives a parabola</h2>
+          <p>In school physics, we model gravity as a <strong>uniform field</strong>: straight downward, same strength everywhere nearby. That means gravity affects the vertical direction only.</p>
+          <p>So the motion splits neatly into two independent parts:</p>
+          <div class="mini-grid">
+            <div class="mini">
+              <h3>Horizontal</h3>
+              <div class="math">x = vₓ t</div>
+              <p>No horizontal acceleration, so the speed stays constant.</p>
+            </div>
+            <div class="mini">
+              <h3>Vertical</h3>
+              <div class="math">y = vᵧ t − ½gt²</div>
+              <p>Constant downward acceleration from gravity.</p>
+            </div>
+          </div>
+          <p style="margin-top: 14px;">Eliminate <span class="math">t</span> by using <span class="math">t = x / vₓ</span>, and you get <span class="math">y = (vᵧ/vₓ)x − g x²/(2vₓ²)</span>, which is a parabola.</p>
+          <div class="note green" style="margin-top:14px;">
+            <strong>Important idea</strong><br>
+            The reason x and y can be treated independently is that the field is being approximated as locally flat and non-converging. The force is taken to be the same at every nearby point and always vertical.
+          </div>
+        </section>
+
+        <section class="panel hidden" id="approx">
+          <h2>Why the approximation works near Earth</h2>
+          <p>Real gravity points toward the centre of the Earth, so the field lines converge. That means the true path is part of a conic, usually an ellipse for ordinary launch speeds.</p>
+          <p>But over a short distance compared with the Earth's radius, the field barely changes. So we replace the curved, converging field by a flat local patch.</p>
+          <p>This is why a small arc of an ellipse can look almost exactly like a parabola.</p>
+          <div class="mini" style="margin-top:14px;">
+            <h3>Taylor-series viewpoint</h3>
+            <p>Write the height above the surface as <span class="math">y</span>. Then the gravitational strength at radius <span class="math">R + y</span> is expanded near the surface as:</p>
+            <div class="math">g(R + y) ≈ g(R)(1 − 2y/R + ...)</div>
+            <p>Keeping only the first term gives constant gravity. That is exactly the school model. Keeping the next term gives a small correction to the parabola.</p>
+          </div>
+          <div class="note violet" style="margin-top:14px;">
+            <strong>A neat summary sentence</strong><br>
+            The school parabola is the leading approximation to the true near-Earth orbital arc.
+          </div>
+        </section>
+
+        <section class="panel hidden" id="extension">
+          <h2>Extension: exact conics and the escape case</h2>
+          <p>In the exact inverse-square theory, conics are not approximations. They are the true orbit shapes.</p>
+          <div class="mini-grid">
+            <div class="mini">
+              <h3>Ellipse</h3>
+              <p>Bound motion. Ordinary projectiles are tiny pieces of this, interrupted by the ground.</p>
+            </div>
+            <div class="mini">
+              <h3>Parabola</h3>
+              <p>Exactly the escape-energy case. This is a true conic in the exact theory, not the classroom approximation.</p>
+            </div>
+            <div class="mini">
+              <h3>Hyperbola</h3>
+              <p>More than escape energy. The object flies by and never returns.</p>
+            </div>
+          </div>
+          <div class="note blue" style="margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <strong>Show the Taylor-series note</strong>
+              <button class="toggle" id="toggle-taylor">Show</button>
+            </div>
+            <div id="taylor-box" class="hidden" style="margin-top:10px;">
+              <p>A local expansion replaces the exact field by a simpler one. First term: constant gravity, giving a parabola. Next term: a slight correction. That is why the classroom path and the true path can agree closely at first and then slowly separate.</p>
+              <div class="math">g(R+y) = g(R) [1 − 2y/R + higher terms]</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <div class="card controls">
+          <h2>Interactive comparison</h2>
+          <label>
+            <div class="row"><span>Horizontal speed vₓ</span><span id="vxVal">18.0</span></div>
+            <input id="vx" type="range" min="8" max="30" step="0.5" value="18">
+          </label>
+          <label>
+            <div class="row"><span>Vertical speed vᵧ</span><span id="vyVal">14.0</span></div>
+            <input id="vy" type="range" min="4" max="24" step="0.5" value="14">
+          </label>
+          <label>
+            <div class="row"><span>Gravity g</span><span id="gVal">9.8</span></div>
+            <input id="g" type="range" min="4" max="16" step="0.1" value="9.8">
+          </label>
+          <label>
+            <div class="row"><span>Scaled Earth radius R</span><span id="RVal">120</span></div>
+            <input id="R" type="range" min="50" max="300" step="1" value="120">
+          </label>
+        </div>
+
+        <div class="card" style="margin-top:24px;">
+          <svg id="plot" viewBox="0 0 720 420" aria-label="Trajectory comparison plot">
+            <line x1="40" y1="380" x2="700" y2="380" stroke="#0f172a" stroke-width="1.5"></line>
+            <line x1="40" y1="20" x2="40" y2="380" stroke="#0f172a" stroke-width="1.5"></line>
+            <path id="parabolaPath" fill="none" stroke="#0f172a" stroke-width="3"></path>
+            <path id="ellipsePath" fill="none" stroke="#0f172a" stroke-width="2" stroke-dasharray="8 6" opacity="0.7"></path>
+            <path id="taylorPath" fill="none" stroke="#0f172a" stroke-width="2" stroke-dasharray="2 6" opacity="0.7"></path>
+            <text x="54" y="36" fill="#64748b" font-size="12">y</text>
+            <text x="694" y="370" fill="#64748b" font-size="12">x</text>
+          </svg>
+          <div class="legend-item"><span class="line-solid"></span> School parabola (constant g)</div>
+          <div class="legend-item"><span class="line-dashed"></span> Simple elliptical arc picture</div>
+          <div class="legend-item"><span class="line-dotted"></span> First Taylor correction</div>
+        </div>
+
+        <div class="card" style="margin-top:24px;">
+          <h3>What to notice</h3>
+          <ul>
+            <li>For large radius R, the curves become harder to tell apart.</li>
+            <li>The school parabola is simplest because x and y separate cleanly.</li>
+            <li>The dashed and dotted curves remind you that the exact field is not quite uniform.</li>
+            <li>In extension work, these ideas connect to conics, escape speed, and Taylor series.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.add('hidden'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    const toggleParametric = document.getElementById('toggle-parametric');
+    const parametricBox = document.getElementById('parametric-box');
+    toggleParametric.addEventListener('click', () => {
+      const hidden = parametricBox.classList.toggle('hidden');
+      toggleParametric.textContent = hidden ? 'Show' : 'Hide';
+    });
+
+    const toggleTaylor = document.getElementById('toggle-taylor');
+    const taylorBox = document.getElementById('taylor-box');
+    toggleTaylor.addEventListener('click', () => {
+      const hidden = taylorBox.classList.toggle('hidden');
+      toggleTaylor.textContent = hidden ? 'Show' : 'Hide';
+    });
+
+    const ids = ['vx', 'vy', 'g', 'R'];
+    const values = {
+      vx: document.getElementById('vx'),
+      vy: document.getElementById('vy'),
+      g: document.getElementById('g'),
+      R: document.getElementById('R')
+    };
+
+    const labels = {
+      vx: document.getElementById('vxVal'),
+      vy: document.getElementById('vyVal'),
+      g: document.getElementById('gVal'),
+      R: document.getElementById('RVal')
+    };
+
+    const parabolaPath = document.getElementById('parabolaPath');
+    const ellipsePath = document.getElementById('ellipsePath');
+    const taylorPath = document.getElementById('taylorPath');
+
+    function buildPaths() {
+      const vx = parseFloat(values.vx.value);
+      const vy = parseFloat(values.vy.value);
+      const g = parseFloat(values.g.value);
+      const R = parseFloat(values.R.value);
+      labels.vx.textContent = vx.toFixed(1);
+      labels.vy.textContent = vy.toFixed(1);
+      labels.g.textContent = g.toFixed(1);
+      labels.R.textContent = R.toFixed(0);
+
+      const samples = 220;
+      const maxTime = Math.max(0.5, (2 * vy / g) * 1.1);
+      const parabola = [];
+      const taylor = [{ x: 0, y: 0 }];
+      const dt = maxTime / samples;
+
+      let x = 0, y = 0, ux = vx, uy = vy;
+      for (let i = 0; i <= samples; i++) {
+        const t = (i / samples) * maxTime;
+        const px = vx * t;
+        const py = vy * t - 0.5 * g * t * t;
+        if (py >= -2) parabola.push({ x: px, y: py });
+
+        if (i > 0) {
+          const ay = -g + (2 * g * y) / R;
+          x += ux * dt;
+          y += uy * dt;
+          uy += ay * dt;
+          if (y >= -2) taylor.push({ x, y });
+        }
+      }
+
+      const m = vy / vx;
+      const k = g / (2 * vx * vx);
+      const b = Math.max(8, R * 0.82);
+      const denom = Math.max(0.0001, 2 * k * b);
+      const a = Math.sqrt(Math.max(20, (b * b) / denom));
+      const ellipse = [];
+      for (const p of parabola) {
+        if (Math.abs(p.x) > a) break;
+        const inside = Math.max(0, 1 - (p.x * p.x) / (a * a));
+        const yy = -b + b * Math.sqrt(inside);
+        const yShifted = yy + m * p.x;
+        if (yShifted >= -2) ellipse.push({ x: p.x, y: yShifted });
+      }
+
+      const xMax = Math.max(10, ...parabola.map(p => p.x), ...taylor.map(p => p.x), ...ellipse.map(p => p.x));
+      const yMax = Math.max(10, ...parabola.map(p => p.y), ...taylor.map(p => p.y), ...ellipse.map(p => p.y));
+      const yMin = Math.min(-2, ...parabola.map(p => p.y), ...taylor.map(p => p.y), ...ellipse.map(p => p.y));
+
+      function toSvg(px, py) {
+        const width = 720, height = 420, pad = 40;
+        const sx = pad + (px / xMax) * (width - 2 * pad);
+        const sy = height - pad - ((py - yMin) / (yMax - yMin + 1e-9)) * (height - 2 * pad);
+        return [sx, sy];
+      }
+
+      function pathFrom(points) {
+        return points.map((p, i) => {
+          const [sx, sy] = toSvg(p.x, p.y);
+          return `${i === 0 ? 'M' : 'L'} ${sx.toFixed(2)} ${sy.toFixed(2)}`;
+        }).join(' ');
+      }
+
+      parabolaPath.setAttribute('d', pathFrom(parabola));
+      ellipsePath.setAttribute('d', pathFrom(ellipse));
+      taylorPath.setAttribute('d', pathFrom(taylor));
+    }
+
+    ids.forEach(id => values[id].addEventListener('input', buildPaths));
+    buildPaths();
+  </script>
+</body>
+</html>
