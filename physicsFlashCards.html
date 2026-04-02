@@ -29,7 +29,6 @@
         const WHITE = "#f0ede6";
 
         const TERMS = [
-            [
   {
     term: "Absolute Magnitude",
     symbol: "M",
@@ -1053,8 +1052,10 @@
     context: "Each metal has its own work function, which is the minimum photon energy needed to liberate an electron from its surface.",
     full: "The minimum energy required to remove an electron from the surface of a metal. In the photoelectric effect it determines the threshold frequency through f₀ = Φ/h."
   }
-]
-        ];
+];
+
+        // Always keep glossary alphabetized in the UI
+        TERMS.sort((a, b) => a.term.localeCompare(b.term));
 
         const LEVEL_LABELS = ["Keywords · Synonyms · Antonyms", "Context sentence", "Full explanation"];
         const LEVEL_COLORS = [GOLD, "#7ec8e3", "#a8d5a2"];
@@ -1069,7 +1070,7 @@
             const filtered = TERMS.filter(t => {
                 const matchFilter = filter === "all" || (filter === "hl" ? t.hl : !t.hl);
                 const s = search.toLowerCase();
-                return matchFilter && (!s || t.term.toLowerCase().includes(s) || t.keywords.some(k => k.toLowerCase().includes(s)));
+                return matchFilter && (!s || (t.term || '').toLowerCase().includes(s) || (t.keywords || []).some(k => k.toLowerCase().includes(s)));
             });
 
             const card = filtered[idx] || null;
@@ -1120,7 +1121,7 @@
                             <div style={{background:SURFACE, border:`1px solid ${card.hl ? HL_RED : BORDER}`, borderRadius:16, overflow:"hidden"}}>
                                 <div style={{background: card.hl ? `${HL_RED}15` : "#0f1016", padding:24, textAlign:"center", borderBottom:`1px solid ${BORDER}`}}>
                                     <div style={{fontFamily:"'Cormorant Garamond', serif", fontSize:"2.2rem", color:WHITE}}>{card.term} {card.hl && <span style={{fontSize:"0.7rem", background:HL_RED, color:WHITE, padding:"2px 6px", borderRadius:4, verticalAlign:"middle"}}>HL</span>}</div>
-                                    {card.symbol && <div style={{color:GOLD, fontStyle:"italic", marginTop:4}}>{card.symbol} [{card.unit}]</div>}
+                                    {card.symbol && <div style={{color:GOLD, fontStyle:"italic", marginTop:4}}>{card.symbol}{card.unit ? ` [${card.unit}]` : ''}</div>}
                                 </div>
                                 <div style={{display:"flex", borderBottom:`1px solid ${BORDER}`}}>
                                     {[1,2,3].map((n, i) => (
@@ -1130,8 +1131,8 @@
                                 <div style={{padding:30, minHeight:160, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center"}}>
                                     {level === 0 && (
                                         <div>
-                                            <div style={{display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", marginBottom:20}}>{card.keywords.map(k => <span key={k} style={{border:`1px solid ${GOLD}50`, color:GOLD, padding:"3px 10px", borderRadius:15, fontSize:"0.75rem"}}>{k}</span>)}</div>
-                                            <div style={{display:"flex", gap:15, justifyContent:"center"}}><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Syn:</span> {card.synonyms.join(", ")}</div><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Ant:</span> {card.antonyms.join(", ")}</div></div>
+                                            <div style={{display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", marginBottom:20}}>{(card.keywords || []).map(k => <span key={k} style={{border:`1px solid ${GOLD}50`, color:GOLD, padding:"3px 10px", borderRadius:15, fontSize:"0.75rem"}}>{k}</span>)}</div>
+                                            <div style={{display:"flex", gap:15, justifyContent:"center"}}><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Syn:</span> {(card.synonyms || []).join(", ")}</div><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Ant:</span> {(card.antonyms || []).join(", ")}</div></div>
                                         </div>
                                     )}
                                     {level === 1 && <div style={{fontFamily:"'Cormorant Garamond', serif", fontSize:"1.4rem", fontStyle:"italic", color:WHITE}}>"{card.context}"</div>}
@@ -1156,4 +1157,5 @@
     </script>
 </body>
 </html>
+
 
