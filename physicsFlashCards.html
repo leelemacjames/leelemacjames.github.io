@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IB Physics Glossary | Three-Level Flashcards</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background: #0c0d10; color: #d4d0c8; font-family: 'IBM Plex Sans', sans-serif; overflow-x: hidden; }
+        button:disabled { opacity: 0.3; cursor: default !important; }
+        input::placeholder { color: #6b6860; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        const BG = "#0c0d10";
+        const GOLD = "#c8a96e";
+        const HL_RED = "#c0392b";
+        const SURFACE = "#13141a";
+        const BORDER = "#1e2028";
+        const TEXT = "#d4d0c8";
+        const MUTED = "#6b6860";
+        const WHITE = "#f0ede6";
+
+        const TERMS = [
+            { term: "Absolute Magnitude", symbol: "M", unit: "dimensionless", hl: false, keywords: ["intrinsic brightness", "parsec standard", "stellar luminosity"], synonyms: ["intrinsic magnitude"], antonyms: ["Apparent Magnitude"], context: "A star's absolute magnitude M tells you how bright it would appear at exactly 10 parsecs — stripping away distance to reveal true luminosity.", full: "The apparent magnitude a celestial object would have if placed at 10 parsecs from Earth. Because it removes distance as a variable, it is a true measure of intrinsic brightness. Linked to luminosity via the distance modulus m − M = 5 log(d/10)." },
+            { term: "Absolute Zero", symbol: "0 K", unit: "K", hl: false, keywords: ["−273.15 °C", "zero pressure", "minimum thermal energy"], synonyms: ["0 K"], antonyms: ["high temperature limit"], context: "At absolute zero a gas would exert no pressure — molecules have ceased all translational motion, reaching the lowest possible internal energy.", full: "The temperature at which an ideal gas would exert zero pressure and molecules possess minimum possible energy. Defined as 0 K (−273.15 °C). Unattainable in practice (third law of thermodynamics), but approached asymptotically in cryogenic experiments." },
+            { term: "Absorbed Dose", symbol: "D", unit: "Gy (J kg⁻¹)", hl: true, keywords: ["ionising radiation", "energy per mass", "gray"], synonyms: ["radiation dose"], antonyms: ["dose equivalent (which weights by quality factor)"], context: "A radiographer reports an absorbed dose of 2 mGy to tissue — 2 millijoules of radiation energy deposited per kilogram of that tissue.", full: "Total energy deposited by ionising radiation per unit mass of tissue. D = E/m, measured in gray (Gy = J kg⁻¹). Does not account for biological effectiveness — that requires multiplication by the quality factor to give dose equivalent (Sv). HL only." },
+            { term: "Acceleration", symbol: "a", unit: "m s⁻²", hl: false, keywords: ["rate of velocity change", "vector", "Newton's 2nd law"], synonyms: ["rate of change of velocity"], antonyms: ["deceleration", "uniform velocity"], context: "A car accelerates at 3 m s⁻² — its velocity increases by 3 metres per second every second in the direction of the net force.", full: "The rate of change of velocity with respect to time: a = Δv/Δt. A vector quantity — direction matters. Newton's second law connects it to force: F = ma." },
+            { term: "Accuracy", symbol: "—", unit: "—", hl: false, keywords: ["closeness to true value", "systematic error", "correctness"], synonyms: ["correctness", "trueness"], antonyms: ["precision", "inaccuracy"], context: "A balance that always reads 0.5 g too high is precise but not accurate — its readings cluster tightly but miss the true value.", full: "An indication of how close a measurement is to the accepted (true) value. Accuracy is degraded by systematic errors; precision by random uncertainties." },
+            { term: "Acoustic Impedance", symbol: "Z", unit: "kg m⁻² s⁻¹", hl: true, keywords: ["density × speed of sound", "ultrasound reflection", "impedance matching"], synonyms: ["specific acoustic impedance"], antonyms: ["acoustic transparency"], context: "Ultrasound gel is used to match acoustic impedance between the transducer and skin — without it, nearly all sound reflects at the interface.", full: "Z = ρv, the product of a medium's density ρ and the speed of sound v. Large impedance mismatch leads to strong reflection. HL only." },
+            { term: "Activity", symbol: "A", unit: "Bq (s⁻¹)", hl: false, keywords: ["decay rate", "becquerel", "disintegrations per second"], synonyms: ["decay rate"], antonyms: ["stability"], context: "A sample with activity 1000 Bq undergoes 1000 nuclear disintegrations every second.", full: "The number of radioactive disintegrations per unit time: A = λN. Measured in becquerel (1 Bq = 1 decay s⁻¹)." },
+            { term: "Albedo", symbol: "α", unit: "0–1", hl: false, keywords: ["reflectivity", "fraction reflected", "climate"], synonyms: ["reflectance"], antonyms: ["absorptivity"], context: "Fresh snow has albedo ≈ 0.9 — it reflects 90% of solar radiation; the ocean is ~0.06.", full: "Fraction of total incoming solar radiation reflected by a planetary body. α = P_reflected / P_received." },
+            { term: "Alpha Particle", symbol: "α", unit: "—", hl: false, keywords: ["helium nucleus", "2 protons 2 neutrons", "ionising"], synonyms: ["helium-4 nucleus"], antonyms: ["beta particle", "gamma photon"], context: "An alpha particle fired at gold foil occasionally bounced straight back — revealing the existence of a tiny, dense nucleus.", full: "A helium-4 nucleus: 2 protons + 2 neutrons. Highly ionising but stopped by a few cm of air or paper." },
+            { term: "Amplitude", symbol: "A", unit: "m", hl: false, keywords: ["maximum displacement", "peak", "wave height"], synonyms: ["peak displacement"], antonyms: ["node"], context: "Doubling a wave's amplitude quadruples its intensity — I ∝ A².", full: "Maximum displacement of a particle from its equilibrium position. In SHM, amplitude determines total energy: E = ½mω²A²." },
+            { term: "Angular Acceleration", symbol: "α", unit: "rad s⁻²", hl: true, keywords: ["rate of angular velocity change", "torque"], synonyms: ["rotational acceleration"], antonyms: ["constant angular velocity"], context: "Torque is required to produce angular acceleration, related by τ = Iα.", full: "Rate of change of angular velocity: α = dω/dt. Rotational analogue of linear acceleration. HL only." },
+            { term: "Angular Momentum", symbol: "L", unit: "kg m² s⁻¹", hl: true, keywords: ["L = Iω", "rotational momentum", "conserved quantity"], synonyms: ["rotational momentum"], antonyms: ["linear momentum"], context: "A spinning neutron star conserves angular momentum as it collapses — shrinking radius drives up rotational speed.", full: "L = Iω for a rigid body. Conserved when net external torque is zero. HL only." },
+            { term: "Angular Speed", symbol: "ω", unit: "rad s⁻¹", hl: false, keywords: ["radians per second", "ω = 2πf", "rotational speed"], synonyms: ["angular frequency"], antonyms: ["linear speed"], context: "Earth's angular speed is 2π/86400 rad s⁻¹ — the same for every point on its surface.", full: "Rate of change of angular displacement: ω = dθ/dt = 2πf. Tangential speed v = rω." },
+            { term: "Binding Energy", symbol: "BE", unit: "MeV", hl: false, keywords: ["mass defect", "nuclear stability", "energy to separate nucleus"], synonyms: ["nuclear binding energy"], antonyms: ["mass defect energy"], context: "Iron-56 sits at the peak of the binding-energy-per-nucleon curve.", full: "Energy released when a nucleus is assembled from constituents. BE = Δmc²." },
+            { term: "Centripetal Acceleration", symbol: "ac", unit: "m s⁻²", hl: false, keywords: ["centre-seeking", "a = v²/r", "circular motion"], synonyms: ["radial acceleration"], antonyms: ["tangential acceleration"], context: "The Moon's centripetal acceleration is provided entirely by Earth's gravity.", full: "Acceleration directed toward the centre of a circular path: ac = v²/r = ω²r." },
+            { term: "Constructive Interference", symbol: "—", unit: "—", hl: false, keywords: ["in phase", "amplitude addition", "path difference nλ"], synonyms: ["reinforcement"], antonyms: ["destructive interference"], context: "Two speakers create loud spots where path difference = nλ.", full: "Occurs when two waves meet in phase. Resultant amplitude equals the sum of individual amplitudes." },
+            { term: "Decay Constant", symbol: "λ", unit: "s⁻¹", hl: false, keywords: ["probability of decay", "activity = λN", "exponential decay"], synonyms: ["disintegration constant"], antonyms: ["half-life"], context: "Carbon-14 has a very small λ, enabling radiocarbon dating over millennia.", full: "The probability per unit time that a given nucleus will decay. T½ = ln2/λ." },
+            { term: "de Broglie Hypothesis", symbol: "λ = h/p", unit: "m", hl: true, keywords: ["matter waves", "wave-particle duality", "momentum wavelength"], synonyms: ["matter wave hypothesis"], antonyms: ["classical particle"], context: "Electrons fired at a crystal diffract just like X-rays, revealing their wave nature.", full: "All particles have an associated wave with wavelength λ = h/p. HL only." },
+            { term: "Destructive Interference", symbol: "—", unit: "—", hl: false, keywords: ["out of phase", "amplitude cancellation", "path difference (n+½)λ"], synonyms: ["cancellation"], antonyms: ["constructive interference"], context: "Noise-cancelling headphones generate a wave exactly out of phase with ambient noise.", full: "Occurs when two waves meet exactly out of phase (180°)." },
+            { term: "Diffraction", symbol: "—", unit: "—", hl: false, keywords: ["wave bending", "gap comparable to λ", "spreading"], synonyms: ["wave spreading"], antonyms: ["straight-line propagation"], context: "Radio waves diffract around hills; light barely diffracts through a doorway.", full: "The spreading of a wave as it passes through an opening. Most pronounced when gap ≈ λ." },
+            { term: "Doppler Effect", symbol: "—", unit: "—", hl: false, keywords: ["frequency shift", "source motion", "redshift"], synonyms: ["Doppler shift"], antonyms: ["stationary source"], context: "A police siren drops in pitch as the car passes — waves stretch out as the source recedes.", full: "Change in observed frequency when source or observer moves relative to the medium." },
+            { term: "Dose Equivalent", symbol: "H", unit: "Sv", hl: true, keywords: ["quality factor", "biological effectiveness", "sievert"], synonyms: ["effective dose"], antonyms: ["absorbed dose"], context: "Neutrons have a high quality factor — 1 Gy of neutron radiation does more damage than 1 Gy of X-rays.", full: "H = Q × D, where Q is the quality factor. Measured in sieverts. HL only." },
+            { term: "Electric Field Strength", symbol: "E", unit: "N C⁻¹", hl: false, keywords: ["force per unit charge", "E = F/q", "vector field"], synonyms: ["electric field intensity"], antonyms: ["shielded region"], context: "E = 5 N C⁻¹ means every coulomb of charge placed there feels 5 N of force.", full: "Electric force per unit positive test charge. For a point charge: E = kQ/r²." },
+            { term: "Electromotive Force", symbol: "ε", unit: "V", hl: false, keywords: ["energy per unit charge", "battery", "open-circuit voltage"], synonyms: ["emf"], antonyms: ["terminal voltage"], context: "A battery labelled 9 V has emf 9 V, but under load terminal voltage drops due to internal resistance.", full: "Total energy supplied per unit charge by a source: ε = W/q." },
+            { term: "Energy", symbol: "E", unit: "J", hl: false, keywords: ["capacity to do work", "joule", "conserved quantity"], synonyms: ["stored work"], antonyms: ["entropy"], context: "A 100 W bulb converts 100 J of electrical energy to light and heat every second.", full: "The capacity to do work. Conserved in isolated systems (First Law)." },
+            { term: "Entropy", symbol: "S", unit: "J K⁻¹", hl: false, keywords: ["disorder", "second law", "irreversibility"], synonyms: ["disorder"], antonyms: ["order"], context: "Ice melting in warm water increases entropy — the process never spontaneously reverses.", full: "A state function measuring disorder. Increases in all spontaneous irreversible processes." },
+            { term: "Faraday's Law", symbol: "ε = −NΔΦ/Δt", unit: "V", hl: false, keywords: ["changing flux", "induced emf", "electromagnetic induction"], synonyms: ["induction law"], antonyms: ["static field"], context: "Rotating a coil in a magnetic field changes flux and induces the emf that drives current.", full: "Induced emf is proportional to the rate of change of magnetic flux linkage." },
+            { term: "First Law of Thermodynamics", symbol: "ΔU = Q − W", unit: "J", hl: false, keywords: ["energy conservation", "heat and work", "internal energy"], synonyms: ["conservation of energy"], antonyms: ["Second Law"], context: "Heating a gas increases its internal energy unless the gas does equivalent work expanding.", full: "Thermal energy added equals work done by system plus increase in internal energy." },
+            { term: "Force", symbol: "F", unit: "N", hl: false, keywords: ["push or pull", "vector", "Newton 2nd law"], synonyms: ["interaction"], antonyms: ["equilibrium"], context: "A 10 N force on a 2 kg trolley produces 5 m s⁻² acceleration.", full: "A vector quantity that causes change in motion. F = ma." },
+            { term: "Frequency", symbol: "f", unit: "Hz", hl: false, keywords: ["oscillations per second", "f = 1/T", "hertz"], synonyms: ["repetition rate"], antonyms: ["period"], context: "Middle C is 262 Hz — the string vibrates 262 times per second.", full: "Number of complete oscillations per unit time. v = fλ." },
+            { term: "Gravitational Field Strength", symbol: "g", unit: "N kg⁻¹", hl: false, keywords: ["force per unit mass", "g = 9.81", "field strength"], synonyms: ["gravitational acceleration"], antonyms: ["weightlessness"], context: "On the Moon, g ≈ 1.6 N kg⁻¹ — an astronaut weighs less but their mass is unchanged.", full: "Gravitational force per unit mass at a point: g = F/m = GM/r²." },
+            { term: "Gravitational Red Shift", symbol: "—", unit: "—", hl: true, keywords: ["clocks slow in gravity", "photon loses energy climbing", "general relativity"], synonyms: ["time dilation"], antonyms: ["blueshift"], context: "GPS satellites run clocks fast to compensate for gravitational time dilation.", full: "Photons lose energy climbing out of a gravity well, shifting to longer wavelengths. HL only." },
+            { term: "Greenhouse Effect", symbol: "—", unit: "—", hl: false, keywords: ["IR absorption", "CO₂ CH₄ H₂O", "atmospheric warming"], synonyms: ["atmospheric blanketing"], antonyms: ["albedo"], context: "Greenhouse gases absorb IR re-radiated from Earth and emit it back, warming the surface.", full: "Atmospheric warming caused by gases absorbing long-wavelength infrared radiation." },
+            { term: "Heisenberg Uncertainty Principle", symbol: "ΔxΔp ≥ ℏ/2", unit: "—", hl: true, keywords: ["conjugate quantities", "position-momentum", "quantum limit"], synonyms: ["indeterminacy"], antonyms: ["classical determinism"], context: "Confining an electron to a tiny space (small Δx) forces a large uncertainty in momentum.", full: "Position and momentum cannot both be known with arbitrary precision. HL only." },
+            { term: "Hertzsprung–Russell Diagram", symbol: "H–R", unit: "—", hl: true, keywords: ["luminosity vs temperature", "main sequence", "evolution"], synonyms: ["H–R diagram"], antonyms: ["no direct antonym"], context: "A star's position on the H–R diagram reveals its evolutionary stage and mass.", full: "Plot of stellar luminosity vs surface temperature. HL only." },
+            { term: "Impulse", symbol: "J", unit: "N s", hl: false, keywords: ["change in momentum", "J = FΔt", "area under F–t"], synonyms: ["change in momentum"], antonyms: ["constant momentum"], context: "A cricket bat applying force for a short time creates an impulse that changes ball speed.", full: "Impulse equals the change in linear momentum: J = Δp = FΔt." },
+            { term: "Intensity", symbol: "I", unit: "W m⁻²", hl: false, keywords: ["power per area", "I ∝ A²", "inverse-square law"], synonyms: ["irradiance"], antonyms: ["low amplitude"], context: "Doubling distance from a point source reduces intensity by four (inverse-square law).", full: "Power incident per unit area perpendicular to propagation: I = P/A." },
+            { term: "Kinetic Energy", symbol: "EK", unit: "J", hl: false, keywords: ["½mv²", "motion energy", "scalar"], synonyms: ["translational KE"], antonyms: ["potential energy"], context: "Stopping a moving car requires dissipating its kinetic energy as heat in the brakes.", full: "Energy possessed by an object due to its motion: EK = ½mv²." },
+            { term: "Length Contraction", symbol: "L = L₀/γ", unit: "m", hl: true, keywords: ["Lorentz contraction", "proper length", "relativistic shortening"], synonyms: ["relativistic contraction"], antonyms: ["proper length"], context: "A fast muon sees the atmosphere contracted to ~1% of its rest thickness.", full: "Objects moving relative to an observer appear shortened in motion direction. HL only." },
+            { term: "Lenz's Law", symbol: "ε = −NΔΦ/Δt", unit: "—", hl: false, keywords: ["opposes change", "induced current", "conservation of energy"], synonyms: ["induction opposition"], antonyms: ["positive feedback"], context: "Induced current direction always creates a field opposing the change that caused it.", full: "Induced emf opposes the flux change that produced it (the negative sign in Faraday's law)." },
+            { term: "Linear Momentum", symbol: "p", unit: "kg m s⁻¹", hl: false, keywords: ["p = mv", "vector", "conserved"], synonyms: ["momentum"], antonyms: ["angular momentum"], context: "In a collision, total linear momentum is conserved if no external forces act.", full: "Product of mass and velocity: p = mv. F = dp/dt." },
+            { term: "Lorentz Factor", symbol: "γ", unit: "dimensionless", hl: true, keywords: ["γ = 1/√(1−v²/c²)", "relativistic scaling", "approaches ∞ at c"], synonyms: ["gamma factor"], antonyms: ["γ = 1 (at rest)"], context: "At v = 0.866c, γ = 2, meaning lengths halve and clocks run at half speed.", full: "Dimensionless factor scaling relativistic effects (dilation, contraction). HL only." },
+            { term: "Magnetic Flux", symbol: "Φ", unit: "Wb", hl: false, keywords: ["Φ = BAcosθ", "field through area", "weber"], synonyms: ["flux linkage (NΦ)"], antonyms: ["zero flux"], context: "Maximum flux occurs when the field is perpendicular to the area of the coil.", full: "Measure of total magnetic field passing through a surface." },
+            { term: "Mass Defect", symbol: "Δm", unit: "kg or u", hl: false, keywords: ["binding energy", "missing mass", "E = Δmc²"], synonyms: ["nuclear mass defect"], antonyms: ["mass excess"], context: "A nucleus is always lighter than its free protons and neutrons; the difference is mass defect.", full: "Δm = Σm(nucleons) − m(nucleus). Missing mass is converted to binding energy." },
+            { term: "Matter Waves", symbol: "λ = h/p", unit: "m", hl: true, keywords: ["de Broglie", "electron diffraction", "quantum"], synonyms: ["de Broglie waves"], antonyms: ["classical particle"], context: "Electron microscopes exploit matter waves to achieve atomic-scale resolution.", full: "All moving particles have an associated wavelength λ = h/p. HL only." },
+            { term: "Newton's First Law", symbol: "—", unit: "—", hl: false, keywords: ["inertia", "uniform motion", "no net force"], synonyms: ["law of inertia"], antonyms: ["Newton's Second Law"], context: "A puck on frictionless ice glides at constant speed indefinitely without force.", full: "Objects remain at rest or in uniform motion unless acted upon by a net force." },
+            { term: "Newton's Second Law", symbol: "F = ma", unit: "N", hl: false, keywords: ["F = dp/dt", "acceleration proportional to force", "net force"], synonyms: ["law of acceleration"], antonyms: ["Newton's First Law"], context: "Doubling force doubles acceleration; doubling mass halves it.", full: "Net force equals rate of change of momentum: F = dp/dt." },
+            { term: "Newton's Third Law", symbol: "FAB = −FBA", unit: "N", hl: false, keywords: ["action-reaction", "equal and opposite", "pairs"], synonyms: ["law of action-reaction"], antonyms: ["no reaction"], context: "A rocket pushes exhaust back; the exhaust pushes the rocket forward with equal force.", full: "Forces always occur in equal and opposite pairs acting on different objects." },
+            { term: "Photoelectric Effect", symbol: "—", unit: "—", hl: false, keywords: ["photon ejects electron", "threshold", "work function"], synonyms: ["photoemission"], antonyms: ["thermal emission"], context: "UV light ejects electrons from zinc, but red light cannot, regardless of intensity.", full: "Emission of electrons when light above a threshold frequency hits a metal." },
+            { term: "Principle of Equivalence", symbol: "—", unit: "—", hl: true, keywords: ["gravity vs acceleration", "indistinguishable", "general relativity"], synonyms: ["equivalence principle"], antonyms: ["distinguishability"], context: "Inside a sealed lift, you cannot tell if you are in a gravity field or accelerating.", full: "A gravity field is locally indistinguishable from an accelerating frame. HL only." },
+            { term: "Proper Length", symbol: "L₀", unit: "m", hl: true, keywords: ["rest frame", "maximum length", "reference"], synonyms: ["rest length"], antonyms: ["contracted length"], context: "Length is greatest when measured by an observer at rest relative to the object.", full: "Length measured in the frame where the object is at rest. HL only." },
+            { term: "Proper Time Interval", symbol: "Δt₀", unit: "s", hl: true, keywords: ["rest frame time", "minimum interval", "wristwatch time"], synonyms: ["eigentime"], antonyms: ["dilated time"], context: "A muon's lifetime is minimum in its own frame; ground observers measure it as longer.", full: "Time interval between events occurring at the same location. HL only." },
+            { term: "Radioactive Half-life", symbol: "T½", unit: "s", hl: false, keywords: ["T½ = ln2/λ", "time to halve", "decay"], synonyms: ["half-life"], antonyms: ["decay constant"], context: "After one half-life, half the radioactive nuclei remain; after two, one quarter.", full: "Time for activity to decrease to half its original value." },
+            { term: "Resistance", symbol: "R", unit: "Ω", hl: false, keywords: ["V/I ratio", "ohm", "opposition"], synonyms: ["electrical resistance"], antonyms: ["conductance"], context: "Resistance is the ratio of potential difference to current; for ohmic devices, it is constant.", full: "R = V/I. Power P = I²R." },
+            { term: "Simple Harmonic Motion", symbol: "a = −ω²x", unit: "—", hl: false, keywords: ["restoring force", "acceleration ∝ −displacement", "sine wave"], synonyms: ["SHM"], antonyms: ["damped oscillation"], context: "A spring-mass system oscillates with acceleration always pointing back to center.", full: "Motion where acceleration is proportional and opposite to displacement." },
+            { term: "Special Theory of Relativity", symbol: "—", unit: "—", hl: true, keywords: ["constant c", "inertial frames", "Lorentz"], synonyms: ["special relativity"], antonyms: ["Galilean relativity"], context: "The speed of light is constant for all observers, leading to time dilation and E=mc².", full: "Theory based on the invariance of the laws of physics and the speed of light. HL only." },
+            { term: "Stefan–Boltzmann Law", symbol: "P = εσAT⁴", unit: "W", hl: false, keywords: ["T to the fourth", "black body power", "Stefan constant"], synonyms: ["Stefan's law"], antonyms: ["Wien's law"], context: "Doubling temperature increases radiated power by 16 times (2⁴).", full: "Total power radiated by a black body is proportional to T⁴." },
+            { term: "Time Dilation", symbol: "Δt = γΔt₀", unit: "s", hl: true, keywords: ["moving clocks run slow", "proper time", "gamma"], synonyms: ["relativistic dilation"], antonyms: ["proper time"], context: "Clocks on high-speed satellites tick slower than those on the ground.", full: "A clock moving relative to an observer ticks more slowly. HL only." },
+            { term: "Torque", symbol: "τ", unit: "N m", hl: true, keywords: ["turning effect", "τ = Fr sinθ", "rotational force"], synonyms: ["moment"], antonyms: ["equilibrium"], context: "A longer wrench provides more torque for the same applied force.", full: "The rotational effect of a force: τ = r × F. HL only." },
+            { term: "Wave–Particle Duality", symbol: "—", unit: "—", hl: true, keywords: ["photon and wave", "electron diffraction", "complementarity"], synonyms: ["duality"], antonyms: ["classical particle"], context: "Electrons act as particles in a cloud chamber but as waves when diffracting.", full: "Matter and radiation exhibit both wave and particle properties. HL only." },
+            { term: "Work", symbol: "W", unit: "J", hl: false, keywords: ["force × displacement", "energy transfer", "scalar"], synonyms: ["energy transferred"], antonyms: ["no work"], context: "Carrying a weight horizontally does no work against gravity because force is perpendicular to motion.", full: "Work done W = Fs cosθ." },
+            { term: "Work Function", symbol: "Φ", unit: "J", hl: false, keywords: ["minimum energy to eject electron", "threshold", "photoelectric"], synonyms: ["extraction energy"], antonyms: ["max kinetic energy"], context: "Each metal has a unique work function — the energy cost to liberate an electron.", full: "Minimum energy required to remove an electron from a metal surface." }
+        ];
+
+        const LEVEL_LABELS = ["Keywords · Synonyms · Antonyms", "Context sentence", "Full explanation"];
+        const LEVEL_COLORS = [GOLD, "#7ec8e3", "#a8d5a2"];
+
+        function App() {
+            const [filter, setFilter] = useState("all");
+            const [search, setSearch] = useState("");
+            const [idx, setIdx] = useState(0);
+            const [level, setLevel] = useState(0);
+            const [transitioning, setTransitioning] = useState(false);
+
+            const filtered = TERMS.filter(t => {
+                const matchFilter = filter === "all" || (filter === "hl" ? t.hl : !t.hl);
+                const s = search.toLowerCase();
+                return matchFilter && (!s || t.term.toLowerCase().includes(s) || t.keywords.some(k => k.toLowerCase().includes(s)));
+            });
+
+            const card = filtered[idx] || null;
+
+            const go = useCallback((dir) => {
+                if (transitioning || filtered.length === 0) return;
+                setTransitioning(true);
+                setTimeout(() => {
+                    setIdx(i => (i + dir + filtered.length) % filtered.length);
+                    setLevel(0);
+                    setTransitioning(false);
+                }, 180);
+            }, [transitioning, filtered.length]);
+
+            useEffect(() => {
+                const h = (e) => {
+                    if (e.key === "ArrowRight") go(1);
+                    if (e.key === "ArrowLeft") go(-1);
+                    if (e.key === "ArrowDown" && level < 2) setLevel(l => l + 1);
+                    if (e.key === "ArrowUp" && level > 0) setLevel(l => l - 1);
+                };
+                window.addEventListener("keydown", h);
+                return () => window.removeEventListener("keydown", h);
+            }, [go, level]);
+
+            useEffect(() => { setIdx(0); setLevel(0); }, [filter, search]);
+
+            return (
+                <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", padding:24}}>
+                    <div style={{textAlign:"center", marginBottom:30}}>
+                        <div style={{fontFamily:"'Cormorant Garamond', serif", fontSize:"2rem", color:GOLD}}>IB Physics Glossary</div>
+                        <div style={{fontFamily:"'IBM Plex Mono', monospace", fontSize:"0.7rem", color:MUTED, textTransform:"uppercase"}}>Three-Level Flashcards · {filtered.length} Terms</div>
+                    </div>
+
+                    <div style={{display:"flex", gap:10, marginBottom:20, flexWrap:"wrap", justifyContent:"center"}}>
+                        {["all","sl","hl"].map(f => (
+                            <button key={f} onClick={() => setFilter(f)} style={{
+                                background: filter === f ? (f === "hl" ? HL_RED : GOLD) : SURFACE,
+                                color: filter === f ? BG : MUTED,
+                                border: "1px solid #1e2028", borderRadius:20, padding:"6px 16px", cursor:"pointer", textTransform:"uppercase", fontSize:"0.7rem"
+                            }}>{f}</button>
+                        ))}
+                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{background:SURFACE, border:`1px solid ${BORDER}`, color:TEXT, borderRadius:20, padding:"6px 14px", fontSize:"0.75rem", outline:"none", width:120}} />
+                    </div>
+
+                    {card ? (
+                        <div style={{width:"100%", maxWidth:600, opacity: transitioning ? 0 : 1, transition:"opacity 0.2s"}}>
+                            <div style={{background:SURFACE, border:`1px solid ${card.hl ? HL_RED : BORDER}`, borderRadius:16, overflow:"hidden"}}>
+                                <div style={{background: card.hl ? `${HL_RED}15` : "#0f1016", padding:24, textAlign:"center", borderBottom:`1px solid ${BORDER}`}}>
+                                    <div style={{fontFamily:"'Cormorant Garamond', serif", fontSize:"2.2rem", color:WHITE}}>{card.term} {card.hl && <span style={{fontSize:"0.7rem", background:HL_RED, color:WHITE, padding:"2px 6px", borderRadius:4, verticalAlign:"middle"}}>HL</span>}</div>
+                                    {card.symbol && <div style={{color:GOLD, fontStyle:"italic", marginTop:4}}>{card.symbol} [{card.unit}]</div>}
+                                </div>
+                                <div style={{display:"flex", borderBottom:`1px solid ${BORDER}`}}>
+                                    {[1,2,3].map((n, i) => (
+                                        <button key={n} onClick={() => setLevel(i)} style={{flex:1, padding:12, background: level === i ? `${LEVEL_COLORS[i]}20` : "transparent", color: level === i ? LEVEL_COLORS[i] : MUTED, border:"none", borderBottom: level === i ? `2px solid ${LEVEL_COLORS[i]}` : "2px solid transparent", cursor:"pointer", fontSize:"0.65rem", textTransform:"uppercase"}}>Level {n}</button>
+                                    ))}
+                                </div>
+                                <div style={{padding:30, minHeight:160, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center"}}>
+                                    {level === 0 && (
+                                        <div>
+                                            <div style={{display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", marginBottom:20}}>{card.keywords.map(k => <span key={k} style={{border:`1px solid ${GOLD}50`, color:GOLD, padding:"3px 10px", borderRadius:15, fontSize:"0.75rem"}}>{k}</span>)}</div>
+                                            <div style={{display:"flex", gap:15, justifyContent:"center"}}><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Syn:</span> {card.synonyms.join(", ")}</div><div style={{fontSize:"0.8rem"}}><span style={{color:MUTED}}>Ant:</span> {card.antonyms.join(", ")}</div></div>
+                                        </div>
+                                    )}
+                                    {level === 1 && <div style={{fontFamily:"'Cormorant Garamond', serif", fontSize:"1.4rem", fontStyle:"italic", color:WHITE}}>"{card.context}"</div>}
+                                    {level === 2 && <div style={{fontSize:"0.95rem", lineHeight:1.7, textAlign:"left"}}>{card.full}</div>}
+                                </div>
+                                <div style={{padding:15, background:"#0f1016", borderTop:`1px solid ${BORDER}`, display:"flex", justifyContent:"space-between"}}>
+                                    <button onClick={() => go(-1)} style={{background:"none", border:"none", color:MUTED, cursor:"pointer"}}>← Prev</button>
+                                    <div style={{color:GOLD, fontSize:"0.8rem"}}>{idx + 1} / {filtered.length}</div>
+                                    <button onClick={() => go(1)} style={{background:"none", border:"none", color:MUTED, cursor:"pointer"}}>Next →</button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : <div style={{color:MUTED}}>No results.</div>}
+                    
+                    <div style={{marginTop:40, color:MUTED, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase"}}>Constructed by Silicon · Architect Carbon · LeeMcCullochJames</div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
