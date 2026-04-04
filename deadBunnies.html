@@ -121,6 +121,54 @@
     .metric-row, .sparkline-grid { grid-template-columns: 1fr; }
     .preamble { padding: 1.25rem 1rem; }
   }
+<style>
+  /* ── Readability overrides ── */
+  :root {
+    --text-preamble: #c4c0b8;
+  }
+  body { font-size: 0.94rem; }
+  .panel-card { padding: calc(var(--pad-md, 1rem) * 1.3) !important; }
+  .mini-kpi { padding: 0.9rem 1rem !important; }
+  .hero-grid { gap: calc(1.3rem * 1.618) !important; }
+  .matrix-wrap { gap: calc(1.3rem * 1.618) !important; }
+
+  /* ── Companion preamble sections ── */
+  .companion-preamble {
+    max-width: 1280px;
+    width: 100%;
+    margin-bottom: 1.4rem;
+    padding: 0 0.25rem;
+  }
+  .companion-preamble h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: var(--gold);
+    margin-bottom: 0.55rem;
+    letter-spacing: 0.01em;
+  }
+  .companion-preamble p {
+    font-size: 0.89rem;
+    color: var(--text-preamble, #c4c0b8);
+    line-height: 1.72;
+    margin-bottom: 0.6rem;
+  }
+  .companion-preamble p:last-child { margin-bottom: 0; }
+  .companion-preamble code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--bg-card2, #242528);
+    padding: 0.1rem 0.38rem;
+    border-radius: 3px;
+    color: var(--gold);
+  }
+  .companion-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,169,110,0.12), transparent);
+    margin: 1.6rem 0;
+    max-width: 1280px;
+    width: 100%;
+  }
 </style>
 </head>
 <body>
@@ -474,10 +522,194 @@ function drawMatrix(canvas, M, mode='auto') {
   const n = M.length, numeric = mode === 'numbers' || (mode === 'auto' && n <= 6), cell = numeric ? 44 : Math.max(18, Math.floor(240 / n)), w = Math.max(220, cell * n + 40), h = Math.max(220, cell * n + 40); canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.fillStyle = '#121212'; ctx.fillRect(0,0,w,h); let max = 0; for (const row of M) for (const v of row) max = Math.max(max, Math.abs(v)); const ox = 20, oy = 20; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const v = M[i][j], t = max ? Math.abs(v)/max : 0, shade = Math.round(24 + 160 * t); ctx.fillStyle = numeric ? '#171717' : `rgb(${shade},${Math.round(20 + 120 * t)},${Math.round(20 + 40 * t)})`; ctx.fillRect(ox + j*cell, oy + i*cell, cell - 2, cell - 2); ctx.strokeStyle = 'rgba(200,169,110,0.08)'; ctx.strokeRect(ox + j*cell, oy + i*cell, cell - 2, cell - 2); if (numeric) { ctx.fillStyle = v ? '#e8e0d0' : '#666'; ctx.font = '13px IBM Plex Mono'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(v), ox + j*cell + (cell-2)/2, oy + i*cell + (cell-2)/2); } }
 }
 function makeDFCompanionPanels(payload, mode, matrixMode) {
-  const outer = document.createElement('div'); outer.style.width = '100%'; outer.style.maxWidth = '1280px'; const hero = document.createElement('div'); hero.className = 'hero-grid';
-  const left = makePanelCard('Spectral decay visualizer', 'Eigenvalues of the exact mortality matrix'); const metrics = document.createElement('div'); metrics.className = 'metric-row'; const lam1Mod = cAbs(payload.spectrum.lam1), lam2Mod = cAbs(payload.spectrum.lam2), gap = lam1Mod - lam2Mod; metrics.innerHTML = `<div class="mini-kpi"><div class="k">Dominant root</div><div class="v">${fmt(lam1Mod, 5)}</div><div class="s">λ₁ = ${cFormat(payload.spectrum.lam1, 3)}</div></div><div class="mini-kpi"><div class="k">Subordinate root</div><div class="v">${fmt(lam2Mod, 5)}</div><div class="s">λ₂ = ${cFormat(payload.spectrum.lam2, 3)}</div></div><div class="mini-kpi"><div class="k">Spectral gap</div><div class="v">${fmt(gap, 5)}</div><div class="s">|λ₁| − |λ₂|</div></div>`; left.appendChild(metrics); const specCanvas = document.createElement('canvas'); specCanvas.className = 'plot-canvas'; drawSpectralPlot(specCanvas, payload.spectrum); left.appendChild(specCanvas); const lnote = document.createElement('div'); lnote.className = 'micro-note'; lnote.textContent = payload.spectrum.model === 'exact-mortality' ? 'Exact finite-g spectrum from the age-class mortality operator M_g.' : 'Immortal limit: classical Fibonacci 2×2 transfer matrix.'; left.appendChild(lnote); hero.appendChild(left);
-  const right = makePanelCard('Projective monitor', 'Live cross-ratio from consecutive total populations'); const eq = document.createElement('div'); eq.className = 'equation-card'; const xiLast = payload.crossRatios[payload.crossRatios.length - 1]; eq.innerHTML = `<div class="eq">ξ<sub>n</sub> = ((x<sub>n−3</sub>−x<sub>n−1</sub>)(x<sub>n−2</sub>−x<sub>n</sub>)) / ((x<sub>n−3</sub>−x<sub>n</sub>)(x<sub>n−2</sub>−x<sub>n−1</sub>))</div><div class="legend"><span><span class="swatch" style="background:#c8a96e"></span>live ξ<sub>n</sub> = ${fmt(xiLast, 6)}</span><span><span class="swatch" style="background:#e8e0d0"></span>target ξ<sub>∞</sub> ≈ ${fmt(payload.xiTarget, 6)}</span></div>`; right.appendChild(eq); const sparkWrap = document.createElement('div'); sparkWrap.className = 'sparkline-grid'; const c1 = makePanelCard('Cross-ratio sparkline', 'Approach to the asymptotic projective invariant'); const sp1 = document.createElement('canvas'); sp1.className = 'spark-canvas'; drawSparkline(sp1, payload.crossRatios, payload.xiTarget, false); c1.appendChild(sp1); sparkWrap.appendChild(c1); const c2 = makePanelCard('Scaling', 'Log plot of |ξ_k − ξ_(k−1)|'); const sp2 = document.createElement('canvas'); sp2.className = 'spark-canvas'; drawSparkline(sp2, payload.scaling, null, true); c2.appendChild(sp2); sparkWrap.appendChild(c2); const c3 = makePanelCard('Population sizes', 'Total counts feeding the projective monitor'); const sp3 = document.createElement('canvas'); sp3.className = 'spark-canvas'; drawSparkline(sp3, payload.sizes, null, false); c3.appendChild(sp3); sparkWrap.appendChild(c3); right.appendChild(sparkWrap); const rnote = document.createElement('div'); rnote.className = 'micro-note'; rnote.textContent = 'The target ξ∞ is estimated from the exact spectral ratio λ₂/λ₁. The live ξn remains an empirical quantity computed from actual consecutive totals.'; right.appendChild(rnote); hero.appendChild(right); outer.appendChild(hero);
-  if (mode !== 'scaling') { const matrixGrid = document.createElement('div'); matrixGrid.className = 'matrix-wrap'; const m1 = makePanelCard('Matrix memory view', 'Exact transition matrix for the age-structured model'); const mc = document.createElement('canvas'); mc.className = 'matrix-canvas'; drawMatrix(mc, payload.spectrum.matrix, matrixMode); m1.appendChild(mc); const mnote = document.createElement('div'); mnote.className = 'micro-note'; mnote.textContent = payload.spectrum.model === 'exact-mortality' ? 'Top row = births. Entry (2,1) matures bunnies into rabbits. The subdiagonal ages rabbits forward. The absence of a survival term out of the final class encodes death.' : 'Immortal case uses the standard 2×2 Fibonacci transfer matrix.'; m1.appendChild(mnote); matrixGrid.appendChild(m1); const m2 = makePanelCard('Operator summary', 'Matrix, spectrum, and projective limit'); const box = document.createElement('div'); box.className = 'info-box'; box.innerHTML = `<span class="gold">Model:</span> ${payload.spectrum.model}<br><span class="gold">Order:</span> ${payload.spectrum.order}<br><span class="gold">Dominant ratio λ₂/λ₁:</span> ${cFormat(payload.spectrum.ratio, 5)}<br><span class="gold">Asymptotic ξ∞ (real part):</span> ${fmt(payload.xiTarget, 6)}<br><span class="gold">Last empirical ξn:</span> ${fmt(payload.crossRatios[payload.crossRatios.length - 1], 6)}<br><span class="gold">Last log-scaling:</span> ${payload.scaling.length ? fmt(log10safe(payload.scaling[payload.scaling.length - 1]), 6) : '—'}<br><span class="gold">Reading:</span> the operator, spectrum, and convergence monitor are now mathematically aligned.`; m2.appendChild(box); matrixGrid.appendChild(m2); outer.appendChild(matrixGrid); }
+  const outer = document.createElement('div');
+  outer.style.width = '100%';
+  outer.style.maxWidth = '1280px';
+
+  // ────────────────────────────────────────────────
+  // PREAMBLE A: Spectral decomposition introduction
+  // ────────────────────────────────────────────────
+  const specPreamble = document.createElement('div');
+  specPreamble.className = 'companion-preamble';
+  specPreamble.innerHTML =
+    '<h3>Spectral decomposition</h3>' +
+    '<p>The companion matrix <code>M</code> encodes the recurrence as a first-order ' +
+    'state transition on an enlarged state space. Its eigenvalues decompose the sequence ' +
+    'into exponential modes: a dominant mode proportional to \u03bb<sub>1</sub><sup>n</sup> ' +
+    'that governs gross growth, and subordinate modes proportional to ' +
+    '\u03bb<sub>j</sub><sup>n</sup> that decay relative to the dominant. The spectral ratio ' +
+    '|\u03bb<sub>2</sub>/\u03bb<sub>1</sub>| measures how quickly the sequence ceases to ' +
+    'display the fine structure of its initial conditions.</p>' +
+    '<p>The dominant eigenvalue tells us how the sequence grows. The subdominant ones tell us ' +
+    'how it stops being complicated. The cross-ratio \u03be<sub>\u221e</sub> is sensitive ' +
+    'precisely to the latter: it cancels dominant exponential growth and exposes the ' +
+    'subordinate spectral structure as a projectively invariant scalar.</p>';
+  outer.appendChild(specPreamble);
+
+  // ────────────────────────────────────────────────
+  // HERO GRID: Spectral plot (left) + Projective monitor (right)
+  // ────────────────────────────────────────────────
+  const hero = document.createElement('div');
+  hero.className = 'hero-grid';
+
+  // ── LEFT: Spectral decay visualiser ──
+  const left = makePanelCard('Spectral decay visualiser', 'Eigenvalues of the exact mortality matrix');
+
+  const metrics = document.createElement('div');
+  metrics.className = 'metric-row';
+  const lam1Mod = cAbs(payload.spectrum.lam1);
+  const lam2Mod = cAbs(payload.spectrum.lam2);
+  const gap = lam1Mod - lam2Mod;
+  metrics.innerHTML =
+    '<div class="mini-kpi"><div class="k">Dominant root</div><div class="v">' + fmt(lam1Mod, 5) + '</div>' +
+    '<div class="s">\u03bb\u2081 = ' + cFormat(payload.spectrum.lam1, 3) + '</div></div>' +
+    '<div class="mini-kpi"><div class="k">Subordinate root</div><div class="v">' + fmt(lam2Mod, 5) + '</div>' +
+    '<div class="s">\u03bb\u2082 = ' + cFormat(payload.spectrum.lam2, 3) + '</div></div>' +
+    '<div class="mini-kpi"><div class="k">Spectral gap</div><div class="v">' + fmt(gap, 5) + '</div>' +
+    '<div class="s">|\u03bb\u2081| \u2212 |\u03bb\u2082|</div></div>';
+  left.appendChild(metrics);
+
+  const specCanvas = document.createElement('canvas');
+  specCanvas.className = 'plot-canvas';
+  drawSpectralPlot(specCanvas, payload.spectrum);
+  left.appendChild(specCanvas);
+
+  const lnote = document.createElement('div');
+  lnote.className = 'micro-note';
+  lnote.textContent = payload.spectrum.model === 'exact-mortality'
+    ? 'Exact finite-g spectrum from the age-class mortality operator M_g. Gold = dominant root, white = largest subordinate.'
+    : 'Immortal limit: classical Fibonacci 2\u00d72 transfer matrix. Gold = \u03c6, white = \u03c6*.';
+  left.appendChild(lnote);
+  hero.appendChild(left);
+
+  // ── RIGHT: Projective monitor ──
+  const right = makePanelCard('Projective monitor', 'Live cross-ratio from consecutive total populations');
+
+  const eq = document.createElement('div');
+  eq.className = 'equation-card';
+  const xiLast = payload.crossRatios[payload.crossRatios.length - 1];
+  eq.innerHTML =
+    '<div class="eq">\u03be<sub>n</sub> = ((x<sub>n\u22123</sub>\u2212x<sub>n\u22121</sub>)' +
+    '(x<sub>n\u22122</sub>\u2212x<sub>n</sub>)) / ((x<sub>n\u22123</sub>\u2212x<sub>n</sub>)' +
+    '(x<sub>n\u22122</sub>\u2212x<sub>n\u22121</sub>))</div>' +
+    '<div class="legend">' +
+    '<span><span class="swatch" style="background:#c8a96e"></span>live \u03be<sub>n</sub> = ' + fmt(xiLast, 6) + '</span>' +
+    '<span><span class="swatch" style="background:#e8e0d0"></span>target \u03be<sub>\u221e</sub> \u2248 ' + fmt(payload.xiTarget, 6) + '</span>' +
+    '</div>';
+  right.appendChild(eq);
+
+  // ────────────────────────────────────────────────
+  // PREAMBLE C: Projective monitor context
+  // ────────────────────────────────────────────────
+  const projNote = document.createElement('div');
+  projNote.className = 'companion-preamble';
+  projNote.style.marginTop = '0.75rem';
+  projNote.innerHTML =
+    '<p>The live cross-ratio \u03be<sub>n</sub> is computed from four consecutive total ' +
+    'population counts. It converges to a spectral estimate \u03be<sub>\u221e</sub> built ' +
+    'from the ratio \u03bb<sub>2</sub>/\u03bb<sub>1</sub> of the two largest eigenvalues. ' +
+    'The sparklines below track this convergence generation by generation: the cross-ratio ' +
+    'approaching its target, the log-scaled successive differences (straighter descents ' +
+    'indicate geometric contraction), and the raw population counts feeding the computation.</p>';
+  right.appendChild(projNote);
+
+  // ── Sparkline grid ──
+  const sparkWrap = document.createElement('div');
+  sparkWrap.className = 'sparkline-grid';
+
+  const c1 = makePanelCard('Cross-ratio sparkline', 'Approach to the asymptotic projective invariant');
+  const sp1 = document.createElement('canvas');
+  sp1.className = 'spark-canvas';
+  drawSparkline(sp1, payload.crossRatios, payload.xiTarget, false);
+  c1.appendChild(sp1);
+  sparkWrap.appendChild(c1);
+
+  const c2 = makePanelCard('Scaling', 'Log plot of |\u03be_k \u2212 \u03be_(k\u22121)|');
+  const sp2 = document.createElement('canvas');
+  sp2.className = 'spark-canvas';
+  drawSparkline(sp2, payload.scaling, null, true);
+  c2.appendChild(sp2);
+  sparkWrap.appendChild(c2);
+
+  const c3 = makePanelCard('Population sizes', 'Total counts feeding the projective monitor');
+  const sp3 = document.createElement('canvas');
+  sp3.className = 'spark-canvas';
+  drawSparkline(sp3, payload.sizes, null, false);
+  c3.appendChild(sp3);
+  sparkWrap.appendChild(c3);
+
+  right.appendChild(sparkWrap);
+
+  const rnote = document.createElement('div');
+  rnote.className = 'micro-note';
+  rnote.textContent = 'The target \u03be\u221e is estimated from the exact spectral ratio ' +
+    '\u03bb\u2082/\u03bb\u2081. The live \u03ben remains an empirical quantity computed from ' +
+    'actual consecutive totals.';
+  right.appendChild(rnote);
+  hero.appendChild(right);
+
+  outer.appendChild(hero);
+
+  // ────────────────────────────────────────────────
+  // MATRIX SECTION (not shown in scaling mode)
+  // ────────────────────────────────────────────────
+  if (mode !== 'scaling') {
+
+    // PREAMBLE B: Matrix as memory device
+    const matDivider = document.createElement('div');
+    matDivider.className = 'companion-divider';
+    outer.appendChild(matDivider);
+
+    const matPreamble = document.createElement('div');
+    matPreamble.className = 'companion-preamble';
+    matPreamble.innerHTML =
+      '<h3>The matrix as memory device</h3>' +
+      '<p>The top row of <code>M</code> combines remembered values into a new term; the ' +
+      'subdiagonal shifts the memory register forward by one step. For the mortal model, ' +
+      'the matrix is a Leslie-type operator: the first row records births from every surviving ' +
+      'rabbit class, the subdiagonal ages each class forward, and the absence of a survival ' +
+      'term from the oldest class encodes death. The parameter <code>g</code> sets the matrix ' +
+      'dimension and hence the memory depth of the system.</p>' +
+      '<p>The dominant eigenvector gives the long-run age distribution. The subordinate ' +
+      'eigenvectors describe how the initial age profile continues to distort the population ' +
+      'before eventually fading from view. The spectral gap \u2014 the distance between the ' +
+      'dominant and next-largest eigenvalue \u2014 controls the rate of that forgetting.</p>';
+    outer.appendChild(matPreamble);
+
+    // Matrix grid: matrix heatmap + operator summary
+    const matrixGrid = document.createElement('div');
+    matrixGrid.className = 'matrix-wrap';
+
+    const m1 = makePanelCard('Matrix memory view', 'Exact transition matrix for the age-structured model');
+    const mc = document.createElement('canvas');
+    mc.className = 'matrix-canvas';
+    drawMatrix(mc, payload.spectrum.matrix, matrixMode);
+    m1.appendChild(mc);
+    const mnote = document.createElement('div');
+    mnote.className = 'micro-note';
+    mnote.textContent = payload.spectrum.model === 'exact-mortality'
+      ? 'Top row = births. Entry (2,1) matures bunnies into rabbits. The subdiagonal ages rabbits forward. The absence of a survival term out of the final class encodes death.'
+      : 'Immortal case uses the standard 2\u00d72 Fibonacci transfer matrix.';
+    m1.appendChild(mnote);
+    matrixGrid.appendChild(m1);
+
+    const m2 = makePanelCard('Operator summary', 'Matrix, spectrum, and projective limit');
+    const box = document.createElement('div');
+    box.className = 'info-box';
+    box.innerHTML =
+      '<span class="gold">Model:</span> ' + payload.spectrum.model + '<br>' +
+      '<span class="gold">Order:</span> ' + payload.spectrum.order + '<br>' +
+      '<span class="gold">Dominant ratio \u03bb\u2082/\u03bb\u2081:</span> ' + cFormat(payload.spectrum.ratio, 5) + '<br>' +
+      '<span class="gold">Asymptotic \u03be\u221e (real part):</span> ' + fmt(payload.xiTarget, 6) + '<br>' +
+      '<span class="gold">Last empirical \u03ben:</span> ' + fmt(payload.crossRatios[payload.crossRatios.length - 1], 6) + '<br>' +
+      '<span class="gold">Last log-scaling:</span> ' + (payload.scaling.length ? fmt(log10safe(payload.scaling[payload.scaling.length - 1]), 6) : '\u2014') + '<br>' +
+      '<span class="gold">Reading:</span> the operator, spectrum, and convergence monitor are now mathematically aligned.';
+    m2.appendChild(box);
+    matrixGrid.appendChild(m2);
+
+    outer.appendChild(matrixGrid);
+  }
+
   return outer;
 }
 const dfE = { mode: document.getElementById('df-mode'), n: document.getElementById('df-n'), g: document.getElementById('df-g'), trunc: document.getElementById('df-trunc'), px: document.getElementById('df-px'), colour: document.getElementById('df-colour'), run: document.getElementById('df-run'), main: document.getElementById('df-main'), stats: document.getElementById('df-stats'), nVal: document.getElementById('df-nVal'), gVal: document.getElementById('df-gVal'), truncVal: document.getElementById('df-truncVal'), pxVal: document.getElementById('df-pxVal'), matrixMode: document.getElementById('df-matrix-mode'), live: document.getElementById('df-live') };
