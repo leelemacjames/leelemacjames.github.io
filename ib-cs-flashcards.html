@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IB Computer Science · Swipe Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0d10;
+  --surface: #13141a;
+  --surface2: #0f1016;
+  --border: #1e2028;
+  --border2: #2a2f3b;
+  --text: #d4d0c8;
+  --muted: #6b6860;
+  --gold: #c8a96e;
+  --hl-red: #c0392b;
+  --blue: #7ec8e3;
+  --green: #9bd29b;
+  --amber: #d8b06a;
+  --white: #f0ede6;
+  --purple: #b08fd4;
+  --face0: #c8a96e;
+  --face1: #7ec8e3;
+  --face2: #9bd29b;
+  --face3: #b08fd4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #151924 0%, var(--bg) 55%);
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  padding: 20px 20px 8px;
+  width: 100%;
+}
+.header h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  color: var(--blue);
+  letter-spacing: 0.03em;
+}
+.header .sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 4px;
+}
+
+/* ── Controls ── */
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px 20px;
+  width: 100%;
+  max-width: 640px;
+}
+.controls button, .controls select, .controls input {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  outline: none;
+}
+.controls button:hover { border-color: var(--blue); }
+.controls button.active { background: var(--blue); color: var(--bg); border-color: var(--blue); font-weight: 600; }
+.controls button.hl-active { background: var(--hl-red); color: #fff; border-color: var(--hl-red); }
+.controls input { width: 160px; }
+.controls input::placeholder { color: var(--muted); }
+
+/* ── Topic filter row ── */
+.topic-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 20px 8px;
+  width: 100%;
+  max-width: 640px;
+}
+.topic-row button {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 0.68rem;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+  outline: none;
+  letter-spacing: 0.04em;
+}
+.topic-row button:hover { border-color: var(--blue); color: var(--text); }
+.topic-row button.active { background: rgba(126,200,227,0.12); color: var(--blue); border-color: var(--blue); }
+
+/* ── Stats strip ── */
+.stats {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 4px 20px 8px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.stats .pill {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+/* ── Card wrapper ── */
+.deck-area {
+  width: 100%;
+  max-width: 620px;
+  padding: 0 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+.card-wrap { width: 100%; position: relative; }
+
+.card-face {
+  width: 100%;
+  min-height: 360px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: linear-gradient(160deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%), var(--surface);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 22px 18px;
+  overflow: hidden;
+  transition: opacity 0.18s ease;
+}
+.card-face.flipping { opacity: 0; }
+
+/* Face accent bar */
+.face-accent {
+  height: 3px;
+  border-radius: 2px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.face-accent-0 { background: linear-gradient(90deg, var(--face0), transparent); }
+.face-accent-1 { background: linear-gradient(90deg, var(--face1), transparent); }
+.face-accent-2 { background: linear-gradient(90deg, var(--face2), transparent); }
+.face-accent-3 { background: linear-gradient(90deg, var(--face3), transparent); }
+
+/* Face label */
+.face-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.face-label-0 { color: var(--face0); }
+.face-label-1 { color: var(--face1); }
+.face-label-2 { color: var(--face2); }
+.face-label-3 { color: var(--face3); }
+
+/* Face bodies */
+.face-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+.term-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.hl-badge {
+  display: inline-block;
+  background: rgba(192,57,43,0.22);
+  border: 1px solid rgba(192,57,43,0.5);
+  color: #e07070;
+  font-size: 0.65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.topic-badge {
+  display: inline-block;
+  background: rgba(126,200,227,0.10);
+  border: 1px solid rgba(126,200,227,0.3);
+  color: var(--blue);
+  font-size: 0.6rem;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Face 1: pseudo / symbol */
+.symbol-display {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--white);
+  margin-bottom: 14px;
+  word-break: break-word;
+  background: rgba(126,200,227,0.05);
+  border: 1px solid rgba(126,200,227,0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.no-pseudo {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+.keywords-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+}
+.kw-chip {
+  border: 1px solid rgba(126,200,227,0.3);
+  color: var(--blue);
+  font-size: 0.72rem;
+  padding: 4px 11px;
+  border-radius: 20px;
+  background: rgba(126,200,227,0.06);
+}
+
+/* Face 2: context quote */
+.context-quote {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-style: italic;
+  color: var(--white);
+  line-height: 1.65;
+}
+
+/* Face 3: full definition */
+.full-text {
+  font-size: 0.91rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+.see-also {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.see-also span { color: var(--blue); opacity: 0.8; }
+
+/* Face footer */
+.face-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 30px;
+}
+.footer-text { font-size: 0.72rem; color: var(--muted); }
+.footer-text .dim { opacity: 0.6; margin-right: 4px; }
+
+/* Face dots */
+.face-dots {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  padding: 12px 0 4px;
+}
+.face-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border2);
+  transition: background 0.2s, transform 0.2s;
+}
+.face-dot.active { transform: scale(1.35); }
+.face-dot-0.active { background: var(--face0); }
+.face-dot-1.active { background: var(--face1); }
+.face-dot-2.active { background: var(--face2); }
+.face-dot-3.active { background: var(--face3); }
+
+/* Navigation */
+.nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px 6px;
+  flex-wrap: wrap;
+}
+.nav button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 9px 22px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s;
+  min-width: 100px;
+}
+.nav button:hover { border-color: var(--blue); transform: translateY(-1px); }
+.nav .idx-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--blue);
+  min-width: 70px;
+  text-align: center;
+}
+.flip-btn { border-color: rgba(126,200,227,0.4) !important; }
+
+/* Progress bar */
+.progress-wrap {
+  width: 100%;
+  max-width: 620px;
+  padding: 8px 16px 20px;
+}
+.progress-track {
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), #a8dff0);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Swipe hint */
+.swipe-hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.68rem;
+  padding: 0 20px 16px;
+  letter-spacing: 0.04em;
+}
+
+/* Footer stamp */
+.footer-stamp {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--border2);
+  text-align: center;
+  padding: 0 20px 20px;
+  letter-spacing: 0.08em;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .card-face { padding: 18px 16px 14px; }
+  .term-name { font-size: clamp(1.4rem, 7vw, 2.2rem); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>IB Computer Science</h1>
+  <div class="sub">Swipe Flashcards &nbsp;·&nbsp; Four-face tap-to-reveal</div>
+</div>
+
+<div class="controls">
+  <button id="btn-all" class="active" onclick="setFilter('all')">All</button>
+  <button id="btn-sl" onclick="setFilter('sl')">SL</button>
+  <button id="btn-hl" onclick="setFilter('hl')">HL only</button>
+  <button onclick="shuffleDeck()">Shuffle</button>
+  <input id="search" type="text" placeholder="Search terms…" oninput="onSearch()" />
+</div>
+
+<div class="topic-row" id="topicRow"></div>
+
+<div class="stats">
+  <div class="pill" id="stat-count"></div>
+  <div class="pill">Tap card → next face</div>
+  <div class="pill">Swipe left/right → navigate</div>
+</div>
+
+<div class="deck-area">
+  <div class="card-wrap">
+    <div class="card-face" id="cardFace">
+      <div class="empty-state">Loading…</div>
+    </div>
+    <div class="face-dots" id="faceDots">
+      <div class="face-dot face-dot-0 active"></div>
+      <div class="face-dot face-dot-1"></div>
+      <div class="face-dot face-dot-2"></div>
+      <div class="face-dot face-dot-3"></div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button onclick="navigate(-1)">← Prev</button>
+  <div class="idx-label" id="idxLabel">—</div>
+  <button class="flip-btn" onclick="flipCard()">Flip ↻</button>
+  <button onclick="navigate(1)">Next →</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="swipe-hint">Arrow keys ← → navigate &nbsp;·&nbsp; Space or ↓ flips</div>
+<div class="footer-stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+
+<script>
+// ── TOPIC COLOURS for chips ──
+const TOPIC_COLOR = {
+  'Systems & Architecture': '#c8a96e',
+  'Networks':               '#7ec8e3',
+  'OOP':                    '#b08fd4',
+  'Algorithms':             '#9bd29b',
+  'Data Structures':        '#d8b06a',
+  'Databases':              '#e07a7a',
+  'Control Systems':        '#7ec8e3',
+  'Software Dev':           '#c8a96e',
+  'Abstract Data Types':    '#b08fd4',
+  'Theory':                 '#9bd29b',
+};
+
+// ── TERMS ──
+const TERMS = [
+  // ── Systems & Architecture ──
+  { term:"Abstraction", hl:false, topic:"Systems & Architecture",
+    pseudo:"// Hiding implementation detail\ninterface Shape {\n  area(): number\n}",
+    keywords:["hiding complexity","interface","information hiding","modular design"],
+    synonyms:["information hiding","encapsulation of complexity"],
+    antonyms:["concrete implementation"],
+    context:"When you call sort() on a list, you abstract away the algorithm details — you state what you want, not how to achieve it.",
+    full:"Focusing on essential properties while ignoring irrelevant complexity. A core principle of computer science that allows systems to be built in layers, each hiding detail from the one above.",
+    seealso:["Encapsulation","Interface","Module"]},
+
+  { term:"CPU (Central Processing Unit)", hl:false, topic:"Systems & Architecture",
+    pseudo:"FETCH → DECODE → EXECUTE → (STORE)\n\nRegisters: ACC, PC, MAR, MDR\nComponents: ALU + CU + Registers",
+    keywords:["fetch-decode-execute","ALU","control unit","registers"],
+    synonyms:["processor","microprocessor"],
+    antonyms:["memory","peripheral"],
+    context:"Every instruction your program runs is fetched from memory by the PC, decoded by the CU, and executed by the ALU — millions of times per second.",
+    full:"The main processing unit containing the Arithmetic Logic Unit (ALU), Control Unit (CU), and registers. Executes the machine instruction cycle: Fetch → Decode → Execute → (Store).",
+    seealso:["ALU","Register","Machine Instruction Cycle","Cache Memory"]},
+
+  { term:"ALU (Arithmetic Logic Unit)", hl:false, topic:"Systems & Architecture",
+    pseudo:"// Performs:\n// Arithmetic: +, -, *, /\n// Logic: AND, OR, NOT, XOR\n// Comparison: <, >, ==",
+    keywords:["arithmetic","logical operations","comparison","addition"],
+    synonyms:["arithmetic unit"],
+    antonyms:["control unit"],
+    context:"When you write a + b in code, the ALU is the physical circuit that adds those two binary numbers together.",
+    full:"The component of the CPU that performs all arithmetic and logical operations on data. Results typically stored in the accumulator register.",
+    seealso:["CPU","Register","Binary"]},
+
+  { term:"Register", hl:false, topic:"Systems & Architecture",
+    pseudo:"PC  — Program Counter (next instruction address)\nMAR — Memory Address Register\nMDR — Memory Data Register\nACC — Accumulator (current result)",
+    keywords:["fast storage","PC","MAR","MDR","accumulator"],
+    synonyms:["CPU register"],
+    antonyms:["RAM","hard disk"],
+    context:"Registers are the fastest storage in the system — but there are very few of them. The PC always holds the address of the next instruction to fetch.",
+    full:"Small, extremely fast memory locations within the CPU. Key registers include the Program Counter (PC), Memory Address Register (MAR), Memory Data Register (MDR), and Accumulator (ACC).",
+    seealso:["CPU","MAR","MDR","Cache Memory"]},
+
+  { term:"Cache Memory", hl:false, topic:"Systems & Architecture",
+    pseudo:"Access time hierarchy:\nRegisters: ~1 ns\nL1 Cache:  ~2 ns\nL2 Cache:  ~10 ns\nRAM:       ~100 ns\nSSD:       ~100 µs",
+    keywords:["fast access","frequently used","L1 L2 L3","hierarchy"],
+    synonyms:["CPU cache"],
+    antonyms:["main memory","secondary storage"],
+    context:"The CPU checks cache before RAM. A cache hit avoids the slower RAM access; a cache miss forces a slower fetch from RAM.",
+    full:"High-speed memory located close to or within the CPU that stores frequently accessed data and instructions to reduce average memory access time.",
+    seealso:["RAM","Register","Virtual Memory"]},
+
+  { term:"RAM (Random Access Memory)", hl:false, topic:"Systems & Architecture",
+    pseudo:"// Volatile — loses contents on power-off\n// Used for: running programs, open data\n// Addressable: each byte has a unique address",
+    keywords:["volatile","temporary","addressable","working memory"],
+    synonyms:["main memory","primary memory"],
+    antonyms:["ROM","secondary storage"],
+    context:"When you open a program, it loads from the hard disk into RAM. Close the program and power off — RAM forgets everything.",
+    full:"Volatile primary memory used to store currently running programs and their data. Each byte is directly addressable. Lost on power-off.",
+    seealso:["ROM","Cache Memory","Virtual Memory","Paging"]},
+
+  { term:"ROM (Read Only Memory)", hl:false, topic:"Systems & Architecture",
+    pseudo:"// Non-volatile — retains data without power\n// Typical content: BIOS/UEFI firmware\n// Cannot (easily) be rewritten",
+    keywords:["non-volatile","firmware","BIOS","permanent"],
+    synonyms:["read-only memory"],
+    antonyms:["RAM","volatile memory"],
+    context:"When you press the power button, the CPU runs the BIOS stored in ROM before any operating system loads.",
+    full:"Non-volatile memory that retains its contents when power is removed. Stores firmware such as the BIOS/UEFI that bootstraps the computer.",
+    seealso:["RAM","Firmware","Non-volatile Memory"]},
+
+  { term:"Virtual Memory", hl:false, topic:"Systems & Architecture",
+    pseudo:"// OS uses disk space as extra RAM\n// Pages swapped in/out as needed\n\nIf RAM full:\n  move inactive page → swap space (disk)\n  load required page → RAM",
+    keywords:["disk as RAM","paging","swap","extends RAM"],
+    synonyms:["swap memory"],
+    antonyms:["physical memory","real RAM"],
+    context:"If you have 16 GB RAM and open programs needing 20 GB, the OS silently pages the least-used blocks to disk — performance drops but the system keeps running.",
+    full:"A memory management technique where the OS uses secondary storage (disk) to extend apparent RAM capacity. Inactive memory pages are swapped to disk and recalled on demand.",
+    seealso:["RAM","Paging","Disk Thrashing","Memory Management"]},
+
+  { term:"Paging", hl:false, topic:"Systems & Architecture",
+    pseudo:"// Memory divided into fixed-size PAGES\n// Page table maps virtual → physical address\n\nPage size: typically 4 KB\nPage table entry: virtual_page → frame_no",
+    keywords:["fixed-size blocks","page table","virtual address","frame"],
+    synonyms:["memory paging"],
+    antonyms:["segmentation","contiguous allocation"],
+    context:"Paging lets the OS place different parts of a program anywhere in physical memory, using a page table to track where each piece lives.",
+    full:"A memory management scheme that divides both virtual and physical memory into fixed-size blocks (pages/frames). A page table maps virtual page numbers to physical frame numbers.",
+    seealso:["Virtual Memory","Segmentation","Memory Management","Disk Thrashing"]},
+
+  { term:"Binary", hl:false, topic:"Systems & Architecture",
+    pseudo:"Base 2: digits 0 and 1\n\n1010₂ = 1×8 + 0×4 + 1×2 + 0×1 = 10₁₀\n\nConvert 13₁₀ → binary:\n13 ÷ 2 = 6 r1\n 6 ÷ 2 = 3 r0\n 3 ÷ 2 = 1 r1\n 1 ÷ 2 = 0 r1  → 1101₂",
+    keywords:["base 2","bits","0 and 1","place value"],
+    synonyms:["base-2","binary notation"],
+    antonyms:["decimal","hexadecimal"],
+    context:"All data inside a computer is ultimately stored and processed as binary — sequences of 0s and 1s representing off and on states in transistors.",
+    full:"The base-2 number system using only digits 0 and 1. All computer data is ultimately represented in binary, with each digit called a bit.",
+    seealso:["Hexadecimal","Bit","Byte","Logic Gate"]},
+
+  { term:"Hexadecimal", hl:false, topic:"Systems & Architecture",
+    pseudo:"Base 16: 0-9 then A-F\n\nFF₁₆ = 15×16 + 15 = 255₁₀\nAB₁₆ = 10×16 + 11 = 171₁₀\n\nColors: #FF5722 → R=255, G=87, B=34",
+    keywords:["base 16","A-F","compact binary","color codes"],
+    synonyms:["hex","base-16"],
+    antonyms:["binary","decimal"],
+    context:"Memory addresses and color values use hex because two hex digits represent exactly one byte — far more compact than eight binary digits.",
+    full:"The base-16 number system using digits 0–9 and letters A–F. Widely used in computing to represent binary data compactly (each hex digit = 4 bits).",
+    seealso:["Binary","Bit","Byte","RGB Color Model"]},
+
+  { term:"Logic Gate", hl:false, topic:"Systems & Architecture",
+    pseudo:"AND:  1 AND 1 = 1  else 0\nOR:   0 OR  0 = 0  else 1\nNOT:  NOT 1 = 0\nXOR:  same→0, different→1\nNAND: NOT(AND)\nNOR:  NOT(OR)",
+    keywords:["AND OR NOT XOR NAND NOR","boolean","circuit","transistors"],
+    synonyms:["boolean gate"],
+    antonyms:["analogue circuit"],
+    context:"NAND gates are universal — any logic function, and therefore any computation, can be built from NAND gates alone.",
+    full:"An electronic circuit implementing a Boolean operation on one or more binary inputs to produce a single binary output. The fundamental building blocks of all digital circuits.",
+    seealso:["Boolean Operators","Truth Table","Transistor","Half Adder"]},
+
+  { term:"Truth Table", hl:false, topic:"Systems & Architecture",
+    pseudo:"A | B | A AND B | A OR B | NOT A\n--+---+---------+--------+------\n0 | 0 |    0    |   0    |   1\n0 | 1 |    0    |   1    |   1\n1 | 0 |    0    |   1    |   0\n1 | 1 |    1    |   1    |   0",
+    keywords:["all input combinations","boolean output","verification"],
+    synonyms:["boolean table"],
+    antonyms:["Karnaugh map"],
+    context:"To verify a logic circuit is correct, enumerate all possible input combinations in a truth table and check each output matches specification.",
+    full:"A table showing every possible combination of binary inputs to a logic expression or gate, with the corresponding output for each combination.",
+    seealso:["Logic Gate","Boolean Operators","Half Adder"]},
+
+  { term:"Half Adder", hl:true, topic:"Systems & Architecture",
+    pseudo:"Inputs: A, B\nOutputs: Sum (S), Carry (C)\n\nS = A XOR B\nC = A AND B\n\nA=1, B=1 → S=0, C=1 (carries into next bit)",
+    keywords:["XOR AND","sum carry","binary addition","circuit"],
+    synonyms:["1-bit adder"],
+    antonyms:["full adder"],
+    context:"A half adder adds two single bits and produces a sum and carry. Two half adders make a full adder, which can handle a carry-in from a previous bit.",
+    full:"A logic circuit that adds two binary digits, producing a Sum (= A XOR B) and a Carry (= A AND B). Cannot handle a carry-in from a previous stage.",
+    seealso:["Logic Gate","Binary","Truth Table"]},
+
+  // ── Networks ──
+  { term:"Protocol", hl:false, topic:"Networks",
+    pseudo:"Examples:\n  HTTP  — web pages\n  HTTPS — secure web\n  TCP   — reliable delivery\n  IP    — addressing/routing\n  DNS   — name resolution\n  FTP   — file transfer",
+    keywords:["rules for communication","TCP/IP","HTTP","DNS","interoperability"],
+    synonyms:["communication standard"],
+    antonyms:["proprietary format"],
+    context:"Without agreed protocols, a browser on Windows and a server running Linux would have no common language. Protocols are the grammar of networked communication.",
+    full:"A defined set of rules and conventions governing communication between devices. Protocols ensure interoperability between systems from different manufacturers.",
+    seealso:["HTTP","HTTPS","DNS","IP Address","Network Layers"]},
+
+  { term:"IP Address", hl:false, topic:"Networks",
+    pseudo:"IPv4: 4 octets, 32-bit\n  192.168.1.42\n\nIPv6: 128-bit, hex groups\n  2001:0db8:85a3::8a2e:0370:7334\n\nPrivate ranges (IPv4):\n  10.x.x.x\n  192.168.x.x",
+    keywords:["unique address","routing","IPv4","IPv6","host identification"],
+    synonyms:["network address","IP"],
+    antonyms:["domain name","MAC address"],
+    context:"Every device on the internet has a unique IP address. DNS translates the human-readable domain name into the IP address the router needs to forward packets.",
+    full:"A unique numerical label assigned to each device on a network for identification and location addressing. IPv4 uses 32-bit addresses; IPv6 uses 128-bit addresses.",
+    seealso:["DNS","Protocol","LAN","WAN","Data Packet"]},
+
+  { term:"DNS (Domain Name System)", hl:false, topic:"Networks",
+    pseudo:"// Browser needs IP for 'example.com'\n\n1. Check local cache\n2. Ask recursive resolver\n3. Resolver asks root server\n4. Root → .com server → auth server\n5. Returns: 93.184.216.34",
+    keywords:["name resolution","domain to IP","hierarchical","resolver"],
+    synonyms:["domain name service"],
+    antonyms:["direct IP access"],
+    context:"DNS is the internet's phone book. Typing a URL triggers a chain of DNS lookups that resolve the human-readable name to a numeric IP address.",
+    full:"A hierarchical distributed system that translates human-readable domain names (e.g. example.com) into IP addresses. Without DNS, users would need to memorise numeric addresses.",
+    seealso:["IP Address","Protocol","HTTP","HTTPS"]},
+
+  { term:"HTTP / HTTPS", hl:false, topic:"Networks",
+    pseudo:"// HTTP request\nGET /index.html HTTP/1.1\nHost: example.com\n\n// HTTPS adds TLS:\n// 1. TLS handshake (exchange certs + keys)\n// 2. Symmetric encryption of all data\n// 3. Certificate verifies server identity",
+    keywords:["web protocol","request response","TLS","encryption","port 80 443"],
+    synonyms:["Hypertext Transfer Protocol"],
+    antonyms:["FTP","direct socket"],
+    context:"HTTPS is HTTP with TLS encryption layered on top. The padlock in the browser confirms the connection is encrypted and the certificate is valid.",
+    full:"HTTP is the foundation of data transfer on the web (port 80). HTTPS adds TLS/SSL encryption (port 443), preventing eavesdropping and authenticating the server.",
+    seealso:["Protocol","Encryption","RSA Encryption","DNS"]},
+
+  { term:"LAN / WAN", hl:false, topic:"Networks",
+    pseudo:"LAN — Local Area Network\n  Scope: building / campus\n  Media: Ethernet, Wi-Fi\n  Speed: 100 Mbps – 10 Gbps\n\nWAN — Wide Area Network\n  Scope: city / country / globe\n  Example: the Internet\n  Speed: variable (ISP dependent)",
+    keywords:["local area","wide area","Ethernet","internet","topology"],
+    synonyms:["local network","wide network"],
+    antonyms:["isolated device"],
+    context:"Your home router creates a LAN; the broadband line connecting it to the ISP is a WAN link. The internet is the largest WAN.",
+    full:"LAN: a network covering a small area (home/school) typically using Ethernet or Wi-Fi. WAN: a network spanning large distances, often connecting multiple LANs (the Internet is the largest WAN).",
+    seealso:["IP Address","Protocol","Packet Switching","Wireless Network"]},
+
+  { term:"Packet Switching", hl:false, topic:"Networks",
+    pseudo:"// Message broken into packets\nPacket 1: [header|payload|trailer]\nPacket 2: [header|payload|trailer]\n\n// Each packet routed independently\n// May take different paths\n// Reassembled at destination",
+    keywords:["independent routes","packet","header","reassembly","TCP"],
+    synonyms:["packet-switched network"],
+    antonyms:["circuit switching"],
+    context:"Internet traffic is packet-switched: your video call and someone else's file download share the same physical links, packets interleaved and routed independently.",
+    full:"A method of data transmission where messages are broken into discrete packets. Each packet contains header, payload, and trailer, and may travel independently across the network before reassembly at the destination.",
+    seealso:["Data Packet","Protocol","LAN / WAN"]},
+
+  { term:"Encryption", hl:false, topic:"Networks",
+    pseudo:"// Symmetric: same key encrypts & decrypts\nAES: plaintext + key → ciphertext\n\n// Asymmetric (RSA):\nPublic key:  encrypt (shared openly)\nPrivate key: decrypt (kept secret)\n\npublicKey.encrypt(data)\nprivateKey.decrypt(ciphertext)",
+    keywords:["AES","RSA","public key","private key","cipher","TLS"],
+    synonyms:["cryptography","ciphering"],
+    antonyms:["plaintext","decryption"],
+    context:"HTTPS uses asymmetric RSA to securely exchange a symmetric session key, then AES for the bulk of communication — combining the security of RSA with the speed of AES.",
+    full:"The process of encoding information so only authorised parties can read it. Symmetric encryption uses one shared key; asymmetric (public-key) encryption uses a public/private key pair.",
+    seealso:["RSA Encryption","HTTPS","Privacy","Key"]},
+
+  { term:"RSA Encryption", hl:false, topic:"Networks",
+    pseudo:"// Based on difficulty of factoring large primes\n\nKey generation:\n  p, q = large primes\n  n = p × q  (public modulus)\n  e = public exponent\n  d = private exponent\n\nEncrypt:  C = M^e mod n\nDecrypt:  M = C^d mod n",
+    keywords:["asymmetric","public key","private key","factoring primes","public modulus"],
+    synonyms:["public-key cryptography"],
+    antonyms:["symmetric encryption","AES"],
+    context:"RSA security relies on the fact that multiplying two large primes is easy, but factoring the result back into those primes is computationally infeasible.",
+    full:"An asymmetric encryption algorithm based on the mathematical difficulty of factoring the product of two large prime numbers. Widely used for secure key exchange and digital signatures.",
+    seealso:["Encryption","HTTPS","Key","Privacy"]},
+
+  // ── OOP ──
+  { term:"Class", hl:false, topic:"OOP",
+    pseudo:"class Animal:\n  def __init__(self, name, sound):\n    self.name = name    # attribute\n    self.sound = sound\n\n  def speak(self):    # method\n    return f'{self.name} says {self.sound}'",
+    keywords:["blueprint","template","attributes","methods","constructor"],
+    synonyms:["type definition","blueprint"],
+    antonyms:["object","instance","primitive"],
+    context:"A class is the blueprint; an object is what you build from it. You define Animal once but can create thousands of Animal objects, each with its own name and sound.",
+    full:"A blueprint for creating objects in object-oriented programming. Defines the attributes (data) and methods (behaviour) that all instances of the class will have.",
+    seealso:["Object","Instance","Inheritance","Encapsulation","Constructor","Method"]},
+
+  { term:"Object", hl:false, topic:"OOP",
+    pseudo:"# Creating instances (objects) from a class\ndog = Animal('Rex', 'Woof')\ncat = Animal('Whiskers', 'Meow')\n\nprint(dog.speak())  # Rex says Woof\nprint(cat.name)     # Whiskers",
+    keywords:["instance","state","behaviour","heap memory"],
+    synonyms:["instance","entity"],
+    antonyms:["class","primitive"],
+    context:"Each object has its own state (attribute values) but shares behaviour (methods) defined by its class. dog.name is 'Rex'; cat.name is 'Whiskers'.",
+    full:"A specific realisation of a class. Each object has its own copy of instance attributes but shares method definitions with all instances of the same class.",
+    seealso:["Class","Instance","Constructor","Attribute","Method"]},
+
+  { term:"Encapsulation", hl:false, topic:"OOP",
+    pseudo:"class BankAccount:\n  def __init__(self, balance):\n    self.__balance = balance  # private\n\n  def deposit(self, amt):   # public interface\n    if amt > 0:\n      self.__balance += amt\n\n  def get_balance(self):    # controlled access\n    return self.__balance",
+    keywords:["data hiding","private","public","interface","access control"],
+    synonyms:["data hiding","information hiding"],
+    antonyms:["global state","public data"],
+    context:"The balance attribute is private — external code cannot corrupt it directly. The only route in is through deposit(), which validates the amount first.",
+    full:"Bundling data (attributes) and the methods that operate on that data within a single class, and restricting direct external access to internal state. Protects data integrity and reduces coupling.",
+    seealso:["Class","Object","Abstraction","Attribute","Method"]},
+
+  { term:"Inheritance", hl:false, topic:"OOP",
+    pseudo:"class Animal:\n  def breathe(self): return 'inhale/exhale'\n\nclass Dog(Animal):     # Dog inherits Animal\n  def fetch(self): return 'fetching!'\n\nclass GuideDog(Dog):   # multi-level\n  def guide(self): return 'guiding'",
+    keywords:["IS-A relationship","parent class","subclass","reuse","extends"],
+    synonyms:["subclassing","IS-A relationship"],
+    antonyms:["composition","HAS-A"],
+    context:"Dog inherits breathe() from Animal without rewriting it. GuideDog inherits both breathe() and fetch() — and adds guide(). Hierarchy models real-world IS-A relationships.",
+    full:"A mechanism where a subclass acquires attributes and methods from a parent (super) class. Supports code reuse and models IS-A relationships between types.",
+    seealso:["Class","Polymorphism","Object","Encapsulation"]},
+
+  { term:"Polymorphism", hl:false, topic:"OOP",
+    pseudo:"class Shape:\n  def area(self): pass\n\nclass Circle(Shape):\n  def area(self): return 3.14 * r**2\n\nclass Square(Shape):\n  def area(self): return side**2\n\n# Same call, different behaviour:\nfor s in [Circle(5), Square(4)]:\n  print(s.area())",
+    keywords:["same interface","different behaviour","overriding","duck typing"],
+    synonyms:["method overriding","ad-hoc polymorphism"],
+    antonyms:["monomorphism","rigid type"],
+    context:"The loop calls s.area() on both a Circle and a Square without caring which type it is. The correct version of area() runs for each — polymorphism in action.",
+    full:"The ability of objects of different classes to respond to the same method call, each implementing the behaviour appropriately for their type. Enables flexible and extensible code.",
+    seealso:["Inheritance","Class","Method","Abstraction"]},
+
+  { term:"Constructor", hl:false, topic:"OOP",
+    pseudo:"class Point:\n  def __init__(self, x, y):  # constructor\n    self.x = x\n    self.y = y\n    self.created_at = time.now()\n\n# Called automatically when:\np = Point(3, 7)",
+    keywords:["__init__","initialization","new object","setup"],
+    synonyms:["initialiser","__init__"],
+    antonyms:["destructor"],
+    context:"The constructor runs automatically the moment you create a new object. It sets initial attribute values and performs any setup needed before the object is used.",
+    full:"A special method called automatically when an object is instantiated. In Python, __init__ initialises the object's attributes. Ensures every object starts in a valid state.",
+    seealso:["Class","Object","Instance","Attribute"]},
+
+  // ── Algorithms ──
+  { term:"Algorithm", hl:false, topic:"Algorithms",
+    pseudo:"// Properties of a good algorithm:\n// 1. Finite — terminates\n// 2. Definite — each step unambiguous\n// 3. Input — zero or more inputs\n// 4. Output — at least one output\n// 5. Effective — each step executable",
+    keywords:["finite steps","unambiguous","terminates","input output"],
+    synonyms:["procedure","recipe","computational method"],
+    antonyms:["heuristic","approximation"],
+    context:"Sorting your contacts alphabetically, finding the shortest route to school, checking if a password is strong — each is solved by an algorithm.",
+    full:"A finite, ordered sequence of unambiguous steps that solves a problem or accomplishes a task. Must terminate, have defined inputs/outputs, and be implementable.",
+    seealso:["Pseudocode","Big O Notation","Linear Search","Binary Search","Recursion"]},
+
+  { term:"Big O Notation", hl:true, topic:"Algorithms",
+    pseudo:"O(1)      — constant  (hash lookup)\nO(log n)  — logarithmic (binary search)\nO(n)      — linear    (linear search)\nO(n log n)— linearithmic (merge sort)\nO(n²)     — quadratic  (bubble sort)\nO(2ⁿ)     — exponential (brute-force TSP)",
+    keywords:["time complexity","space complexity","growth rate","worst case","asymptotic"],
+    synonyms:["asymptotic notation","complexity class"],
+    antonyms:["exact timing","benchmark"],
+    context:"O(n²) bubble sort on 1000 items takes ~1 000 000 operations. O(n log n) merge sort takes ~10 000. For n = 1 000 000 the gap becomes catastrophic.",
+    full:"Mathematical notation describing how an algorithm's resource requirements (time or space) grow as input size n increases. Characterises worst-case behaviour, ignoring constants and low-order terms.",
+    seealso:["Algorithm","Algorithm Efficiency","Bubble Sort","Binary Search"]},
+
+  { term:"Linear Search", hl:false, topic:"Algorithms",
+    pseudo:"def linear_search(arr, target):\n  for i in range(len(arr)):\n    if arr[i] == target:\n      return i\n  return -1\n\n# Time: O(n) worst/average\n# Works on unsorted data",
+    keywords:["sequential","O(n)","unsorted","simple"],
+    synonyms:["sequential search"],
+    antonyms:["binary search"],
+    context:"Linear search checks every element in order. Simple to implement and works on unsorted data — but slow on large datasets compared to binary search.",
+    full:"A search algorithm that checks each element sequentially until the target is found or the list is exhausted. Time complexity O(n). Works on unsorted arrays.",
+    seealso:["Binary Search","Array (1D)","Big O Notation"]},
+
+  { term:"Binary Search", hl:false, topic:"Algorithms",
+    pseudo:"def binary_search(arr, target):\n  lo, hi = 0, len(arr) - 1\n  while lo <= hi:\n    mid = (lo + hi) // 2\n    if arr[mid] == target:  return mid\n    elif arr[mid] < target: lo = mid + 1\n    else:                   hi = mid - 1\n  return -1\n\n# Time: O(log n)  Precond: SORTED",
+    keywords:["divide and conquer","O(log n)","sorted","halving"],
+    synonyms:["half-interval search","bisection search"],
+    antonyms:["linear search"],
+    context:"Binary search on 1 000 000 items needs at most 20 comparisons (log₂ 1000000 ≈ 20). Linear search could need 1 000 000.",
+    full:"An efficient search algorithm for sorted arrays that repeatedly halves the search interval. Time complexity O(log n). Requires the array to be sorted.",
+    seealso:["Linear Search","Big O Notation","Array (1D)","Binary Search Tree"]},
+
+  { term:"Bubble Sort", hl:false, topic:"Algorithms",
+    pseudo:"def bubble_sort(arr):\n  n = len(arr)\n  for i in range(n):\n    for j in range(n - i - 1):\n      if arr[j] > arr[j+1]:\n        arr[j], arr[j+1] = arr[j+1], arr[j]\n\n# Time: O(n²)  Space: O(1)\n# Stable: yes",
+    keywords:["adjacent swap","O(n²)","in-place","stable","simple"],
+    synonyms:["sinking sort","exchange sort"],
+    antonyms:["merge sort","quick sort"],
+    context:"Bubble sort is rarely used in practice due to O(n²) complexity, but it is simple to understand and stable — equal elements retain their original order.",
+    full:"A simple sorting algorithm that repeatedly compares adjacent elements and swaps them if in the wrong order. Time complexity O(n²). In-place and stable but inefficient for large datasets.",
+    seealso:["Big O Notation","Algorithm","Array (1D)"]},
+
+  { term:"Recursion", hl:false, topic:"Algorithms",
+    pseudo:"def factorial(n):\n  if n == 0:          # base case\n    return 1\n  return n * factorial(n - 1)  # recursive case\n\n# factorial(4) = 4 × 3 × 2 × 1 = 24\n# Call stack depth = n",
+    keywords:["base case","recursive case","call stack","self-calling","divide"],
+    synonyms:["recursive function"],
+    antonyms:["iteration","loop"],
+    context:"Recursion solves a problem by breaking it into a smaller version of itself. The base case stops the chain; without it, recursion runs forever (stack overflow).",
+    full:"A technique where a function calls itself with a smaller or simpler input until a base case is reached. Elegant for problems with recursive structure (trees, fractals, divide-and-conquer).",
+    seealso:["Algorithm","Stack","Backtracking","Depth-First Search"]},
+
+  { term:"Backtracking", hl:true, topic:"Algorithms",
+    pseudo:"def solve(board, row):\n  if row == N:          # base case: all queens placed\n    return True\n  for col in range(N):\n    if is_safe(board, row, col):\n      board[row] = col\n      if solve(board, row + 1):\n        return True\n      board[row] = -1  # undo (backtrack)\n  return False",
+    keywords:["undo","try all","constraint","DFS","combinatorial"],
+    synonyms:["systematic trial and error"],
+    antonyms:["greedy","dynamic programming"],
+    context:"In the N-Queens problem, backtracking places a queen, recurses, and undoes placement if a conflict arises — systematically exploring the solution space.",
+    full:"An algorithmic technique that incrementally builds candidates for a solution and abandons (backtracks) a candidate as soon as it is determined to violate the problem constraints.",
+    seealso:["Recursion","Depth-First Search","Algorithm"]},
+
+  // ── Data Structures ──
+  { term:"Array (1D)", hl:false, topic:"Data Structures",
+    pseudo:"# Python list (dynamic array)\narr = [10, 20, 30, 40, 50]\n\nprint(arr[0])    # 10  — O(1) access\nprint(len(arr))  # 5\narr.append(60)   # O(1) amortised\narr[2] = 99      # O(1) update",
+    keywords:["index","contiguous","O(1) access","fixed type","sequential"],
+    synonyms:["list","one-dimensional array"],
+    antonyms:["linked list","dictionary"],
+    context:"Arrays give O(1) indexed access — arr[42] is as fast as arr[0] regardless of size, because the address is computed directly from the index.",
+    full:"A collection of elements of the same type stored in contiguous memory, accessible by integer index. Provides O(1) random access. Fixed size in classical arrays; dynamic in languages like Python.",
+    seealso:["Array (2D)","Linear Search","Binary Search","Collection"]},
+
+  { term:"Array (2D)", hl:false, topic:"Data Structures",
+    pseudo:"# 3×3 grid\nmatrix = [\n  [1, 2, 3],\n  [4, 5, 6],\n  [7, 8, 9]\n]\nprint(matrix[1][2])  # 6 (row 1, col 2)\n\n# Traverse:\nfor row in matrix:\n  for val in row:\n    print(val)",
+    keywords:["matrix","rows columns","nested list","grid","two indices"],
+    synonyms:["matrix","two-dimensional array"],
+    antonyms:["1D array"],
+    context:"Game boards, pixel grids, spreadsheets, adjacency matrices for graphs — all naturally represented as 2D arrays. Access element with two indices: [row][col].",
+    full:"A two-dimensional array organised as rows and columns, accessed with two indices. Effectively an array of arrays. Used for matrices, grids, and tables.",
+    seealso:["Array (1D)","Collection","Graph"]},
+
+  { term:"Stack", hl:true, topic:"Data Structures",
+    pseudo:"class Stack:\n  def __init__(self):\n    self._data = []\n\n  def push(self, item):    # add to top\n    self._data.append(item)\n\n  def pop(self):           # remove from top\n    return self._data.pop()\n\n  def peek(self):          # view top\n    return self._data[-1]\n\n# LIFO: Last-In First-Out",
+    keywords:["LIFO","push pop peek","call stack","undo","depth-first"],
+    synonyms:["LIFO structure","push-down stack"],
+    antonyms:["queue","FIFO"],
+    context:"Function calls use a stack. Each call pushes a frame; each return pops it. Stack overflow occurs when recursion is too deep and exhausts stack space.",
+    full:"A linear data structure obeying Last-In-First-Out (LIFO) semantics. Supports push (add to top), pop (remove from top), and peek (inspect top). Used in recursion, undo, and DFS.",
+    seealso:["Queue","Linked List","Recursion","Depth-First Search"]},
+
+  { term:"Queue", hl:true, topic:"Data Structures",
+    pseudo:"from collections import deque\n\nqueue = deque()\nqueue.append('A')    # enqueue rear\nqueue.append('B')\nqueue.append('C')\nprint(queue.popleft())  # dequeue front → 'A'\n\n# FIFO: First-In First-Out",
+    keywords:["FIFO","enqueue dequeue","scheduling","BFS","printer"],
+    synonyms:["FIFO structure","waiting line"],
+    antonyms:["stack","LIFO"],
+    context:"A printer queue is literally a queue — the first job submitted is the first printed. BFS uses a queue to explore nodes level by level.",
+    full:"A linear data structure obeying First-In-First-Out (FIFO) semantics. Elements are enqueued at the rear and dequeued from the front. Used in scheduling, BFS, and buffering.",
+    seealso:["Stack","Priority Queue","Linked List","Breadth-First Search"]},
+
+  { term:"Linked List", hl:true, topic:"Data Structures",
+    pseudo:"class Node:\n  def __init__(self, data):\n    self.data = data\n    self.next = None  # pointer to next node\n\nhead → [10|•] → [20|•] → [30|∅]\n\n# Insert: O(1) if at head\n# Search: O(n)\n# No random access",
+    keywords:["pointer","node","dynamic size","O(n) search","no index"],
+    synonyms:["singly linked list"],
+    antonyms:["array","contiguous storage"],
+    context:"Linked lists grow and shrink without copying — inserting at the head is O(1). But to find the 50th element you must traverse 49 pointers — no direct indexing.",
+    full:"A dynamic data structure of nodes, each containing data and a pointer to the next node. Efficient insertion/deletion at known positions (O(1)), but O(n) search and no random access.",
+    seealso:["Stack","Queue","Binary Tree","Dynamic Data Structure"]},
+
+  { term:"Binary Tree", hl:true, topic:"Data Structures",
+    pseudo:"class TreeNode:\n  def __init__(self, val):\n    self.val   = val\n    self.left  = None\n    self.right = None\n\n        10\n       /  \\\n      5    15\n     / \\     \\\n    3   7    20",
+    keywords:["root","left child","right child","leaf","parent","hierarchical"],
+    synonyms:["binary tree structure"],
+    antonyms:["linear list","graph"],
+    context:"File systems, expression parsers, and decision trees all use tree structures. Each node has at most two children — left and right.",
+    full:"A hierarchical data structure where each node has at most two children (left and right). The topmost node is the root; nodes with no children are leaves.",
+    seealso:["Binary Search Tree","Tree Traversal","Linked List","Depth-First Search"]},
+
+  { term:"Binary Search Tree", hl:true, topic:"Data Structures",
+    pseudo:"# BST property:\n# left.val < node.val < right.val\n\n      8\n     / \\\n    3   10\n   / \\    \\\n  1   6    14\n     / \\   /\n    4   7 13\n\n# Search / insert: O(log n) average\n# Worst case (unbalanced): O(n)",
+    keywords:["ordered","left smaller","right larger","O(log n)","search tree"],
+    synonyms:["BST","ordered binary tree"],
+    antonyms:["unordered tree","hash table"],
+    context:"Searching a BST: at each node, go left if target < node, right if target > node. Each comparison eliminates half the remaining tree — O(log n) average case.",
+    full:"A binary tree with the invariant that every left descendant's value is less than the node, and every right descendant's value is greater. Enables O(log n) average search, insert, and delete.",
+    seealso:["Binary Tree","Tree Traversal","Binary Search","Hash Table"]},
+
+  { term:"Tree Traversal", hl:true, topic:"Data Structures",
+    pseudo:"# Inorder (Left → Root → Right):\n# Visits BST nodes in sorted order\n\ndef inorder(node):\n  if node:\n    inorder(node.left)\n    print(node.val)   # process\n    inorder(node.right)\n\n# Preorder: Root → L → R\n# Postorder: L → R → Root",
+    keywords:["inorder","preorder","postorder","DFS","visit all"],
+    synonyms:["tree walk"],
+    antonyms:["BFS level-order"],
+    context:"Inorder traversal of a BST produces values in ascending sorted order — a useful property for validation and sorted output.",
+    full:"The process of visiting every node in a tree in a defined order. Inorder (L-Root-R) yields sorted output on a BST. Preorder visits root first; postorder visits root last.",
+    seealso:["Binary Tree","Binary Search Tree","Depth-First Search","Recursion"]},
+
+  { term:"Hash Table", hl:true, topic:"Data Structures",
+    pseudo:"# Python dict is a hash table\nphone = {}\nphone['Alice'] = '07700 900001'  # hash('Alice') → index\nphone['Bob']   = '07700 900002'\n\nprint(phone['Alice'])  # O(1) average\n\n# Collision → chaining or open addressing",
+    keywords:["hash function","key-value","O(1)","collision","dictionary"],
+    synonyms:["hash map","dictionary","associative array"],
+    antonyms:["array","linked list","BST"],
+    context:"Python's dict uses a hash table. Inserting and looking up a key is O(1) on average — the hash function maps the key directly to a memory location.",
+    full:"A data structure mapping keys to values using a hash function to compute an array index. Provides O(1) average-case lookup, insert, and delete. Collisions handled by chaining or probing.",
+    seealso:["Key","Array (1D)","Binary Search Tree","Depth-First Search"]},
+
+  { term:"Graph", hl:true, topic:"Data Structures",
+    pseudo:"# Adjacency list representation\ngraph = {\n  'A': ['B', 'C'],\n  'B': ['A', 'D'],\n  'C': ['A'],\n  'D': ['B']\n}\n# A—B—D\n# |       \n# C\n# Directed or undirected, weighted or not",
+    keywords:["vertices edges","adjacency list","directed","weighted","network"],
+    synonyms:["network graph"],
+    antonyms:["tree (special case)"],
+    context:"Social networks (people = nodes, friendships = edges), road maps, and the internet are all graphs. Trees are a special case of graph with no cycles.",
+    full:"A data structure consisting of vertices (nodes) connected by edges. May be directed or undirected, weighted or unweighted. Traversed with DFS or BFS.",
+    seealso:["Depth-First Search","Breadth-First Search","Binary Tree","Array (2D)"]},
+
+  // ── Databases ──
+  { term:"Database", hl:false, topic:"Databases",
+    pseudo:"Table: Students\n+----+-------+-----+\n| ID | Name  | Age |\n+----+-------+-----+\n|  1 | Alice |  17 |\n|  2 | Bob   |  18 |\n+----+-------+-----+\n\nRow = record\nColumn = field/attribute\nCell = value",
+    keywords:["tables","records","fields","DBMS","persistent","organised"],
+    synonyms:["relational database","data store"],
+    antonyms:["flat file","spreadsheet"],
+    context:"Unlike a spreadsheet, a relational database enforces data types, relationships between tables, and supports concurrent access by many users without corruption.",
+    full:"An organised collection of structured data managed by a Database Management System (DBMS). Relational databases store data in tables with rows (records) and columns (fields).",
+    seealso:["SQL","Primary Key","Foreign Key","Normalization","View (Database)"]},
+
+  { term:"SQL", hl:false, topic:"Databases",
+    pseudo:"-- Select\nSELECT name, age FROM students WHERE age > 17;\n\n-- Join\nSELECT s.name, c.grade\nFROM students s\nJOIN courses c ON s.id = c.student_id;\n\n-- Insert / Update / Delete\nINSERT INTO students VALUES (3,'Carol',16);\nUPDATE students SET age=19 WHERE id=2;",
+    keywords:["SELECT","WHERE","JOIN","INSERT","CREATE TABLE","relational"],
+    synonyms:["Structured Query Language"],
+    antonyms:["NoSQL","flat file"],
+    context:"SQL's power lies in JOIN — combining data from multiple normalised tables into a single result set without duplicating stored data.",
+    full:"Structured Query Language — the standard language for querying and manipulating relational databases. Key commands: SELECT, FROM, WHERE, JOIN, INSERT, UPDATE, DELETE, CREATE TABLE.",
+    seealso:["Database","Primary Key","Foreign Key","Normalization","View (Database)"]},
+
+  { term:"Primary Key", hl:false, topic:"Databases",
+    pseudo:"CREATE TABLE students (\n  id   INTEGER PRIMARY KEY,  -- unique, not null\n  name TEXT NOT NULL,\n  age  INTEGER\n);\n\n-- Every row must have a unique id\n-- NULL is not allowed",
+    keywords:["unique","not null","identifier","index","row identity"],
+    synonyms:["PK","unique identifier"],
+    antonyms:["non-key field"],
+    context:"A primary key uniquely identifies each record. Without it, you cannot reliably reference or update a specific row — two students named 'Bob' would be indistinguishable.",
+    full:"A field (or combination of fields) that uniquely identifies each record in a table. Must be unique and cannot be NULL. Often used as the target of foreign key references.",
+    seealso:["Foreign Key","Database","SQL","Normalization"]},
+
+  { term:"Normalization", hl:false, topic:"Databases",
+    pseudo:"Bad (unnormalised): stores subject and teacher\nrepeatedly per student → UPDATE anomalies\n\n1NF: atomic values, no repeating groups\n2NF: no partial dependency on composite PK\n3NF: no transitive dependency\n\nResult: split into separate related tables",
+    keywords:["1NF 2NF 3NF","redundancy","anomaly","decomposition","relational"],
+    synonyms:["database normalisation"],
+    antonyms:["denormalisation","flat file"],
+    context:"Without normalisation, changing a teacher's name requires updating every student record they teach. Normalisation stores the name once, eliminating the anomaly.",
+    full:"The process of organising database tables to reduce redundancy and dependency. Normal forms (1NF → 2NF → 3NF) progressively eliminate update, insert, and delete anomalies.",
+    seealso:["Database","Primary Key","Foreign Key","SQL"]},
+
+  // ── Control Systems ──
+  { term:"Control System", hl:false, topic:"Control Systems",
+    pseudo:"// Basic loop:\nwhile True:\n  reading = sensor.read()\n  error = setpoint - reading\n  output = controller.compute(error)\n  actuator.set(output)\n  time.sleep(sample_interval)",
+    keywords:["sensor","processor","actuator","feedback","setpoint"],
+    synonyms:["automated control","feedback system"],
+    antonyms:["manual control"],
+    context:"A thermostat is a control system: the temperature sensor provides feedback, the processor compares it to the setpoint, and the heater (actuator) is switched on or off accordingly.",
+    full:"A system that manages, regulates, or directs a process using sensor inputs, decision-making processing, and actuator outputs. May be open-loop or closed-loop (with feedback).",
+    seealso:["Sensor","Feedback","Open-loop Control","Closed-loop Control","Actuator"]},
+
+  { term:"Open-loop vs Closed-loop", hl:false, topic:"Control Systems",
+    pseudo:"// Open-loop: no feedback\ntoaster.heat(time=90)  # fixed, no sensor check\n\n// Closed-loop: uses feedback\nwhile temp < target:\n  heater.on()\n  temp = sensor.read()\nheater.off()\n# Compensates for disturbances",
+    keywords:["feedback","setpoint","error","disturbance rejection","thermostat"],
+    synonyms:["open loop","closed loop"],
+    antonyms:[],
+    context:"Open-loop toasters heat for a fixed time regardless of bread type or ambient temperature. Closed-loop ovens sense actual temperature and adjust power continuously.",
+    full:"Open-loop: no feedback; output determined solely by input (simple, unreliable). Closed-loop: output fed back and compared to setpoint; error drives corrections. Closed-loop is more accurate and disturbance-resistant.",
+    seealso:["Control System","Sensor","Feedback","Actuator"]},
+
+  // ── Software Development ──
+  { term:"Testing", hl:false, topic:"Software Dev",
+    pseudo:"# Types:\n# Unit test — single function\n# Integration — modules together\n# System — whole system\n# Acceptance — end-user sign-off\n# Beta — external users\n\n# Test data:\n# Normal:     expected inputs\n# Boundary:   edge values (0, max)\n# Erroneous:  invalid inputs",
+    keywords:["unit","integration","acceptance","beta","normal boundary erroneous","validation"],
+    synonyms:["software testing","verification"],
+    antonyms:["untested code"],
+    context:"Testing with only 'happy path' data is insufficient. Boundary values (age = 0, age = 150) and erroneous inputs (age = -5, age = 'abc') reveal edge-case bugs.",
+    full:"The process of evaluating software to verify correctness and detect defects. Levels: unit, integration, system, acceptance. Test data should include normal, boundary, and erroneous cases.",
+    seealso:["Debugging","Beta Testing","User Acceptance Testing","Algorithm"]},
+
+  { term:"Debugging", hl:false, topic:"Software Dev",
+    pseudo:"# Common error types:\n# Syntax error  — code won't run (SyntaxError)\n# Logic error   — runs, wrong output\n# Runtime error — crashes at execution\n\n# Tools:\n# - Breakpoints: pause execution\n# - Step through: run line by line\n# - Variable watch: inspect values\n# - Print statements (quick & dirty)",
+    keywords:["syntax error","logic error","runtime error","breakpoint","trace","step"],
+    synonyms:["error tracing","fault finding"],
+    antonyms:["compilation","deployment"],
+    context:"A logic error produces wrong answers silently — the hardest bugs to find. Using a debugger to step through code and watch variable values reveals where the logic diverges from intent.",
+    full:"The process of locating and fixing errors in code. Errors: syntax (invalid code structure), logic (incorrect algorithm), runtime (crash during execution). Tools: breakpoints, step-through, variable inspection.",
+    seealso:["Testing","Syntax","Algorithm"]},
+
+  // ── Abstract Data Types ──
+  { term:"Priority Queue", hl:true, topic:"Abstract Data Types",
+    pseudo:"import heapq\npq = []\nheapq.heappush(pq, (1, 'high priority'))\nheapq.heappush(pq, (5, 'low priority'))\nheapq.heappush(pq, (3, 'medium priority'))\n\nprint(heapq.heappop(pq))  # (1, 'high priority')\n\n# Applications: Dijkstra, task scheduling, hospital triage",
+    keywords:["priority","heap","O(log n)","Dijkstra","scheduling"],
+    synonyms:["heap queue","priority heap"],
+    antonyms:["FIFO queue","LIFO stack"],
+    context:"An A&E department is a priority queue — the most critically ill patient is seen next, regardless of arrival order. Dijkstra's shortest-path algorithm uses one to efficiently retrieve the nearest unvisited node.",
+    full:"A queue variant where each element has a priority and the element with the highest priority (lowest value by convention) is dequeued first. Typically implemented as a binary heap. O(log n) insert and extract.",
+    seealso:["Queue","Stack","Graph","Depth-First Search"]},
+
+  { term:"Depth-First Search", hl:true, topic:"Abstract Data Types",
+    pseudo:"def dfs(graph, start, visited=None):\n  if visited is None:\n    visited = set()\n  visited.add(start)\n  print(start)\n  for neighbour in graph[start]:\n    if neighbour not in visited:\n      dfs(graph, neighbour, visited)\n\n# Uses recursion (implicit stack)\n# Time: O(V + E)",
+    keywords:["DFS","stack","recursion","backtrack","O(V+E)","graph traversal"],
+    synonyms:["DFS"],
+    antonyms:["Breadth-First Search"],
+    context:"DFS dives deep along one path before backtracking. Used in maze solving, topological sorting, and detecting cycles in graphs.",
+    full:"A graph/tree traversal algorithm that explores as far as possible along each branch before backtracking. Uses a stack (or recursion). Time complexity O(V + E) where V = vertices, E = edges.",
+    seealso:["Breadth-First Search","Stack","Recursion","Backtracking","Graph"]},
+
+  { term:"Breadth-First Search", hl:true, topic:"Abstract Data Types",
+    pseudo:"from collections import deque\n\ndef bfs(graph, start):\n  queue = deque([start])\n  visited = {start}\n  while queue:\n    node = queue.popleft()\n    print(node)\n    for nb in graph[node]:\n      if nb not in visited:\n        visited.add(nb)\n        queue.append(nb)\n# Time: O(V + E)  Finds SHORTEST PATH",
+    keywords:["BFS","queue","level order","shortest path","O(V+E)"],
+    synonyms:["BFS","level-order traversal"],
+    antonyms:["Depth-First Search"],
+    context:"BFS explores all nodes at distance 1 before distance 2, etc. This guarantees the shortest path (in terms of edges) to any reachable node — used in GPS navigation and social network distance.",
+    full:"A graph/tree traversal algorithm that explores all neighbours at the current depth before moving deeper. Uses a queue. Finds the shortest path (unweighted). Time complexity O(V + E).",
+    seealso:["Depth-First Search","Queue","Graph","Priority Queue"]},
+
+  { term:"Deadlock", hl:true, topic:"Abstract Data Types",
+    pseudo:"# Thread 1 holds Lock A, waits for Lock B\n# Thread 2 holds Lock B, waits for Lock A\n# Neither can proceed → DEADLOCK\n\n# Conditions (all four must hold):\n# 1. Mutual exclusion\n# 2. Hold and wait\n# 3. No preemption\n# 4. Circular wait",
+    keywords:["circular wait","mutual exclusion","hold and wait","no preemption","livelock"],
+    synonyms:["circular deadlock","deadly embrace"],
+    antonyms:["livelock","starvation"],
+    context:"Classic dining philosophers: five philosophers, five forks. If each picks up their left fork simultaneously, all wait forever for a right fork — deadlock.",
+    full:"A state where two or more processes are permanently blocked, each waiting for a resource held by another. Requires all four conditions: mutual exclusion, hold-and-wait, no preemption, and circular wait.",
+    seealso:["Semaphore","Resource Management","Operating System"]},
+
+  { term:"Semaphore", hl:true, topic:"Abstract Data Types",
+    pseudo:"import threading\nsem = threading.Semaphore(3)  # allow 3 concurrent\n\ndef task():\n  sem.acquire()   # P operation (wait)\n  try:\n    # critical section\n    access_resource()\n  finally:\n    sem.release()  # V operation (signal)",
+    keywords:["P and V","mutex","critical section","concurrent","synchronisation"],
+    synonyms:["mutex (binary semaphore)","lock","monitor"],
+    antonyms:["unprotected shared resource"],
+    context:"A semaphore with value 1 is a mutex — only one thread enters the critical section at a time. A semaphore with value N controls access to a pool of N resources.",
+    full:"A synchronisation primitive used to control concurrent access to shared resources. P (acquire/wait) decrements the count; V (release/signal) increments it. Prevents race conditions and deadlock.",
+    seealso:["Deadlock","Resource Management","Operating System"]},
+
+  // ── Theory ──
+  { term:"Boolean Operators", hl:false, topic:"Theory",
+    pseudo:"# Python equivalents:\nA and B   # AND  — both true\nA or  B   # OR   — at least one true\nnot A     # NOT  — invert\nA and not B  # AND NOT\n\n# Short-circuit evaluation:\n# False and X → skips X (already false)\n# True  or  X → skips X (already true)",
+    keywords:["AND OR NOT XOR","short-circuit","truth value","boolean algebra"],
+    synonyms:["logical operators","boolean connectives"],
+    antonyms:["arithmetic operators"],
+    context:"Boolean operators underlie every conditional in programming. Search engines use AND/OR/NOT operators — 'python AND tutorial NOT beginner' finds advanced Python tutorials.",
+    full:"Operators that produce True/False results. AND (conjunction), OR (disjunction), NOT (negation), XOR (exclusive or). Form the basis of all logic circuits and conditional control flow.",
+    seealso:["Logic Gate","Truth Table","Condition","Branching"]},
+
+  { term:"Pseudocode", hl:false, topic:"Theory",
+    pseudo:"// IB-style pseudocode:\nif score >= 70 then\n  output 'Pass'\nelse\n  output 'Fail'\nend if\n\nloop while count < N\n  sum ← sum + arr[count]\n  count ← count + 1\nend loop",
+    keywords:["language-independent","design tool","IB notation","structured English"],
+    synonyms:["structured English","program design language"],
+    antonyms:["actual code","machine code"],
+    context:"Pseudocode lets you plan an algorithm without worrying about semicolons, indentation rules, or library imports. The logic can be translated to any programming language.",
+    full:"A structured, language-independent notation for describing algorithms. Expresses logic clearly without syntactic constraints of any particular programming language. The IB has a defined pseudocode notation.",
+    seealso:["Algorithm","Flow Chart","Syntax"]},
+];
+
+// Unique topics for filter buttons
+const ALL_TOPICS = [...new Set(TERMS.map(t => t.topic))];
+
+// ── App state ──
+let deck = [];
+let idx = 0;
+let face = 0;
+let filterHL = 'all';
+let filterTopic = 'all';
+let search = '';
+let isAnimating = false;
+
+// ── Helpers ──
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Build topic buttons ──
+function buildTopicButtons() {
+  const row = document.getElementById('topicRow');
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All topics';
+  allBtn.className = 'active';
+  allBtn.onclick = () => setTopic('all');
+  allBtn.id = 'tbtn-all';
+  row.appendChild(allBtn);
+
+  ALL_TOPICS.forEach(tp => {
+    const btn = document.createElement('button');
+    btn.textContent = tp;
+    btn.id = 'tbtn-' + tp;
+    btn.onclick = () => setTopic(tp);
+    row.appendChild(btn);
+  });
+}
+
+// ── Deck management ──
+function buildDeck() {
+  const s = search.toLowerCase().trim();
+  deck = TERMS.filter(t => {
+    const matchHL =
+      filterHL === 'all' ? true :
+      filterHL === 'sl'  ? !t.hl :
+                            t.hl;
+    const matchTopic = filterTopic === 'all' || t.topic === filterTopic;
+    if (!matchHL || !matchTopic) return false;
+    if (!s) return true;
+    return (
+      t.term.toLowerCase().includes(s) ||
+      (t.keywords||[]).some(k => k.toLowerCase().includes(s)) ||
+      (t.synonyms||[]).some(k => k.toLowerCase().includes(s)) ||
+      t.topic.toLowerCase().includes(s)
+    );
+  });
+  idx = 0; face = 0;
+}
+
+function shuffleDeck() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; face = 0;
+  render();
+}
+
+// ── Face renderers ──
+function renderFace(card, f) {
+  const faceLabels = ['Term','Pseudocode · Keywords','Context','Full Definition'];
+  const accent = `<div class="face-accent face-accent-${f}"></div>`;
+  const label  = `<div class="face-label face-label-${f}">${faceLabels[f]}</div>`;
+
+  // Topic color
+  const tc = TOPIC_COLOR[card.topic] || '#7ec8e3';
+
+  let body = '', footer = '';
+
+  if (f === 0) {
+    const hlBadge = card.hl ? '<span class="hl-badge">HL</span>' : '';
+    const topicBadge = `<span class="topic-badge">${escHtml(card.topic)}</span>`;
+    body = `<div class="face-body" style="justify-content:center;">
+      <div class="term-name">${escHtml(card.term)}${hlBadge}${topicBadge}</div>
+    </div>`;
+    footer = `<div class="face-footer">
+      <span></span>
+      <span class="footer-text">Tap → see pseudocode</span>
+    </div>`;
+
+  } else if (f === 1) {
+    const hasPseudo = card.pseudo && card.pseudo.trim();
+    const pseudoHtml = hasPseudo
+      ? `<div class="symbol-display">${escHtml(card.pseudo)}</div>`
+      : `<div class="symbol-display no-pseudo">no pseudocode for this term</div>`;
+    const kwHtml = (card.keywords||[]).map(k =>
+      `<span class="kw-chip">${escHtml(k)}</span>`).join('');
+    body = `<div class="face-body">
+      ${pseudoHtml}
+      <div class="keywords-row">${kwHtml}</div>
+    </div>`;
+    const synStr = (card.synonyms||[]).filter(s=>s).join(' · ');
+    footer = `<div class="face-footer">
+      ${synStr ? `<span class="footer-text"><span class="dim">Syn:</span>${escHtml(synStr)}</span>` : '<span></span>'}
+      <span class="footer-text">Tap → context</span>
+    </div>`;
+
+  } else if (f === 2) {
+    body = `<div class="face-body" style="justify-content:center;">
+      <div class="context-quote">"${escHtml(card.context || '')}"</div>
+    </div>`;
+    const antStr = (card.antonyms||[]).filter(s=>s).join(' · ');
+    footer = `<div class="face-footer">
+      ${antStr ? `<span class="footer-text"><span class="dim">Contrast:</span>${escHtml(antStr)}</span>` : '<span></span>'}
+      <span class="footer-text">Tap → definition</span>
+    </div>`;
+
+  } else {
+    const saHtml = card.seealso && card.seealso.length
+      ? `<div class="see-also">See also: <span>${card.seealso.map(escHtml).join(' · ')}</span></div>`
+      : '';
+    body = `<div class="face-body" style="justify-content:flex-start;padding-top:4px;">
+      <div class="full-text">${escHtml(card.full || '')}</div>
+      ${saHtml}
+    </div>`;
+    footer = `<div class="face-footer">
+      <span></span>
+      <span class="footer-text">Tap → back to term</span>
+    </div>`;
+  }
+
+  return accent + label + body + footer;
+}
+
+// ── Render ──
+function render() {
+  const countEl = document.getElementById('stat-count');
+  const cardEl  = document.getElementById('cardFace');
+  const dotsEl  = document.getElementById('faceDots');
+  const idxEl   = document.getElementById('idxLabel');
+  const progEl  = document.getElementById('progressFill');
+
+  countEl.textContent = deck.length + (deck.length === 1 ? ' term' : ' terms');
+
+  if (deck.length === 0) {
+    cardEl.innerHTML = '<div class="empty-state">No matching terms.</div>';
+    dotsEl.querySelectorAll('.face-dot').forEach(d => d.classList.remove('active'));
+    idxEl.textContent = '—';
+    progEl.style.width = '0%';
+    return;
+  }
+
+  const card = deck[idx];
+  cardEl.innerHTML = renderFace(card, face);
+  dotsEl.querySelectorAll('.face-dot').forEach((d, i) => d.classList.toggle('active', i === face));
+  idxEl.textContent = `${idx + 1} / ${deck.length}`;
+  progEl.style.width = ((idx + 1) / deck.length * 100).toFixed(1) + '%';
+}
+
+// ── Actions ──
+function flipCard() {
+  if (isAnimating || deck.length === 0) return;
+  isAnimating = true;
+  const cardEl = document.getElementById('cardFace');
+  cardEl.classList.add('flipping');
+  setTimeout(() => {
+    face = (face + 1) % 4;
+    render();
+    cardEl.classList.remove('flipping');
+    isAnimating = false;
+  }, 180);
+}
+
+function navigate(dir) {
+  if (isAnimating || deck.length === 0) return;
+  isAnimating = true;
+  const cardEl = document.getElementById('cardFace');
+  cardEl.style.transition = 'opacity 0.15s, transform 0.15s';
+  cardEl.style.opacity = '0';
+  cardEl.style.transform = dir > 0 ? 'translateX(-30px)' : 'translateX(30px)';
+  setTimeout(() => {
+    idx = (idx + dir + deck.length) % deck.length;
+    face = 0;
+    cardEl.style.transition = 'none';
+    cardEl.style.transform = dir > 0 ? 'translateX(30px)' : 'translateX(-30px)';
+    cardEl.style.opacity = '0';
+    render();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        cardEl.style.transition = 'opacity 0.2s, transform 0.2s';
+        cardEl.style.opacity = '1';
+        cardEl.style.transform = 'translateX(0)';
+        setTimeout(() => { cardEl.style.transition = ''; cardEl.style.transform = ''; isAnimating = false; }, 210);
+      });
+    });
+  }, 150);
+}
+
+// ── Touch / Pointer ──
+let touchStartX = 0, touchStartY = 0, touchStartT = 0;
+document.getElementById('cardFace').addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  touchStartX = t.clientX; touchStartY = t.clientY; touchStartT = Date.now();
+}, { passive: true });
+document.getElementById('cardFace').addEventListener('touchend', e => {
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX, dy = t.clientY - touchStartY;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
+  else if (Math.abs(dx) < 15 && Math.abs(dy) < 15 && Date.now() - touchStartT < 300) flipCard();
+}, { passive: true });
+
+let pX = 0, pY = 0, pDown = false;
+document.getElementById('cardFace').addEventListener('pointerdown', e => { pX = e.clientX; pY = e.clientY; pDown = true; });
+document.getElementById('cardFace').addEventListener('pointerup', e => {
+  if (!pDown) return; pDown = false;
+  const dx = e.clientX - pX, dy = e.clientY - pY;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
+  else if (Math.abs(dx) < 8 && Math.abs(dy) < 8) flipCard();
+});
+document.getElementById('cardFace').addEventListener('pointerleave', () => { pDown = false; });
+
+// ── Keyboard ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') navigate(1);
+  else if (e.key === 'ArrowLeft') navigate(-1);
+  else if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); flipCard(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); face = 0; render(); }
+});
+
+// ── Filters ──
+function setFilter(f) {
+  filterHL = f;
+  ['all','sl','hl'].forEach(id => {
+    const btn = document.getElementById('btn-' + id);
+    if (!btn) return;
+    btn.className = '';
+    if (id === f) btn.className = id === 'hl' ? 'hl-active' : 'active';
+  });
+  buildDeck(); render();
+}
+
+function setTopic(tp) {
+  filterTopic = tp;
+  document.querySelectorAll('.topic-row button').forEach(b => b.classList.remove('active'));
+  const tgt = document.getElementById('tbtn-' + tp);
+  if (tgt) tgt.classList.add('active');
+  buildDeck(); render();
+}
+
+function onSearch() {
+  search = document.getElementById('search').value;
+  buildDeck(); render();
+}
+
+// ── Init ──
+buildTopicButtons();
+buildDeck();
+render();
+</script>
+</body>
+</html>
