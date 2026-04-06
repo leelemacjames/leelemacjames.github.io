@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Stern Sequence — Every Rational, Exactly Once</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg: #faf9f6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f3ef;
+  --bg-accent: #f0eee8;
+  --text: #2c2a25;
+  --text-muted: #6b675e;
+  --text-dim: #9e9889;
+  --gold: #a0873a;
+  --gold-dim: #c4b37a;
+  --blue: #3a6f94;
+  --blue-bright: #4a8ab8;
+  --blue-dot: #5599cc;
+  --green: #4a7a5a;
+  --green-light: #dceee2;
+  --purple: #7a5a94;
+  --red: #a04040;
+  --red-light: #f0dada;
+  --cyan: #3a8a8a;
+  --border: #ddd8ce;
+  --border-light: #eae6dc;
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-hover: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+
+body {
+  font-family: var(--serif);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 18px;
+}
+
+/* HEADER */
+.site-header {
+  padding: 3rem 2rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.site-header .subtitle {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-header .hook {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 1.2rem;
+  max-width: 620px;
+}
+
+/* NAV */
+.nav-strip {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 249, 246, 0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+}
+
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.nav-btn {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* CONTENT */
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+section {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+section:last-child { border-bottom: none; }
+
+section h2 {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 300;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+section h3 {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 1.5rem 0 0.7rem;
+}
+
+p { margin-bottom: 0.9rem; }
+
+.lead {
+  font-size: 1.08rem;
+  color: var(--text-muted);
+  max-width: 700px;
+}
+
+/* CARDS */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.6rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.card-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+
+/* RECURRENCE BOX */
+.recurrence-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.recurrence-box .formula {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--text);
+  margin: 0.5rem 0;
+  line-height: 2;
+}
+
+.recurrence-box .formula .hl {
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* SEQUENCE DISPLAY */
+.seq-display {
+  background: var(--bg-accent);
+  border-radius: 5px;
+  padding: 1.2rem 1.5rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.seq-display .seq-vals {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.seq-display .seq-vals .idx {
+  color: var(--text-dim);
+  font-size: 0.6rem;
+  vertical-align: super;
+}
+
+/* SCATTER CANVAS */
+.canvas-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 1.5rem auto;
+}
+
+.canvas-container canvas {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+}
+
+/* CONTROLS */
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0.7rem 1rem;
+  background: var(--bg-accent);
+  border-radius: 4px;
+  flex-wrap: wrap;
+}
+
+.ctrl-row label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ctrl-row input[type="range"] {
+  flex: 1;
+  min-width: 120px;
+  -webkit-appearance: none;
+  background: var(--border);
+  height: 3px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.ctrl-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--gold);
+  min-width: 50px;
+  text-align: center;
+}
+
+/* STERN TABLE */
+.stern-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.stern-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 500px;
+}
+
+.stern-table th {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+}
+
+.stern-table td {
+  text-align: center;
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--border-light);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.stern-table tr:hover td {
+  background: var(--bg-accent);
+  color: var(--text);
+}
+
+.stern-table td.even-row { color: var(--blue); }
+.stern-table td.odd-row { color: var(--purple); }
+.stern-table td.ratio { color: var(--gold); font-weight: 500; }
+.stern-table td.coprime-yes { color: var(--green); }
+.stern-table td.coprime-no { color: var(--red); }
+
+/* PROPERTIES GRID */
+.props-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.prop-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.4rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.prop-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.prop-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  border-radius: 6px 0 0 6px;
+}
+
+.prop-card:nth-child(1)::before { background: var(--blue); }
+.prop-card:nth-child(2)::before { background: var(--green); }
+.prop-card:nth-child(3)::before { background: var(--purple); }
+.prop-card:nth-child(4)::before { background: var(--gold); }
+
+.prop-card h4 {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.prop-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.prop-card .detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s;
+  opacity: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.prop-card.open .detail {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.expand-hint {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.4rem;
+}
+
+/* CALKIN-WILF TREE */
+.tree-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.tree-wrap canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+/* CALCULATOR */
+.calc-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  margin: 1.5rem 0;
+}
+
+.calc-inputs {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.calc-inputs input {
+  width: 80px;
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.45rem 0.6rem;
+  text-align: center;
+}
+
+.calc-inputs input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.calc-btn {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: none;
+  border: 1px solid var(--gold-dim);
+  padding: 0.5rem 1.1rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.calc-btn:hover {
+  background: rgba(160, 135, 58, 0.08);
+  border-color: var(--gold);
+}
+
+.calc-result {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--text-muted);
+  min-height: 1.5em;
+}
+
+/* QUIZ */
+.quiz-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.6rem;
+  margin-bottom: 1.3rem;
+  box-shadow: var(--shadow);
+}
+
+.quiz-card .q-num {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.quiz-card .question {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.quiz-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.quiz-opt {
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.65rem 1rem;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: left;
+}
+
+.quiz-opt:hover:not(.done) {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-dim);
+  color: var(--text);
+}
+
+.quiz-opt.correct { background: var(--green-light); border-color: var(--green); color: var(--green); }
+.quiz-opt.incorrect { background: var(--red-light); border-color: var(--red); color: var(--red); }
+
+.quiz-fb {
+  margin-top: 0.7rem;
+  padding: 0.7rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  display: none;
+}
+
+.quiz-fb.show { display: block; }
+.quiz-fb.right { background: var(--green-light); border-left: 3px solid var(--green); color: var(--text-muted); }
+.quiz-fb.wrong { background: var(--red-light); border-left: 3px solid var(--red); color: var(--text-muted); }
+
+.score-bar {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-align: right;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+/* PYTHON BLOCK */
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 5px;
+  padding: 1.2rem 1.4rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.code-block .kw { color: #cba6f7; }
+.code-block .fn { color: #89b4fa; }
+.code-block .num { color: #fab387; }
+.code-block .str { color: #a6e3a1; }
+.code-block .cmt { color: #6c7086; font-style: italic; }
+.code-block .op { color: #89dceb; }
+
+/* FOOTER */
+.site-footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-footer .stamp {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.site-footer .stamp span { color: var(--gold); }
+
+@media (max-width: 600px) {
+  .site-header, .content { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .nav-strip { padding: 0 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>The Stern Sequence</h1>
+  <div class="subtitle">Stern's Diatomic Sequence · Calkin-Wilf · Enumerating ℚ</div>
+  <div class="hook">A simple recurrence that, remarkably, enumerates every positive rational number exactly once.</div>
+</header>
+
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-target="recurrence">Recurrence</button>
+    <button class="nav-btn" data-target="explore">Explore</button>
+    <button class="nav-btn" data-target="rationals">Enumerating ℚ</button>
+    <button class="nav-btn" data-target="properties">Properties</button>
+    <button class="nav-btn" data-target="tree">Calkin-Wilf Tree</button>
+    <button class="nav-btn" data-target="code">Python</button>
+    <button class="nav-btn" data-target="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- RECURRENCE -->
+<section id="recurrence">
+  <h2>The Recurrence</h2>
+  <p class="lead">Stern's diatomic sequence is built from two rules: even-indexed terms copy, odd-indexed terms sum. That's it. Everything else follows.</p>
+
+  <div class="recurrence-box">
+    <div class="formula"><span class="hl">S</span>(0) = 0, &nbsp; <span class="hl">S</span>(1) = 1</div>
+    <div class="formula"><span class="hl">S</span>(2n) = <span class="hl">S</span>(n) &nbsp;&nbsp;&nbsp; <em style="color:var(--text-dim); font-size:0.85rem;">(even indices: just copy)</em></div>
+    <div class="formula"><span class="hl">S</span>(2n+1) = <span class="hl">S</span>(n) + <span class="hl">S</span>(n+1) &nbsp;&nbsp;&nbsp; <em style="color:var(--text-dim); font-size:0.85rem;">(odd indices: sum neighbours)</em></div>
+  </div>
+
+  <h3>The first terms</h3>
+  <div class="seq-display">
+    <div class="seq-vals" id="seqDisplay"></div>
+  </div>
+
+  <h3>Building it by hand</h3>
+  <p>Start with S(0)=0 and S(1)=1. Then:</p>
+  <p>S(2) = S(1) = 1 &nbsp;(even rule). S(3) = S(1) + S(2) = 1 + 1 = 2 &nbsp;(odd rule). S(4) = S(2) = 1. S(5) = S(2) + S(3) = 1 + 2 = 3. And so on. The even rule halves the index and looks up; the odd rule sums two adjacent earlier values.</p>
+
+  <h3>The spreadsheet trick</h3>
+  <p>Your slides show how to implement this in a spreadsheet using <code style="background:var(--bg-accent); padding:0.1rem 0.4rem; border-radius:3px; font-family:var(--mono); font-size:0.85rem;">INDIRECT</code>. Column B stores ⌊n/2⌋ (the "row" to look up), column C stores the target row reference, and column D uses <code style="background:var(--bg-accent); padding:0.1rem 0.4rem; border-radius:3px; font-family:var(--mono); font-size:0.85rem;">=INDIRECT("D" & C_n) + INDIRECT("D" & C_{n+1})</code> to compute the odd-index sums. The INDIRECT function lets a formula reference cells dynamically, which is exactly what a recurrence needs.</p>
+</section>
+
+<!-- EXPLORE -->
+<section id="explore">
+  <h2>Explore the Sequence</h2>
+
+  <div class="ctrl-row">
+    <label>Terms</label>
+    <input type="range" id="termSlider" min="20" max="1000" value="200" step="10">
+    <div class="ctrl-val" id="termVal">200</div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="scatterCanvas" width="1600" height="700"></canvas>
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-dim); text-align:center;">S(n) vs n. Notice the self-similar, fractal-like structure: the pattern in [0, N] repeats (scaled) in [N, 2N].</p>
+
+  <h3>Interactive table</h3>
+  <div class="ctrl-row">
+    <label>Show rows</label>
+    <input type="range" id="tableSlider" min="10" max="60" value="20">
+    <div class="ctrl-val" id="tableVal">20</div>
+  </div>
+
+  <div class="stern-table-wrap">
+    <table class="stern-table" id="sternTable">
+      <thead>
+        <tr>
+          <th>n</th>
+          <th>S(n)</th>
+          <th>Rule</th>
+          <th>S(n)/S(n+1)</th>
+          <th>gcd(S(n), S(n+1))</th>
+        </tr>
+      </thead>
+      <tbody id="sternBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ENUMERATING Q -->
+<section id="rationals">
+  <h2>Enumerating ℚ</h2>
+  <p class="lead">The sequence of rationals S(n)/S(n+1) produces every positive rational number exactly once. This is the Calkin-Wilf enumeration: a bijection from ℕ to ℚ<sup>+</sup>.</p>
+
+  <div class="seq-display">
+    <div class="seq-vals" id="ratSeqDisplay"></div>
+  </div>
+
+  <p>Look at the first few: 0/1, 1/1, 1/2, 2/1, 1/3, 3/2, 2/3, 3/1, 1/4, 4/3, 3/5, 5/2, … Every positive fraction appears, already in lowest terms (because consecutive Stern values are always coprime), and no fraction ever repeats.</p>
+
+  <h3>Scatter: S(n)/S(n+1) vs n</h3>
+  <div class="ctrl-row">
+    <label>Terms</label>
+    <input type="range" id="ratSlider" min="50" max="2000" value="500" step="50">
+    <div class="ctrl-val" id="ratVal">500</div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="ratCanvas" width="1600" height="700"></canvas>
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-dim); text-align:center;">S(n)/S(n+1) vs n. Every horizontal line y = p/q is hit exactly once. The density fills ℚ<sup>+</sup>.</p>
+
+  <h3>Look up a rational</h3>
+  <div class="calc-box">
+    <p style="font-size:0.9rem; color:var(--text-muted);">Enter a positive fraction p/q. We'll find the index n where S(n)/S(n+1) = p/q.</p>
+    <div class="calc-inputs">
+      <label style="font-family:var(--mono); font-size:0.65rem; color:var(--text-dim);">p</label>
+      <input type="number" id="findP" value="3" min="0">
+      <span style="color:var(--text-dim); font-size:1.2rem;">/</span>
+      <label style="font-family:var(--mono); font-size:0.65rem; color:var(--text-dim);">q</label>
+      <input type="number" id="findQ" value="5" min="1">
+      <button class="calc-btn" onclick="findRational()">Find index</button>
+    </div>
+    <div class="calc-result" id="findResult"></div>
+  </div>
+</section>
+
+<!-- PROPERTIES -->
+<section id="properties">
+  <h2>Key Properties</h2>
+  <p class="lead">Click each card to see the proof sketch or deeper explanation.</p>
+
+  <div class="props-grid">
+    <div class="prop-card" onclick="this.classList.toggle('open')">
+      <h4>Consecutive coprimality</h4>
+      <p>gcd(S(n), S(n+1)) = 1 for all n ≥ 1.</p>
+      <div class="expand-hint">▸ click for proof</div>
+      <div class="detail">
+        <p>By strong induction. Base: gcd(S(1), S(2)) = gcd(1,1) = 1. For S(2n) and S(2n+1): gcd(S(n), S(n)+S(n+1)) = gcd(S(n), S(n+1)) = 1 by induction. For S(2n+1) and S(2n+2): gcd(S(n)+S(n+1), S(n+1)) = gcd(S(n), S(n+1)) = 1. The even rule preserves coprimality because it doesn't change values; the odd rule adds coprime neighbours, which stays coprime with either one.</p>
+      </div>
+    </div>
+
+    <div class="prop-card" onclick="this.classList.toggle('open')">
+      <h4>Every positive rational appears</h4>
+      <p>The Stern-Brocot / Calkin-Wilf bijection ℕ → ℚ<sup>+</sup>.</p>
+      <div class="expand-hint">▸ click for why</div>
+      <div class="detail">
+        <p>Consider the map f(p/q): if p/q < 1, map to p/(q−p); if p/q > 1, map to (p−q)/q; if p/q = 1, stop. This is essentially the Euclidean algorithm, and it always terminates at 1/1. Reversing this process generates the Calkin-Wilf tree, whose breadth-first reading is exactly the sequence S(n)/S(n+1). Since the Euclidean algorithm reaches every reduced fraction, the tree (and hence the sequence) enumerates all of ℚ<sup>+</sup>.</p>
+      </div>
+    </div>
+
+    <div class="prop-card" onclick="this.classList.toggle('open')">
+      <h4>Self-similarity</h4>
+      <p>The sequence has fractal structure: S restricted to [2<sup>k</sup>, 2<sup>k+1</sup>] looks like a scaled copy.</p>
+      <div class="expand-hint">▸ click for more</div>
+      <div class="detail">
+        <p>Because S(2n) = S(n), even-indexed values are a literal copy of the sequence at half scale. The odd-indexed values interleave sums. Each "generation" (between successive powers of 2) adds one layer to the Stern-Brocot tree. The maximum of S in the range [0, 2<sup>k</sup>] is the (k+1)-th Fibonacci number, connecting Stern to Fibonacci growth.</p>
+      </div>
+    </div>
+
+    <div class="prop-card" onclick="this.classList.toggle('open')">
+      <h4>Sum over rows</h4>
+      <p>∑ S(n) for 2<sup>k</sup> ≤ n < 2<sup>k+1</sup> = 3<sup>k</sup> + 1.</p>
+      <div class="expand-hint">▸ click for more</div>
+      <div class="detail">
+        <p>Row k of the sequence (between powers of 2) has 2<sup>k</sup> elements. The sum follows from the recurrence: each row's sum is three times the previous row's sum minus one correction. This connects to the fact that each generation of the Stern-Brocot tree has a tripling structure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALKIN-WILF TREE -->
+<section id="tree">
+  <h2>The Calkin-Wilf Tree</h2>
+  <p class="lead">Every positive rational appears exactly once as a node. The root is 1/1. The children of p/q are p/(p+q) on the left and (p+q)/q on the right. Reading the tree breadth-first gives the Stern-Brocot enumeration.</p>
+
+  <div class="ctrl-row">
+    <label>Depth</label>
+    <input type="range" id="treeDepth" min="2" max="6" value="4">
+    <div class="ctrl-val" id="treeDepthVal">4</div>
+  </div>
+
+  <div class="tree-wrap">
+    <canvas id="treeCanvas" width="1400" height="500"></canvas>
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-dim); text-align:center;">Left child: p/(p+q). Right child: (p+q)/q. Each fraction in lowest terms, each appearing once.</p>
+</section>
+
+<!-- PYTHON -->
+<section id="code">
+  <h2>Python Implementation</h2>
+  <p class="lead">Three lines for the recurrence. The rest is exploration.</p>
+
+  <div class="code-block">
+<span class="kw">def</span> <span class="fn">stern</span>(n):
+    <span class="cmt"># Compute S(n) via the recurrence</span>
+    <span class="kw">if</span> n <span class="op">==</span> <span class="num">0</span>: <span class="kw">return</span> <span class="num">0</span>
+    <span class="kw">if</span> n <span class="op">==</span> <span class="num">1</span>: <span class="kw">return</span> <span class="num">1</span>
+    <span class="kw">if</span> n <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>:
+        <span class="kw">return</span> <span class="fn">stern</span>(n <span class="op">//</span> <span class="num">2</span>)         <span class="cmt"># even: S(2n) = S(n)</span>
+    <span class="kw">else</span>:
+        k <span class="op">=</span> n <span class="op">//</span> <span class="num">2</span>
+        <span class="kw">return</span> <span class="fn">stern</span>(k) <span class="op">+</span> <span class="fn">stern</span>(k <span class="op">+</span> <span class="num">1</span>)  <span class="cmt"># odd: S(2n+1) = S(n) + S(n+1)</span>
+
+<span class="cmt"># Build a table iteratively (much faster for many terms)</span>
+<span class="kw">def</span> <span class="fn">stern_table</span>(N):
+    s <span class="op">=</span> [<span class="num">0</span>, <span class="num">1</span>]
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, N):
+        <span class="kw">if</span> i <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>:
+            s.<span class="fn">append</span>(s[i <span class="op">//</span> <span class="num">2</span>])
+        <span class="kw">else</span>:
+            s.<span class="fn">append</span>(s[i <span class="op">//</span> <span class="num">2</span>] <span class="op">+</span> s[i <span class="op">//</span> <span class="num">2</span> <span class="op">+</span> <span class="num">1</span>])
+    <span class="kw">return</span> s
+
+<span class="cmt"># Enumerate rationals</span>
+s <span class="op">=</span> <span class="fn">stern_table</span>(<span class="num">100</span>)
+rationals <span class="op">=</span> [(s[n], s[n<span class="op">+</span><span class="num">1</span>]) <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">99</span>)]
+<span class="fn">print</span>(rationals[:<span class="num">15</span>])
+<span class="cmt"># [(1,1),(1,2),(2,1),(1,3),(3,2),(2,3),(3,1),(1,4),(4,3),...]</span>
+  </div>
+
+  <p>The recursive version mirrors the mathematical definition directly. For large N, the iterative <code style="background:var(--bg-accent); padding:0.1rem 0.4rem; border-radius:3px; font-family:var(--mono); font-size:0.85rem;">stern_table</code> avoids repeated computation. The key insight: the iterative version works because each S(n) depends only on terms with index ≤ n/2 + 1, so a single forward pass suffices.</p>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <h2>Test Yourself</h2>
+  <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+  <div id="quizContainer"></div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="stamp">Constructed by <span>Silicon</span> · Anthropic Claude — Architect <span>Carbon</span> · LeeMcCullochJames</div>
+  <div class="stamp">Stern's Diatomic Sequence · Calkin-Wilf · ℕ ↔ ℚ<sup>+</sup></div>
+</footer>
+
+<script>
+// ==== STERN COMPUTATION ====
+function sternTable(N) {
+  const s = [0, 1];
+  for (let i = 2; i < N; i++) {
+    if (i % 2 === 0) s.push(s[i >> 1]);
+    else s.push(s[i >> 1] + s[(i >> 1) + 1]);
+  }
+  return s;
+}
+
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+
+// Precompute
+let S = sternTable(4100);
+
+// ==== NAV ====
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = document.getElementById(btn.dataset.target);
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+const sects = document.querySelectorAll('section[id]');
+const navBtns = document.querySelectorAll('.nav-btn[data-target]');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navBtns.forEach(b => b.classList.remove('active'));
+      const a = document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+sects.forEach(s => obs.observe(s));
+
+// ==== SEQUENCE DISPLAY ====
+function renderSeqDisplay() {
+  const el = document.getElementById('seqDisplay');
+  let html = '';
+  for (let i = 0; i < 30; i++) {
+    html += `<span class="idx">${i}</span>${S[i]}`;
+    if (i < 29) html += ', ';
+  }
+  html += ', …';
+  el.innerHTML = html;
+}
+renderSeqDisplay();
+
+function renderRatSeqDisplay() {
+  const el = document.getElementById('ratSeqDisplay');
+  let html = '';
+  for (let i = 0; i < 20; i++) {
+    if (S[i + 1] === 0) { html += '—'; }
+    else html += `${S[i]}/${S[i + 1]}`;
+    if (i < 19) html += ', &nbsp;';
+  }
+  html += ', …';
+  el.innerHTML = html;
+}
+renderRatSeqDisplay();
+
+// ==== SCATTER PLOT ====
+const scatterCanvas = document.getElementById('scatterCanvas');
+const sctx = scatterCanvas.getContext('2d');
+
+function drawScatter(N) {
+  while (S.length < N + 2) {
+    const i = S.length;
+    if (i % 2 === 0) S.push(S[i >> 1]);
+    else S.push(S[i >> 1] + S[(i >> 1) + 1]);
+  }
+
+  const W = scatterCanvas.width, H = scatterCanvas.height;
+  sctx.clearRect(0, 0, W, H);
+
+  const pad = { l: 70, r: 30, t: 20, b: 50 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  // find max
+  let maxS = 1;
+  for (let i = 0; i < N; i++) maxS = Math.max(maxS, S[i]);
+
+  // axes
+  sctx.strokeStyle = '#ddd8ce';
+  sctx.lineWidth = 1;
+  sctx.beginPath();
+  sctx.moveTo(pad.l, pad.t);
+  sctx.lineTo(pad.l, H - pad.b);
+  sctx.lineTo(W - pad.r, H - pad.b);
+  sctx.stroke();
+
+  // labels
+  sctx.font = '22px "EB Garamond", serif';
+  sctx.fillStyle = '#9e9889';
+  sctx.textAlign = 'center';
+  sctx.fillText('n', W / 2, H - 10);
+  sctx.save();
+  sctx.translate(20, H / 2);
+  sctx.rotate(-Math.PI / 2);
+  sctx.fillText('S(n)', 0, 0);
+  sctx.restore();
+
+  // tick marks
+  sctx.font = '16px "JetBrains Mono", monospace';
+  sctx.fillStyle = '#9e9889';
+  sctx.textAlign = 'center';
+  const xStep = N <= 200 ? 50 : N <= 500 ? 100 : 250;
+  for (let x = 0; x <= N; x += xStep) {
+    const px = pad.l + (x / N) * pw;
+    sctx.fillText(x, px, H - pad.b + 25);
+    sctx.strokeStyle = '#eae6dc';
+    sctx.beginPath(); sctx.moveTo(px, pad.t); sctx.lineTo(px, H - pad.b); sctx.stroke();
+  }
+
+  sctx.textAlign = 'right';
+  const yStep = maxS <= 20 ? 5 : maxS <= 100 ? 10 : 50;
+  for (let y = 0; y <= maxS; y += yStep) {
+    const py = H - pad.b - (y / maxS) * ph;
+    sctx.fillText(y, pad.l - 10, py + 5);
+    sctx.strokeStyle = '#eae6dc';
+    sctx.beginPath(); sctx.moveTo(pad.l, py); sctx.lineTo(W - pad.r, py); sctx.stroke();
+  }
+
+  // dots
+  for (let i = 0; i < N; i++) {
+    const px = pad.l + (i / N) * pw;
+    const py = H - pad.b - (S[i] / maxS) * ph;
+    sctx.beginPath();
+    sctx.arc(px, py, N > 500 ? 2 : 3, 0, 2 * Math.PI);
+    sctx.fillStyle = 'rgba(85, 153, 204, 0.6)';
+    sctx.fill();
+  }
+}
+
+const termSlider = document.getElementById('termSlider');
+const termVal = document.getElementById('termVal');
+termSlider.addEventListener('input', () => {
+  termVal.textContent = termSlider.value;
+  drawScatter(parseInt(termSlider.value));
+});
+drawScatter(200);
+
+// ==== RATIONALS SCATTER ====
+const ratCanvas = document.getElementById('ratCanvas');
+const rctx = ratCanvas.getContext('2d');
+
+function drawRatScatter(N) {
+  while (S.length < N + 2) {
+    const i = S.length;
+    if (i % 2 === 0) S.push(S[i >> 1]);
+    else S.push(S[i >> 1] + S[(i >> 1) + 1]);
+  }
+
+  const W = ratCanvas.width, H = ratCanvas.height;
+  rctx.clearRect(0, 0, W, H);
+
+  const pad = { l: 70, r: 30, t: 20, b: 50 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  // compute ratios
+  const rats = [];
+  let maxR = 0;
+  for (let i = 1; i < N; i++) {
+    if (S[i + 1] > 0) {
+      const r = S[i] / S[i + 1];
+      rats.push({ n: i, r });
+      if (r > maxR) maxR = r;
+    }
+  }
+  maxR = Math.min(maxR, 10); // cap for visual clarity
+
+  // axes
+  rctx.strokeStyle = '#ddd8ce';
+  rctx.lineWidth = 1;
+  rctx.beginPath();
+  rctx.moveTo(pad.l, pad.t);
+  rctx.lineTo(pad.l, H - pad.b);
+  rctx.lineTo(W - pad.r, H - pad.b);
+  rctx.stroke();
+
+  rctx.font = '22px "EB Garamond", serif';
+  rctx.fillStyle = '#9e9889';
+  rctx.textAlign = 'center';
+  rctx.fillText('n', W / 2, H - 10);
+  rctx.save();
+  rctx.translate(20, H / 2);
+  rctx.rotate(-Math.PI / 2);
+  rctx.fillText('S(n)/S(n+1)', 0, 0);
+  rctx.restore();
+
+  // gridlines
+  rctx.font = '16px "JetBrains Mono", monospace';
+  rctx.textAlign = 'center';
+  rctx.fillStyle = '#9e9889';
+  const xStep = N <= 200 ? 50 : N <= 500 ? 100 : 500;
+  for (let x = 0; x <= N; x += xStep) {
+    const px = pad.l + (x / N) * pw;
+    rctx.fillText(x, px, H - pad.b + 25);
+    rctx.strokeStyle = '#eae6dc';
+    rctx.beginPath(); rctx.moveTo(px, pad.t); rctx.lineTo(px, H - pad.b); rctx.stroke();
+  }
+
+  rctx.textAlign = 'right';
+  for (let y = 0; y <= maxR; y += 1) {
+    const py = H - pad.b - (y / maxR) * ph;
+    rctx.fillText(y, pad.l - 10, py + 5);
+    rctx.strokeStyle = '#eae6dc';
+    rctx.beginPath(); rctx.moveTo(pad.l, py); rctx.lineTo(W - pad.r, py); rctx.stroke();
+  }
+
+  // dots
+  rats.forEach(({ n, r }) => {
+    if (r > maxR) return;
+    const px = pad.l + (n / N) * pw;
+    const py = H - pad.b - (r / maxR) * ph;
+    rctx.beginPath();
+    rctx.arc(px, py, N > 500 ? 2 : 3, 0, 2 * Math.PI);
+    rctx.fillStyle = 'rgba(160, 135, 58, 0.5)';
+    rctx.fill();
+    rctx.strokeStyle = 'rgba(160, 135, 58, 0.3)';
+    rctx.lineWidth = 0.5;
+    rctx.stroke();
+  });
+}
+
+const ratSlider = document.getElementById('ratSlider');
+const ratValEl = document.getElementById('ratVal');
+ratSlider.addEventListener('input', () => {
+  ratValEl.textContent = ratSlider.value;
+  drawRatScatter(parseInt(ratSlider.value));
+});
+drawRatScatter(500);
+
+// ==== STERN TABLE ====
+function renderTable(rows) {
+  while (S.length < rows + 2) {
+    const i = S.length;
+    if (i % 2 === 0) S.push(S[i >> 1]);
+    else S.push(S[i >> 1] + S[(i >> 1) + 1]);
+  }
+
+  const body = document.getElementById('sternBody');
+  let html = '';
+  for (let n = 0; n < rows; n++) {
+    const rule = n === 0 ? 'base' : n === 1 ? 'base' : n % 2 === 0 ? `S(${n/2})` : `S(${(n-1)/2})+S(${(n-1)/2+1})`;
+    const ruleClass = n % 2 === 0 ? 'even-row' : 'odd-row';
+    const rat = S[n + 1] > 0 ? (S[n] / S[n + 1]).toFixed(6).replace(/\.?0+$/, '') : '—';
+    const g = n >= 1 ? gcd(S[n], S[n + 1]) : '—';
+    const gClass = g === 1 ? 'coprime-yes' : (typeof g === 'number' ? 'coprime-no' : '');
+    html += `<tr>
+      <td>${n}</td>
+      <td><strong>${S[n]}</strong></td>
+      <td class="${ruleClass}">${rule}</td>
+      <td class="ratio">${n >= 1 ? S[n] + '/' + S[n+1] + ' = ' + rat : '—'}</td>
+      <td class="${gClass}">${g}</td>
+    </tr>`;
+  }
+  body.innerHTML = html;
+}
+
+const tableSlider = document.getElementById('tableSlider');
+const tableVal = document.getElementById('tableVal');
+tableSlider.addEventListener('input', () => {
+  tableVal.textContent = tableSlider.value;
+  renderTable(parseInt(tableSlider.value));
+});
+renderTable(20);
+
+// ==== FIND RATIONAL ====
+function findRational() {
+  const p = parseInt(document.getElementById('findP').value);
+  const q = parseInt(document.getElementById('findQ').value);
+  const el = document.getElementById('findResult');
+
+  if (isNaN(p) || isNaN(q) || q <= 0 || p < 0) {
+    el.textContent = 'Enter valid non-negative p and positive q.';
+    return;
+  }
+
+  if (gcd(p, q) !== 1 && p > 0) {
+    const g = gcd(p, q);
+    el.innerHTML = `First reduce: ${p}/${q} = ${p/g}/${q/g}. Searching for the reduced form…`;
+  }
+
+  // Search up to a reasonable limit
+  const limit = Math.min(S.length - 1, 10000);
+  while (S.length < limit + 2) {
+    const i = S.length;
+    if (i % 2 === 0) S.push(S[i >> 1]);
+    else S.push(S[i >> 1] + S[(i >> 1) + 1]);
+  }
+
+  const rp = p / gcd(p, q), rq = q / gcd(p, q);
+
+  for (let n = 1; n < limit; n++) {
+    if (S[n] === rp && S[n + 1] === rq) {
+      el.innerHTML = `<strong style="color:var(--gold)">Found!</strong> S(${n})/S(${n+1}) = ${rp}/${rq}. &nbsp; Index n = <strong>${n}</strong>.`;
+      return;
+    }
+  }
+
+  el.innerHTML = `Not found in the first ${limit} terms. The fraction ${rp}/${rq} appears later in the sequence (it must appear — the enumeration is a bijection).`;
+}
+
+// ==== CALKIN-WILF TREE ====
+const treeCanvas = document.getElementById('treeCanvas');
+const tctx = treeCanvas.getContext('2d');
+
+function drawTree(maxDepth) {
+  const W = treeCanvas.width, H = treeCanvas.height;
+  tctx.clearRect(0, 0, W, H);
+
+  const nodeR = 22;
+  const rowH = H / (maxDepth + 1);
+
+  function drawNode(p, q, depth, x, xSpan) {
+    if (depth > maxDepth) return;
+
+    const y = depth * rowH + rowH * 0.5;
+
+    // children
+    if (depth < maxDepth) {
+      const lx = x - xSpan / 2;
+      const rx = x + xSpan / 2;
+      const cy = (depth + 1) * rowH + rowH * 0.5;
+
+      // lines
+      tctx.strokeStyle = '#ddd8ce';
+      tctx.lineWidth = 1;
+      tctx.beginPath(); tctx.moveTo(x, y + nodeR); tctx.lineTo(lx, cy - nodeR); tctx.stroke();
+      tctx.beginPath(); tctx.moveTo(x, y + nodeR); tctx.lineTo(rx, cy - nodeR); tctx.stroke();
+
+      drawNode(p, p + q, depth + 1, lx, xSpan / 2);
+      drawNode(p + q, q, depth + 1, rx, xSpan / 2);
+    }
+
+    // node circle
+    tctx.beginPath();
+    tctx.arc(x, y, nodeR, 0, 2 * Math.PI);
+    tctx.fillStyle = '#ffffff';
+    tctx.fill();
+    tctx.strokeStyle = depth === 0 ? '#a0873a' : '#ddd8ce';
+    tctx.lineWidth = depth === 0 ? 2 : 1;
+    tctx.stroke();
+
+    // label
+    tctx.font = `${maxDepth > 4 ? 13 : 16}px "EB Garamond", serif`;
+    tctx.fillStyle = '#2c2a25';
+    tctx.textAlign = 'center';
+    tctx.textBaseline = 'middle';
+    tctx.fillText(`${p}/${q}`, x, y);
+  }
+
+  drawNode(1, 1, 0, W / 2, W / 4);
+}
+
+const treeDepthSlider = document.getElementById('treeDepth');
+const treeDepthVal = document.getElementById('treeDepthVal');
+treeDepthSlider.addEventListener('input', () => {
+  treeDepthVal.textContent = treeDepthSlider.value;
+  drawTree(parseInt(treeDepthSlider.value));
+});
+drawTree(4);
+
+// ==== QUIZ ====
+const quizData = [
+  {
+    q: "What is S(7) in the Stern sequence?",
+    opts: ["2", "3", "4", "5"],
+    correct: 1,
+    explain: "S(7) = S(3) + S(4) = 2 + 1 = 3. (Odd rule: S(2·3+1) = S(3) + S(4).)"
+  },
+  {
+    q: "The even-index rule S(2n) = S(n) does what to the sequence?",
+    opts: ["Doubles every value", "Copies earlier values at half the index", "Sums adjacent values", "Reverses the sequence"],
+    correct: 1,
+    explain: "S(2n) = S(n) simply copies the value at index n to index 2n. This is why even-indexed entries 'thin out' the sequence and the odd entries do the interesting work."
+  },
+  {
+    q: "gcd(S(n), S(n+1)) for all n ≥ 1 is always:",
+    opts: ["2", "1", "S(n)", "Depends on n"],
+    correct: 1,
+    explain: "Consecutive Stern values are always coprime (gcd = 1). This is why S(n)/S(n+1) is automatically in lowest terms."
+  },
+  {
+    q: "The sequence S(n)/S(n+1) enumerates:",
+    opts: ["All integers", "All positive rationals, each exactly once", "All reals between 0 and 1", "All primes"],
+    correct: 1,
+    explain: "This is the Calkin-Wilf enumeration: a bijection from ℕ to ℚ⁺. Every positive rational appears exactly once because consecutive Stern values are coprime and the sequence covers all reduced fractions."
+  },
+  {
+    q: "In the Calkin-Wilf tree, the children of the node p/q are:",
+    opts: ["2p/q and p/2q", "p/(p+q) and (p+q)/q", "(p-1)/q and p/(q-1)", "p·q and 1/(p·q)"],
+    correct: 1,
+    explain: "Left child: p/(p+q), right child: (p+q)/q. This mirrors the two branches of the Euclidean algorithm run in reverse."
+  },
+  {
+    q: "The maximum value of S(n) for 0 ≤ n ≤ 2^k is related to:",
+    opts: ["Powers of 2", "Fibonacci numbers", "Primes", "Factorials"],
+    correct: 1,
+    explain: "The maximum of S in the range [0, 2^k] is the (k+1)-th Fibonacci number. The Stern sequence and Fibonacci sequence are deeply connected through the continued-fraction structure."
+  },
+  {
+    q: "Why is the INDIRECT function needed in the spreadsheet implementation?",
+    opts: ["To format cells as fractions", "To reference cells dynamically based on computed row numbers", "To generate random numbers", "To sort the sequence"],
+    correct: 1,
+    explain: "The recurrence S(2n+1) = S(n) + S(n+1) requires looking up cells whose row numbers are computed from the current index. INDIRECT converts a string like \"D7\" into an actual cell reference, enabling this dynamic lookup."
+  },
+  {
+    q: "Which of these fractions appears first (smallest index) in the Stern-Brocot enumeration?",
+    opts: ["3/5", "2/3", "1/4", "5/2"],
+    correct: 2,
+    explain: "The sequence begins 0/1, 1/1, 1/2, 2/1, 1/3, … so 1/3 has a much smaller index than the others. Among the given options, 1/4 appears at index 8, while 2/3 appears at index 6 and 3/5 at index 10."
+  }
+];
+
+let score = 0, answered = 0;
+
+function renderQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = quizData.map((q, i) => `
+    <div class="quiz-card" id="q${i}">
+      <div class="q-num">Question ${i + 1} of ${quizData.length}</div>
+      <div class="question">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="checkAns(${i},${j})" id="q${i}o${j}">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-fb" id="fb${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkAns(qi, oi) {
+  const q = quizData[qi];
+  const card = document.getElementById(`q${qi}`);
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  answered++;
+  const opts = card.querySelectorAll('.quiz-opt');
+  opts.forEach((o, j) => {
+    o.classList.add('done');
+    if (j === q.correct) o.classList.add('correct');
+    else if (j === oi) o.classList.add('incorrect');
+  });
+  const fb = document.getElementById(`fb${qi}`);
+  if (oi === q.correct) {
+    score++;
+    fb.className = 'quiz-fb show right';
+    fb.textContent = '✓ ' + q.explain;
+  } else {
+    fb.className = 'quiz-fb show wrong';
+    fb.textContent = '✗ ' + q.explain;
+  }
+  document.getElementById('scoreBar').textContent = `Score: ${score} / ${answered}`;
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
