@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathematical Chemistry — Cayley, Networks &amp; Alkanes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg: #0c0e12;
+  --bg-card: #13161c;
+  --bg-card-hover: #1a1e26;
+  --bg-accent: #1e222c;
+  --text: #d4d0c8;
+  --text-muted: #8a8578;
+  --text-dim: #5c574e;
+  --gold: #c9a84c;
+  --gold-dim: #8a7434;
+  --blue: #4a7a9b;
+  --blue-bright: #6aaacb;
+  --green: #5a8a6a;
+  --green-dim: #3a5a4a;
+  --purple: #8a6aaa;
+  --red: #b05050;
+  --red-bright: #d06060;
+  --cyan: #4a9a9a;
+  --carbon: #6a6a6a;
+  --hydrogen: #e8e8e8;
+  --oxygen: #cc4444;
+  --nitrogen: #4466cc;
+  --border: #2a2e38;
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+
+body {
+  font-family: var(--serif);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 18px;
+}
+
+.site-header {
+  padding: 3rem 2rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.site-header .subtitle {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-header .hook {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--text-dim);
+  margin-top: 1.2rem;
+  max-width: 640px;
+  border-left: 2px solid var(--gold-dim);
+  padding-left: 1rem;
+}
+
+.nav-strip {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(12,14,18,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+}
+
+.nav-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; gap: 0; overflow-x: auto;
+}
+
+.nav-btn {
+  font-family: var(--mono); font-size: 0.64rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-dim); background: none; border: none;
+  padding: 0.8rem 1rem; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: all 0.3s;
+}
+
+.nav-btn:hover, .nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+
+section h2 {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 300; color: var(--gold); margin-bottom: 1rem;
+}
+
+section h3 {
+  font-family: var(--display);
+  font-size: 1.25rem; font-weight: 500;
+  color: var(--text); margin: 1.5rem 0 0.7rem;
+}
+
+p { margin-bottom: 0.9rem; }
+
+.lead { font-size: 1.08rem; color: var(--text-muted); max-width: 700px; }
+
+/* DERIVATION */
+.derivation-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+}
+
+.deriv-step {
+  display: flex; align-items: baseline; gap: 1rem;
+  margin-bottom: 0.6rem;
+  opacity: 0; transform: translateX(-10px);
+  transition: all 0.4s ease;
+}
+
+.deriv-step.visible { opacity: 1; transform: translateX(0); }
+
+.deriv-step .marker {
+  font-family: var(--mono); font-size: 0.55rem;
+  color: var(--text-dim); min-width: 16px; letter-spacing: 0.08em;
+}
+
+.deriv-step .math {
+  font-style: italic; color: var(--text); font-size: 1.1rem;
+}
+
+.deriv-step .note {
+  font-size: 0.78rem; color: var(--text-dim); font-style: normal; margin-left: 0.5rem;
+}
+
+.reveal-btn {
+  font-family: var(--mono); font-size: 0.63rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold); background: none;
+  border: 1px solid var(--gold-dim);
+  padding: 0.5rem 1.1rem; border-radius: 3px;
+  cursor: pointer; transition: all 0.3s; margin-top: 0.8rem;
+}
+
+.reveal-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+/* ALKANE TABLE */
+.alk-table {
+  width: 100%; border-collapse: collapse;
+  margin: 1.5rem 0; font-size: 0.88rem;
+}
+
+.alk-table th {
+  font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-dim); text-align: left;
+  padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+}
+
+.alk-table td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid rgba(42,46,56,0.4);
+  color: var(--text-muted); vertical-align: middle;
+}
+
+.alk-table tr:hover td { background: rgba(30,34,44,0.5); color: var(--text); }
+
+.alk-table td.formula { font-style: italic; color: var(--blue-bright); }
+.alk-table td.name { color: var(--text); }
+.alk-table td.iso-count { color: var(--gold); font-weight: 600; font-family: var(--mono); }
+
+/* CANVAS */
+.canvas-wrap {
+  position: relative; width: 100%; margin: 1.5rem 0;
+}
+
+.canvas-wrap canvas {
+  width: 100%; display: block;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* DUAL PANELS */
+.dual {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) { .dual { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.5rem; position: relative; overflow: hidden;
+}
+
+.panel::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+
+.panel.labelled::before { background: linear-gradient(90deg, var(--purple), transparent); }
+.panel.unlabelled::before { background: linear-gradient(90deg, var(--green), transparent); }
+
+.panel-label {
+  font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.panel.labelled .panel-label { color: var(--purple); }
+.panel.unlabelled .panel-label { color: var(--green); }
+
+.panel h4 {
+  font-family: var(--display); font-size: 1.2rem;
+  font-weight: 500; margin-bottom: 0.5rem;
+}
+
+.panel.labelled h4 { color: var(--purple); }
+.panel.unlabelled h4 { color: var(--green); }
+
+.panel p { font-size: 0.9rem; color: var(--text-muted); }
+
+/* MOLECULE CANVAS */
+.mol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem; margin: 1.5rem 0;
+}
+
+.mol-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0; overflow: hidden;
+  cursor: default; transition: all 0.3s;
+}
+
+.mol-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+
+.mol-card canvas { width: 100%; display: block; }
+
+.mol-card .mol-info {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.mol-card .mol-name {
+  font-family: var(--display); font-size: 1.05rem;
+  color: var(--text); font-weight: 500;
+}
+
+.mol-card .mol-formula {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text-dim); letter-spacing: 0.08em;
+}
+
+/* ISOMER EXPLORER */
+.ctrl-row {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 1rem 0; padding: 0.7rem 1rem;
+  background: var(--bg-accent); border-radius: 4px; flex-wrap: wrap;
+}
+
+.ctrl-row label {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+.ctrl-row input[type="range"] {
+  flex: 1; min-width: 120px;
+  -webkit-appearance: none; background: var(--border);
+  height: 3px; border-radius: 2px; outline: none;
+}
+
+.ctrl-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--gold); cursor: pointer;
+}
+
+.ctrl-val {
+  font-family: var(--mono); font-size: 0.9rem;
+  color: var(--gold); min-width: 50px; text-align: center;
+}
+
+/* CAYLEY FORMULA BOX */
+.formula-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.formula-box .big-formula {
+  font-family: var(--serif); font-size: 2rem;
+  font-style: italic; color: var(--gold); margin: 0.5rem 0;
+}
+
+.formula-box .caption {
+  font-size: 0.9rem; color: var(--text-muted);
+}
+
+/* CODE */
+.code-block {
+  background: #1e1e2e; color: #cdd6f4;
+  border-radius: 5px; padding: 1.2rem 1.4rem;
+  margin: 1rem 0; overflow-x: auto;
+  font-family: var(--mono); font-size: 0.76rem; line-height: 1.6;
+}
+
+.code-block .kw { color: #cba6f7; }
+.code-block .fn { color: #89b4fa; }
+.code-block .num { color: #fab387; }
+.code-block .str { color: #a6e3a1; }
+.code-block .cmt { color: #6c7086; font-style: italic; }
+.code-block .op { color: #89dceb; }
+
+/* QUIZ */
+.quiz-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.6rem; margin-bottom: 1.3rem;
+}
+
+.quiz-card .q-num {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text-dim); letter-spacing: 0.14em;
+  text-transform: uppercase; margin-bottom: 0.4rem;
+}
+
+.quiz-card .question {
+  font-family: var(--display); font-size: 1.1rem;
+  color: var(--text); margin-bottom: 1rem;
+}
+
+.quiz-opts { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.quiz-opt {
+  background: var(--bg-accent); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.65rem 1rem;
+  font-family: var(--serif); font-size: 0.9rem;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.25s; text-align: left;
+}
+
+.quiz-opt:hover:not(.done) {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-dim); color: var(--text);
+}
+
+.quiz-opt.correct { background: rgba(90,138,106,0.15); border-color: var(--green); color: var(--green); }
+.quiz-opt.incorrect { background: rgba(176,80,80,0.15); border-color: var(--red); color: var(--red); }
+
+.quiz-fb {
+  margin-top: 0.7rem; padding: 0.7rem; border-radius: 4px;
+  font-size: 0.85rem; display: none;
+}
+
+.quiz-fb.show { display: block; }
+.quiz-fb.right { background: rgba(90,138,106,0.1); border-left: 3px solid var(--green); color: var(--text-muted); }
+.quiz-fb.wrong { background: rgba(176,80,80,0.1); border-left: 3px solid var(--red); color: var(--text-muted); }
+
+.score-bar {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text-dim); text-align: right;
+  letter-spacing: 0.1em; margin-bottom: 1rem;
+}
+
+/* FOOTER */
+.site-footer {
+  max-width: 1100px; margin: 0 auto; padding: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+
+.site-footer .stamp {
+  font-family: var(--mono); font-size: 0.58rem;
+  color: var(--text-dim); letter-spacing: 0.1em;
+}
+
+.site-footer .stamp span { color: var(--gold-dim); }
+
+@media (max-width: 600px) {
+  .site-header, .content { padding-left: 1.2rem; padding-right: 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Mathematical Chemistry</h1>
+  <div class="subtitle">Cayley · Network Theory · Alkanes · Isomers</div>
+  <div class="hook">
+    Cayley's insight: molecules are graphs. Carbon atoms are nodes of degree 4, hydrogen atoms are leaves. The rest is combinatorics.
+  </div>
+</header>
+
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-target="formula">The Formula m = 2n+2</button>
+    <button class="nav-btn" data-target="molecules">The Alkanes</button>
+    <button class="nav-btn" data-target="cayley">Cayley's Formula</button>
+    <button class="nav-btn" data-target="isomers">Counting Isomers</button>
+    <button class="nav-btn" data-target="explorer">Explorer</button>
+    <button class="nav-btn" data-target="code">Python</button>
+    <button class="nav-btn" data-target="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- ====== THE FORMULA ====== -->
+<section id="formula">
+  <h2>Deriving C<sub>n</sub>H<sub>2n+2</sub></h2>
+  <p class="lead">Why do alkanes have the formula C<sub>n</sub>H<sub>m</sub> with m = 2n + 2? The answer is pure graph theory. No chemistry required.</p>
+
+  <div class="derivation-box" id="derivFormula">
+    <div class="deriv-step visible">
+      <span class="marker">01</span>
+      <span class="math">An alkane C<sub>n</sub>H<sub>m</sub> is a tree on n + m nodes</span>
+      <span class="note">connected, acyclic graph</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">02</span>
+      <span class="math">Each C has degree 4, each H has degree 1</span>
+      <span class="note">valency constraints</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">03</span>
+      <span class="math">Sum of degrees = 4n + m</span>
+      <span class="note">count from each node</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">04</span>
+      <span class="math">But sum of degrees = 2 × (number of edges)</span>
+      <span class="note">handshaking lemma</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">05</span>
+      <span class="math">A tree on V vertices has V − 1 edges</span>
+      <span class="note">fundamental tree property</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">06</span>
+      <span class="math">So edges = (n + m) − 1</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">07</span>
+      <span class="math">Therefore: 4n + m = 2(n + m − 1)</span>
+      <span class="note">equating the two edge counts</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">08</span>
+      <span class="math">4n + m = 2n + 2m − 2</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">09</span>
+      <span class="math">2n + 2 = m</span>
+      <span class="note">the alkane formula</span>
+    </div>
+    <div class="deriv-step">
+      <span class="marker">∴</span>
+      <span class="math" style="color:var(--gold); font-size:1.3rem;">C<sub>n</sub>H<sub>2n+2</sub></span>
+      <span class="note">QED, by graph theory alone</span>
+    </div>
+  </div>
+  <button class="reveal-btn" onclick="revealSteps('derivFormula')">Reveal step by step</button>
+
+  <h3>The three ingredients</h3>
+  <p>This derivation uses exactly three facts: (1) carbon has valency 4, hydrogen has valency 1, (2) the handshaking lemma (sum of degrees = twice the number of edges), and (3) a tree on V vertices has V − 1 edges. William Clifford recognised that these graph-theoretic constraints completely determine the hydrogen count.</p>
+</section>
+
+<!-- ====== THE ALKANES ====== -->
+<section id="molecules">
+  <h2>The Alkane Family</h2>
+  <p class="lead">From methane to decane and beyond. Each is a tree where carbon atoms form the skeleton and hydrogen atoms decorate the leaves.</p>
+
+  <div class="mol-grid" id="molGrid"></div>
+
+  <table class="alk-table">
+    <thead>
+      <tr><th>n</th><th>Formula</th><th>Structural</th><th>Name</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td class="formula">CH<sub>4</sub></td><td>CH<sub>4</sub></td><td class="name">methane</td></tr>
+      <tr><td>2</td><td class="formula">C<sub>2</sub>H<sub>6</sub></td><td>CH<sub>3</sub>CH<sub>3</sub></td><td class="name">ethane</td></tr>
+      <tr><td>3</td><td class="formula">C<sub>3</sub>H<sub>8</sub></td><td>CH<sub>3</sub>CH<sub>2</sub>CH<sub>3</sub></td><td class="name">propane</td></tr>
+      <tr><td>4</td><td class="formula">C<sub>4</sub>H<sub>10</sub></td><td>CH<sub>3</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>3</sub></td><td class="name">butane</td></tr>
+      <tr><td>5</td><td class="formula">C<sub>5</sub>H<sub>12</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>3</sub>CH<sub>3</sub></td><td class="name">pentane</td></tr>
+      <tr><td>6</td><td class="formula">C<sub>6</sub>H<sub>14</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>4</sub>CH<sub>3</sub></td><td class="name">hexane</td></tr>
+      <tr><td>7</td><td class="formula">C<sub>7</sub>H<sub>16</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>5</sub>CH<sub>3</sub></td><td class="name">heptane</td></tr>
+      <tr><td>8</td><td class="formula">C<sub>8</sub>H<sub>18</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>6</sub>CH<sub>3</sub></td><td class="name">octane</td></tr>
+      <tr><td>9</td><td class="formula">C<sub>9</sub>H<sub>20</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>7</sub>CH<sub>3</sub></td><td class="name">nonane</td></tr>
+      <tr><td>10</td><td class="formula">C<sub>10</sub>H<sub>22</sub></td><td>CH<sub>3</sub>(CH<sub>2</sub>)<sub>8</sub>CH<sub>3</sub></td><td class="name">decane</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====== CAYLEY'S FORMULA ====== -->
+<section id="cayley">
+  <h2>Cayley's Formula</h2>
+  <p class="lead">Arthur Cayley, working on exactly this chemical problem, proved a theorem that became one of the jewels of combinatorics.</p>
+
+  <div class="dual">
+    <div class="panel labelled">
+      <div class="panel-label">Labelled Trees</div>
+      <h4>T(n) = n<sup>n−2</sup></h4>
+      <p>The number of labelled trees on n vertices is n<sup>n−2</sup>. This is Cayley's formula (1889), motivated by counting chemical structures.</p>
+      <p>For n = 4: T(4) = 4² = 16 labelled trees. Each vertex is distinguishable, so we count all possible tree structures with named nodes.</p>
+      <p style="color:var(--text-dim); font-size:0.85rem;">Proofs: Prüfer sequences (bijection with (n−2)-tuples), Kirchhoff's matrix tree theorem, double counting with Pitman's argument.</p>
+    </div>
+    <div class="panel unlabelled">
+      <div class="panel-label">Unlabelled Trees (Alkane Isomers)</div>
+      <h4>No closed form!</h4>
+      <p>For alkanes, atoms of the same element are interchangeable. We need unlabelled trees with maximum degree 4. This is a much harder counting problem.</p>
+      <p>Asymptotically: ~ a · n<sup>−5/2</sup> · b<sup>n</sup> where a ≈ 0.3183 and b ≈ 2.4833. But no exact closed-form formula is known.</p>
+      <p style="color:var(--text-dim); font-size:0.85rem;">Computed via Pólya enumeration theorem (1937), which accounts for symmetry by averaging over the automorphism group.</p>
+    </div>
+  </div>
+
+  <h3>Cayley's formula: the first values</h3>
+  <div class="canvas-wrap">
+    <canvas id="cayleyChart" width="1400" height="400"></canvas>
+  </div>
+
+  <h3>The cyanic acid example</h3>
+  <p>Your slide shows the four isomers of cyanic acid: four atoms H, C, N, O arranged in a chain. With 4 labelled nodes, Cayley gives 4<sup>2</sup> = 16 labelled trees. But the atoms are distinguishable (different elements), so we only count the distinct linear permutations. The four isomers HCNO, HNCO, HOCN, HONC correspond to the four topologically distinct arrangements of these four specific atoms in a chain, taking into account the valency constraints of each element.</p>
+</section>
+
+<!-- ====== COUNTING ISOMERS ====== -->
+<section id="isomers">
+  <h2>Counting Alkane Isomers</h2>
+  <p class="lead">The number of structural isomers grows explosively. By decane (n=10) there are 75; by eicosane (n=20) there are 366,319.</p>
+
+  <table class="alk-table">
+    <thead>
+      <tr><th>Carbons (n)</th><th>Name</th><th>Isomers</th><th>Labelled trees n<sup>n−2</sup></th></tr>
+    </thead>
+    <tbody id="isomerTableBody"></tbody>
+  </table>
+
+  <h3>Isomer count vs Cayley's formula</h3>
+  <div class="canvas-wrap">
+    <canvas id="isomerChart" width="1400" height="500"></canvas>
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-dim); text-align:center;">Log scale. Cayley's labelled count (purple) dwarfs the unlabelled isomer count (green). The gap is the cost of removing labels and enforcing degree ≤ 4.</p>
+
+  <h3>Why is it so hard?</h3>
+  <p>Two obstacles make the unlabelled problem harder than the labelled one. First, quotienting by the symmetric group (removing labels) requires Burnside/Pólya counting, which involves summing over all permutations. Second, the degree constraint (each carbon has at most 4 bonds to other carbons) rules out most tree structures. Together, these make the count resist closed-form expression.</p>
+</section>
+
+<!-- ====== EXPLORER ====== -->
+<section id="explorer">
+  <h2>Carbon Skeleton Explorer</h2>
+  <p class="lead">The carbon skeleton of an alkane is a tree where every node has degree ≤ 4. Below: all structural isomers for small n, drawn as trees.</p>
+
+  <div class="ctrl-row">
+    <label>Carbons</label>
+    <input type="range" id="explorerN" min="1" max="8" value="4">
+    <div class="ctrl-val" id="explorerNVal">4</div>
+  </div>
+
+  <div id="explorerInfo" style="font-family:var(--mono); font-size:0.75rem; color:var(--text-dim); margin-bottom:1rem;"></div>
+
+  <div class="canvas-wrap">
+    <canvas id="explorerCanvas" width="1400" height="500"></canvas>
+  </div>
+
+  <div style="margin-top:1rem; padding:1rem; background:var(--bg-accent); border-radius:4px; font-size:0.88rem; color:var(--text-muted);">
+    <strong style="color:var(--gold);">Reading the skeletons:</strong> Each dot is a carbon. Lines are C-C bonds. The hydrogen atoms are implicit: each carbon gets enough H to bring its degree up to 4. A carbon bonded to 3 other carbons has 1 hydrogen; bonded to 2 has 2 hydrogens; bonded to 1 has 3 hydrogens; bonded to 0 (methane) has 4.
+  </div>
+</section>
+
+<!-- ====== PYTHON ====== -->
+<section id="code">
+  <h2>Python Implementation</h2>
+
+  <div class="code-block">
+<span class="cmt"># Alkane formula derivation</span>
+<span class="kw">def</span> <span class="fn">hydrogen_count</span>(n):
+    <span class="str">"""From graph theory: m = 2n + 2"""</span>
+    <span class="kw">return</span> <span class="num">2</span> <span class="op">*</span> n <span class="op">+</span> <span class="num">2</span>
+
+<span class="cmt"># Cayley's formula for labelled trees</span>
+<span class="kw">def</span> <span class="fn">cayley</span>(n):
+    <span class="str">"""Number of labelled trees on n nodes"""</span>
+    <span class="kw">if</span> n <span class="op"><=</span> <span class="num">2</span>: <span class="kw">return</span> <span class="num">1</span>
+    <span class="kw">return</span> n <span class="op">**</span> (n <span class="op">-</span> <span class="num">2</span>)
+
+<span class="cmt"># Known isomer counts (OEIS A000602)</span>
+isomers <span class="op">=</span> {
+    <span class="num">1</span>: <span class="num">1</span>, <span class="num">2</span>: <span class="num">1</span>, <span class="num">3</span>: <span class="num">1</span>, <span class="num">4</span>: <span class="num">2</span>,
+    <span class="num">5</span>: <span class="num">3</span>, <span class="num">6</span>: <span class="num">5</span>, <span class="num">7</span>: <span class="num">9</span>, <span class="num">8</span>: <span class="num">18</span>,
+    <span class="num">9</span>: <span class="num">35</span>, <span class="num">10</span>: <span class="num">75</span>, <span class="num">15</span>: <span class="num">4347</span>,
+    <span class="num">20</span>: <span class="num">366319</span>, <span class="num">30</span>: <span class="num">4111846763</span>,
+}
+
+<span class="cmt"># Generate all carbon skeletons (valency-4 trees)</span>
+<span class="cmt"># via recursive enumeration up to isomorphism</span>
+<span class="kw">def</span> <span class="fn">alkane_trees</span>(n):
+    <span class="str">"""Generate non-isomorphic trees with max degree 4"""</span>
+    <span class="kw">if</span> n <span class="op">==</span> <span class="num">1</span>: <span class="kw">return</span> [()]
+    <span class="kw">if</span> n <span class="op">==</span> <span class="num">2</span>: <span class="kw">return</span> [((<span class="num">1</span>,),)]
+    <span class="cmt"># Full enumeration requires canonical form</span>
+    <span class="cmt"># checking — see networkx or nauty for production use</span>
+    <span class="kw">raise</span> <span class="fn">NotImplementedError</span>(<span class="str">"Use Pólya or nauty"</span>)
+
+<span class="cmt"># Verify the formula</span>
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">11</span>):
+    m <span class="op">=</span> <span class="fn">hydrogen_count</span>(n)
+    <span class="fn">print</span>(<span class="str">f"C{n}H{m}  labelled={<span class="fn">cayley</span>(n)}  isomers={isomers[n]}"</span>)
+  </div>
+
+  <p>The isomer counts (OEIS A000602) have no closed form. For production enumeration, you'd use Brendan McKay's <code style="background:var(--bg-accent); padding:0.1rem 0.4rem; border-radius:3px; font-family:var(--mono); font-size:0.85rem;">nauty</code> library or the Pólya enumeration theorem with the cycle index of the symmetric group.</p>
+</section>
+
+<!-- ====== QUIZ ====== -->
+<section id="quiz">
+  <h2>Test Yourself</h2>
+  <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+  <div id="quizContainer"></div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="stamp">Constructed by <span>Silicon</span> · Anthropic Claude — Architect <span>Carbon</span> · LeeMcCullochJames</div>
+  <div class="stamp">Cayley 1889 · Clifford · Chemical Graph Theory · OEIS A000602</div>
+</footer>
+
+<script>
+// ==== NAV ====
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = document.getElementById(btn.dataset.target);
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+const sects = document.querySelectorAll('section[id]');
+const navBtns = document.querySelectorAll('.nav-btn[data-target]');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navBtns.forEach(b => b.classList.remove('active'));
+      const a = document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+sects.forEach(s => obs.observe(s));
+
+// ==== REVEAL STEPS ====
+function revealSteps(id) {
+  const box = document.getElementById(id);
+  const steps = box.querySelectorAll('.deriv-step:not(.visible)');
+  let delay = 0;
+  steps.forEach(s => { setTimeout(() => s.classList.add('visible'), delay); delay += 300; });
+}
+
+// ==== MOLECULE CARDS ====
+const alkanes = [
+  { name: 'Methane', formula: 'CH₄', n: 1, skeleton: [[0,0]] },
+  { name: 'Ethane', formula: 'C₂H₆', n: 2, skeleton: [[0,0],[1,0]], bonds: [[0,1]] },
+  { name: 'Propane', formula: 'C₃H₈', n: 3, skeleton: [[-1,0],[0,0],[1,0]], bonds: [[0,1],[1,2]] },
+  { name: 'n-Butane', formula: 'C₄H₁₀', n: 4, skeleton: [[-1.5,0],[-.5,0],[.5,0],[1.5,0]], bonds: [[0,1],[1,2],[2,3]] },
+  { name: 'iso-Butane', formula: 'C₄H₁₀', n: 4, skeleton: [[0,0],[-.8,-.7],[.8,-.7],[0,.9]], bonds: [[0,1],[0,2],[0,3]] },
+  { name: 'n-Pentane', formula: 'C₅H₁₂', n: 5, skeleton: [[-2,0],[-1,0],[0,0],[1,0],[2,0]], bonds: [[0,1],[1,2],[2,3],[3,4]] },
+];
+
+function drawMolCard(canvas, mol) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // background
+  ctx.fillStyle = '#13161c';
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2;
+  const scale = Math.min(W, H) * 0.22;
+
+  // bonds
+  ctx.strokeStyle = '#3a3e48';
+  ctx.lineWidth = 3;
+  if (mol.bonds) {
+    mol.bonds.forEach(([a, b]) => {
+      const ax = cx + mol.skeleton[a][0] * scale;
+      const ay = cy + mol.skeleton[a][1] * scale;
+      const bx = cx + mol.skeleton[b][0] * scale;
+      const by = cy + mol.skeleton[b][1] * scale;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+    });
+  }
+
+  // atoms
+  mol.skeleton.forEach((pos) => {
+    const x = cx + pos[0] * scale;
+    const y = cy + pos[1] * scale;
+    // carbon
+    ctx.beginPath();
+    ctx.arc(x, y, 14, 0, 2 * Math.PI);
+    ctx.fillStyle = '#6a6a6a';
+    ctx.fill();
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.font = 'bold 14px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#e0e0e0';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('C', x, y);
+  });
+}
+
+function renderMolGrid() {
+  const grid = document.getElementById('molGrid');
+  grid.innerHTML = '';
+  alkanes.forEach((mol, i) => {
+    const card = document.createElement('div');
+    card.className = 'mol-card';
+    const canvas = document.createElement('canvas');
+    canvas.width = 300; canvas.height = 180;
+    card.appendChild(canvas);
+
+    const info = document.createElement('div');
+    info.className = 'mol-info';
+    info.innerHTML = `<div class="mol-name">${mol.name}</div><div class="mol-formula">${mol.formula}</div>`;
+    card.appendChild(info);
+    grid.appendChild(card);
+
+    drawMolCard(canvas, mol);
+  });
+}
+renderMolGrid();
+
+// ==== CAYLEY CHART ====
+function drawCayleyChart() {
+  const canvas = document.getElementById('cayleyChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = { l: 80, r: 40, t: 30, b: 50 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  const data = [];
+  for (let n = 1; n <= 10; n++) {
+    data.push({ n, val: n <= 2 ? 1 : Math.pow(n, n - 2) });
+  }
+
+  const maxVal = data[data.length - 1].val;
+
+  // axes
+  ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+
+  ctx.font = '18px "EB Garamond", serif';
+  ctx.fillStyle = '#5c574e';
+  ctx.textAlign = 'center';
+  ctx.fillText('n (number of nodes)', W / 2, H - 10);
+
+  // bars
+  const barW = pw / data.length * 0.6;
+  data.forEach((d, i) => {
+    const x = pad.l + (i + 0.5) / data.length * pw;
+    const h = (d.val / maxVal) * ph;
+    const y = H - pad.b - h;
+
+    ctx.fillStyle = 'rgba(138,106,170,0.5)';
+    ctx.fillRect(x - barW / 2, y, barW, h);
+    ctx.strokeStyle = 'rgba(138,106,170,0.8)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - barW / 2, y, barW, h);
+
+    // label
+    ctx.font = '14px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#8a8578';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.n, x, H - pad.b + 20);
+
+    // value
+    ctx.fillStyle = '#8a6aaa';
+    const valStr = d.val >= 1e6 ? d.val.toExponential(1) : d.val.toLocaleString();
+    ctx.fillText(valStr, x, y - 8);
+  });
+}
+drawCayleyChart();
+
+// ==== ISOMER DATA ====
+const isoData = [
+  { n: 1, name: 'methane', iso: 1 },
+  { n: 2, name: 'ethane', iso: 1 },
+  { n: 3, name: 'propane', iso: 1 },
+  { n: 4, name: 'butane', iso: 2 },
+  { n: 5, name: 'pentane', iso: 3 },
+  { n: 6, name: 'hexane', iso: 5 },
+  { n: 7, name: 'heptane', iso: 9 },
+  { n: 8, name: 'octane', iso: 18 },
+  { n: 9, name: 'nonane', iso: 35 },
+  { n: 10, name: 'decane', iso: 75 },
+  { n: 15, name: 'pentadecane', iso: 4347 },
+  { n: 20, name: 'eicosane', iso: 366319 },
+  { n: 30, name: 'triacontane', iso: 4111846763 },
+];
+
+function renderIsomerTable() {
+  const body = document.getElementById('isomerTableBody');
+  body.innerHTML = isoData.map(d => {
+    const cayley = d.n <= 2 ? 1 : Math.pow(d.n, d.n - 2);
+    const cStr = cayley > 1e12 ? cayley.toExponential(2) : cayley.toLocaleString();
+    return `<tr>
+      <td>${d.n}</td>
+      <td class="name">${d.name}</td>
+      <td class="iso-count">${d.iso.toLocaleString()}</td>
+      <td style="color:var(--purple); font-family:var(--mono); font-size:0.8rem;">${cStr}</td>
+    </tr>`;
+  }).join('');
+}
+renderIsomerTable();
+
+// ==== ISOMER CHART (log scale) ====
+function drawIsomerChart() {
+  const canvas = document.getElementById('isomerChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = { l: 90, r: 40, t: 30, b: 50 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  // use first 10
+  const data = isoData.filter(d => d.n <= 10);
+  const maxN = 10;
+
+  // log scale
+  const logMax = Math.log10(Math.pow(10, 10 - 2)); // 10^8
+
+  ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+
+  // y gridlines (powers of 10)
+  ctx.font = '13px "JetBrains Mono", monospace';
+  ctx.textAlign = 'right';
+  for (let p = 0; p <= 8; p++) {
+    const y = H - pad.b - (p / 8) * ph;
+    ctx.fillStyle = '#5c574e';
+    ctx.fillText(`10^${p}`, pad.l - 10, y + 4);
+    ctx.strokeStyle = '#1e222c';
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+  }
+
+  // x labels
+  ctx.textAlign = 'center';
+  for (let n = 1; n <= 10; n++) {
+    const x = pad.l + ((n - 0.5) / maxN) * pw;
+    ctx.fillStyle = '#5c574e';
+    ctx.font = '14px "JetBrains Mono", monospace';
+    ctx.fillText(n, x, H - pad.b + 22);
+  }
+
+  // plot labelled (purple)
+  ctx.strokeStyle = 'rgba(138,106,170,0.7)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let n = 1; n <= 10; n++) {
+    const c = n <= 2 ? 1 : Math.pow(n, n - 2);
+    const logC = Math.log10(Math.max(c, 1));
+    const x = pad.l + ((n - 0.5) / maxN) * pw;
+    const y = H - pad.b - (logC / 8) * ph;
+    if (n === 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // dots labelled
+  for (let n = 1; n <= 10; n++) {
+    const c = n <= 2 ? 1 : Math.pow(n, n - 2);
+    const logC = Math.log10(Math.max(c, 1));
+    const x = pad.l + ((n - 0.5) / maxN) * pw;
+    const y = H - pad.b - (logC / 8) * ph;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = '#8a6aaa'; ctx.fill();
+  }
+
+  // plot isomers (green)
+  ctx.strokeStyle = 'rgba(90,138,106,0.7)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const logI = Math.log10(Math.max(d.iso, 1));
+    const x = pad.l + ((d.n - 0.5) / maxN) * pw;
+    const y = H - pad.b - (logI / 8) * ph;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  data.forEach(d => {
+    const logI = Math.log10(Math.max(d.iso, 1));
+    const x = pad.l + ((d.n - 0.5) / maxN) * pw;
+    const y = H - pad.b - (logI / 8) * ph;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = '#5a8a6a'; ctx.fill();
+  });
+
+  // legend
+  ctx.font = '14px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#8a6aaa'; ctx.fillText('● Labelled trees n^(n-2)', pad.l + 20, pad.t + 15);
+  ctx.fillStyle = '#5a8a6a'; ctx.fillText('● Alkane isomers', pad.l + 20, pad.t + 35);
+}
+drawIsomerChart();
+
+// ==== CARBON SKELETON EXPLORER ====
+// Hardcoded isomer skeletons for n=1..8
+const skeletons = {
+  1: [ { nodes: [[0,0]], edges: [] } ],
+  2: [ { nodes: [[0,0],[1,0]], edges: [[0,1]] } ],
+  3: [ { nodes: [[0,0],[1,0],[2,0]], edges: [[0,1],[1,2]] } ],
+  4: [
+    { nodes: [[0,0],[1,0],[2,0],[3,0]], edges: [[0,1],[1,2],[2,3]], label: 'n-butane' },
+    { nodes: [[0,0],[1,0],[2,0],[1,1]], edges: [[0,1],[1,2],[1,3]], label: 'isobutane' },
+  ],
+  5: [
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0]], edges: [[0,1],[1,2],[2,3],[3,4]], label: 'n-pentane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[2,1]], edges: [[0,1],[1,2],[2,3],[2,4]], label: 'isopentane' },
+    { nodes: [[0,0],[1,0],[1,1],[1,-1],[2,0]], edges: [[0,1],[1,2],[1,3],[1,4]], label: 'neopentane' },
+  ],
+  6: [
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0]], edges: [[0,1],[1,2],[2,3],[3,4],[4,5]], label: 'n-hexane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1]], edges: [[0,1],[1,2],[2,3],[3,4],[2,5]], label: '3-methylpentane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[1,1]], edges: [[0,1],[1,2],[2,3],[3,4],[1,5]], label: '2-methylpentane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[1,1],[1,-1]], edges: [[0,1],[1,2],[2,3],[1,4],[1,5]], label: '2,2-dimethylbutane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[1,1],[2,1]], edges: [[0,1],[1,2],[2,3],[1,4],[2,5]], label: '2,3-dimethylbutane' },
+  ],
+  7: [
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]], edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]], label: 'n-heptane' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[1,1]], edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[1,6]], label: '2-MH' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[2,1]], edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[2,6]], label: '3-MH' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[1,1],[1,-1]], edges: [[0,1],[1,2],[2,3],[3,4],[1,5],[1,6]], label: '2,2-DMP' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[1,1],[2,1]], edges: [[0,1],[1,2],[2,3],[3,4],[1,5],[2,6]], label: '2,3-DMP' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[1,1],[3,1]], edges: [[0,1],[1,2],[2,3],[3,4],[1,5],[3,6]], label: '2,4-DMP' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,-1]], edges: [[0,1],[1,2],[2,3],[3,4],[2,5],[2,6]], label: '3,3-DMP' },
+    { nodes: [[0,0],[1,0],[2,0],[3,0],[2,1],[1,1],[1,-1]], edges: [[0,1],[1,2],[2,3],[2,4],[1,5],[1,6]], label: '2,2,3-TMB' },
+    { nodes: [[0,0],[1,0],[2,0],[1,1],[1,-1],[2,1],[0,0]], edges: [[0,1],[1,2],[1,3],[1,4],[2,5]], label: '3-EP' },
+  ],
+  8: Array(18).fill(null).map((_,i) => ({ nodes: [[0,0]], edges: [], label: `isomer ${i+1}` }))
+};
+
+// For n=8, just show the count
+function drawExplorer(n) {
+  const canvas = document.getElementById('explorerCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const info = document.getElementById('explorerInfo');
+  const isos = skeletons[n];
+  if (!isos) return;
+
+  const realIsos = n <= 7 ? isos : null;
+  const count = n <= 7 ? isos.length : [1,1,1,2,3,5,9,18][n-1];
+
+  info.innerHTML = `C<sub>${n}</sub>H<sub>${2*n+2}</sub> — <strong style="color:var(--gold)">${count}</strong> structural isomer${count > 1 ? 's' : ''}`;
+
+  if (n >= 8) {
+    ctx.font = 'italic 28px "EB Garamond", serif';
+    ctx.fillStyle = '#5c574e';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${count} isomers — too many to draw here`, W / 2, H / 2);
+    return;
+  }
+
+  // layout
+  const cols = Math.min(realIsos.length, 5);
+  const rows = Math.ceil(realIsos.length / cols);
+  const cellW = W / cols;
+  const cellH = H / rows;
+  const scale = Math.min(cellW, cellH) * 0.12;
+
+  realIsos.forEach((iso, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const cx = (col + 0.5) * cellW;
+    const cy = (row + 0.5) * cellH;
+
+    // centre the skeleton
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    iso.nodes.forEach(([x,y]) => {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    });
+    const ox = (minX + maxX) / 2;
+    const oy = (minY + maxY) / 2;
+
+    // edges
+    ctx.strokeStyle = '#3a3e48';
+    ctx.lineWidth = 2.5;
+    iso.edges.forEach(([a, b]) => {
+      const ax = cx + (iso.nodes[a][0] - ox) * scale;
+      const ay = cy + (iso.nodes[a][1] - oy) * scale;
+      const bx = cx + (iso.nodes[b][0] - ox) * scale;
+      const by = cy + (iso.nodes[b][1] - oy) * scale;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+    });
+
+    // nodes
+    iso.nodes.forEach(([nx, ny]) => {
+      const x = cx + (nx - ox) * scale;
+      const y = cy + (ny - oy) * scale;
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#6a6a6a';
+      ctx.fill();
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // label
+    if (iso.label) {
+      ctx.font = '13px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#5c574e';
+      ctx.textAlign = 'center';
+      ctx.fillText(iso.label, cx, cy + (maxY - oy) * scale + 28);
+    }
+  });
+}
+
+const explorerSlider = document.getElementById('explorerN');
+const explorerVal = document.getElementById('explorerNVal');
+explorerSlider.addEventListener('input', () => {
+  explorerVal.textContent = explorerSlider.value;
+  drawExplorer(parseInt(explorerSlider.value));
+});
+drawExplorer(4);
+
+// ==== QUIZ ====
+const quizData = [
+  {
+    q: "The handshaking lemma states that the sum of all vertex degrees in a graph equals:",
+    opts: ["The number of vertices", "Twice the number of edges", "The number of edges", "The number of triangles"],
+    correct: 1,
+    explain: "Each edge contributes 1 to the degree of each of its two endpoints, so the total degree sum is exactly 2|E|."
+  },
+  {
+    q: "In a tree on V vertices, the number of edges is:",
+    opts: ["V", "V − 1", "V + 1", "2V"],
+    correct: 1,
+    explain: "A tree is a connected acyclic graph. Removing any edge disconnects it, so a tree on V vertices has exactly V − 1 edges."
+  },
+  {
+    q: "The alkane formula C_n H_m gives m = ?",
+    opts: ["2n", "2n + 2", "n + 2", "2n − 2"],
+    correct: 1,
+    explain: "From 4n + m = 2(n + m − 1), solving gives m = 2n + 2. This is the saturated hydrocarbon formula."
+  },
+  {
+    q: "Cayley's formula for the number of labelled trees on n vertices is:",
+    opts: ["n!", "2^n", "n^(n−2)", "n(n−1)/2"],
+    correct: 2,
+    explain: "n^(n−2) is Cayley's formula. For n = 4, this gives 4² = 16 labelled trees. Proved via Prüfer sequences or the matrix tree theorem."
+  },
+  {
+    q: "For n = 4 (butane), how many structural isomers exist?",
+    opts: ["1", "2", "4", "16"],
+    correct: 1,
+    explain: "Butane has 2 structural isomers: n-butane (straight chain) and isobutane (branched). Cayley's 16 counts labelled trees, not structural isomers."
+  },
+  {
+    q: "Why is there no closed-form formula for the number of alkane isomers?",
+    opts: [
+      "Nobody has tried to find one",
+      "The problem involves counting unlabelled trees with degree constraints, requiring Pólya enumeration",
+      "Alkanes don't form trees",
+      "The formula is m = 2n + 2"
+    ],
+    correct: 1,
+    explain: "Counting unlabelled trees (quotienting by symmetry) with maximum degree 4 requires Pólya's enumeration theorem, which involves cycle indices of symmetric groups. No simplification to a closed form is known."
+  },
+  {
+    q: "The asymptotic growth of alkane isomers is approximately:",
+    opts: ["Linear in n", "Polynomial n^k", "Exponential ~ a · n^(−5/2) · b^n", "Factorial n!"],
+    correct: 2,
+    explain: "The isomer count grows roughly as a · n^(−5/2) · b^n with b ≈ 2.4833. This is exponential growth modified by a polynomial correction factor, characteristic of tree-counting problems."
+  },
+  {
+    q: "The four isomers of cyanic acid (HCNO, HNCO, HOCN, HONC) are an example of:",
+    opts: ["Structural isomers with 4 labelled atoms in a chain", "Geometric isomers", "Conformational isomers", "Isotopes"],
+    correct: 0,
+    explain: "These are structural (constitutional) isomers: same atoms (H, C, N, O) connected in different orders. With 4 distinguishable atoms in a chain, the permutations give distinct molecules (subject to valency constraints)."
+  },
+  {
+    q: "What is the maximum degree (valency) of any carbon atom in an alkane?",
+    opts: ["2", "3", "4", "6"],
+    correct: 2,
+    explain: "Carbon has valency 4 in alkanes: it forms exactly 4 bonds. Some of these bonds connect to other carbons (at most 4 in the carbon skeleton), and the rest connect to hydrogens."
+  }
+];
+
+let score = 0, answered = 0;
+
+function renderQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = quizData.map((q, i) => `
+    <div class="quiz-card" id="q${i}">
+      <div class="q-num">Question ${i + 1} of ${quizData.length}</div>
+      <div class="question">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="checkAns(${i},${j})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-fb" id="fb${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkAns(qi, oi) {
+  const q = quizData[qi];
+  const card = document.getElementById(`q${qi}`);
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  answered++;
+  const opts = card.querySelectorAll('.quiz-opt');
+  opts.forEach((o, j) => {
+    o.classList.add('done');
+    if (j === q.correct) o.classList.add('correct');
+    else if (j === oi) o.classList.add('incorrect');
+  });
+  const fb = document.getElementById(`fb${qi}`);
+  if (oi === q.correct) {
+    score++;
+    fb.className = 'quiz-fb show right';
+    fb.textContent = '✓ ' + q.explain;
+  } else {
+    fb.className = 'quiz-fb show wrong';
+    fb.textContent = '✗ ' + q.explain;
+  }
+  document.getElementById('scoreBar').textContent = `Score: ${score} / ${answered}`;
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
