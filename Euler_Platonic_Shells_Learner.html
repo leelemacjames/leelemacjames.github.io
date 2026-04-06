@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Euler, Platonic Solids &amp; Atomic Shells</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg: #0e1117;
+  --bg-card: #161b24;
+  --bg-card-hover: #1e2530;
+  --bg-accent: #212836;
+  --text: #eae8e3;
+  --text-sec: #c8c4ba;
+  --text-muted: #9a968c;
+  --text-dim: #706c62;
+  --gold: #dbb955;
+  --gold-dim: #a68a30;
+  --blue: #5ea0cc;
+  --blue-dim: #3a7099;
+  --green: #6aaa7a;
+  --green-dim: #3a6a4a;
+  --purple: #a07acc;
+  --purple-dim: #6a4a8a;
+  --red: #cc6060;
+  --red-dim: #8a3a3a;
+  --cyan: #5ababa;
+  --orange: #d09050;
+  --border: #2e3440;
+  --border-light: #3a4050;
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+
+body {
+  font-family: var(--serif);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+  font-size: 18px;
+}
+
+.site-header {
+  padding: 3rem 2rem 2rem;
+  max-width: 1140px; margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 300; color: var(--gold);
+  letter-spacing: 0.02em; line-height: 1.2;
+}
+
+.site-header .subtitle {
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--text-muted); margin-top: 0.5rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+.site-header .hook {
+  font-family: var(--display); font-size: 1.15rem;
+  font-style: italic; color: var(--text-sec);
+  margin-top: 1.2rem; max-width: 660px;
+  border-left: 2px solid var(--gold-dim); padding-left: 1rem;
+}
+
+/* NAV */
+.nav-strip {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(14,17,23,0.94);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+}
+
+.nav-inner {
+  max-width: 1140px; margin: 0 auto;
+  display: flex; gap: 0; overflow-x: auto;
+}
+
+.nav-btn {
+  font-family: var(--mono); font-size: 0.64rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-dim); background: none; border: none;
+  padding: 0.8rem 1rem; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: all 0.3s;
+}
+
+.nav-btn:hover, .nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.content { max-width: 1140px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+
+section h2 {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 300; color: var(--gold); margin-bottom: 1rem;
+}
+
+section h3 {
+  font-family: var(--display); font-size: 1.25rem;
+  font-weight: 500; color: var(--text); margin: 1.8rem 0 0.7rem;
+}
+
+p { margin-bottom: 0.9rem; color: var(--text); }
+
+.lead { font-size: 1.08rem; color: var(--text-sec); max-width: 720px; }
+
+/* FORMULA BOX */
+.formula-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2rem; margin: 1.5rem 0; text-align: center;
+}
+
+.formula-box .big { font-family: var(--serif); font-size: 2.2rem; font-style: italic; color: var(--gold); }
+.formula-box .cap { font-size: 0.95rem; color: var(--text-sec); margin-top: 0.5rem; }
+
+/* PLATONIC TABLE */
+.plat-table {
+  width: 100%; border-collapse: collapse;
+  margin: 1.5rem 0; font-size: 0.9rem;
+}
+
+.plat-table th {
+  font-family: var(--mono); font-size: 0.62rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); text-align: center;
+  padding: 0.7rem 0.6rem; border-bottom: 2px solid var(--border);
+}
+
+.plat-table td {
+  text-align: center; padding: 0.6rem;
+  border-bottom: 1px solid rgba(46,52,64,0.6);
+  color: var(--text-sec);
+}
+
+.plat-table tr:hover td { background: rgba(33,40,54,0.6); color: var(--text); }
+
+.plat-table .solid-name {
+  font-family: var(--display); font-size: 1rem;
+  color: var(--text); font-weight: 500; text-align: left; padding-left: 1rem;
+}
+
+.plat-table .euler-check { color: var(--green); font-weight: 600; }
+
+.hilite-f { color: var(--gold); font-weight: 700; }
+.hilite-v { color: var(--cyan); font-weight: 600; }
+.hilite-e { color: var(--text-sec); }
+
+/* DUAL PAIRS */
+.dual-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem; margin: 1.5rem 0;
+}
+
+.dual-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.6rem; text-align: center;
+  transition: all 0.3s;
+}
+
+.dual-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+
+.dual-card h4 {
+  font-family: var(--display); font-size: 1.15rem; color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.dual-card .swap {
+  font-family: var(--mono); font-size: 0.75rem; color: var(--gold);
+  margin: 0.5rem 0; letter-spacing: 0.08em;
+}
+
+.dual-card p { font-size: 0.88rem; color: var(--text-sec); }
+
+/* SHELL MAPPING */
+.shell-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem; align-items: center;
+  padding: 1rem 1.2rem; margin: 0.5rem 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 5px; transition: all 0.3s; cursor: default;
+}
+
+.shell-row:hover { border-color: var(--gold-dim); background: var(--bg-card-hover); }
+
+.shell-label {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--text-muted); letter-spacing: 0.12em;
+  text-transform: uppercase; min-width: 60px;
+}
+
+.shell-content { color: var(--text-sec); font-size: 0.92rem; }
+.shell-content strong { color: var(--text); }
+
+.shell-number {
+  font-family: var(--mono); font-size: 1.4rem;
+  color: var(--gold); font-weight: 500; min-width: 40px; text-align: right;
+}
+
+/* AUFBAU DIAGRAM */
+.aufbau-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem; margin: 1.5rem 0;
+  max-width: 600px;
+}
+
+.aufbau-cell {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.6rem; text-align: center;
+  font-family: var(--mono); font-size: 0.75rem;
+  color: var(--text-sec); transition: all 0.3s; cursor: default;
+}
+
+.aufbau-cell:hover { background: var(--bg-card-hover); border-color: var(--gold-dim); }
+.aufbau-cell.s { border-left: 3px solid var(--red); }
+.aufbau-cell.p { border-left: 3px solid var(--blue); }
+.aufbau-cell.d { border-left: 3px solid var(--green); }
+.aufbau-cell.f { border-left: 3px solid var(--purple); }
+
+.aufbau-cell .orb { font-weight: 500; color: var(--text); }
+.aufbau-cell .elec { color: var(--gold); font-size: 0.85rem; }
+
+/* INTERACTIVE EULER CALC */
+.euler-calc {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.5rem; margin: 1.5rem 0;
+}
+
+.euler-inputs {
+  display: flex; gap: 1rem; align-items: center;
+  flex-wrap: wrap; margin-bottom: 1rem;
+}
+
+.euler-inputs label {
+  font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text-muted); letter-spacing: 0.1em;
+}
+
+.euler-inputs input {
+  width: 70px; background: var(--bg-accent);
+  border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text); font-family: var(--mono); font-size: 0.9rem;
+  padding: 0.4rem 0.5rem; text-align: center;
+}
+
+.euler-inputs input:focus { outline: none; border-color: var(--gold); }
+
+.euler-inputs .op {
+  font-size: 1.3rem; color: var(--text-muted); font-family: var(--serif);
+}
+
+.euler-result {
+  font-family: var(--serif); font-size: 1.05rem; color: var(--text-sec);
+  min-height: 1.5em;
+}
+
+/* NOBLE GAS TABLE */
+.noble-table {
+  width: 100%; border-collapse: collapse;
+  margin: 1.5rem 0; font-size: 0.88rem;
+}
+
+.noble-table th {
+  font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); text-align: left;
+  padding: 0.7rem 0.8rem; border-bottom: 2px solid var(--border);
+}
+
+.noble-table td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid rgba(46,52,64,0.5);
+  color: var(--text-sec); vertical-align: middle;
+}
+
+.noble-table tr:hover td { background: rgba(33,40,54,0.5); color: var(--text); }
+
+.noble-table .elem { color: var(--text); font-weight: 600; }
+.noble-table .z { color: var(--gold); font-family: var(--mono); font-weight: 500; }
+.noble-table .config { font-family: var(--mono); font-size: 0.75rem; color: var(--text-muted); }
+.noble-table .shell-seq { color: var(--text); }
+.noble-table .plat-seq { color: var(--cyan); }
+
+/* QUIZ */
+.quiz-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.6rem; margin-bottom: 1.3rem;
+}
+
+.quiz-card .q-num {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text-dim); letter-spacing: 0.14em;
+  text-transform: uppercase; margin-bottom: 0.4rem;
+}
+
+.quiz-card .question {
+  font-family: var(--display); font-size: 1.12rem;
+  color: var(--text); margin-bottom: 1rem;
+}
+
+.quiz-opts { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.quiz-opt {
+  background: var(--bg-accent); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.65rem 1rem;
+  font-family: var(--serif); font-size: 0.92rem;
+  color: var(--text-sec); cursor: pointer; transition: all 0.25s; text-align: left;
+}
+
+.quiz-opt:hover:not(.done) { background: var(--bg-card-hover); border-color: var(--gold-dim); color: var(--text); }
+.quiz-opt.correct { background: rgba(106,170,122,0.18); border-color: var(--green); color: var(--green); }
+.quiz-opt.incorrect { background: rgba(204,96,96,0.18); border-color: var(--red); color: var(--red); }
+
+.quiz-fb { margin-top: 0.7rem; padding: 0.7rem; border-radius: 4px; font-size: 0.88rem; display: none; color: var(--text-sec); }
+.quiz-fb.show { display: block; }
+.quiz-fb.right { background: rgba(106,170,122,0.1); border-left: 3px solid var(--green); }
+.quiz-fb.wrong { background: rgba(204,96,96,0.1); border-left: 3px solid var(--red); }
+
+.score-bar { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); text-align: right; letter-spacing: 0.1em; margin-bottom: 1rem; }
+
+/* FOOTER */
+.site-footer {
+  max-width: 1140px; margin: 0 auto; padding: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+
+.site-footer .stamp { font-family: var(--mono); font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.1em; }
+.site-footer .stamp span { color: var(--gold-dim); }
+
+/* CALLOUT */
+.callout {
+  padding: 1rem 1.2rem; border-radius: 0 5px 5px 0;
+  margin: 1rem 0; font-size: 0.92rem;
+}
+
+.callout.gold { background: rgba(219,185,85,0.08); border-left: 3px solid var(--gold-dim); }
+.callout.blue { background: rgba(94,160,204,0.08); border-left: 3px solid var(--blue-dim); }
+.callout.purple { background: rgba(160,122,204,0.08); border-left: 3px solid var(--purple-dim); }
+
+.callout strong { color: var(--gold); }
+.callout p { color: var(--text-sec); margin: 0; }
+
+@media (max-width: 600px) {
+  .site-header, .content { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .aufbau-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Euler, Platonic Solids &amp; Atomic Shells</h1>
+  <div class="subtitle">Euler Characteristic · Duality · Aufbau Principle · Zilong Kong's Mapping</div>
+  <div class="hook">
+    The five Platonic solids obey V − E + F = 2. Their face counts decompose the electron shell capacities of every noble gas. Coincidence, or geometry all the way down?
+  </div>
+</header>
+
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-target="euler">Euler's Formula</button>
+    <button class="nav-btn" data-target="platonic">Platonic Solids</button>
+    <button class="nav-btn" data-target="duality">Duality</button>
+    <button class="nav-btn" data-target="orbitals">Orbitals &amp; Symmetry</button>
+    <button class="nav-btn" data-target="mapping">The Mapping</button>
+    <button class="nav-btn" data-target="aufbau">Aufbau Explorer</button>
+    <button class="nav-btn" data-target="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- EULER -->
+<section id="euler">
+  <h2>Euler's Polyhedron Formula</h2>
+  <p class="lead">For any convex polyhedron, the number of vertices, edges, and faces satisfies a topological invariant. This is the Euler characteristic of a sphere.</p>
+
+  <div class="formula-box">
+    <div class="big">V − E + F = 2</div>
+    <div class="cap">Vertices minus Edges plus Faces always equals 2 for convex polyhedra</div>
+  </div>
+
+  <p>This isn't a coincidence of particular shapes. It's a topological fact: any convex polyhedron can be continuously deformed to a sphere, and the sphere has Euler characteristic χ = 2. The formula holds for the tetrahedron (4 − 6 + 4 = 2), the cube (8 − 12 + 6 = 2), and every Platonic solid.</p>
+
+  <h3>Check it yourself</h3>
+  <div class="euler-calc">
+    <div class="euler-inputs">
+      <label>V</label><input type="number" id="eV" value="8">
+      <span class="op">−</span>
+      <label>E</label><input type="number" id="eE" value="12">
+      <span class="op">+</span>
+      <label>F</label><input type="number" id="eF" value="6">
+      <span class="op">=</span>
+      <span id="eulerResult" style="font-family:var(--mono); font-size:1.2rem; color:var(--gold); min-width:30px;">2</span>
+    </div>
+    <div class="euler-result" id="eulerComment" style="color:var(--green);">✓ Euler characteristic = 2. This is a valid convex polyhedron.</div>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Why 2?</strong> The Euler characteristic is a topological invariant. Cutting, stretching, or deforming a surface doesn't change it. A sphere has χ = 2. A torus has χ = 0. A double torus has χ = −2. The Platonic solids, being homeomorphic to the sphere, all give 2.</p>
+  </div>
+</section>
+
+<!-- PLATONIC SOLIDS -->
+<section id="platonic">
+  <h2>The Five Platonic Solids</h2>
+  <p class="lead">Exactly five convex regular polyhedra exist. Each has identical regular polygonal faces, the same number of faces meeting at every vertex, and satisfies Euler's formula. The table below includes the cylinder (2 faces, 2 edges, 0 vertices) as a degenerate "solid" representing the s-orbital's spherical symmetry.</p>
+
+  <table class="plat-table">
+    <thead>
+      <tr>
+        <th>Solid</th>
+        <th>Faces (F)</th>
+        <th>Edges (E)</th>
+        <th>Vertices (V)</th>
+        <th>Edges/face</th>
+        <th>Edges/vertex</th>
+        <th>V−E+F</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="solid-name">Cylinder (s-orbital)</td>
+        <td class="hilite-f">2</td><td class="hilite-e">2</td><td class="hilite-v">—</td>
+        <td>1</td><td>—</td><td class="euler-check">2</td>
+      </tr>
+      <tr>
+        <td class="solid-name">Tetrahedron</td>
+        <td class="hilite-f">4</td><td class="hilite-e">6</td><td class="hilite-v">4</td>
+        <td>3</td><td>3</td><td class="euler-check">2</td>
+      </tr>
+      <tr>
+        <td class="solid-name">Hexahedron (Cube)</td>
+        <td class="hilite-f">6</td><td class="hilite-e">12</td><td class="hilite-v">8</td>
+        <td>4</td><td>3</td><td class="euler-check">2</td>
+      </tr>
+      <tr>
+        <td class="solid-name">Octahedron</td>
+        <td class="hilite-f">8</td><td class="hilite-e">12</td><td class="hilite-v">6</td>
+        <td>3</td><td>4</td><td class="euler-check">2</td>
+      </tr>
+      <tr>
+        <td class="solid-name">Dodecahedron</td>
+        <td class="hilite-f">12</td><td class="hilite-e">30</td><td class="hilite-v">20</td>
+        <td>5</td><td>3</td><td class="euler-check">2</td>
+      </tr>
+      <tr>
+        <td class="solid-name">Icosahedron</td>
+        <td class="hilite-f">20</td><td class="hilite-e">30</td><td class="hilite-v">12</td>
+        <td>3</td><td>5</td><td class="euler-check">2</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Notice the face sequence: <strong style="color:var(--gold)">2, 4, 6, 8, 12, 20</strong>. We will see this sequence reappear in electron shell filling.</p>
+</section>
+
+<!-- DUALITY -->
+<section id="duality">
+  <h2>Duality</h2>
+  <p class="lead">Platonic solids come in dual pairs. To form the dual, replace every face with a vertex and every vertex with a face. Edges are preserved. The duality swaps F and V while keeping E constant.</p>
+
+  <div class="dual-grid">
+    <div class="dual-card">
+      <h4>Tetrahedron ↔ Tetrahedron</h4>
+      <div class="swap">SELF-DUAL</div>
+      <p>F = 4, V = 4. Faces and vertices are equal, so the dual is itself. The only self-dual Platonic solid.</p>
+    </div>
+    <div class="dual-card">
+      <h4>Cube ↔ Octahedron</h4>
+      <div class="swap">F ↔ V : 6 ↔ 8 &nbsp;·&nbsp; E = 12</div>
+      <p>The cube has 6 faces and 8 vertices. Its dual, the octahedron, has 8 faces and 6 vertices. Both have 12 edges.</p>
+    </div>
+    <div class="dual-card">
+      <h4>Dodecahedron ↔ Icosahedron</h4>
+      <div class="swap">F ↔ V : 12 ↔ 20 &nbsp;·&nbsp; E = 30</div>
+      <p>The dodecahedron has 12 pentagonal faces and 20 vertices. Its dual, the icosahedron, has 20 triangular faces and 12 vertices.</p>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Duality preserves Euler:</strong> If V − E + F = 2, then F − E + V = 2 too, since addition is commutative. Duality swaps V and F but Euler's formula is symmetric in that swap.</p>
+  </div>
+
+  <h3>Duality also swaps</h3>
+  <p>Edges-per-face ↔ Edges-per-vertex. The cube has 4 edges per face and 3 per vertex; the octahedron has 3 per face and 4 per vertex. This swap is the Schläfli symbol swap: {p, q} ↔ {q, p}.</p>
+</section>
+
+<!-- ORBITALS & SYMMETRY -->
+<section id="orbitals">
+  <h2>Orbitals &amp; Symmetry</h2>
+  <p class="lead">Electron orbitals are classified by their angular momentum quantum number ℓ. Each value of ℓ gives 2ℓ+1 spatial orientations (m<sub>ℓ</sub> values), and Pauli exclusion doubles this for spin. The subshell capacities are 2, 6, 10, 14.</p>
+
+  <div class="aufbau-grid">
+    <div class="aufbau-cell s"><div class="orb">s</div><div>ℓ = 0</div><div>1 orientation</div><div class="elec">2 electrons</div></div>
+    <div class="aufbau-cell p"><div class="orb">p</div><div>ℓ = 1</div><div>3 orientations</div><div class="elec">6 electrons</div></div>
+    <div class="aufbau-cell d"><div class="orb">d</div><div>ℓ = 2</div><div>5 orientations</div><div class="elec">10 electrons</div></div>
+    <div class="aufbau-cell f"><div class="orb">f</div><div>ℓ = 3</div><div>7 orientations</div><div class="elec">14 electrons</div></div>
+  </div>
+
+  <h3>The degrees of freedom staircase</h3>
+  <table class="plat-table" style="max-width:500px;">
+    <thead><tr><th>ℓ</th><th>Subshell</th><th>Degrees of freedom (2ℓ+1)</th><th>Pauli pairs (× 2)</th><th>Cumulative</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>s</td><td>1</td><td style="color:var(--gold)">2</td><td>2</td></tr>
+      <tr><td>1</td><td>p</td><td>3</td><td style="color:var(--gold)">6</td><td>8</td></tr>
+      <tr><td>2</td><td>d</td><td>5</td><td style="color:var(--gold)">10</td><td>18</td></tr>
+      <tr><td>3</td><td>f</td><td>7</td><td style="color:var(--gold)">14</td><td>32</td></tr>
+    </tbody>
+  </table>
+
+  <p>The cumulative sequence 2, 8, 18, 32 gives the maximum shell capacities. The sequence of subshell sizes 2, 6, 10, 14 is the sequence of odd numbers (1, 3, 5, 7) doubled. This is where the Platonic face-count connection enters.</p>
+
+  <div class="callout purple">
+    <p><strong>The group theory link:</strong> The rotation group SO(3) acts on the sphere via irreducible representations of dimension 2ℓ+1. Mark Ronan notes that "the group of rotations in 3-d has an operation in 5-d space," referring to the ℓ = 2 (d-orbital) representation. Each irreducible representation defines a subshell.</p>
+  </div>
+</section>
+
+<!-- THE MAPPING -->
+<section id="mapping">
+  <h2>The Platonic Mapping</h2>
+  <p class="lead">Zilong Kong's observation: the face counts of the Platonic solids (plus the cylinder) map directly onto the electron-shell-filling sequence of the noble gases. The electron configuration can be decomposed into Platonic face numbers.</p>
+
+  <h3>Noble gases and their Platonic decomposition</h3>
+  <table class="noble-table">
+    <thead>
+      <tr><th>Element</th><th>Z</th><th>Config</th><th>Shell sequence</th><th>Platonic decomposition</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="elem">Helium</td><td class="z">2</td>
+        <td class="config">1s²</td>
+        <td class="shell-seq">2</td>
+        <td class="plat-seq">2 (cylinder)</td>
+      </tr>
+      <tr>
+        <td class="elem">Neon</td><td class="z">10</td>
+        <td class="config">1s²2s²2p⁶</td>
+        <td class="shell-seq">2, 8</td>
+        <td class="plat-seq">2, 8 (octahedron)</td>
+      </tr>
+      <tr>
+        <td class="elem">Argon</td><td class="z">18</td>
+        <td class="config">1s²2s²2p⁶3s²3p⁶</td>
+        <td class="shell-seq">2, 8, 8</td>
+        <td class="plat-seq">2, 8, 8</td>
+      </tr>
+      <tr>
+        <td class="elem">Krypton</td><td class="z">36</td>
+        <td class="config">…3d¹⁰4s²4p⁶</td>
+        <td class="shell-seq">2, 8, 18, 8</td>
+        <td class="plat-seq">2, 8, 12, 6, 8</td>
+      </tr>
+      <tr>
+        <td class="elem">Xenon</td><td class="z">54</td>
+        <td class="config">…4d¹⁰5s²5p⁶</td>
+        <td class="shell-seq">2, 8, 18, 18, 8</td>
+        <td class="plat-seq">2, 8, 12, 6, 12, 6, 8</td>
+      </tr>
+      <tr>
+        <td class="elem">Radon</td><td class="z">86</td>
+        <td class="config">…4f¹⁴5d¹⁰6s²6p⁶</td>
+        <td class="shell-seq">2, 8, 18, 32, 18, 8</td>
+        <td class="plat-seq">2, 8, 12, 6, 12, 20, 12, 6, 8</td>
+      </tr>
+      <tr>
+        <td class="elem">Oganesson</td><td class="z">118</td>
+        <td class="config">…5f¹⁴6d¹⁰7s²7p⁶</td>
+        <td class="shell-seq">2, 8, 18, 32, 32, 18, 8</td>
+        <td class="plat-seq">2, 8, 12, 6, 12, 20, 30, 2, 12, 6, 8</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>How the faces map to electrons</h3>
+  <div class="shell-row">
+    <div class="shell-label">s-orbital</div>
+    <div class="shell-content"><strong>Cylinder: 2 faces</strong> → 2 electrons. The s-orbital has spherical (1-dimensional rotational) symmetry. The cylinder captures this: top and bottom faces, like spin-up and spin-down.</div>
+    <div class="shell-number">2</div>
+  </div>
+  <div class="shell-row">
+    <div class="shell-label">p-orbital</div>
+    <div class="shell-content"><strong>Cube: 6 faces</strong> → 6 electrons. Three orthogonal p-orbitals (p<sub>x</sub>, p<sub>y</sub>, p<sub>z</sub>), each holding 2 electrons. The cube's 3 pairs of opposite faces mirror the 3 spatial axes.</div>
+    <div class="shell-number">6</div>
+  </div>
+  <div class="shell-row">
+    <div class="shell-label">d-orbital</div>
+    <div class="shell-content"><strong>Octahedron: 8 faces</strong> or <strong>Dodecahedron: 12 faces/edges</strong>. The d-orbitals' 5 orientations × 2 spins = 10 electrons. The connection to the octahedron's 8 faces captures the octahedral symmetry of crystal field theory.</div>
+    <div class="shell-number">10</div>
+  </div>
+  <div class="shell-row">
+    <div class="shell-label">f-orbital</div>
+    <div class="shell-content"><strong>Icosahedron: 20 faces</strong>. The 7 f-orbital orientations × 2 = 14 electrons. The icosahedron's 20 faces and the dodecahedron's 20 vertices provide the geometric skeleton.</div>
+    <div class="shell-number">14</div>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>The key insight:</strong> The standard shell sequence (2, 8, 18, 32…) bundles subshells together. Kong's decomposition un-bundles them, replacing each shell capacity with a sum of Platonic face/edge/vertex counts. The 18 in Krypton's "2, 8, 18, 8" becomes "12 + 6" (dodecahedron faces + octahedron vertices), and the 32 in Radon becomes "12 + 20" (dodecahedron + icosahedron faces).</p>
+  </div>
+</section>
+
+<!-- AUFBAU EXPLORER -->
+<section id="aufbau">
+  <h2>Aufbau Explorer</h2>
+  <p class="lead">The aufbau (building-up) principle fills orbitals in order of increasing n + ℓ. The diagonal rule traces the filling order. Each subshell holds 2(2ℓ+1) electrons.</p>
+
+  <div class="canvas-wrap">
+    <canvas id="aufbauCanvas" width="900" height="520"></canvas>
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">The diagonal filling rule: follow the arrows from 1s downward. Each subshell is labelled with its capacity.</p>
+
+  <h3>Filling order</h3>
+  <div id="fillingOrder" style="font-family:var(--mono); font-size:0.8rem; color:var(--text-sec); background:var(--bg-accent); padding:1rem; border-radius:4px; line-height:2; margin:1rem 0;"></div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <h2>Test Yourself</h2>
+  <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+  <div id="quizContainer"></div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="stamp">Constructed by <span>Silicon</span> · Anthropic Claude — Architect <span>Carbon</span> · LeeMcCullochJames</div>
+  <div class="stamp">Euler · Platonic Solids · Zilong Kong · Aufbau</div>
+</footer>
+
+<script>
+// ==== NAV ====
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = document.getElementById(btn.dataset.target);
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+const sects = document.querySelectorAll('section[id]');
+const navBtns = document.querySelectorAll('.nav-btn[data-target]');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navBtns.forEach(b => b.classList.remove('active'));
+      const a = document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+sects.forEach(s => obs.observe(s));
+
+// ==== EULER CALC ====
+function updateEuler() {
+  const v = parseInt(document.getElementById('eV').value) || 0;
+  const e = parseInt(document.getElementById('eE').value) || 0;
+  const f = parseInt(document.getElementById('eF').value) || 0;
+  const chi = v - e + f;
+  document.getElementById('eulerResult').textContent = chi;
+  const comment = document.getElementById('eulerComment');
+  if (chi === 2) {
+    comment.style.color = '#6aaa7a';
+    comment.textContent = '✓ Euler characteristic = 2. Consistent with a convex polyhedron (sphere topology).';
+  } else if (chi === 0) {
+    comment.style.color = '#d09050';
+    comment.textContent = 'χ = 0. This is the Euler characteristic of a torus.';
+  } else {
+    comment.style.color = '#cc6060';
+    comment.textContent = `χ = ${chi}. Not a convex polyhedron. Genus g = (2 − χ)/2 = ${(2 - chi) / 2}.`;
+  }
+}
+
+['eV', 'eE', 'eF'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateEuler);
+});
+
+// ==== AUFBAU CANVAS ====
+function drawAufbau() {
+  const canvas = document.getElementById('aufbauCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const labels = ['s', 'p', 'd', 'f'];
+  const colors = ['#cc6060', '#5ea0cc', '#6aaa7a', '#a07acc'];
+  const capacity = [2, 6, 10, 14];
+
+  const cellW = 110, cellH = 50, gapX = 20, gapY = 12;
+  const startX = 80, startY = 30;
+
+  // grid
+  const maxN = 7;
+  const cells = [];
+  for (let n = 1; n <= maxN; n++) {
+    for (let l = 0; l < Math.min(n, 4); l++) {
+      const x = startX + l * (cellW + gapX);
+      const y = startY + (n - 1) * (cellH + gapY);
+      cells.push({ n, l, x, y, label: `${n}${labels[l]}`, cap: capacity[l] });
+    }
+  }
+
+  // draw cells
+  cells.forEach(c => {
+    ctx.fillStyle = '#161b24';
+    ctx.strokeStyle = colors[c.l];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(c.x, c.y, cellW, cellH, 4);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = '18px "EB Garamond", serif';
+    ctx.fillStyle = '#eae8e3';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(c.label, c.x + cellW * 0.35, c.y + cellH / 2);
+
+    ctx.font = '13px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#dbb955';
+    ctx.fillText(`(${c.cap})`, c.x + cellW * 0.75, c.y + cellH / 2);
+  });
+
+  // column headers
+  ctx.font = '16px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  labels.forEach((l, i) => {
+    ctx.fillStyle = colors[i];
+    ctx.fillText(l, startX + i * (cellW + gapX) + cellW / 2, startY - 12);
+  });
+
+  // diagonal arrows
+  const order = [
+    [1,0],[2,0],[2,1],[3,0],[3,1],[3,2],[4,0],[4,1],[4,2],[4,3],
+    [5,0],[5,1],[5,2],[5,3],[6,0],[6,1],[6,2],[7,0],[7,1]
+  ];
+
+  // filling order: sort by n+l, then by n
+  const filling = order.slice().sort((a,b) => {
+    const sa = a[0]+a[1], sb = b[0]+b[1];
+    return sa !== sb ? sa - sb : a[0] - b[0];
+  });
+
+  // draw filling arrows
+  ctx.strokeStyle = 'rgba(219,185,85,0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  for (let i = 0; i < filling.length - 1; i++) {
+    const from = cells.find(c => c.n === filling[i][0] && c.l === filling[i][1]);
+    const to = cells.find(c => c.n === filling[i+1][0] && c.l === filling[i+1][1]);
+    if (from && to) {
+      ctx.beginPath();
+      ctx.moveTo(from.x + cellW, from.y + cellH / 2);
+      ctx.lineTo(to.x, to.y + cellH / 2);
+      ctx.stroke();
+    }
+  }
+  ctx.setLineDash([]);
+}
+drawAufbau();
+
+// Filling order text
+const fillLabels = ['1s','2s','2p','3s','3p','4s','3d','4p','5s','4d','5p','6s','4f','5d','6p','7s','5f','6d','7p'];
+const fillCaps = [2,2,6,2,6,2,10,6,2,10,6,2,14,10,6,2,14,10,6];
+document.getElementById('fillingOrder').innerHTML = fillLabels.map((l, i) => {
+  const col = l.includes('s') ? '#cc6060' : l.includes('p') ? '#5ea0cc' : l.includes('d') ? '#6aaa7a' : '#a07acc';
+  return `<span style="color:${col}">${l}<sup>${fillCaps[i]}</sup></span>`;
+}).join(' → ');
+
+// ==== QUIZ ====
+const quizData = [
+  {
+    q: "Euler's formula V − E + F for a cube gives:",
+    opts: ["0", "1", "2", "6"],
+    correct: 2,
+    explain: "Cube: V=8, E=12, F=6. So 8 − 12 + 6 = 2. The Euler characteristic of any convex polyhedron."
+  },
+  {
+    q: "The dual of the cube is the:",
+    opts: ["Tetrahedron", "Octahedron", "Dodecahedron", "Icosahedron"],
+    correct: 1,
+    explain: "The cube (6 faces, 8 vertices) dualises to the octahedron (8 faces, 6 vertices). F and V swap; E stays at 12."
+  },
+  {
+    q: "Which Platonic solid is self-dual?",
+    opts: ["Cube", "Tetrahedron", "Dodecahedron", "Icosahedron"],
+    correct: 1,
+    explain: "The tetrahedron has F = V = 4, so its dual is another tetrahedron. It's the only self-dual Platonic solid."
+  },
+  {
+    q: "A p-subshell holds how many electrons?",
+    opts: ["2", "6", "10", "14"],
+    correct: 1,
+    explain: "ℓ = 1 gives 2ℓ+1 = 3 spatial orientations. With 2 spin states each: 3 × 2 = 6 electrons."
+  },
+  {
+    q: "In Kong's mapping, the 6 faces of the cube correspond to:",
+    opts: ["6 electrons in an s-subshell", "6 electrons in a p-subshell", "6 faces of the dodecahedron", "6 vertices of the octahedron"],
+    correct: 1,
+    explain: "The cube's 6 faces map to the 6-electron capacity of a p-subshell. The 3 pairs of opposite faces mirror the 3 orthogonal p-orbitals."
+  },
+  {
+    q: "What is the Euler characteristic of a torus?",
+    opts: ["2", "1", "0", "−2"],
+    correct: 2,
+    explain: "A torus has χ = 0. This can be computed from any polyhedral decomposition of the torus: V − E + F will always give 0."
+  },
+  {
+    q: "The 18 electrons in Krypton's third shell decompose in the Platonic scheme as:",
+    opts: ["18 = 6 + 12", "18 = 12 + 6", "18 = 8 + 10", "18 = 2 + 8 + 8"],
+    correct: 1,
+    explain: "In Kong's mapping, 18 = 12 (dodecahedron faces) + 6 (octahedron vertices). The standard aufbau gives 18 = 2 + 6 + 10 (s + p + d)."
+  },
+  {
+    q: "The face counts of all five Platonic solids are:",
+    opts: ["4, 6, 8, 12, 20", "4, 8, 6, 20, 12", "3, 4, 6, 8, 12", "4, 6, 8, 10, 12"],
+    correct: 0,
+    explain: "Tetrahedron (4), Cube (6), Octahedron (8), Dodecahedron (12), Icosahedron (20). In order: 4, 6, 8, 12, 20."
+  },
+  {
+    q: "The aufbau principle fills 4s before 3d because:",
+    opts: ["4s has fewer electrons", "4s has lower n + ℓ (4+0=4 vs 3+2=5)", "4s is bigger", "Alphabetical order"],
+    correct: 1,
+    explain: "The Madelung rule: fill in order of n + ℓ. For 4s: n+ℓ = 4+0 = 4. For 3d: n+ℓ = 3+2 = 5. Lower sum fills first."
+  },
+  {
+    q: "Why are there exactly five Platonic solids?",
+    opts: [
+      "Euler's formula combined with the constraint that at least 3 faces meet at each vertex and each face has at least 3 edges",
+      "There are five elements",
+      "Five is a prime number",
+      "Symmetry groups require exactly five"
+    ],
+    correct: 0,
+    explain: "From V − E + F = 2 and the constraints p ≥ 3 (edges per face) and q ≥ 3 (faces per vertex), the inequality 1/p + 1/q > 1/2 has exactly five integer solutions: {3,3}, {3,4}, {4,3}, {3,5}, {5,3}."
+  }
+];
+
+let score = 0, answered = 0;
+
+function renderQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = quizData.map((q, i) => `
+    <div class="quiz-card" id="q${i}">
+      <div class="q-num">Question ${i+1} of ${quizData.length}</div>
+      <div class="question">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="checkAns(${i},${j})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-fb" id="fb${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkAns(qi, oi) {
+  const q = quizData[qi];
+  const card = document.getElementById(`q${qi}`);
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  answered++;
+  const opts = card.querySelectorAll('.quiz-opt');
+  opts.forEach((o, j) => {
+    o.classList.add('done');
+    if (j === q.correct) o.classList.add('correct');
+    else if (j === oi) o.classList.add('incorrect');
+  });
+  const fb = document.getElementById(`fb${qi}`);
+  if (oi === q.correct) {
+    score++;
+    fb.className = 'quiz-fb show right';
+    fb.textContent = '✓ ' + q.explain;
+  } else {
+    fb.className = 'quiz-fb show wrong';
+    fb.textContent = '✗ ' + q.explain;
+  }
+  document.getElementById('scoreBar').textContent = `Score: ${score} / ${answered}`;
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
