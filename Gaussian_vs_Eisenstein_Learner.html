@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaussian vs Eisenstein — The Fourth and the Third</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg: #0c0e12;
+  --bg-card: #13161c;
+  --bg-card-hover: #1a1e26;
+  --bg-accent: #1e222c;
+  --text: #d4d0c8;
+  --text-muted: #8a8578;
+  --text-dim: #5c574e;
+  --gold: #c9a84c;
+  --gold-dim: #8a7434;
+  --blue: #4a7a9b;
+  --blue-bright: #6aaacb;
+  --green: #5a8a6a;
+  --purple: #8a6aaa;
+  --purple-bright: #b08ad0;
+  --red: #b05050;
+  --cyan: #4a9a9a;
+  --gauss-col: #5b9bd5;
+  --eisen-col: #d4a843;
+  --border: #2a2e38;
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+
+body {
+  font-family: var(--serif);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 18px;
+}
+
+/* HEADER */
+.site-header {
+  padding: 3rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.site-header .subtitle {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.two-worlds {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.world-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.world-badge.gauss {
+  border: 1px solid rgba(91, 155, 213, 0.3);
+  color: var(--gauss-col);
+  background: rgba(91, 155, 213, 0.06);
+}
+
+.world-badge.eisen {
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  color: var(--eisen-col);
+  background: rgba(212, 168, 67, 0.06);
+}
+
+.world-badge .sym {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-style: italic;
+}
+
+/* NAV */
+.nav-strip {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(12, 14, 18, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.nav-btn {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* CONTENT */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+section {
+  padding: 3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-child { border-bottom: none; }
+
+section h2 {
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+  font-weight: 300;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+
+section h3 {
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 1.8rem 0 0.8rem;
+}
+
+p { margin-bottom: 1rem; }
+
+.lead {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 720px;
+}
+
+/* DUAL PANELS */
+.dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .dual { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 3px;
+}
+
+.panel.gauss::before { background: linear-gradient(90deg, var(--gauss-col), transparent); }
+.panel.eisen::before { background: linear-gradient(90deg, var(--eisen-col), transparent); }
+
+.panel-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+}
+
+.panel.gauss .panel-label { color: var(--gauss-col); }
+.panel.eisen .panel-label { color: var(--eisen-col); }
+
+.panel h4 {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+}
+
+.panel.gauss h4 { color: var(--gauss-col); }
+.panel.eisen h4 { color: var(--eisen-col); }
+
+.panel p, .panel li {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+/* CANVAS CONTAINERS */
+.canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 320px;
+  margin: 1rem auto;
+}
+
+.canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* N SLIDER */
+.n-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0.8rem 1rem;
+  background: var(--bg-accent);
+  border-radius: 4px;
+}
+
+.n-control label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 30px;
+}
+
+.n-control input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  background: var(--border);
+  height: 3px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.n-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+.n-val {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--gold);
+  min-width: 30px;
+  text-align: center;
+}
+
+/* DERIVATION BLOCKS */
+.derivation {
+  background: var(--bg-accent);
+  border-radius: 5px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 2;
+  overflow-x: auto;
+}
+
+.deriv-step {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 0.3rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.4s ease;
+}
+
+.deriv-step.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.deriv-step .step-marker {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  min-width: 14px;
+  letter-spacing: 0.08em;
+}
+
+.deriv-step .math {
+  font-style: italic;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.deriv-step .note {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: normal;
+  margin-left: 0.5rem;
+}
+
+.reveal-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: none;
+  border: 1px solid var(--gold-dim);
+  padding: 0.5rem 1.2rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 0.8rem;
+  display: inline-block;
+}
+
+.reveal-btn:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: var(--gold);
+}
+
+/* LATTICE CANVAS */
+.lattice-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 360px;
+  margin: 1rem auto;
+  position: relative;
+}
+
+.lattice-wrap canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* COMPARISON TABLE */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.88rem;
+}
+
+.comp-table th {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.comp-table th.gauss-h { color: var(--gauss-col); }
+.comp-table th.eisen-h { color: var(--eisen-col); }
+
+.comp-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(42, 46, 56, 0.4);
+  color: var(--text-muted);
+  vertical-align: top;
+}
+
+.comp-table tr:hover td {
+  background: rgba(30, 34, 44, 0.5);
+  color: var(--text);
+}
+
+/* NORM CALC */
+.norm-calc {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.norm-inputs {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.norm-inputs label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.norm-inputs input {
+  width: 60px;
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+}
+
+.norm-inputs input:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+}
+
+.norm-result {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--text-muted);
+  min-height: 1.5em;
+}
+
+/* QUIZ */
+.quiz-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.quiz-card .q-num {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-card .question {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.quiz-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-opt {
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: left;
+}
+
+.quiz-opt:hover:not(.done) {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-dim);
+  color: var(--text);
+}
+
+.quiz-opt.correct { background: rgba(90,138,106,0.15); border-color: var(--green); color: var(--green); }
+.quiz-opt.incorrect { background: rgba(176,80,80,0.15); border-color: var(--red); color: var(--red); }
+
+.quiz-fb {
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  display: none;
+}
+
+.quiz-fb.show { display: block; }
+.quiz-fb.right { background: rgba(90,138,106,0.1); border-left: 3px solid var(--green); color: var(--text-muted); }
+.quiz-fb.wrong { background: rgba(176,80,80,0.1); border-left: 3px solid var(--red); color: var(--text-muted); }
+
+.score-bar {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-align: right;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+/* FOOTER */
+.site-footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-footer .stamp {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.site-footer .stamp span { color: var(--gold-dim); }
+
+@media (max-width: 600px) {
+  .site-header, .content { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .canvas-wrap, .lattice-wrap { max-width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>The Fourth and the Third</h1>
+  <div class="subtitle">Gaussian Integers vs Eisenstein Integers — Roots of Unity as Number Systems</div>
+  <div class="two-worlds">
+    <div class="world-badge gauss"><span class="sym">i</span> N = 4 · ℤ[i] · Square lattice</div>
+    <div class="world-badge eisen"><span class="sym">ω</span> N = 3 · ℤ[ω] · Triangular lattice</div>
+  </div>
+</header>
+
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-target="roots">Roots of Unity</button>
+    <button class="nav-btn" data-target="selfexp">i<sup>i</sup> vs ω<sup>ω</sup></button>
+    <button class="nav-btn" data-target="integers">The Integer Rings</button>
+    <button class="nav-btn" data-target="lattices">Lattice Geometry</button>
+    <button class="nav-btn" data-target="norms">Norms &amp; Primes</button>
+    <button class="nav-btn" data-target="comparison">Side by Side</button>
+    <button class="nav-btn" data-target="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- ====== ROOTS OF UNITY ====== -->
+<section id="roots">
+  <h2>Roots of Unity</h2>
+  <p class="lead">The N-th roots of unity are the solutions to z<sup>N</sup> = 1. They sit equally spaced on the unit circle. Two cases define entire number systems: N = 4 gives us i, and N = 3 gives us ω.</p>
+
+  <div class="n-control">
+    <label>N</label>
+    <input type="range" id="nSlider" min="1" max="12" value="4">
+    <div class="n-val" id="nVal">4</div>
+  </div>
+
+  <div class="dual">
+    <div class="panel gauss">
+      <div class="panel-label">Interactive · All N-th roots</div>
+      <div class="canvas-wrap"><canvas id="rootsCanvas" width="640" height="640"></canvas></div>
+      <p>The roots are ω<sub>N</sub><sup>k</sup> = e<sup>2πik/N</sup> for k = 0, 1, …, N−1. Drag the slider to see how the polygon changes. N = 4 is the Gaussian case (square). N = 3 is the Eisenstein case (triangle).</p>
+    </div>
+    <div class="panel eisen">
+      <div class="panel-label">Why these two are special</div>
+      <h4>N = 4: The Gaussian world</h4>
+      <p>The primitive 4th root is i = e<sup>iπ/2</sup>. The four roots {1, i, −1, −i} form the unit group of the Gaussian integers ℤ[i]. The lattice they generate tiles the plane with squares.</p>
+      <h4>N = 3: The Eisenstein world</h4>
+      <p>The primitive 3rd root is ω = e<sup>2πi/3</sup> = −½ + (√3/2)i. The six units {±1, ±ω, ±ω²} form the unit group of the Eisenstein integers ℤ[ω]. The lattice tiles with equilateral triangles.</p>
+      <p style="color:var(--text-dim); font-size:0.85rem; margin-top:1rem;">Only N = 1, 2, 3, 4, 6 give roots of unity that generate lattice tilings of the plane. This is the crystallographic restriction: only 2-, 3-, 4-, and 6-fold rotational symmetries tile ℝ².</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SELF-EXPONENTIATION ====== -->
+<section id="selfexp">
+  <h2>i<sup>i</sup> vs ω<sup>ω</sup></h2>
+  <p class="lead">What happens when a complex number is raised to the power of itself? The surprising answer: you land on the real line. The derivation for i<sup>i</sup> is classical. The ω<sup>ω</sup> case is its natural companion.</p>
+
+  <div class="dual">
+    <div class="panel gauss">
+      <div class="panel-label">The classical derivation</div>
+      <h4>i<sup>i</sup> = ?</h4>
+      <div class="derivation" id="derivGauss">
+        <div class="deriv-step visible"><span class="step-marker">01</span><span class="math">e<sup>iπ</sup> + 1 = 0</span><span class="note">Euler's identity</span></div>
+        <div class="deriv-step"><span class="step-marker">02</span><span class="math">e<sup>iπ</sup> = −1</span></div>
+        <div class="deriv-step"><span class="step-marker">03</span><span class="math">√(e<sup>iπ</sup>) = √(−1)</span></div>
+        <div class="deriv-step"><span class="step-marker">04</span><span class="math">i = (e<sup>iπ</sup>)<sup>½</sup> = e<sup>iπ/2</sup></span><span class="note">i in exponential form</span></div>
+        <div class="deriv-step"><span class="step-marker">05</span><span class="math">i<sup>i</sup> = (e<sup>iπ/2</sup>)<sup>i</sup></span></div>
+        <div class="deriv-step"><span class="step-marker">06</span><span class="math">= e<sup>i²·π/2</sup></span></div>
+        <div class="deriv-step"><span class="step-marker">07</span><span class="math">= e<sup>−π/2</sup></span><span class="note">since i² = −1</span></div>
+        <div class="deriv-step"><span class="step-marker">08</span><span class="math">≈ 0.2079</span><span class="note">∈ ℝ !</span></div>
+      </div>
+      <button class="reveal-btn" onclick="revealSteps('derivGauss')">Reveal step by step</button>
+    </div>
+
+    <div class="panel eisen">
+      <div class="panel-label">The companion derivation</div>
+      <h4>ω<sup>ω</sup> = ?</h4>
+      <div class="derivation" id="derivEisen">
+        <div class="deriv-step visible"><span class="step-marker">01</span><span class="math">ω = e<sup>2πi/3</sup></span><span class="note">primitive cube root of unity</span></div>
+        <div class="deriv-step"><span class="step-marker">02</span><span class="math">ω<sup>ω</sup> = (e<sup>2πi/3</sup>)<sup>ω</sup></span></div>
+        <div class="deriv-step"><span class="step-marker">03</span><span class="math">= e<sup>ω · 2πi/3</sup></span></div>
+        <div class="deriv-step"><span class="step-marker">04</span><span class="math">= e<sup>(−½ + i√3/2) · 2πi/3</sup></span><span class="note">substitute ω = −½ + i√3/2</span></div>
+        <div class="deriv-step"><span class="step-marker">05</span><span class="math">= e<sup>(−πi/3 + i²π√3/3)</sup></span><span class="note">distribute</span></div>
+        <div class="deriv-step"><span class="step-marker">06</span><span class="math">= e<sup>(−π√3/3)</sup> · e<sup>(−πi/3)</sup></span><span class="note">separate real &amp; imaginary exponents</span></div>
+        <div class="deriv-step"><span class="step-marker">07</span><span class="math">= e<sup>−π√3/3</sup> (cos(π/3) − i sin(π/3))</span></div>
+        <div class="deriv-step"><span class="step-marker">08</span><span class="math">= e<sup>−π/√3</sup> (½ − i√3/2)</span><span class="note">∈ ℂ, but |ω<sup>ω</sup>| = e<sup>−π/√3</sup> ∈ ℝ</span></div>
+        <div class="deriv-step"><span class="step-marker">09</span><span class="math">≈ 0.1613 − 0.2793i</span><span class="note">not real! Unlike i<sup>i</sup></span></div>
+      </div>
+      <button class="reveal-btn" onclick="revealSteps('derivEisen')">Reveal step by step</button>
+
+      <div style="margin-top:1.2rem; padding:1rem; background:rgba(212,168,67,0.08); border-left:3px solid var(--gold-dim); border-radius:0 4px 4px 0;">
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">
+          <strong style="color:var(--eisen-col);">The asymmetry:</strong> i<sup>i</sup> is purely real because i sits at angle π/2, and multiplying the exponent by i rotates it onto the real axis (i² = −1). But ω sits at angle 2π/3, so ω·(2πi/3) has both real and imaginary parts. The self-exponentiation of ω does not collapse to ℝ.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== INTEGER RINGS ====== -->
+<section id="integers">
+  <h2>The Integer Rings</h2>
+  <p class="lead">Adjoining a root of unity to the ordinary integers ℤ creates a new number ring. ℤ[i] and ℤ[ω] are the two most important examples: both are unique factorisation domains, Euclidean domains, and principal ideal domains.</p>
+
+  <div class="dual">
+    <div class="panel gauss">
+      <div class="panel-label">Gaussian Integers ℤ[i]</div>
+      <h4>a + bi, where a, b ∈ ℤ</h4>
+      <p>Minimal polynomial of i: <strong>x² + 1 = 0</strong></p>
+      <p>Units (invertible elements): {1, i, −1, −i}. Four units. The unit group is cyclic of order 4: ℤ/4ℤ.</p>
+      <p>Norm: N(a + bi) = a² + b². The norm is multiplicative: N(αβ) = N(α)N(β).</p>
+      <p>Euclidean function: the norm itself. Division algorithm works because ℤ[i] tiles the plane with unit squares, so any complex number is within distance √2/2 &lt; 1 of a Gaussian integer.</p>
+    </div>
+    <div class="panel eisen">
+      <div class="panel-label">Eisenstein Integers ℤ[ω]</div>
+      <h4>a + bω, where a, b ∈ ℤ</h4>
+      <p>Minimal polynomial of ω: <strong>x² + x + 1 = 0</strong></p>
+      <p>Units: {±1, ±ω, ±ω²}. Six units. The unit group is cyclic of order 6: ℤ/6ℤ.</p>
+      <p>Norm: N(a + bω) = a² − ab + b². Also multiplicative.</p>
+      <p>Euclidean function: the norm. Division works because ℤ[ω] tiles the plane with equilateral triangles, and any point is within distance 1/√3 &lt; 1 of an Eisenstein integer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== LATTICES ====== -->
+<section id="lattices">
+  <h2>Lattice Geometry</h2>
+  <p class="lead">Each integer ring generates a lattice in the complex plane. The Gaussian lattice is square; the Eisenstein lattice is triangular. These are the only two "maximally symmetric" planar lattices (besides the trivial rectangular and oblique ones).</p>
+
+  <div class="dual">
+    <div class="panel gauss">
+      <div class="panel-label">Square lattice · ℤ[i]</div>
+      <div class="lattice-wrap"><canvas id="gaussLattice" width="720" height="720"></canvas></div>
+      <p>Basis vectors: {1, i}. Each fundamental domain is a unit square. Four-fold rotational symmetry.</p>
+    </div>
+    <div class="panel eisen">
+      <div class="panel-label">Triangular lattice · ℤ[ω]</div>
+      <div class="lattice-wrap"><canvas id="eisenLattice" width="720" height="720"></canvas></div>
+      <p>Basis vectors: {1, ω}. Each fundamental domain splits into two equilateral triangles. Six-fold rotational symmetry.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== NORMS & PRIMES ====== -->
+<section id="norms">
+  <h2>Norms &amp; Primes</h2>
+  <p class="lead">The norm controls everything: which elements are units, which are primes, and how ordinary primes split. Try the calculators below.</p>
+
+  <div class="dual">
+    <div class="panel gauss">
+      <div class="panel-label">Gaussian Norm Calculator</div>
+      <h4>N(a + bi) = a² + b²</h4>
+      <div class="norm-calc">
+        <div class="norm-inputs">
+          <label>a</label><input type="number" id="ga" value="3">
+          <span style="color:var(--text-dim)">+</span>
+          <label>b</label><input type="number" id="gb" value="2">
+          <span style="font-style:italic; color:var(--gauss-col)">i</span>
+          <button class="reveal-btn" onclick="calcGaussNorm()" style="margin:0">Compute</button>
+        </div>
+        <div class="norm-result" id="gaussNormResult"></div>
+      </div>
+      <h3>How rational primes split in ℤ[i]</h3>
+      <p><strong>p = 2:</strong> ramifies. 2 = −i(1+i)². The prime (1+i) has norm 2.</p>
+      <p><strong>p ≡ 1 mod 4:</strong> splits. Can be written as a² + b². Example: 5 = (2+i)(2−i).</p>
+      <p><strong>p ≡ 3 mod 4:</strong> stays prime (inert). Example: 3 remains prime in ℤ[i].</p>
+    </div>
+    <div class="panel eisen">
+      <div class="panel-label">Eisenstein Norm Calculator</div>
+      <h4>N(a + bω) = a² − ab + b²</h4>
+      <div class="norm-calc">
+        <div class="norm-inputs">
+          <label>a</label><input type="number" id="ea" value="2">
+          <span style="color:var(--text-dim)">+</span>
+          <label>b</label><input type="number" id="eb" value="1">
+          <span style="font-style:italic; color:var(--eisen-col)">ω</span>
+          <button class="reveal-btn" onclick="calcEisenNorm()" style="margin:0">Compute</button>
+        </div>
+        <div class="norm-result" id="eisenNormResult"></div>
+      </div>
+      <h3>How rational primes split in ℤ[ω]</h3>
+      <p><strong>p = 3:</strong> ramifies. 3 = −ω²(1−ω)². The prime (1−ω) has norm 3.</p>
+      <p><strong>p ≡ 1 mod 3:</strong> splits. Can be written as a² − ab + b². Example: 7 = (3+ω)(3+ω²).</p>
+      <p><strong>p ≡ 2 mod 3:</strong> stays prime (inert). Example: 2 remains prime in ℤ[ω].</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SIDE BY SIDE ====== -->
+<section id="comparison">
+  <h2>Side by Side</h2>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th class="gauss-h">Gaussian ℤ[i]</th>
+        <th class="eisen-h">Eisenstein ℤ[ω]</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Generator</td><td>i = e<sup>iπ/2</sup></td><td>ω = e<sup>2πi/3</sup> = −½ + (√3/2)i</td></tr>
+      <tr><td>Minimal polynomial</td><td>x² + 1</td><td>x² + x + 1</td></tr>
+      <tr><td>Ring elements</td><td>a + bi</td><td>a + bω</td></tr>
+      <tr><td>Norm</td><td>a² + b²</td><td>a² − ab + b²</td></tr>
+      <tr><td>Number of units</td><td>4: {1, i, −1, −i}</td><td>6: {±1, ±ω, ±ω²}</td></tr>
+      <tr><td>Unit group</td><td>ℤ/4ℤ (cyclic)</td><td>ℤ/6ℤ (cyclic)</td></tr>
+      <tr><td>Lattice</td><td>Square</td><td>Triangular (hexagonal)</td></tr>
+      <tr><td>Rotational symmetry</td><td>4-fold (90°)</td><td>6-fold (60°)</td></tr>
+      <tr><td>UFD / Euclidean / PID</td><td>Yes / Yes / Yes</td><td>Yes / Yes / Yes</td></tr>
+      <tr><td>Ramified prime</td><td>2</td><td>3</td></tr>
+      <tr><td>Split criterion</td><td>p ≡ 1 mod 4</td><td>p ≡ 1 mod 3</td></tr>
+      <tr><td>Inert criterion</td><td>p ≡ 3 mod 4</td><td>p ≡ 2 mod 3</td></tr>
+      <tr><td>Associated quadratic form</td><td>x² + y² (Fermat)</td><td>x² + xy + y² (Loeschian)</td></tr>
+      <tr><td>Self-exponentiation</td><td>i<sup>i</sup> = e<sup>−π/2</sup> ∈ ℝ</td><td>ω<sup>ω</sup> ∈ ℂ \ ℝ</td></tr>
+      <tr><td>Connection to FLT</td><td>Lamé's failed proof for all n</td><td>Kummer's proof for p = 3 (regular prime)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====== QUIZ ====== -->
+<section id="quiz">
+  <h2>Test Yourself</h2>
+  <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+  <div id="quizContainer"></div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="stamp">Constructed by <span>Silicon</span> · Anthropic Claude — Architect <span>Carbon</span> · LeeMcCullochJames</div>
+  <div class="stamp">ℤ[i] · ℤ[ω] · Roots of Unity</div>
+</footer>
+
+<script>
+// ==== NAV ====
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = document.getElementById(btn.dataset.target);
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+const sects = document.querySelectorAll('section[id]');
+const navBtns = document.querySelectorAll('.nav-btn[data-target]');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navBtns.forEach(b => b.classList.remove('active'));
+      const a = document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sects.forEach(s => obs.observe(s));
+
+// ==== ROOTS CANVAS ====
+const rootsCanvas = document.getElementById('rootsCanvas');
+const rctx = rootsCanvas.getContext('2d');
+const nSlider = document.getElementById('nSlider');
+const nVal = document.getElementById('nVal');
+
+function drawRoots(N) {
+  const W = rootsCanvas.width, H = rootsCanvas.height;
+  const cx = W / 2, cy = H / 2, R = W * 0.36;
+  rctx.clearRect(0, 0, W, H);
+
+  // axes
+  rctx.strokeStyle = '#2a2e38';
+  rctx.lineWidth = 1;
+  rctx.beginPath(); rctx.moveTo(0, cy); rctx.lineTo(W, cy); rctx.stroke();
+  rctx.beginPath(); rctx.moveTo(cx, 0); rctx.lineTo(cx, H); rctx.stroke();
+
+  // axis labels
+  rctx.font = '22px "EB Garamond", serif';
+  rctx.fillStyle = '#5c574e';
+  rctx.textAlign = 'left';
+  rctx.fillText('Re', W - 35, cy - 10);
+  rctx.fillText('Im', cx + 10, 25);
+
+  // unit circle
+  rctx.strokeStyle = '#3a3e48';
+  rctx.lineWidth = 1.5;
+  rctx.beginPath();
+  rctx.arc(cx, cy, R, 0, 2 * Math.PI);
+  rctx.stroke();
+
+  // roots
+  const roots = [];
+  for (let k = 0; k < N; k++) {
+    const angle = 2 * Math.PI * k / N;
+    roots.push({ x: cx + R * Math.cos(angle), y: cy - R * Math.sin(angle), angle, k });
+  }
+
+  // connecting lines (chords)
+  rctx.strokeStyle = 'rgba(201,168,76,0.15)';
+  rctx.lineWidth = 1;
+  for (let i = 0; i < roots.length; i++) {
+    for (let j = i + 1; j < roots.length; j++) {
+      rctx.beginPath();
+      rctx.moveTo(roots[i].x, roots[i].y);
+      rctx.lineTo(roots[j].x, roots[j].y);
+      rctx.stroke();
+    }
+  }
+
+  // polygon edges
+  const isGauss = (N === 4);
+  const isEisen = (N === 3);
+  rctx.strokeStyle = isGauss ? 'rgba(91,155,213,0.6)' : isEisen ? 'rgba(212,168,67,0.6)' : 'rgba(201,168,76,0.3)';
+  rctx.lineWidth = 2;
+  rctx.beginPath();
+  for (let i = 0; i <= roots.length; i++) {
+    const r = roots[i % roots.length];
+    if (i === 0) rctx.moveTo(r.x, r.y);
+    else rctx.lineTo(r.x, r.y);
+  }
+  rctx.stroke();
+
+  // dots and labels
+  roots.forEach(r => {
+    // dot
+    rctx.beginPath();
+    rctx.arc(r.x, r.y, 7, 0, 2 * Math.PI);
+    rctx.fillStyle = isGauss ? '#5b9bd5' : isEisen ? '#d4a843' : '#c9a84c';
+    rctx.fill();
+
+    // label
+    const cos = Math.cos(r.angle), sin = Math.sin(r.angle);
+    const lx = r.x + 18 * cos;
+    const ly = r.y - 18 * sin;
+    rctx.font = '18px "JetBrains Mono", monospace';
+    rctx.fillStyle = '#8a8578';
+    rctx.textAlign = cos >= 0 ? 'left' : 'right';
+    rctx.textBaseline = sin >= 0 ? 'bottom' : 'top';
+
+    // format label
+    let label = '';
+    if (N <= 8) {
+      const re = Math.cos(r.angle), im = Math.sin(r.angle);
+      if (Math.abs(im) < 0.001) label = re > 0 ? '1' : '−1';
+      else if (Math.abs(re) < 0.001) label = im > 0 ? 'i' : '−i';
+      else label = `ω${N > 1 && r.k > 0 ? '^' + r.k : ''}`;
+    } else {
+      label = `k=${r.k}`;
+    }
+    rctx.fillText(label, lx, ly);
+  });
+
+  // Title
+  rctx.font = 'italic 26px "EB Garamond", serif';
+  rctx.fillStyle = isGauss ? '#5b9bd5' : isEisen ? '#d4a843' : '#c9a84c';
+  rctx.textAlign = 'left';
+  rctx.textBaseline = 'top';
+  rctx.fillText(`N = ${N}`, 20, 20);
+
+  if (isGauss) {
+    rctx.font = '16px "JetBrains Mono", monospace';
+    rctx.fillStyle = 'rgba(91,155,213,0.5)';
+    rctx.fillText('Gaussian', 20, 52);
+  } else if (isEisen) {
+    rctx.font = '16px "JetBrains Mono", monospace';
+    rctx.fillStyle = 'rgba(212,168,67,0.5)';
+    rctx.fillText('Eisenstein', 20, 52);
+  }
+}
+
+nSlider.addEventListener('input', () => {
+  nVal.textContent = nSlider.value;
+  drawRoots(parseInt(nSlider.value));
+});
+
+drawRoots(4);
+
+// ==== LATTICE CANVASES ====
+function drawLattice(canvasId, type) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const scale = 60;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // axes
+  ctx.strokeStyle = '#2a2e38';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+
+  // basis vectors for Eisenstein: 1 = (1,0), ω = (-0.5, √3/2)
+  const b1x = 1, b1y = 0;
+  let b2x, b2y;
+  if (type === 'gauss') {
+    b2x = 0; b2y = 1;
+  } else {
+    b2x = -0.5; b2y = Math.sqrt(3) / 2;
+  }
+
+  const range = 6;
+  const col = type === 'gauss' ? 'rgba(91,155,213,' : 'rgba(212,168,67,';
+
+  // grid lines
+  ctx.lineWidth = 0.5;
+  for (let a = -range; a <= range; a++) {
+    for (let b = -range; b <= range; b++) {
+      const x1 = cx + (a * b1x + b * b2x) * scale;
+      const y1 = cy - (a * b1y + b * b2y) * scale;
+
+      // connect to (a+1, b)
+      const x2 = cx + ((a + 1) * b1x + b * b2x) * scale;
+      const y2 = cy - ((a + 1) * b1y + b * b2y) * scale;
+      ctx.strokeStyle = col + '0.12)';
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+      // connect to (a, b+1)
+      const x3 = cx + (a * b1x + (b + 1) * b2x) * scale;
+      const y3 = cy - (a * b1y + (b + 1) * b2y) * scale;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x3, y3); ctx.stroke();
+
+      if (type === 'eisen') {
+        // diagonal for triangular tiling
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+      }
+    }
+  }
+
+  // dots
+  for (let a = -range; a <= range; a++) {
+    for (let b = -range; b <= range; b++) {
+      const x = cx + (a * b1x + b * b2x) * scale;
+      const y = cy - (a * b1y + b * b2y) * scale;
+      if (x < -10 || x > W + 10 || y < -10 || y > H + 10) continue;
+
+      const isOrigin = a === 0 && b === 0;
+      const isUnit = type === 'gauss'
+        ? (a * a + b * b === 1)
+        : (a * a - a * b + b * b === 1);
+
+      ctx.beginPath();
+      ctx.arc(x, y, isUnit ? 5 : (isOrigin ? 6 : 3), 0, 2 * Math.PI);
+      ctx.fillStyle = isOrigin ? '#c9a84c' : isUnit ? (type === 'gauss' ? '#5b9bd5' : '#d4a843') : col + '0.35)';
+      ctx.fill();
+
+      if (isUnit || isOrigin) {
+        ctx.beginPath();
+        ctx.arc(x, y, isUnit ? 5 : 6, 0, 2 * Math.PI);
+        ctx.strokeStyle = isOrigin ? '#c9a84c' : (type === 'gauss' ? '#5b9bd5' : '#d4a843');
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // labels
+  ctx.font = '18px "EB Garamond", serif';
+  ctx.fillStyle = '#5c574e';
+  ctx.textAlign = 'left';
+  ctx.fillText('Re', W - 30, cy - 8);
+  ctx.fillText('Im', cx + 8, 22);
+
+  // title
+  ctx.font = 'italic 22px "EB Garamond", serif';
+  ctx.fillStyle = type === 'gauss' ? '#5b9bd5' : '#d4a843';
+  ctx.textAlign = 'left';
+  ctx.fillText(type === 'gauss' ? 'ℤ[i]' : 'ℤ[ω]', 15, 30);
+
+  // legend
+  ctx.font = '13px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#5c574e';
+  ctx.fillText('● units highlighted', 15, H - 15);
+}
+
+drawLattice('gaussLattice', 'gauss');
+drawLattice('eisenLattice', 'eisen');
+
+// ==== DERIVATION REVEAL ====
+function revealSteps(containerId) {
+  const container = document.getElementById(containerId);
+  const steps = container.querySelectorAll('.deriv-step:not(.visible)');
+  let delay = 0;
+  steps.forEach(s => {
+    setTimeout(() => s.classList.add('visible'), delay);
+    delay += 350;
+  });
+}
+
+// ==== NORM CALCULATORS ====
+function calcGaussNorm() {
+  const a = parseInt(document.getElementById('ga').value) || 0;
+  const b = parseInt(document.getElementById('gb').value) || 0;
+  const norm = a * a + b * b;
+  const el = document.getElementById('gaussNormResult');
+  el.innerHTML = `N(${a} + ${b}i) = ${a}² + ${b}² = <strong style="color:var(--gauss-col)">${norm}</strong>`;
+  if (norm === 0) el.innerHTML += ' — zero element';
+  else if (norm === 1) el.innerHTML += ' — <em>unit!</em>';
+  else {
+    // check if norm is prime
+    let isPrime = norm > 1;
+    for (let d = 2; d * d <= norm; d++) { if (norm % d === 0) { isPrime = false; break; } }
+    if (isPrime) el.innerHTML += ' — norm is prime, so this is a Gaussian prime';
+  }
+}
+
+function calcEisenNorm() {
+  const a = parseInt(document.getElementById('ea').value) || 0;
+  const b = parseInt(document.getElementById('eb').value) || 0;
+  const norm = a * a - a * b + b * b;
+  const el = document.getElementById('eisenNormResult');
+  el.innerHTML = `N(${a} + ${b}ω) = ${a}² − ${a}·${b} + ${b}² = <strong style="color:var(--eisen-col)">${norm}</strong>`;
+  if (norm === 0) el.innerHTML += ' — zero element';
+  else if (norm === 1) el.innerHTML += ' — <em>unit!</em>';
+  else {
+    let isPrime = norm > 1;
+    for (let d = 2; d * d <= norm; d++) { if (norm % d === 0) { isPrime = false; break; } }
+    if (isPrime) el.innerHTML += ' — norm is prime, so this is an Eisenstein prime';
+  }
+}
+
+// ==== QUIZ ====
+const quizData = [
+  {
+    q: "What is the minimal polynomial of i over ℚ?",
+    opts: ["x² − 1", "x² + 1", "x² + x + 1", "x⁴ − 1"],
+    correct: 1,
+    explain: "i satisfies x² + 1 = 0. The polynomial x⁴ − 1 = 0 gives all four 4th roots, but the minimal polynomial is the irreducible factor x² + 1."
+  },
+  {
+    q: "What is the minimal polynomial of ω (primitive cube root) over ℚ?",
+    opts: ["x² + 1", "x³ − 1", "x² + x + 1", "x² − x + 1"],
+    correct: 2,
+    explain: "x³ − 1 = (x − 1)(x² + x + 1). The primitive cube root ω satisfies the irreducible factor x² + x + 1 = 0."
+  },
+  {
+    q: "How many units does ℤ[ω] have?",
+    opts: ["2", "3", "4", "6"],
+    correct: 3,
+    explain: "The units are {±1, ±ω, ±ω²}, giving 6 elements. Compare with ℤ[i] which has only 4 units."
+  },
+  {
+    q: "The norm of 2 + 3i in ℤ[i] is:",
+    opts: ["5", "13", "7", "1"],
+    correct: 1,
+    explain: "N(2 + 3i) = 2² + 3² = 4 + 9 = 13."
+  },
+  {
+    q: "The norm of 2 + ω in ℤ[ω] is:",
+    opts: ["5", "3", "7", "1"],
+    correct: 1,
+    explain: "N(2 + 1·ω) = 2² − 2·1 + 1² = 4 − 2 + 1 = 3."
+  },
+  {
+    q: "Which rational prime ramifies in ℤ[i]?",
+    opts: ["3", "5", "2", "7"],
+    correct: 2,
+    explain: "2 ramifies in ℤ[i]: we have 2 = −i(1 + i)². It's the only ramified prime because the discriminant of x² + 1 is −4, and 2 is the only prime dividing it."
+  },
+  {
+    q: "A rational prime p splits in ℤ[ω] when:",
+    opts: ["p ≡ 1 mod 4", "p ≡ 1 mod 3", "p ≡ 3 mod 4", "p ≡ 2 mod 3"],
+    correct: 1,
+    explain: "p splits in ℤ[ω] when p ≡ 1 mod 3. This is because the splitting condition asks whether x² + x + 1 ≡ 0 mod p has solutions, which requires −3 to be a quadratic residue mod p."
+  },
+  {
+    q: "i^i is a real number. Is ω^ω also real?",
+    opts: ["Yes, by the same argument", "No — ω^ω is complex with nonzero imaginary part", "It depends on which branch of the logarithm", "ω^ω is undefined"],
+    correct: 1,
+    explain: "ω^ω = e^(ω · 2πi/3). Expanding ω = −½ + i√3/2 and multiplying gives both real and imaginary parts in the exponent, so ω^ω has a nonzero imaginary part (on the principal branch)."
+  },
+  {
+    q: "What lattice symmetry does ℤ[ω] generate?",
+    opts: ["4-fold (square)", "6-fold (hexagonal/triangular)", "8-fold (octagonal)", "3-fold only"],
+    correct: 1,
+    explain: "ℤ[ω] generates a triangular lattice with 6-fold rotational symmetry. The 6 units {±1, ±ω, ±ω²} correspond to rotations by multiples of 60°."
+  },
+  {
+    q: "Both ℤ[i] and ℤ[ω] are Euclidean domains. What property does this guarantee?",
+    opts: ["Every ideal is principal", "Every element has a multiplicative inverse", "The ring has finitely many elements", "Every polynomial has a root"],
+    correct: 0,
+    explain: "Euclidean ⟹ PID (principal ideal domain) ⟹ UFD (unique factorisation domain). Every ideal being principal means unique factorisation works, which is the whole point for number theory."
+  }
+];
+
+let score = 0, answered = 0;
+
+function renderQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = quizData.map((q, i) => `
+    <div class="quiz-card" id="q${i}">
+      <div class="q-num">Question ${i + 1} of ${quizData.length}</div>
+      <div class="question">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="checkAns(${i},${j})" id="q${i}o${j}">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-fb" id="fb${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkAns(qi, oi) {
+  const q = quizData[qi];
+  const card = document.getElementById(`q${qi}`);
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  answered++;
+  const opts = card.querySelectorAll('.quiz-opt');
+  opts.forEach((o, j) => {
+    o.classList.add('done');
+    if (j === q.correct) o.classList.add('correct');
+    else if (j === oi) o.classList.add('incorrect');
+  });
+  const fb = document.getElementById(`fb${qi}`);
+  if (oi === q.correct) {
+    score++;
+    fb.className = 'quiz-fb show right';
+    fb.textContent = '✓ ' + q.explain;
+  } else {
+    fb.className = 'quiz-fb show wrong';
+    fb.textContent = '✗ ' + q.explain;
+  }
+  document.getElementById('scoreBar').textContent = `Score: ${score} / ${answered}`;
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
