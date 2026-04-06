@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit Fractions — Two Questions About Primes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,300;1,400&display=swap');
+
+:root {
+  --bg:#0e1117;--bg-card:#161b24;--bg-card-hover:#1e2530;--bg-accent:#212836;
+  --text:#eae8e3;--text-sec:#c8c4ba;--text-muted:#9a968c;--text-dim:#706c62;
+  --gold:#dbb955;--gold-dim:#a68a30;--blue:#5ea0cc;--green:#6aaa7a;
+  --purple:#a07acc;--red:#cc6060;--cyan:#5ababa;--orange:#d09050;
+  --border:#2e3440;
+  --serif:'EB Garamond','Cormorant Garamond',Georgia,serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --display:'Cormorant Garamond','EB Garamond',Georgia,serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:var(--bg);}
+body{font-family:var(--serif);color:var(--text);background:var(--bg);line-height:1.75;font-size:18px;}
+
+.site-header{padding:3rem 2rem 2rem;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--border);}
+.site-header h1{font-family:var(--display);font-size:clamp(2rem,5vw,3rem);font-weight:300;color:var(--gold);line-height:1.2;}
+.site-header .subtitle{font-family:var(--mono);font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem;letter-spacing:0.12em;text-transform:uppercase;}
+
+.nav-strip{position:sticky;top:0;z-index:100;background:rgba(14,17,23,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1100px;margin:0 auto;display:flex;gap:0;overflow-x:auto;}
+.nav-btn{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);background:none;border:none;padding:0.8rem 1rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.3s;}
+.nav-btn:hover,.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.content{max-width:1100px;margin:0 auto;padding:0 2rem 4rem;}
+section{padding:2.5rem 0;border-bottom:1px solid var(--border);}
+section:last-child{border-bottom:none;}
+section h2{font-family:var(--display);font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:300;color:var(--gold);margin-bottom:1rem;}
+section h3{font-family:var(--display);font-size:1.2rem;font-weight:500;color:var(--text);margin:1.6rem 0 0.6rem;}
+p{margin-bottom:0.9rem;color:var(--text);}
+.lead{font-size:1.05rem;color:var(--text-sec);max-width:720px;}
+
+.formula-box{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1.8rem;margin:1.5rem 0;text-align:center;}
+.formula-box .big{font-family:var(--serif);font-size:1.6rem;font-style:italic;color:var(--gold);line-height:2;}
+.formula-box .cap{font-size:0.9rem;color:var(--text-sec);margin-top:0.4rem;}
+
+.callout{padding:1rem 1.2rem;border-radius:0 5px 5px 0;margin:1rem 0;font-size:0.9rem;}
+.callout.gold{background:rgba(219,185,85,0.08);border-left:3px solid var(--gold-dim);}
+.callout.blue{background:rgba(94,160,204,0.08);border-left:3px solid rgba(94,160,204,0.4);}
+.callout.green{background:rgba(106,170,122,0.08);border-left:3px solid rgba(106,170,122,0.4);}
+.callout.red{background:rgba(204,96,96,0.08);border-left:3px solid rgba(204,96,96,0.4);}
+.callout.purple{background:rgba(160,122,204,0.08);border-left:3px solid rgba(160,122,204,0.4);}
+.callout strong{color:var(--gold);} .callout p{color:var(--text-sec);margin:0;}
+
+.ctrl-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1.2rem 1.5rem;margin:1.5rem 0;}
+.ctrl-row{display:flex;align-items:center;gap:1rem;margin:0.5rem 0;flex-wrap:wrap;}
+.ctrl-row label{font-family:var(--mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;min-width:60px;}
+.ctrl-row input[type="range"]{flex:1;min-width:100px;-webkit-appearance:none;background:var(--border);height:3px;border-radius:2px;outline:none;}
+.ctrl-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer;}
+.ctrl-val{font-family:var(--mono);font-size:0.85rem;color:var(--gold);min-width:40px;}
+
+.tree-output{background:var(--bg-accent);border-radius:5px;padding:1rem;margin:1rem 0;font-family:var(--mono);font-size:0.72rem;line-height:1.8;overflow-x:auto;color:var(--text-sec);max-height:280px;overflow-y:auto;}
+
+.prime-grid{display:flex;flex-wrap:wrap;gap:5px;margin:1rem 0;}
+.prime-cell{width:44px;height:44px;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.65rem;cursor:default;}
+.prime-cell .num{font-weight:600;font-size:0.8rem;}
+.prime-cell .tag{font-size:0.42rem;letter-spacing:0.06em;text-transform:uppercase;margin-top:1px;}
+.prime-cell.hit{background:rgba(106,170,122,0.2);border:1px solid var(--green);color:var(--green);}
+.prime-cell.factor{background:rgba(90,186,186,0.15);border:1px solid var(--cyan);color:var(--cyan);}
+.prime-cell.miss{background:rgba(204,96,96,0.15);border:1px solid var(--red);color:var(--red);}
+
+.data-table{width:100%;border-collapse:collapse;font-size:0.82rem;margin:1rem 0;}
+.data-table th{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-align:left;padding:0.6rem 0.6rem;border-bottom:2px solid var(--border);}
+.data-table td{padding:0.45rem 0.6rem;border-bottom:1px solid rgba(46,52,64,0.4);color:var(--text-sec);vertical-align:top;}
+.data-table tr:hover td{background:rgba(33,40,54,0.5);color:var(--text);}
+
+/* QUESTION CARDS */
+.question-card{background:var(--bg-card);border:2px solid var(--gold-dim);border-radius:8px;padding:2rem;margin:2rem 0;position:relative;}
+.question-card .q-label{font-family:var(--mono);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
+.question-card .q-text{font-family:var(--display);font-size:1.4rem;font-weight:500;color:var(--text);line-height:1.5;margin-bottom:1rem;}
+.question-card .q-sub{font-size:0.95rem;color:var(--text-sec);margin-bottom:1rem;}
+
+.hypothesis-prompt{background:var(--bg-accent);border:1px dashed var(--gold-dim);border-radius:5px;padding:1.2rem;margin:1rem 0;font-style:italic;color:var(--text-sec);font-size:0.95rem;}
+.hypothesis-prompt::before{content:'✎ ';color:var(--gold);}
+
+.reveal-panel{background:var(--bg-accent);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:1.5rem 0;transition:all 0.3s;}
+.reveal-header{padding:0.8rem 1.2rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;}
+.reveal-header:hover{background:var(--bg-card-hover);}
+.reveal-header .label{font-family:var(--mono);font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);}
+.reveal-header .arrow{color:var(--gold);font-size:1.2rem;transition:transform 0.3s;}
+.reveal-body{max-height:0;overflow:hidden;transition:max-height 0.5s ease;padding:0 1.2rem;}
+.reveal-panel.open .reveal-body{max-height:3000px;padding:0 1.2rem 1.5rem;}
+.reveal-panel.open .reveal-header .arrow{transform:rotate(180deg);}
+
+/* QUIZ */
+.quiz-card{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.2rem;}
+.quiz-card .qn{font-family:var(--mono);font-size:0.58rem;color:var(--text-dim);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:0.4rem;}
+.quiz-card .question{font-family:var(--display);font-size:1.08rem;color:var(--text);margin-bottom:0.8rem;}
+.quiz-opts{display:flex;flex-direction:column;gap:0.4rem;}
+.quiz-opt{background:var(--bg-accent);border:1px solid var(--border);border-radius:4px;padding:0.6rem 1rem;font-family:var(--serif);font-size:0.88rem;color:var(--text-sec);cursor:pointer;transition:all 0.25s;text-align:left;}
+.quiz-opt:hover:not(.done){background:var(--bg-card-hover);border-color:var(--gold-dim);color:var(--text);}
+.quiz-opt.correct{background:rgba(106,170,122,0.18);border-color:var(--green);color:var(--green);}
+.quiz-opt.incorrect{background:rgba(204,96,96,0.18);border-color:var(--red);color:var(--red);}
+.quiz-fb{margin-top:0.6rem;padding:0.6rem;border-radius:4px;font-size:0.85rem;display:none;color:var(--text-sec);}
+.quiz-fb.show{display:block;}.quiz-fb.right{background:rgba(106,170,122,0.1);border-left:3px solid var(--green);}
+.quiz-fb.wrong{background:rgba(204,96,96,0.1);border-left:3px solid var(--red);}
+.score-bar{font-family:var(--mono);font-size:0.68rem;color:var(--text-dim);text-align:right;letter-spacing:0.1em;margin-bottom:1rem;}
+
+.site-footer{max-width:1100px;margin:0 auto;padding:2rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.site-footer .stamp{font-family:var(--mono);font-size:0.56rem;color:var(--text-dim);letter-spacing:0.1em;}
+.site-footer .stamp span{color:var(--gold-dim);}
+
+@media(max-width:600px){.site-header,.content{padding-left:1.2rem;padding-right:1.2rem;}.prime-cell{width:36px;height:36px;}.question-card .q-text{font-size:1.15rem;}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Two Questions About Primes in Unit Fractions</h1>
+  <div class="subtitle">Egyptian Fractions · The Splitting Identity · An Investigation</div>
+</header>
+
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-target="setup">Setup</button>
+    <button class="nav-btn" data-target="explore">Explore</button>
+    <button class="nav-btn" data-target="q1">Question 1</button>
+    <button class="nav-btn" data-target="q2">Question 2</button>
+    <button class="nav-btn" data-target="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- SETUP -->
+<section id="setup">
+  <h2>Setup</h2>
+  <p>Every unit fraction can be split into two smaller ones:</p>
+
+  <div class="formula-box">
+    <div class="big">1/n = 1/(n+1) + 1/n(n+1)</div>
+    <div class="cap">Check: n/n(n+1) + 1/n(n+1) = (n+1)/n(n+1) = 1/n &nbsp; ✓</div>
+  </div>
+
+  <p>We also know that 1 can be written as an infinite sum of unit fractions whose denominators are all powers of 2:</p>
+
+  <div class="formula-box">
+    <div class="big">1 = 1/2 + 1/4 + 1/8 + 1/16 + 1/32 + 1/64 + …</div>
+    <div class="cap">The geometric series. Every denominator is a power of 2. The only prime present is 2.</div>
+  </div>
+
+  <p>Now apply the splitting identity to each term. For example:</p>
+  <p style="color:var(--text-sec);">1/4 = 1/<strong style="color:var(--green)">5</strong> + 1/20. The prime 5 has appeared. It wasn't in the original series.</p>
+  <p style="color:var(--text-sec);">1/6 = 1/<strong style="color:var(--green)">7</strong> + 1/42. The prime 7 has appeared. (And 1/6 itself came from splitting 1/2 = 1/3 + 1/6.)</p>
+  <p style="color:var(--text-sec);">1/8 = 1/<strong style="color:var(--red)">9</strong> + 1/72. But 9 = 3². No new prime. Just 3 recycled.</p>
+
+  <p>Keep splitting. A tree of denominators grows. Some primes appear early as denominators. Some appear only as factors of composite denominators. Some seem absent entirely.</p>
+</section>
+
+<!-- EXPLORE -->
+<section id="explore">
+  <h2>Explore the Tree</h2>
+  <p class="lead">Use the controls to build the splitting tree from the geometric series. Watch which primes appear and which don't.</p>
+
+  <div class="ctrl-panel">
+    <div class="ctrl-row">
+      <label>Depth</label>
+      <input type="range" id="treeDepth" min="1" max="6" value="3">
+      <div class="ctrl-val" id="treeDepthVal">3</div>
+    </div>
+    <div class="ctrl-row">
+      <label>Base terms</label>
+      <input type="range" id="geoTerms" min="2" max="8" value="6">
+      <div class="ctrl-val" id="geoTermsVal">6</div>
+      <span style="font-family:var(--mono);font-size:0.6rem;color:var(--text-dim);">number of 1/2<sup>k</sup> terms to start from</span>
+    </div>
+  </div>
+
+  <div class="tree-output" id="treeOutput"></div>
+
+  <h3>Primes ≤ 60</h3>
+  <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-dim);margin-bottom:0.5rem;">
+    <span style="color:var(--green);">■ denom</span> = prime appears as a denominator &nbsp;
+    <span style="color:var(--cyan);">■ factor</span> = prime divides a denominator but is not one &nbsp;
+    <span style="color:var(--red);">■ miss</span> = absent entirely
+  </div>
+  <div class="prime-grid" id="primeGrid"></div>
+  <div id="primeStats" style="font-family:var(--mono);font-size:0.72rem;color:var(--text-sec);margin:0.8rem 0;line-height:1.8;"></div>
+
+  <h3>The missing primes</h3>
+  <div id="missingTable"></div>
+</section>
+
+<!-- QUESTION 1 -->
+<section id="q1">
+  <h2>Question 1</h2>
+
+  <div class="question-card">
+    <div class="q-label">The first question</div>
+    <div class="q-text">Look at the primes that are missing at depth 3. Now increase to depth 4, then 5. Are any primes <em>permanently</em> excluded from the splitting tree, or is every prime merely delayed?</div>
+    <div class="q-sub">If some primes are permanently excluded, what property distinguishes them? If all primes eventually appear, what controls how long they take?</div>
+  </div>
+
+  <div class="hypothesis-prompt">
+    Before revealing the answer, form a hypothesis. Look at the missing primes and their predecessors (p−1). What do you notice about the factorisations of p−1 for the late-arriving primes vs the early ones?
+  </div>
+
+  <div class="reveal-panel" id="reveal1">
+    <div class="reveal-header" onclick="toggleReveal('reveal1')">
+      <span class="label">Reveal</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="reveal-body">
+      <h3>No prime is permanently excluded</h3>
+      <p>Every prime p eventually appears as a denominator. The mechanism: to introduce p, we need 1/(p−1) in the tree, since splitting it produces 1/p + 1/(p−1)p. Since p is prime and p > 2, p is odd, so p−1 is even. We need p−1 to appear as a denominator.</p>
+
+      <p>The question reduces to: can the splitting tree reach every even number as a denominator? It can, because the successor chain from any denominator n walks through n+1, n+2, n+3, … and the product chain generates n(n+1), which grows without bound. Between these two mechanisms, every positive integer is eventually reachable.</p>
+
+      <h3>What controls the delay?</h3>
+      <p>The speed at which prime p arrives is controlled by <strong>how easily p−1 is reached from the starting denominators</strong>. This depends on the prime factorisation of p−1.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Speed</th><th>Pattern in p−1</th><th>Examples</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--green)">Fast</td><td>p−1 is a power of 2</td><td>3 (2), 5 (4), 17 (16), 257 (256)</td><td>Powers of 2 are the starting denominators</td></tr>
+          <tr><td style="color:var(--cyan)">Medium</td><td>p−1 is a product of small primes already in the tree</td><td>7 (6=2·3), 13 (12=2²·3), 31 (30=2·3·5), 43 (42=2·3·7)</td><td>All factors of p−1 arrived earlier, so p−1 is reachable</td></tr>
+          <tr><td style="color:var(--red)">Slow</td><td>p−1 has a large prime factor that is itself slow</td><td>47 (46=2·<strong>23</strong>), 59 (58=2·<strong>29</strong>)</td><td>Must wait for the large factor to arrive first</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout gold">
+        <p><strong>The single sentence version:</strong> a prime arrives early if its predecessor is <em>smooth</em> (built from small primes), and late if its predecessor is <em>rough</em> (contains large prime factors that must themselves be bootstrapped first).</p>
+      </div>
+
+      <p>This creates a dependency chain. 47 needs 23, which needs 11, which needs 5. The chain 5 → 11 → 23 → 47 shows how "roughness propagates": each link waits for the previous one. The primes are not randomly scattered through the tree; they arrive in an order dictated by the multiplicative structure of the integers immediately below them.</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUESTION 2 -->
+<section id="q2">
+  <h2>Question 2</h2>
+
+  <div class="question-card">
+    <div class="q-label">The second question</div>
+    <div class="q-text">The splitting identity applied to every term of the geometric series produces two children per node. But the left child 1/(n+1) of one branch can equal an existing denominator from another branch. For instance, splitting 1/2 gives 1/3, and the successor chain from 1/3 reaches 1/4, which is already a base term. Does this matter?</div>
+    <div class="q-sub">Egyptian fractions require <em>distinct</em> denominators. If the splitting tree can produce collisions, is the tree actually a valid decomposition of 1? And if not, what does that do to the prime analysis?</div>
+  </div>
+
+  <div class="hypothesis-prompt">
+    Think about it concretely. Write out the first two levels of the tree. Can you find a denominator that appears twice? If so, what goes wrong if you try to use both copies in a sum?
+  </div>
+
+  <div class="reveal-panel" id="reveal2">
+    <div class="reveal-header" onclick="toggleReveal('reveal2')">
+      <span class="label">Reveal</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="reveal-body">
+      <h3>Yes, collisions happen. No, the tree is not automatically a valid Egyptian fraction.</h3>
+
+      <p>The geometric series starts: 1/2 + 1/4 + 1/8 + 1/16 + …</p>
+      <p>Split 1/2: gives 1/<strong style="color:var(--red)">3</strong> + 1/6.</p>
+      <p>Now split 1/6: gives 1/7 + 1/42.</p>
+      <p>Now split 1/42: gives 1/43 + 1/1806.</p>
+      <p>Meanwhile, splitting 1/4 gives 1/5 + 1/20, and splitting 1/20 gives 1/21 + 1/420.</p>
+
+      <p>No collision yet. But consider the successor chain: if we split 1/2 → 1/3, then split 1/3 → 1/<strong style="color:var(--red)">4</strong> + 1/12. Now 1/4 appears both as a base term and as a child of the 1/2 branch. If we used both, we'd have 1/4 appearing twice in our sum.</p>
+
+      <h3>Two distinct consequences</h3>
+
+      <div class="callout blue">
+        <p><strong>Consequence 1: The full tree overcounts.</strong> If we naively sum every leaf of every branch, we get more than 1. The tree is a mechanism for <em>generating</em> denominators, not a valid representation of 1 as a sum of distinct unit fractions. To get a valid Egyptian fraction, you must prune: choose which branches to split and which to leave as leaves, ensuring no denominator is repeated.</p>
+      </div>
+
+      <div class="callout purple">
+        <p><strong>Consequence 2: Pruning constrains prime coverage.</strong> If a collision forces you to avoid a particular splitting path, the primes that path would have introduced may be delayed further. However, the splitting identity is not the only decomposition. The generalised identity 1/n = 1/(n+k) + k/n(n+k) (for any k where k/n(n+k) simplifies to a unit fraction) provides alternative routes. The Fibonacci-Sylvester greedy algorithm avoids collisions entirely by construction, tracing a collision-free path through the primes — but along a different route, with a different prime signature.</p>
+      </div>
+
+      <h3>So what is the tree, exactly?</h3>
+      <p>The splitting tree is not a decomposition of 1. It is a <strong>reachability map</strong>: it shows which denominators (and hence which primes) are <em>accessible</em> from the geometric series via the splitting identity. The primes it reaches are the primes that <em>could</em> appear in some valid Egyptian fraction representation of 1 built from these splits. Whether they <em>do</em> appear in a specific collision-free representation depends on the pruning strategy chosen.</p>
+
+      <p>The tree answers the question "which primes are structurally reachable?" The pruning answers "which primes actually participate in a given valid decomposition?"</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <h2>Test Yourself</h2>
+  <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+  <div id="quizContainer"></div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="stamp">Constructed by <span>Silicon</span> · Anthropic Claude — Architect <span>Carbon</span> · LeeMcCullochJames</div>
+  <div class="stamp">Egyptian Fractions · Splitting Identity · Prime Denominators</div>
+</footer>
+
+<script>
+// ==== NAV ====
+document.querySelectorAll('.nav-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const t=document.getElementById(btn.dataset.target);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});});
+const sects=document.querySelectorAll('section[id]'),nBtns=document.querySelectorAll('.nav-btn[data-target]');
+new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){nBtns.forEach(b=>b.classList.remove('active'));const a=document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);if(a)a.classList.add('active');}});},{threshold:0.25}).observe&&sects.forEach(s=>new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){nBtns.forEach(b=>b.classList.remove('active'));const a=document.querySelector(`.nav-btn[data-target="${e.target.id}"]`);if(a)a.classList.add('active');}});},{threshold:0.25}).observe(s));
+
+// ==== REVEAL ====
+function toggleReveal(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ==== MATH ====
+function isPrime(n){if(n<2)return false;if(n<4)return true;if(n%2===0||n%3===0)return false;for(let i=5;i*i<=n;i+=6){if(n%i===0||n%(i+2)===0)return false;}return true;}
+function primeFactors(n){const f={};let d=2;while(d*d<=n){while(n%d===0){f[d]=(f[d]||0)+1;n/=d;}d++;}if(n>1)f[n]=(f[n]||0)+1;return f;}
+function factorStr(n){const f=primeFactors(n);return Object.entries(f).map(([p,e])=>e>1?p+'<sup>'+e+'</sup>':p).join('·');}
+
+// ==== TREE ====
+function buildTree(starts, depth, limit=1e8) {
+  const all = new Set(starts);
+  const levels = [];
+  let cur = [...starts];
+  for (let d=0; d<depth; d++) {
+    const next=[], splits=[];
+    for (const n of cur) {
+      const a=n+1, b=n*(n+1);
+      next.push(a); all.add(a);
+      if (b<=limit) { next.push(b); all.add(b); }
+      splits.push({from:n,to:[a,b<=limit?b:null]});
+    }
+    levels.push({depth:d+1,splits});
+    cur=next;
+  }
+  return {allDenoms:[...all].sort((a,b)=>a-b), levels};
+}
+
+function renderTree() {
+  const depth=parseInt(document.getElementById('treeDepth').value);
+  const nGeo=parseInt(document.getElementById('geoTerms').value);
+  document.getElementById('treeDepthVal').textContent=depth;
+  document.getElementById('geoTermsVal').textContent=nGeo;
+
+  const geo=[]; for(let k=1;k<=nGeo;k++) geo.push(1<<k);
+  const {allDenoms,levels}=buildTree(geo,depth);
+
+  // Tree output
+  const out=document.getElementById('treeOutput');
+  let h=`<div style="color:var(--gold);margin-bottom:0.4rem;">Base: ${geo.map(d=>'1/'+d).join(' + ')} + …</div>`;
+  levels.forEach(lev=>{
+    const shown=lev.splits.slice(0,8);
+    h+=`<div style="margin:0.2rem 0;"><span style="color:var(--text-dim)">d${lev.depth}:</span> `;
+    h+=shown.map(s=>{
+      const c=isPrime(s.to[0])?'var(--green)':'var(--text-sec)';
+      return `1/${s.from}→<span style="color:${c}">1/${s.to[0]}</span>+<span style="color:var(--text-dim)">${s.to[1]?'1/'+s.to[1]:'…'}</span>`;
+    }).join(' · ');
+    if(lev.splits.length>8) h+=` … (${lev.splits.length})`;
+    h+='</div>';
+  });
+  out.innerHTML=h;
+
+  // Prime grid
+  const denomSet=new Set(allDenoms);
+  const factorSet=new Set();
+  allDenoms.forEach(d=>{Object.keys(primeFactors(d)).forEach(p=>factorSet.add(+p));});
+
+  const grid=document.getElementById('primeGrid');
+  let g='';
+  const hitD=[],hitF=[],miss=[];
+  for(let n=2;n<=60;n++){
+    if(!isPrime(n))continue;
+    if(denomSet.has(n)){g+=`<div class="prime-cell hit"><span class="num">${n}</span><span class="tag">denom</span></div>`;hitD.push(n);}
+    else if(factorSet.has(n)){g+=`<div class="prime-cell factor"><span class="num">${n}</span><span class="tag">factor</span></div>`;hitF.push(n);}
+    else{g+=`<div class="prime-cell miss"><span class="num">${n}</span><span class="tag">miss</span></div>`;miss.push(n);}
+  }
+  grid.innerHTML=g;
+
+  document.getElementById('primeStats').innerHTML=
+    `<span style="color:var(--green)">● Denominators:</span> ${hitD.join(', ')||'none'}<br>`+
+    `<span style="color:var(--cyan)">● Factor only:</span> ${hitF.join(', ')||'none'}<br>`+
+    `<span style="color:var(--red)">● Missing:</span> ${miss.join(', ')||'none'}<br>`+
+    `Total denominators: ${allDenoms.length}`;
+
+  // Missing table
+  const mt=document.getElementById('missingTable');
+  if(!miss.length){mt.innerHTML='<div class="callout green"><p>All primes ≤ 60 appear at this depth.</p></div>';return;}
+  let t='<table class="data-table"><thead><tr><th>Missing p</th><th>p−1</th><th>Factorisation</th><th>Largest prime factor of p−1</th></tr></thead><tbody>';
+  miss.forEach(p=>{
+    const pm1=p-1;
+    const f=primeFactors(pm1);
+    const largest=Math.max(...Object.keys(f).map(Number));
+    t+=`<tr><td style="color:var(--red);font-weight:600">${p}</td><td>${pm1}</td><td style="font-family:var(--mono);font-size:0.75rem">${factorStr(pm1)}</td><td style="color:${largest>7?'var(--orange)':'var(--text-sec)'}">${largest}${isPrime(largest)&&!denomSet.has(largest)&&!factorSet.has(largest)?' <span style="color:var(--red)">(also missing!)</span>':''}</td></tr>`;
+  });
+  t+='</tbody></table>';
+  t+='<div class="callout gold"><p><strong>Look at the last column.</strong> What do you notice about the relationship between the missing primes and their predecessors?</p></div>';
+  mt.innerHTML=t;
+}
+
+document.getElementById('treeDepth').addEventListener('input',renderTree);
+document.getElementById('geoTerms').addEventListener('input',renderTree);
+renderTree();
+
+// ==== QUIZ ====
+const quizData=[
+  {q:"Splitting 1/16 gives 1/17 + 1/272. Is 17 a 'fast' prime in the splitting tree?",opts:["Yes — 16 = 2⁴ is a power of 2, a starting denominator","No — 17 is too large to arrive early","Only if depth > 4","17 never appears"],correct:0,explain:"16 is a base term (power of 2), so splitting it immediately produces 17. Primes whose predecessor is a power of 2 arrive at depth 1."},
+  {q:"47 is a slow prime. What is the dependency chain that delays it?",opts:["47 needs 46=2·23, and 23 needs 22=2·11, and 11 needs 10=2·5","47 needs 48","47 is not reachable","47 needs only depth 2"],correct:0,explain:"The chain: 5 (fast, from 1/4) → enables 10 → enables 11 → enables 22 → enables 23 → enables 46 → enables 47. Each link must resolve before the next."},
+  {q:"Why can't the splitting tree be used directly as an Egyptian fraction for 1?",opts:["The fractions don't sum to 1","Some denominators appear in multiple branches, violating the distinctness requirement","The tree only produces even denominators","It requires negative fractions"],correct:1,explain:"The successor chain from 1/2 reaches 1/4, which is already a base term. Using both copies would repeat a denominator, violating the Egyptian fraction requirement."},
+  {q:"What property of p−1 makes prime p arrive early?",opts:["p−1 is prime","p−1 is a perfect square","p−1 is smooth (all prime factors small)","p−1 is odd"],correct:2,explain:"'Smooth' means all prime factors are small. If p−1 is smooth, all its factors are already in the tree early, so p−1 appears as a denominator early, and splitting it produces p."},
+  {q:"The splitting tree is best understood as:",opts:["A valid decomposition of 1","A proof that all primes are even","A reachability map showing which primes are structurally accessible","A random number generator"],correct:2,explain:"The tree shows which denominators (and primes) can be reached from the geometric series via repeated splitting. It is not itself a valid Egyptian fraction due to potential collisions."},
+  {q:"Is any prime permanently excluded from the splitting tree?",opts:["Yes, the safe primes","Yes, all primes > 100","No — every prime eventually appears, the missing ones are merely delayed","Unknown"],correct:2,explain:"Every prime p eventually appears because p−1 is always reachable. The 'missing' primes at any finite depth are delayed, not excluded."}
+];
+
+let score=0,answered=0;
+document.getElementById('quizContainer').innerHTML=quizData.map((q,i)=>`<div class="quiz-card" id="q${i}"><div class="qn">Question ${i+1} of ${quizData.length}</div><div class="question">${q.q}</div><div class="quiz-opts">${q.opts.map((o,j)=>`<button class="quiz-opt" onclick="checkAns(${i},${j})">${o}</button>`).join('')}</div><div class="quiz-fb" id="fb${i}"></div></div>`).join('');
+
+function checkAns(qi,oi){
+  const q=quizData[qi],card=document.getElementById(`q${qi}`);if(card.dataset.done)return;card.dataset.done='1';answered++;
+  card.querySelectorAll('.quiz-opt').forEach((o,j)=>{o.classList.add('done');if(j===q.correct)o.classList.add('correct');else if(j===oi)o.classList.add('incorrect');});
+  const fb=document.getElementById(`fb${qi}`);
+  if(oi===q.correct){score++;fb.className='quiz-fb show right';fb.textContent='✓ '+q.explain;}
+  else{fb.className='quiz-fb show wrong';fb.textContent='✗ '+q.explain;}
+  document.getElementById('scoreBar').textContent=`Score: ${score} / ${answered}`;
+}
+</script>
+
+</body>
+</html>
