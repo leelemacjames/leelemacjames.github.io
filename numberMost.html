@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Combinatoric Path Explorer</title>
+    <style>
+        :root {
+            --n3: #ff7675; --n4: #74b9ff; --n5: #55efc4; --n6: #a29bfe;
+            --bg: #1a1a2e; --panel: #16213e; --text: #e94560;
+        }
+        body { font-family: 'Segoe UI', monospace; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Header & Controls */
+        .controls { background: var(--panel); padding: 20px; display: flex; gap: 20px; align-items: center; border-bottom: 2px solid var(--text); }
+        .btn { background: var(--text); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn:disabled { background: #555; }
+        select { padding: 10px; background: #0f3460; color: white; border: 1px solid var(--text); }
+
+        /* Main Workspace */
+        .workspace { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+        
+        /* The Branching Tree Visualizer */
+        .tree-area { flex: 2; background: #0f3460; border-radius: 8px; padding: 20px; position: relative; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        
+        /* The String Display */
+        .string-display { flex: 1; background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #333; }
+        .binary-unit { display: inline-block; width: 30px; height: 40px; line-height: 40px; text-align: center; margin: 2px; background: #1a1a2e; border: 1px solid var(--text); border-radius: 4px; font-size: 1.5em; font-weight: bold; }
+        
+        /* Node Bubbles */
+        .node-row { display: flex; gap: 10px; margin-top: 10px; }
+        .choice-btn { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #fff; font-size: 1.5em; cursor: pointer; transition: 0.2s; background: transparent; color: white; }
+        .choice-btn:hover:not(:disabled) { transform: scale(1.1); background: var(--text); }
+        .choice-btn.dead { border-color: #ff4757; color: #ff4757; opacity: 0.5; }
+        .choice-btn.win { border-color: #2ed573; color: #2ed573; }
+
+        .status-msg { margin-top: 20px; padding: 10px; border-radius: 5px; min-height: 50px; }
+        .error { color: #ff4757; border: 1px solid #ff4757; }
+        .success { color: #2ed573; border: 1px solid #2ed573; }
+        
+        .history-tag { color: #888; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <div>
+        <label>Select N-Tuple Bunch:</label>
+        <select id="nSelect" onchange="resetGame()">
+            <option value="3">3-Tuple (Target: 10 bits)</option>
+            <option value="4">4-Tuple (Target: 19 bits)</option>
+            <option value="5">5-Tuple (Target: 36 bits)</option>
+            <option value="6">6-Tuple (Target: 69 bits)</option>
+        </select>
+    </div>
+    <button class="btn" onclick="undo()">⟲ Undo Move</button>
+    <button class="btn" onclick="resetGame()">Clear / Reset</button>
+    <button class="btn" style="background:#00b894" onclick="autoSolve()">Show Full Solution</button>
+</div>
+
+<div class="workspace">
+    <div class="tree-area" id="tree">
+        <h2>Path Builder</h2>
+        <p>Current sequence: <span id="seqText">...</span></p>
+        
+        <div id="interactionZone">
+            <p>Add next bit:</p>
+            <div class="node-row">
+                <button id="btn0" class="choice-btn" onclick="makeMove('0')">0</button>
+                <button id="btn1" class="choice-btn" onclick="makeMove('1')">1</button>
+            </div>
+        </div>
+        <div id="status" class="status-msg"></div>
+    </div>
+
+    <div class="string-display">
+        <h3>Live String Analysis</h3>
+        <div id="visualString"></div>
+        <hr>
+        <div id="analysis">
+            <p><strong>Unique Bunches Found:</strong></p>
+            <ul id="bunchList" style="font-size: 0.8em; column-count: 2;"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let sequence = "";
+    let n = 3;
+    let history = [];
+
+    const SOLUTIONS = {
+        3: "0001011100",
+        4: "0000100110101111000",
+        5: "000001001100101000111110010111110000",
+        6: "000000100001100010100011101101011111001101110100101100111111000000"
+    };
+
+    function resetGame() {
+        n = parseInt(document.getElementById('nSelect').value);
+        // Start with n-1 zeros to establish the first "window"
+        sequence = "0".repeat(n - 1);
+        history = [];
+        updateUI();
+    }
+
+    function makeMove(bit) {
+        let nextSeq = sequence + bit;
+        let lastTuple = nextSeq.slice(-n);
+        
+        // Check for repetitions
+        if (hasDuplicate(nextSeq)) {
+            document.getElementById('status').innerHTML = `<div class="error">DEAD END: Substring "${lastTuple}" has already appeared in this branch!</div>`;
+            return;
+        }
+
+        history.push(sequence);
+        sequence = nextSeq;
+        document.getElementById('status').innerHTML = "";
+        updateUI();
+    }
+
+    function undo() {
+        if (history.length > 0) {
+            sequence = history.pop();
+            updateUI();
+            document.getElementById('status').innerHTML = "";
+        }
+    }
+
+    function hasDuplicate(str) {
+        let seen = new Set();
+        for (let i = 0; i <= str.length - n; i++) {
+            let tuple = str.substring(i, i + n);
+            if (seen.has(tuple)) return true;
+            seen.add(tuple);
+        }
+        return false;
+    }
+
+    function updateUI() {
+        document.getElementById('seqText').innerText = sequence;
+        
+        // Visual String Update
+        const container = document.getElementById('visualString');
+        container.innerHTML = "";
+        sequence.split('').forEach(char => {
+            const span = document.createElement('div');
+            span.className = 'binary-unit';
+            span.innerText = char;
+            container.appendChild(span);
+        });
+
+        // Update Bunches List
+        const list = document.getElementById('bunchList');
+        list.innerHTML = "";
+        let seen = new Set();
+        for (let i = 0; i <= sequence.length - n; i++) {
+            let tuple = sequence.substring(i, i + n);
+            let li = document.createElement('li');
+            li.innerText = tuple;
+            list.appendChild(li);
+        }
+
+        // Preview Dead Ends
+        checkButtons();
+    }
+
+    function checkButtons() {
+        const b0 = document.getElementById('btn0');
+        const b1 = document.getElementById('btn1');
+        
+        b0.className = hasDuplicate(sequence + "0") ? "choice-btn dead" : "choice-btn";
+        b1.className = hasDuplicate(sequence + "1") ? "choice-btn dead" : "choice-btn";
+        
+        if (sequence.length >= (Math.pow(2, n) + n - 1)) {
+            document.getElementById('status').innerHTML = `<div class="success">WINNER! Full non-repeating sequence achieved!</div>`;
+        }
+    }
+
+    function autoSolve() {
+        sequence = SOLUTIONS[n];
+        history = [];
+        updateUI();
+        document.getElementById('status').innerHTML = `<div class="success">Full Solution loaded for ${n}-Tuple Bunch.</div>`;
+    }
+
+    // Initialize
+    resetGame();
+</script>
+
+</body>
+</html>
