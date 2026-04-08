@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Knowledge Tree &middot; Gas Laws</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  --bg: #08080d;
+  --bg-card: #0f0f17;
+  --bg-card-alt: #13131f;
+  --bg-remedial: #140e16;
+  --gold: #c9a84c;
+  --gold-dim: #7a6a30;
+  --gold-glow: rgba(201,168,76,0.12);
+  --gold-bright: #e8cc6a;
+  --green: #5eead4;
+  --green-glow: rgba(94,234,212,0.12);
+  --green-dim: #1a3a35;
+  --red: #f0796b;
+  --red-glow: rgba(240,121,107,0.1);
+  --blue: #7cacf8;
+  --purple: #b49cfa;
+  --orange: #f4a56c;
+  --text: #cdc8be;
+  --text-bright: #eae5db;
+  --text-dim: #6b6560;
+  --text-faint: #3d3935;
+  --bark: #5c4a32;
+  --bark-light: #8a7352;
+  --leaf: #3a7a4a;
+  --leaf-light: #5cb86e;
+  --root-color: #7a6245;
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius: 5px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.68;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   STICKY NAV
+   ═══════════════════════════════════════════ */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,8,13,0.94);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+  padding: 9px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.nav-title {
+  font-family: var(--display); font-size: 1rem; font-weight: 600;
+  color: var(--gold); letter-spacing: 0.05em;
+}
+.nav-scores {
+  display: flex; gap: 16px; align-items: center;
+  font-family: var(--mono); font-size: 0.76rem;
+}
+.nav-scores .lbl { color: var(--text-dim); }
+.nav-scores .val { font-weight: 600; }
+.nav-scores .val.pts { color: var(--green); }
+.nav-scores .val.of { color: var(--blue); }
+.nav-scores .val.pct { color: var(--gold); }
+.nav-btns { display: flex; gap: 6px; }
+.nav-btn {
+  font-family: var(--mono); font-size: 0.7rem;
+  padding: 4px 10px; border: 1px solid var(--gold-dim);
+  background: transparent; color: var(--gold);
+  border-radius: var(--radius); cursor: pointer;
+  transition: 0.25s var(--ease);
+}
+.nav-btn:hover { background: var(--gold-glow); border-color: var(--gold); }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════ */
+.page { max-width: 900px; margin: 0 auto; padding: 0 18px; }
+
+/* ═══════════════════════════════════════════
+   TREE SVG
+   ═══════════════════════════════════════════ */
+.tree-container {
+  position: relative;
+  width: 100%; max-width: 860px; margin: 20px auto 0;
+  background: var(--bg-card);
+  border: 1px solid rgba(201,168,76,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.4s var(--ease);
+}
+.tree-container.collapsed { max-height: 60px; cursor: pointer; }
+.tree-container.collapsed .tree-toggle-text::after { content: ' ▸ expand'; }
+.tree-container:not(.collapsed) .tree-toggle-text::after { content: ' ▾ collapse'; }
+.tree-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; cursor: pointer;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--gold-dim); letter-spacing: 0.1em; text-transform: uppercase;
+  user-select: none;
+}
+.tree-svg-wrap {
+  padding: 10px 10px 16px;
+  overflow-x: auto;
+}
+#treeSvg { display: block; margin: 0 auto; }
+
+/* Node circles in SVG */
+.tree-node { cursor: default; transition: 0.3s var(--ease); }
+.tree-node circle { transition: 0.4s var(--ease); }
+.tree-node text { font-family: 'JetBrains Mono', monospace; pointer-events: none; }
+.tree-edge { transition: 0.5s var(--ease); }
+
+/* ═══════════════════════════════════════════
+   INTRO
+   ═══════════════════════════════════════════ */
+.intro {
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 10px; padding: 38px 34px; margin: 24px 0 28px;
+  position: relative;
+}
+.intro::after {
+  content: ''; position: absolute; top: -40%; right: -20%;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.intro h2 {
+  font-family: var(--display); font-size: 1.7rem; font-weight: 700;
+  color: var(--gold); margin-bottom: 14px; line-height: 1.3;
+}
+.intro p { margin-bottom: 10px; font-size: 1rem; }
+.intro .aside {
+  font-style: italic; color: var(--gold-dim);
+  border-left: 2px solid var(--gold-dim); padding-left: 14px; margin: 14px 0;
+}
+.intro .mechanic {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim);
+  background: rgba(255,255,255,0.02); border-radius: var(--radius);
+  padding: 12px 16px; margin-top: 14px; line-height: 1.7;
+}
+.begin-btn {
+  display: inline-block; margin-top: 18px;
+  font-family: var(--display); font-size: 1.1rem; font-weight: 600;
+  padding: 13px 36px;
+  background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 100%);
+  color: var(--bg); border: none; border-radius: var(--radius);
+  cursor: pointer; transition: 0.3s var(--ease); letter-spacing: 0.04em;
+}
+.begin-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(201,168,76,0.25);
+}
+
+/* ═══════════════════════════════════════════
+   BREADCRUMB
+   ═══════════════════════════════════════════ */
+.crumbs {
+  display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+  font-family: var(--mono); font-size: 0.68rem; margin: 16px 0 10px;
+  min-height: 20px;
+}
+.crumb {
+  padding: 1px 7px; border-radius: 3px;
+  transition: 0.25s var(--ease);
+}
+.crumb.done { background: rgba(94,234,212,0.1); color: var(--green); }
+.crumb.active { background: rgba(201,168,76,0.18); color: var(--gold); font-weight: 600; }
+.crumb.remedial { background: rgba(240,121,107,0.1); color: var(--red); font-style: italic; }
+.crumb-arrow { color: var(--text-faint); margin: 0 1px; }
+
+/* ═══════════════════════════════════════════
+   QUESTION CARD
+   ═══════════════════════════════════════════ */
+.qcard {
+  background: var(--bg-card);
+  border: 1px solid rgba(201,168,76,0.14);
+  border-radius: 10px; padding: 28px 26px; margin-bottom: 18px;
+  position: relative;
+  animation: slideUp 0.35s var(--ease);
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.qcard.remedial-card {
+  border-color: rgba(240,121,107,0.18);
+  background: var(--bg-remedial);
+}
+.qcard.glow-correct {
+  border-color: rgba(94,234,212,0.3);
+  box-shadow: 0 0 20px rgba(94,234,212,0.06);
+}
+
+.qcard-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 6px;
+}
+.qcard-id {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text-dim); letter-spacing: 0.06em;
+}
+.qcard-meta { display: flex; gap: 8px; align-items: center; }
+
+.badge {
+  font-family: var(--mono); font-size: 0.65rem;
+  padding: 2px 7px; border-radius: 3px; letter-spacing: 0.05em;
+}
+.badge.root { background: rgba(122,98,69,0.2); color: var(--root-color); }
+.badge.trunk { background: rgba(92,74,50,0.25); color: var(--bark-light); }
+.badge.branch { background: rgba(58,122,74,0.2); color: var(--leaf-light); }
+.badge.canopy { background: rgba(228,204,106,0.12); color: var(--gold-bright); }
+.badge.remedial { background: rgba(240,121,107,0.12); color: var(--red); font-style: italic; }
+
+.pts-badge {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--gold);
+}
+
+.qtext {
+  font-size: 1.05rem; line-height: 1.72; margin-bottom: 16px; color: var(--text-bright);
+}
+
+/* Options */
+.opts { display: flex; flex-direction: column; gap: 7px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 15px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); cursor: pointer;
+  transition: 0.25s var(--ease);
+  font-family: var(--serif); font-size: 0.97rem; color: var(--text); line-height: 1.55;
+  text-align: left;
+}
+.opt:hover:not(.locked) {
+  background: rgba(201,168,76,0.06);
+  border-color: rgba(201,168,76,0.22);
+}
+.opt .letter {
+  font-family: var(--mono); font-size: 0.74rem; font-weight: 600;
+  color: var(--gold); flex-shrink: 0;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--gold-dim); border-radius: 3px; margin-top: 1px;
+  transition: 0.25s var(--ease);
+}
+.opt.correct-pick { background: rgba(94,234,212,0.08); border-color: var(--green); }
+.opt.correct-pick .letter { background: var(--green); color: var(--bg); border-color: var(--green); }
+.opt.wrong-pick { background: rgba(240,121,107,0.07); border-color: var(--red); }
+.opt.wrong-pick .letter { background: var(--red); color: var(--bg); border-color: var(--red); }
+.opt.show-correct { border-color: rgba(94,234,212,0.3); }
+.opt.locked { cursor: default; opacity: 0.55; }
+
+/* Feedback */
+.fb {
+  padding: 13px 16px; border-radius: var(--radius);
+  margin-top: 12px; font-size: 0.9rem; line-height: 1.65;
+  animation: slideUp 0.25s var(--ease);
+}
+.fb.ok { background: rgba(94,234,212,0.07); border: 1px solid rgba(94,234,212,0.18); }
+.fb.ok .fb-title { color: var(--green); font-weight: 600; }
+.fb.nope { background: rgba(240,121,107,0.06); border: 1px solid rgba(240,121,107,0.16); }
+.fb.nope .fb-title { color: var(--red); font-weight: 600; }
+.fb .fb-explain { color: var(--text); margin-top: 6px; font-size: 0.88rem; }
+
+/* ═══════════════════════════════════════════
+   BIFURCATION
+   ═══════════════════════════════════════════ */
+.bifur {
+  background: linear-gradient(140deg, rgba(201,168,76,0.04), rgba(180,156,250,0.04));
+  border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 10px; padding: 24px 26px; margin: 18px 0;
+  animation: slideUp 0.35s var(--ease);
+}
+.bifur h4 {
+  font-family: var(--mono); font-size: 0.74rem;
+  color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.bifur p { font-size: 0.93rem; margin-bottom: 14px; }
+.bifur-choices { display: flex; gap: 10px; flex-wrap: wrap; }
+.bifur-btn {
+  font-family: var(--display); font-size: 0.95rem; font-weight: 600;
+  padding: 10px 22px;
+  border: 1px solid var(--gold-dim); background: rgba(201,168,76,0.04);
+  color: var(--gold); border-radius: var(--radius); cursor: pointer;
+  transition: 0.25s var(--ease);
+}
+.bifur-btn:hover:not(:disabled) { background: rgba(201,168,76,0.12); border-color: var(--gold); }
+.bifur-btn:disabled { opacity: 0.35; cursor: default; }
+.bifur-btn .bp { font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim); display: block; margin-top: 2px; }
+
+/* Revisit */
+.revisit-box {
+  background: linear-gradient(140deg, rgba(94,234,212,0.05), rgba(124,172,248,0.05));
+  border: 1px solid rgba(94,234,212,0.2);
+  border-radius: 10px; padding: 20px 24px; margin: 16px 0;
+  animation: slideUp 0.35s var(--ease);
+}
+.revisit-box h4 {
+  font-family: var(--mono); font-size: 0.74rem;
+  color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.revisit-box .penalty {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════
+   SUMMARY
+   ═══════════════════════════════════════════ */
+.summary {
+  background: linear-gradient(160deg, var(--bg-card), var(--bg-card-alt));
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 10px; padding: 36px 32px; margin: 28px 0;
+  animation: slideUp 0.5s var(--ease);
+}
+.summary h2 {
+  font-family: var(--display); font-size: 1.5rem; color: var(--gold); margin-bottom: 18px;
+}
+.summary-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px;
+}
+.sstat {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius); padding: 16px; text-align: center;
+}
+.sstat .sv {
+  font-family: var(--mono); font-size: 1.7rem; font-weight: 700; color: var(--gold);
+}
+.sstat .sl {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px;
+}
+
+.knowledge-list { margin-top: 16px; }
+.knowledge-list h3 {
+  font-family: var(--mono); font-size: 0.74rem; color: var(--gold-dim);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.kitem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.88rem;
+}
+.kitem .ki { font-size: 0.82rem; flex-shrink: 0; width: 18px; text-align: center; }
+.kitem .ki.lit { color: var(--green); }
+.kitem .ki.dim { color: var(--red); }
+.kitem .ki.dark { color: var(--text-faint); }
+.kitem .kn { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); width: 28px; flex-shrink: 0; }
+.kitem .kt { color: var(--text); }
+.kitem .kp { font-family: var(--mono); font-size: 0.7rem; color: var(--gold-dim); margin-left: auto; white-space: nowrap; }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+.foot {
+  text-align: center; padding: 36px 20px 28px;
+  font-family: var(--mono); font-size: 0.66rem;
+  color: var(--text-faint); letter-spacing: 0.06em; line-height: 1.9;
+  border-top: 1px solid rgba(201,168,76,0.06); margin-top: 36px;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .nav { padding: 7px 12px; }
+  .nav-title { font-size: 0.88rem; }
+  .nav-scores { gap: 10px; font-size: 0.68rem; }
+  .intro { padding: 26px 20px; }
+  .intro h2 { font-size: 1.35rem; }
+  .qcard { padding: 22px 18px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .bifur-choices { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-title">The Knowledge Tree</span>
+  <div class="nav-scores">
+    <span><span class="lbl">Illuminated </span><span class="val pts" id="nScore">0</span></span>
+    <span><span class="lbl">of </span><span class="val of" id="nTotal">0</span><span class="lbl"> available</span></span>
+    <span><span class="val pct" id="nPct">--</span><span class="lbl">%</span></span>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="toggleTree()">Tree</button>
+    <button class="nav-btn" onclick="doReset()">Reset</button>
+  </div>
+</nav>
+
+<!-- TREE VIS -->
+<div class="page">
+<div class="tree-container collapsed" id="treeBox" onclick="toggleTree()">
+  <div class="tree-toggle"><span class="tree-toggle-text">Knowledge Tree</span></div>
+  <div class="tree-svg-wrap" id="treeSvgWrap"></div>
+</div>
+
+<!-- INTRO -->
+<div id="introBox" class="intro">
+  <h2>Reveal What You Know</h2>
+  <p>
+    An exam score of 74% tells you almost nothing. It hides the shape of your understanding.
+    This assessment is different: it builds a picture of everything you <em>can</em> demonstrate,
+    and the gaps are simply what remains unlit.
+  </p>
+  <div class="aside">
+    Imagine a tree. Multiple <strong>roots</strong> let you enter from different starting points,
+    each testing a foundational idea. They converge into a single <strong>trunk</strong> of core
+    definitions and relationships. From there, <strong>branches</strong> diverge into deeper
+    application, and the <strong>canopy</strong> holds synthesis questions worth the most.
+    You choose where to climb. Stay near the roots and show breadth. Push to the canopy and show depth.
+  </div>
+  <p>
+    At certain nodes the path forks. Choose a harder route for more points, or a broader route
+    to illuminate more topics. If you stumble on a question, you'll be guided down a short
+    remedial branch exploring the same idea from a different angle. At its end you can revisit
+    the original question and recover 75% of its value.
+  </p>
+  <div class="mechanic">
+    Levels: ROOT (1 pt) &#x2192; TRUNK (2 pts) &#x2192; BRANCH (3 pts) &#x2192; CANOPY (4 pts)<br>
+    Wrong answer &#x2192; remedial detour &#x2192; revisit at 75%<br>
+    Bifurcation points &#x2192; you choose the branch<br>
+    Total available across all branches: 31 pts
+  </div>
+  <button class="begin-btn" onclick="begin()">Begin</button>
+</div>
+
+<!-- BREADCRUMB -->
+<div class="crumbs" id="crumbBox"></div>
+
+<!-- QUESTION AREA -->
+<div id="qArea"></div>
+
+<!-- SUMMARY -->
+<div id="summaryBox" style="display:none"></div>
+</div>
+
+<footer class="foot">
+  Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// QUESTION DATA
+// ══════════════════════════════════════════════════════════
+// Node types: "q" = question, "bif" = bifurcation
+// Levels: root, trunk, branch, canopy
+// Wrong branches have isRemedial:true and revisits:<parentId>
+
+const Q = {
+  // ── ROOTS (wide entry, 1 pt each) ──────────────────
+  R1: {
+    id:"R1", type:"q", level:"root", pts:1, topic:"What is pressure?",
+    q:"Pressure is defined as:",
+    opts:[
+      {l:"A", t:"Force multiplied by area"},
+      {l:"B", t:"Force per unit area"},
+      {l:"C", t:"Energy per unit volume"},
+      {l:"D", t:"Mass per unit area"}
+    ],
+    ans:"B",
+    expl:"\\(p = F/A\\), measured in pascals (Pa = N m\\(^{-2}\\)). The same force concentrated on a smaller area creates higher pressure. A stiletto heel vs a flat shoe: same weight, wildly different pressure.",
+    next:"R2", wrongNext:"WR1"
+  },
+  WR1: {
+    id:"WR1", type:"q", level:"root", pts:0, isRemedial:true, topic:"Calculating pressure",
+    q:"A 600 N person stands on one foot (area 0.009 m\\(^2\\)). The pressure on the ground is:",
+    opts:[
+      {l:"A", t:"5.4 Pa"},
+      {l:"B", t:"5 400 Pa"},
+      {l:"C", t:"\\(6.7 \\times 10^4\\) Pa"},
+      {l:"D", t:"\\(5.4 \\times 10^6\\) Pa"}
+    ],
+    ans:"C",
+    expl:"\\(p = F/A = 600 / 0.009 = 66\\,700 \\approx 6.7 \\times 10^4\\) Pa. Pressure is force <em>divided by</em> area. Multiplying gives nonsensical units (N m\\(^2\\)).",
+    revisits:"R1"
+  },
+
+  R2: {
+    id:"R2", type:"q", level:"root", pts:1, topic:"Kelvin conversion",
+    q:"27\\(^\\circ\\)C expressed in kelvin is:",
+    opts:[
+      {l:"A", t:"27 K"}, {l:"B", t:"246 K"}, {l:"C", t:"300 K"}, {l:"D", t:"373 K"}
+    ],
+    ans:"C",
+    expl:"\\(T(\\text{K}) = T(^\\circ\\text{C}) + 273 = 300\\) K. Forgetting this conversion is the most common gas law error. Every gas law formula demands kelvin.",
+    next:"R3", wrongNext:"WR2"
+  },
+  WR2: {
+    id:"WR2", type:"q", level:"root", pts:0, isRemedial:true, topic:"Absolute zero",
+    q:"Absolute zero (0 K) corresponds to:",
+    opts:[
+      {l:"A", t:"0\\(^\\circ\\)C"},
+      {l:"B", t:"\\(-273\\,^\\circ\\)C"},
+      {l:"C", t:"\\(-100\\,^\\circ\\)C"},
+      {l:"D", t:"Depends on the gas"}
+    ],
+    ans:"B",
+    expl:"0 K = \\(-273\\,^\\circ\\)C. At absolute zero, molecular kinetic energy reaches its quantum minimum. The kelvin scale places its origin here.",
+    revisits:"R2"
+  },
+
+  R3: {
+    id:"R3", type:"q", level:"root", pts:1, topic:"Molecular origin of pressure",
+    q:"In the kinetic model, gas pressure arises from:",
+    opts:[
+      {l:"A", t:"Molecules pushing against each other"},
+      {l:"B", t:"Molecules colliding with the container walls"},
+      {l:"C", t:"Gravitational weight of the gas"},
+      {l:"D", t:"Intermolecular attractive forces"}
+    ],
+    ans:"B",
+    expl:"Billions of molecular collisions with the walls each second produce a measurable force per unit area. In an ideal gas there are no intermolecular forces between collisions, and molecules don't push each other: they bounce.",
+    next:"R4", wrongNext:"WR3"
+  },
+  WR3: {
+    id:"WR3", type:"q", level:"root", pts:0, isRemedial:true, topic:"Ideal gas assumptions",
+    q:"Which is an assumption of the ideal gas model?",
+    opts:[
+      {l:"A", t:"Molecules attract each other between collisions"},
+      {l:"B", t:"Collisions are perfectly elastic"},
+      {l:"C", t:"Molecules have significant volume"},
+      {l:"D", t:"Collision duration is long compared to flight time"}
+    ],
+    ans:"B",
+    expl:"The four core assumptions: (1) point-like molecules, (2) perfectly elastic collisions, (3) no intermolecular forces except during collisions, (4) negligible collision duration.",
+    revisits:"R3"
+  },
+
+  R4: {
+    id:"R4", type:"q", level:"root", pts:1, topic:"Moles and Avogadro",
+    q:"How many molecules are in 0.1 mol of a gas? (\\(N_A = 6.02 \\times 10^{23}\\) mol\\(^{-1}\\))",
+    opts:[
+      {l:"A", t:"\\(6.02 \\times 10^{22}\\)"},
+      {l:"B", t:"\\(6.02 \\times 10^{23}\\)"},
+      {l:"C", t:"\\(6.02 \\times 10^{24}\\)"},
+      {l:"D", t:"\\(6.02 \\times 10^{21}\\)"}
+    ],
+    ans:"A",
+    expl:"\\(N = nN_A = 0.1 \\times 6.02 \\times 10^{23} = 6.02 \\times 10^{22}\\). The mole bridges the lab scale (grams, litres) to the molecular scale. Every gas law calculation passes through it.",
+    next:"TRUNK_GATE", wrongNext:"WR4"
+  },
+  WR4: {
+    id:"WR4", type:"q", level:"root", pts:0, isRemedial:true, topic:"Molar mass and counting",
+    q:"3.2 g of O\\(_2\\) (molar mass 32 g mol\\(^{-1}\\)) contains how many moles?",
+    opts:[
+      {l:"A", t:"0.01 mol"}, {l:"B", t:"0.1 mol"}, {l:"C", t:"1.0 mol"}, {l:"D", t:"10 mol"}
+    ],
+    ans:"B",
+    expl:"\\(n = M/M_m = 3.2/32 = 0.1\\) mol. Then \\(N = 0.1 \\times 6.02 \\times 10^{23} = 6.02 \\times 10^{22}\\) molecules.",
+    revisits:"R4"
+  },
+
+  // ── TRUNK GATE (convergence bifurcation) ──────────
+  TRUNK_GATE: {
+    id:"TRUNK_GATE", type:"bif",
+    text:"The roots converge. You've shown breadth across the foundations. Now the trunk rises: core gas law relationships. This is the load-bearing structure. From here, branches will diverge.",
+    choices:[
+      {label:"Ascend the Trunk", target:"T1", info:"6 pts through core gas laws"}
+    ]
+  },
+
+  // ── TRUNK (2 pts each) ─────────────────────────────
+  T1: {
+    id:"T1", type:"q", level:"trunk", pts:2, topic:"Boyle's Law calculation",
+    q:"A gas at 100 kPa occupies 80 cm\\(^3\\). Compressed isothermally to 20 cm\\(^3\\), the new pressure is:",
+    opts:[
+      {l:"A", t:"25 kPa"}, {l:"B", t:"200 kPa"}, {l:"C", t:"400 kPa"}, {l:"D", t:"800 kPa"}
+    ],
+    ans:"C",
+    expl:"\\(p_1V_1 = p_2V_2 \\Rightarrow p_2 = 100 \\times 80/20 = 400\\) kPa. Volume quartered, pressure quadrupled. Microscopically: same molecules, quarter the space, four times the wall-collision frequency.",
+    next:"T2", wrongNext:"WT1"
+  },
+  WT1: {
+    id:"WT1", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Inverse proportionality",
+    q:"If \\(p \\propto 1/V\\) at constant \\(T\\), a graph of \\(p\\) vs \\(1/V\\) is:",
+    opts:[
+      {l:"A", t:"A hyperbola"}, {l:"B", t:"A straight line through the origin"},
+      {l:"C", t:"An exponential"}, {l:"D", t:"A line with non-zero intercept"}
+    ],
+    ans:"B",
+    expl:"\\(p = k \\cdot (1/V)\\) is linear through the origin with gradient \\(k = nRT\\). The \\(p\\) vs \\(V\\) graph is the hyperbola. Linearising by plotting against the reciprocal reveals the proportionality.",
+    revisits:"T1"
+  },
+
+  T2: {
+    id:"T2", type:"q", level:"trunk", pts:2, topic:"Charles' Law",
+    q:"A gas at 27\\(^\\circ\\)C occupies volume \\(V\\). At constant pressure, the temperature for volume \\(2V\\) is:",
+    opts:[
+      {l:"A", t:"54\\(^\\circ\\)C"}, {l:"B", t:"327\\(^\\circ\\)C"}, {l:"C", t:"600\\(^\\circ\\)C"}, {l:"D", t:"546\\(^\\circ\\)C"}
+    ],
+    ans:"B",
+    expl:"\\(T_1 = 300\\) K. \\(V_2/V_1 = T_2/T_1 \\Rightarrow T_2 = 600\\) K = 327\\(^\\circ\\)C. The trap: doubling the Celsius value gives 54\\(^\\circ\\)C, which is wrong because Charles' Law requires kelvin. Always convert first.",
+    next:"T3", wrongNext:"WT2"
+  },
+  WT2: {
+    id:"WT2", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Direct proportionality in kelvin",
+    q:"A gas at 300 K occupies 3.0 L. At 150 K (constant \\(p\\)), the volume is:",
+    opts:[
+      {l:"A", t:"1.5 L"}, {l:"B", t:"6.0 L"}, {l:"C", t:"0.75 L"}, {l:"D", t:"3.0 L"}
+    ],
+    ans:"A",
+    expl:"\\(V_2 = 3.0 \\times 150/300 = 1.5\\) L. Half the kelvin temperature, half the volume. The linear relationship is precisely why the kelvin scale exists.",
+    revisits:"T2"
+  },
+
+  T3: {
+    id:"T3", type:"q", level:"trunk", pts:2, topic:"Combined gas law",
+    q:"Gas at 300 K, \\(10^5\\) Pa, \\(2 \\times 10^{-3}\\) m\\(^3\\) is changed to 400 K and \\(2 \\times 10^5\\) Pa. Volume becomes:",
+    opts:[
+      {l:"A", t:"\\(4.0 \\times 10^{-3}\\) m\\(^3\\)"},
+      {l:"B", t:"\\(1.33 \\times 10^{-3}\\) m\\(^3\\)"},
+      {l:"C", t:"\\(2.67 \\times 10^{-3}\\) m\\(^3\\)"},
+      {l:"D", t:"\\(1.0 \\times 10^{-3}\\) m\\(^3\\)"}
+    ],
+    ans:"B",
+    expl:"\\(V_2 = V_1(p_1/p_2)(T_2/T_1) = 2 \\times 10^{-3} \\times \\frac{1}{2} \\times \\frac{4}{3} \\approx 1.33 \\times 10^{-3}\\) m\\(^3\\). Two competing effects: pressure doubling halves volume, temperature rising by 4/3 expands it. The combined result: about 2/3 of the original.",
+    next:"BRANCH_FORK", wrongNext:"WT3"
+  },
+  WT3: {
+    id:"WT3", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Identifying what's constant",
+    q:"A sealed rigid container is heated from 288 K to 318 K. Initial pressure 200 kPa. New pressure:",
+    opts:[
+      {l:"A", t:"175 kPa"}, {l:"B", t:"200 kPa"}, {l:"C", t:"221 kPa"}, {l:"D", t:"318 kPa"}
+    ],
+    ans:"C",
+    expl:"Sealed + rigid = constant volume: \\(p_2 = 200 \\times 318/288 \\approx 221\\) kPa. The first step is always: what's held constant? That determines which law applies.",
+    revisits:"T3"
+  },
+
+  // ── BRANCH FORK (divergence) ──────────────────────
+  BRANCH_FORK: {
+    id:"BRANCH_FORK", type:"bif",
+    text:"The trunk has carried you through the core gas law calculations. Now the branches diverge. Each tests deeper understanding in a different domain. Choose your ascent, or come back and explore another.",
+    choices:[
+      {label:"Kinetic Derivation", target:"B1", info:"6 pts, leads to canopy"},
+      {label:"Thermo Processes", target:"B4", info:"6 pts, leads to canopy"},
+      {label:"See results so far", target:"END"}
+    ]
+  },
+
+  // ── BRANCH A: Kinetic Theory (3 pts each) ─────────
+  B1: {
+    id:"B1", type:"q", level:"branch", pts:3, topic:"Isotropy in the derivation",
+    q:"In deriving \\(pV = \\tfrac{1}{3}Nm\\overline{c^2}\\), the step \\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\) relies on:",
+    opts:[
+      {l:"A", t:"Elastic collisions"},
+      {l:"B", t:"Large number of molecules"},
+      {l:"C", t:"Random, isotropic motion (no preferred direction)"},
+      {l:"D", t:"Negligible molecular volume"}
+    ],
+    ans:"C",
+    expl:"Isotropy: \\(\\overline{u^2} = \\overline{v^2} = \\overline{w^2}\\). Since \\(\\overline{c^2} = \\overline{u^2} + \\overline{v^2} + \\overline{w^2} = 3\\overline{u^2}\\), we get \\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\). Each assumption does specific work: elasticity conserves KE; isotropy splits the velocity components; large \\(N\\) justifies statistical averaging.",
+    next:"B2", wrongNext:"WB1"
+  },
+  WB1: {
+    id:"WB1", type:"q", level:"branch", pts:0, isRemedial:true, topic:"What each assumption does",
+    q:"The assumption of perfectly elastic collisions specifically ensures:",
+    opts:[
+      {l:"A", t:"\\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\)"},
+      {l:"B", t:"Kinetic energy is conserved in collisions"},
+      {l:"C", t:"Straight-line travel between collisions"},
+      {l:"D", t:"The gas obeys \\(pV = nRT\\)"}
+    ],
+    ans:"B",
+    expl:"Each assumption has a precise role. Elastic \\(\\Rightarrow\\) KE conserved. No forces \\(\\Rightarrow\\) straight-line travel. Isotropy \\(\\Rightarrow\\) component splitting. The equation of state emerges from the whole derivation, not any single assumption.",
+    revisits:"B1"
+  },
+
+  B2: {
+    id:"B2", type:"q", level:"branch", pts:3, topic:"RMS speed calculation",
+    q:"Four molecules: 100, 200, 300, 400 m s\\(^{-1}\\). The RMS speed is:",
+    opts:[
+      {l:"A", t:"250 m s\\(^{-1}\\)"}, {l:"B", t:"274 m s\\(^{-1}\\)"},
+      {l:"C", t:"300 m s\\(^{-1}\\)"}, {l:"D", t:"316 m s\\(^{-1}\\)"}
+    ],
+    ans:"B",
+    expl:"\\(\\overline{c^2} = (10^4 + 4 \\times 10^4 + 9 \\times 10^4 + 16 \\times 10^4)/4 = 75\\,000\\). \\(c_{\\text{rms}} = \\sqrt{75\\,000} \\approx 274\\) m s\\(^{-1}\\). This exceeds the arithmetic mean (250) because squaring weights faster molecules more heavily, exactly as kinetic energy demands.",
+    next:"CANOPY_A", wrongNext:"WB2"
+  },
+  WB2: {
+    id:"WB2", type:"q", level:"branch", pts:0, isRemedial:true, topic:"Why RMS, not mean?",
+    q:"We use RMS speed rather than the arithmetic mean because:",
+    opts:[
+      {l:"A", t:"It is always smaller, giving a conservative estimate"},
+      {l:"B", t:"KE depends on \\(v^2\\), requiring the mean of squared speeds"},
+      {l:"C", t:"The arithmetic mean can't be calculated for distributions"},
+      {l:"D", t:"They are identical for large \\(N\\)"}
+    ],
+    ans:"B",
+    expl:"\\(E_k = \\tfrac{1}{2}mv^2\\) requires \\(\\overline{v^2}\\), not \\((\\bar{v})^2\\). These differ for any spread of values. The RMS is the natural average when the quantity of interest is proportional to the square of what you're averaging.",
+    revisits:"B2"
+  },
+
+  // ── CANOPY A ───────────────────────────────────────
+  CANOPY_A: {
+    id:"CANOPY_A", type:"bif",
+    text:"You've climbed the kinetic theory branch. One final canopy question tests synthesis across the whole derivation.",
+    choices:[
+      {label:"Canopy: Temperature and Speed", target:"C1", info:"4 pts"},
+      {label:"Try Thermo Processes instead", target:"B4", info:"6 pts"},
+      {label:"See results", target:"END"}
+    ]
+  },
+
+  C1: {
+    id:"C1", type:"q", level:"canopy", pts:4, topic:"\\(c_{\\text{rms}}\\) and temperature",
+    q:"A gas heated from 300 K to 1200 K at constant volume. The RMS speed changes by a factor of:",
+    opts:[
+      {l:"A", t:"4"}, {l:"B", t:"2"}, {l:"C", t:"\\(\\sqrt{2}\\)"}, {l:"D", t:"16"}
+    ],
+    ans:"B",
+    expl:"\\(c_{\\text{rms}} \\propto \\sqrt{T}\\), so the factor is \\(\\sqrt{1200/300} = \\sqrt{4} = 2\\). Common trap: temperature quadrupled so speed quadruples. No. \\(E_k \\propto T\\) and \\(E_k \\propto v^2\\), so \\(v \\propto \\sqrt{T}\\). Mean KE increases by 4; speed only by 2.",
+    next:"POST_C1", wrongNext:"WC1"
+  },
+  WC1: {
+    id:"WC1", type:"q", level:"canopy", pts:0, isRemedial:true, topic:"Square-root proportionality",
+    q:"Given \\(E_k = \\tfrac{3}{2}kT\\) and \\(E_k = \\tfrac{1}{2}mc_{\\text{rms}}^2\\), it follows that \\(c_{\\text{rms}} \\propto\\):",
+    opts:[
+      {l:"A", t:"\\(T\\)"}, {l:"B", t:"\\(T^2\\)"}, {l:"C", t:"\\(\\sqrt{T}\\)"}, {l:"D", t:"\\(1/T\\)"}
+    ],
+    ans:"C",
+    expl:"Equating: \\(c_{\\text{rms}} = \\sqrt{3kT/m} \\propto \\sqrt{T}\\). Doubling \\(T\\) gives a speed factor of \\(\\sqrt{2} \\approx 1.41\\). Quadrupling \\(T\\) doubles the speed.",
+    revisits:"C1"
+  },
+
+  POST_C1: {
+    id:"POST_C1", type:"bif",
+    text:"Canopy reached on the kinetic branch. Your tree is filling with light.",
+    choices:[
+      {label:"Thermo Processes branch", target:"B4", info:"6 pts"},
+      {label:"See full results", target:"END"}
+    ]
+  },
+
+  // ── BRANCH B: Thermodynamic Processes (3 pts each) ─
+  B4: {
+    id:"B4", type:"q", level:"branch", pts:3, topic:"p-V diagram shapes",
+    q:"On a \\(p\\)-\\(V\\) diagram, an isothermal process appears as:",
+    opts:[
+      {l:"A", t:"Horizontal line"}, {l:"B", t:"Vertical line"},
+      {l:"C", t:"Hyperbola"}, {l:"D", t:"Straight line through origin"}
+    ],
+    ans:"C",
+    expl:"Isothermal: \\(pV = \\text{const}\\), so \\(p = k/V\\), a rectangular hyperbola. Isobaric = horizontal. Isochoric = vertical. The graph shape follows directly from which variable is frozen.",
+    next:"B5", wrongNext:"WB4"
+  },
+  WB4: {
+    id:"WB4", type:"q", level:"branch", pts:0, isRemedial:true, topic:"Process names",
+    q:"'Isochoric' means constant:",
+    opts:[
+      {l:"A", t:"Pressure"}, {l:"B", t:"Temperature"}, {l:"C", t:"Volume"}, {l:"D", t:"Entropy"}
+    ],
+    ans:"C",
+    expl:"Greek roots: <em>iso</em> = equal, <em>choros</em> = space/volume. Isobaric = constant pressure (<em>baros</em> = weight). Isothermal = constant temperature (<em>thermos</em> = heat).",
+    revisits:"B4"
+  },
+
+  B5: {
+    id:"B5", type:"q", level:"branch", pts:3, topic:"Work done by a gas",
+    q:"A gas at constant 8 Pa expands from 10 m\\(^3\\) to 25 m\\(^3\\). Work done by the gas:",
+    opts:[
+      {l:"A", t:"80 J"}, {l:"B", t:"120 J"}, {l:"C", t:"200 J"}, {l:"D", t:"0 J"}
+    ],
+    ans:"B",
+    expl:"\\(W = p\\Delta V = 8 \\times 15 = 120\\) J. Work = area under the curve on a \\(p\\)-\\(V\\) diagram. For constant pressure, this is a rectangle. Positive: gas pushes outward, transferring energy to surroundings.",
+    next:"CANOPY_B", wrongNext:"WB5"
+  },
+  WB5: {
+    id:"WB5", type:"q", level:"branch", pts:0, isRemedial:true, topic:"When work is zero",
+    q:"For an isochoric process, the work done is:",
+    opts:[
+      {l:"A", t:"\\(pV\\)"}, {l:"B", t:"\\(p\\Delta V\\)"}, {l:"C", t:"Zero"}, {l:"D", t:"\\(nRT\\)"}
+    ],
+    ans:"C",
+    expl:"\\(\\Delta V = 0 \\Rightarrow W = p\\Delta V = 0\\). On a \\(p\\)-\\(V\\) diagram, an isochoric process is a vertical line with zero area beneath it. All added energy goes to internal energy, not mechanical work.",
+    revisits:"B5"
+  },
+
+  CANOPY_B: {
+    id:"CANOPY_B", type:"bif",
+    text:"The thermo processes branch is climbed. A canopy synthesis question awaits.",
+    choices:[
+      {label:"Canopy: Cycle Analysis", target:"C2", info:"4 pts"},
+      {label:"Try Kinetic branch", target:"B1", info:"6 pts"},
+      {label:"See results", target:"END"}
+    ]
+  },
+
+  C2: {
+    id:"C2", type:"q", level:"canopy", pts:4, topic:"Thermodynamic cycle",
+    q:"Cycle: A(10,2) \\(\\to\\) B(10,8) \\(\\to\\) C(25,8) \\(\\to\\) A on a \\(p\\)-\\(V\\) diagram (m\\(^3\\), Pa). Net work per cycle:",
+    opts:[
+      {l:"A", t:"0 J"}, {l:"B", t:"45 J"}, {l:"C", t:"120 J"}, {l:"D", t:"195 J"}
+    ],
+    ans:"B",
+    expl:"A\\(\\to\\)B: isochoric, \\(W=0\\). B\\(\\to\\)C: isobaric, \\(W=8 \\times 15=120\\) J. C\\(\\to\\)A: trapezium \\(= \\tfrac{1}{2}(8+2)(15) = 75\\) J of compression. Net: \\(120 - 75 = 45\\) J = enclosed area. Clockwise cycle = positive net work = heat engine.",
+    next:"POST_C2", wrongNext:"WC2"
+  },
+  WC2: {
+    id:"WC2", type:"q", level:"canopy", pts:0, isRemedial:true, topic:"Net work = enclosed area",
+    q:"In a closed thermodynamic cycle, the net work equals:",
+    opts:[
+      {l:"A", t:"Total area under all curves"},
+      {l:"B", t:"Area enclosed by the cycle"},
+      {l:"C", t:"Zero (returns to initial state)"},
+      {l:"D", t:"Maximum pressure times maximum volume"}
+    ],
+    ans:"B",
+    expl:"\\(\\Delta U = 0\\) for a complete cycle (state function returns to start), so First Law gives \\(Q_{\\text{net}} = W_{\\text{net}} =\\) enclosed area. It's not zero: different paths do different work. That's the whole point of thermodynamic cycles.",
+    revisits:"C2"
+  },
+
+  POST_C2: {
+    id:"POST_C2", type:"bif",
+    text:"Both canopy and branch illuminated on this path.",
+    choices:[
+      {label:"Kinetic branch", target:"B1", info:"6 pts"},
+      {label:"See full results", target:"END"}
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// TREE LAYOUT: Positions for SVG
+// ══════════════════════════════════════════════════════════
+// Conceptual: roots at bottom, canopy at top
+// Layout: x=0..800, y=0(canopy)..500(roots)
+const LAYOUT = {
+  // Roots (bottom, spread wide)
+  R1: {x:100, y:500}, R2: {x:300, y:500}, R3: {x:500, y:500}, R4: {x:700, y:500},
+  // Trunk (converged center)
+  T1: {x:400, y:390}, T2: {x:400, y:315}, T3: {x:400, y:240},
+  // Branch fork
+  // Kinetic branch (left)
+  B1: {x:210, y:185}, B2: {x:160, y:115},
+  // Thermo branch (right)
+  B4: {x:590, y:185}, B5: {x:640, y:115},
+  // Canopy
+  C1: {x:120, y:50}, C2: {x:680, y:50}
+};
+
+const EDGES = [
+  ["R1","T1"], ["R2","T1"], ["R3","T1"], ["R4","T1"],
+  ["T1","T2"], ["T2","T3"],
+  ["T3","B1"], ["T3","B4"],
+  ["B1","B2"], ["B2","C1"],
+  ["B4","B5"], ["B5","C2"]
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let S = {
+  started: false,
+  score: 0,
+  attempted: 0,
+  path: [],
+  answered: {},    // id -> {correct, pts}
+  current: null,
+  revisiting: {},  // id -> true
+  visited: new Set()
+};
+
+function doReset() {
+  S = { started:false, score:0, attempted:0, path:[], answered:{}, current:null, revisiting:{}, visited:new Set() };
+  document.getElementById('introBox').style.display = '';
+  document.getElementById('qArea').innerHTML = '';
+  document.getElementById('crumbBox').innerHTML = '';
+  document.getElementById('summaryBox').style.display = 'none';
+  updateNav();
+  drawTree();
+}
+
+function begin() {
+  S.started = true;
+  document.getElementById('introBox').style.display = 'none';
+  const tb = document.getElementById('treeBox');
+  tb.classList.remove('collapsed');
+  tb.onclick = null;
+  go("R1");
+}
+
+// ══════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════
+function go(id) {
+  if (id === "END") { showSummary(); return; }
+  const node = Q[id];
+  if (!node) { showSummary(); return; }
+
+  // Skip if already answered (unless revisiting)
+  if (node.type === "q" && S.answered[id] && !S.revisiting[id]) {
+    if (node.next) go(node.next);
+    else showSummary();
+    return;
+  }
+
+  S.current = id;
+  S.visited.add(id);
+  if (!node.isRemedial) S.path.push(id);
+
+  updateCrumbs();
+  drawTree();
+
+  if (node.type === "bif") renderBif(node);
+  else renderQ(node);
+
+  setTimeout(() => {
+    document.getElementById('qArea').scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 80);
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER QUESTION
+// ══════════════════════════════════════════════════════════
+function renderQ(n) {
+  const area = document.getElementById('qArea');
+  const isRevisit = !!S.revisiting[n.id];
+  const isRemedial = !!n.isRemedial;
+  const lvlNames = {root:'Root', trunk:'Trunk', branch:'Branch', canopy:'Canopy'};
+  const ptsShow = isRevisit ? `${Math.round(n.pts * 0.75)} pts (75%)` : isRemedial ? 'remedial' : `${n.pts} pt${n.pts!==1?'s':''}`;
+
+  area.innerHTML = `
+    <div class="qcard ${isRemedial ? 'remedial-card' : ''}" id="qc-${n.id}">
+      <div class="qcard-head">
+        <span class="qcard-id">${n.id} &middot; ${n.topic}</span>
+        <div class="qcard-meta">
+          <span class="badge ${isRemedial ? 'remedial' : n.level}">${isRemedial ? 'Remedial' : lvlNames[n.level]}</span>
+          <span class="pts-badge">${ptsShow}</span>
+        </div>
+      </div>
+      <div class="qtext">${n.q}</div>
+      <div class="opts" id="opts-${n.id}">
+        ${n.opts.map(o => `
+          <button class="opt" data-l="${o.l}" onclick="pick('${n.id}','${o.l}')">
+            <span class="letter">${o.l}</span><span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div id="fb-${n.id}"></div>
+    </div>
+  `;
+  renderMath(area);
+}
+
+function pick(id, letter) {
+  const n = Q[id];
+  const isRevisit = !!S.revisiting[id];
+  const key = isRevisit ? id+'_rev' : id;
+  if (S.answered[key]) return;
+
+  const correct = letter === n.ans;
+  let pts = 0;
+  if (correct) {
+    pts = isRevisit ? Math.round(n.pts * 0.75) : n.pts;
+    S.score += pts;
+  }
+  if (!n.isRemedial && !isRevisit) S.attempted += n.pts;
+
+  S.answered[key] = { correct, pts };
+  if (isRevisit) S.answered[id] = { correct, pts };
+
+  // Lock options
+  const wrap = document.getElementById(`opts-${id}`);
+  wrap.querySelectorAll('.opt').forEach(btn => {
+    const bl = btn.dataset.l;
+    btn.classList.add('locked'); btn.onclick = null;
+    if (bl === letter && correct) btn.classList.add('correct-pick');
+    if (bl === letter && !correct) btn.classList.add('wrong-pick');
+    if (bl === n.ans && !correct) btn.classList.add('show-correct');
+  });
+
+  // Glow card
+  if (correct) document.getElementById(`qc-${id}`).classList.add('glow-correct');
+
+  // Feedback
+  const fb = document.getElementById(`fb-${id}`);
+  fb.innerHTML = `
+    <div class="fb ${correct ? 'ok' : 'nope'}">
+      <div class="fb-title">${correct ? `+${pts} illuminated${isRevisit ? ' (75% recovery)' : ''}` : isRevisit ? 'Not recovered this time.' : 'Not yet.'}</div>
+      <div class="fb-explain">${n.expl}</div>
+    </div>
+  `;
+  renderMath(fb);
+  updateNav();
+  drawTree();
+
+  // Next
+  setTimeout(() => {
+    if (n.isRemedial && n.revisits) {
+      showRevisitOffer(n);
+      return;
+    }
+    if (correct || isRevisit) {
+      if (n.next) go(n.next); else showSummary();
+    } else {
+      if (n.wrongNext) go(n.wrongNext);
+      else if (n.next) go(n.next);
+      else showSummary();
+    }
+  }, 1600);
+}
+
+function showRevisitOffer(remedialNode) {
+  const parentId = remedialNode.revisits;
+  const parent = Q[parentId];
+  const area = document.getElementById('qArea');
+  area.innerHTML += `
+    <div class="revisit-box">
+      <h4>Revisit Opportunity</h4>
+      <p>You've explored the remedial path. Return to <strong>${parentId}</strong> (${parent.topic}) 
+         and try again.</p>
+      <p class="penalty">Correct = 75% of original marks. Wrong = no recovery, but the explanation still illuminates.</p>
+      <button class="bifur-btn" onclick="doRevisit('${parentId}')">
+        Revisit ${parentId}
+      </button>
+    </div>
+  `;
+}
+
+function doRevisit(id) {
+  S.revisiting[id] = true;
+  go(id);
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER BIFURCATION
+// ══════════════════════════════════════════════════════════
+function renderBif(n) {
+  const area = document.getElementById('qArea');
+  const chs = n.choices.map(c => {
+    const done = c.target !== "END" && Q[c.target] && Q[c.target].type === "q" && S.answered[c.target];
+    return {...c, done};
+  });
+
+  area.innerHTML = `
+    <div class="bifur">
+      <h4>Bifurcation</h4>
+      <p>${n.text}</p>
+      <div class="bifur-choices">
+        ${chs.map(c => `
+          <button class="bifur-btn" ${c.done ? 'disabled' : ''} onclick="go('${c.target}')">
+            ${c.label}
+            <span class="bp">${c.done ? '(illuminated)' : c.info}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  renderMath(area);
+}
+
+// ══════════════════════════════════════════════════════════
+// NAV + CRUMBS
+// ══════════════════════════════════════════════════════════
+function updateNav() {
+  const mainNodes = Object.values(Q).filter(n => n.type==="q" && !n.isRemedial);
+  const totalPts = mainNodes.reduce((s,n) => s + n.pts, 0);
+  document.getElementById('nScore').textContent = S.score;
+  document.getElementById('nTotal').textContent = totalPts;
+  const pct = S.attempted > 0 ? Math.round(S.score / S.attempted * 100) : '--';
+  document.getElementById('nPct').textContent = pct;
+}
+
+function updateCrumbs() {
+  const box = document.getElementById('crumbBox');
+  const unique = [...new Set(S.path)];
+  box.innerHTML = unique.map((id, i) => {
+    const n = Q[id];
+    if (!n || n.type === 'bif') return '';
+    const isCur = id === S.current;
+    const ans = S.answered[id];
+    let cls = 'done';
+    if (isCur) cls = 'active';
+    else if (n.isRemedial) cls = 'remedial';
+    return `${i > 0 ? '<span class="crumb-arrow">&#x2192;</span>' : ''}<span class="crumb ${cls}">${id}</span>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// TREE SVG DRAWING
+// ══════════════════════════════════════════════════════════
+
+// Topic labels for each node (short, for the SVG)
+const NODE_LABELS = {
+  R1: "Pressure", R2: "Kelvin", R3: "Molecular model", R4: "Moles",
+  T1: "Boyle's Law", T2: "Charles' Law", T3: "Combined Law",
+  B1: "Isotropy", B2: "RMS speed", B4: "p-V diagrams", B5: "Work done",
+  C1: "Speed & temp", C2: "Thermo cycle"
+};
+
+function drawTree() {
+  const W = 800, H = 580;
+  const wrap = document.getElementById('treeSvgWrap');
+
+  let svg = `<svg id="treeSvg" viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-height:480px;">`;
+
+  // Definitions: glows, gradients
+  svg += `<defs>
+    <radialGradient id="bgGlow" cx="50%" cy="75%" r="55%">
+      <stop offset="0%" stop-color="rgba(122,98,69,0.1)"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <filter id="litGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="activeGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="url(#bgGlow)" rx="8"/>`;
+
+  // Zone labels (prominent)
+  svg += `<text x="400" y="558" text-anchor="middle" fill="rgba(160,140,100,0.5)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em">ROOTS</text>`;
+  svg += `<text x="35" y="330" text-anchor="middle" fill="rgba(140,120,80,0.4)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em" transform="rotate(-90,35,330)">TRUNK</text>`;
+  svg += `<text x="400" y="22" text-anchor="middle" fill="rgba(200,180,100,0.4)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em">CANOPY</text>`;
+  svg += `<text x="180" y="145" text-anchor="middle" fill="rgba(90,184,110,0.3)" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.15em">KINETIC THEORY</text>`;
+  svg += `<text x="620" y="145" text-anchor="middle" fill="rgba(90,184,110,0.3)" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.15em">THERMO PROCESSES</text>`;
+
+  // Ground line
+  svg += `<line x1="60" y1="530" x2="740" y2="530" stroke="rgba(160,140,100,0.25)" stroke-width="1.5" stroke-dasharray="6,4"/>`;
+
+  // ── EDGES ──
+  EDGES.forEach(([a,b]) => {
+    const pa = LAYOUT[a], pb = LAYOUT[b];
+    if (!pa || !pb) return;
+    const aLit = S.answered[a] && S.answered[a].correct;
+    const bLit = S.answered[b] && S.answered[b].correct;
+    const bothLit = aLit && bLit;
+    const eitherLit = aLit || bLit;
+
+    // Base: clearly visible warm brown. Lit: bright teal. Partial: medium.
+    let col, w, dash = '';
+    if (bothLit) {
+      col = '#5eead4'; w = 3.5;
+    } else if (eitherLit) {
+      col = 'rgba(94,234,212,0.4)'; w = 2.5;
+    } else {
+      col = 'rgba(180,160,120,0.45)'; w = 2;
+    }
+
+    if (a.startsWith('R')) {
+      // Curved root paths converging
+      const mx = (pa.x + pb.x) / 2;
+      const my = (pa.y + pb.y) / 2 - 30;
+      svg += `<path d="M${pa.x} ${pa.y} Q${mx} ${my} ${pb.x} ${pb.y}" fill="none" stroke="${col}" stroke-width="${w}" ${dash} opacity="1"/>`;
+    } else {
+      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${col}" stroke-width="${w}" ${dash}/>`;
+    }
+  });
+
+  // ── NODES ──
+  Object.entries(LAYOUT).forEach(([id, pos]) => {
+    const n = Q[id];
+    if (!n) return;
+    const ans = S.answered[id];
+    const lit = ans && ans.correct;
+    const wrong = ans && !ans.correct;
+    const active = id === S.current;
+    const label = NODE_LABELS[id] || id;
+
+    // Sizing by level
+    let r = 18;
+    if (n.level === 'canopy') r = 24;
+    else if (n.level === 'branch') r = 20;
+    else if (n.level === 'root') r = 16;
+
+    let fill, stroke, textCol, sw, filter = '';
+    const ptsBadge = n.pts;
+
+    if (lit) {
+      // Bright, glowing
+      if (n.level === 'canopy') {
+        fill = 'rgba(228,204,106,0.35)'; stroke = '#e8cc6a'; textCol = '#f5e8a0';
+      } else {
+        fill = 'rgba(94,234,212,0.25)'; stroke = '#5eead4'; textCol = '#a8f5e8';
+      }
+      sw = 2.5;
+      filter = 'filter="url(#litGlow)"';
+    } else if (wrong) {
+      fill = 'rgba(240,121,107,0.15)'; stroke = '#f0796b'; textCol = '#f0a090'; sw = 2;
+    } else if (active) {
+      fill = 'rgba(201,168,76,0.2)'; stroke = '#c9a84c'; textCol = '#e8d080'; sw = 2.5;
+      filter = 'filter="url(#activeGlow)"';
+    } else {
+      // UNVISITED: clearly visible, muted but not invisible
+      fill = 'rgba(60,55,45,0.7)';
+      stroke = 'rgba(180,160,120,0.6)';
+      textCol = 'rgba(200,185,155,0.8)';
+      sw = 1.8;
+    }
+
+    svg += `<g class="tree-node" ${filter}>`;
+
+    // Outer ring for canopy nodes
+    if (n.level === 'canopy') {
+      svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${r+5}" fill="none" stroke="${lit ? 'rgba(228,204,106,0.2)' : 'rgba(180,160,120,0.15)'}" stroke-width="1" stroke-dasharray="3,3"/>`;
+    }
+
+    // Main circle
+    svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+
+    // Node ID
+    svg += `<text x="${pos.x}" y="${pos.y + 1}" text-anchor="middle" dominant-baseline="central" fill="${textCol}" font-size="${n.level === 'canopy' ? 11 : 10}" font-weight="600">${id}</text>`;
+
+    // Topic label below
+    const labelY = pos.y + r + 14;
+    const labelCol = lit ? textCol : 'rgba(180,165,135,0.65)';
+    svg += `<text x="${pos.x}" y="${labelY}" text-anchor="middle" fill="${labelCol}" font-family="EB Garamond, serif" font-size="11" font-style="italic">${label}</text>`;
+
+    // Points indicator
+    if (lit && ans) {
+      svg += `<text x="${pos.x}" y="${labelY + 14}" text-anchor="middle" fill="${textCol}" font-size="8" opacity="0.8">+${ans.pts}</text>`;
+    } else if (!lit && !wrong) {
+      svg += `<text x="${pos.x}" y="${labelY + 14}" text-anchor="middle" fill="rgba(160,145,115,0.4)" font-size="8">${ptsBadge} pt${ptsBadge>1?'s':''}</text>`;
+    }
+
+    svg += `</g>`;
+  });
+
+  svg += `</svg>`;
+  wrap.innerHTML = svg;
+}
+
+function toggleTree() {
+  const tb = document.getElementById('treeBox');
+  if (tb.classList.contains('collapsed')) {
+    tb.classList.remove('collapsed');
+    tb.onclick = null;
+    drawTree();
+  } else {
+    tb.classList.add('collapsed');
+    tb.onclick = () => toggleTree();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// SUMMARY
+// ══════════════════════════════════════════════════════════
+function showSummary() {
+  document.getElementById('qArea').innerHTML = '';
+  const panel = document.getElementById('summaryBox');
+  panel.style.display = '';
+
+  const mainNodes = Object.values(Q).filter(n => n.type==="q" && !n.isRemedial);
+  const totalPts = mainNodes.reduce((s,n) => s + n.pts, 0);
+  const pct = S.attempted > 0 ? Math.round(S.score / S.attempted * 100) : 0;
+
+  // Build knowledge list
+  const litItems = [], dimItems = [], darkItems = [];
+  mainNodes.forEach(n => {
+    const a = S.answered[n.id];
+    if (a && a.correct) litItems.push(n);
+    else if (a && !a.correct) dimItems.push(n);
+    else darkItems.push(n);
+  });
+
+  const renderItems = (items, icon, cls) => items.map(n => {
+    const a = S.answered[n.id];
+    const ptsText = a ? (a.correct ? `+${a.pts}` : '0') : `${n.pts} pts`;
+    return `<div class="kitem"><span class="ki ${cls}">${icon}</span><span class="kn">${n.id}</span><span class="kt">${n.topic}</span><span class="kp">${ptsText}</span></div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="summary">
+      <h2>Your Knowledge Tree</h2>
+      <div class="summary-grid">
+        <div class="sstat"><div class="sv" style="color:var(--green)">${S.score}</div><div class="sl">Illuminated</div></div>
+        <div class="sstat"><div class="sv">${totalPts}</div><div class="sl">Total Available</div></div>
+        <div class="sstat"><div class="sv" style="color:${pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red)'}">${pct}%</div><div class="sl">Of Attempted</div></div>
+      </div>
+      <p style="font-size:0.92rem; color:var(--text-dim); margin-bottom: 4px;">
+        You illuminated ${S.score} of ${totalPts} available points across ${litItems.length + dimItems.length} questions attempted.
+        ${darkItems.length > 0 ? `${darkItems.length} node${darkItems.length>1?'s':''} remain unexplored, representing branches you can still climb.` : 'Every branch has been visited.'}
+      </p>
+      <div class="knowledge-list">
+        <h3>What You've Shown</h3>
+        ${renderItems(litItems, '&#x2736;', 'lit')}
+        ${dimItems.length ? '<h3 style="margin-top:14px">Attempted but Not Yet Secured</h3>' + renderItems(dimItems, '&#x25C7;', 'dim') : ''}
+        ${darkItems.length ? '<h3 style="margin-top:14px">Unexplored Branches</h3>' + renderItems(darkItems, '&#x25CB;', 'dark') : ''}
+      </div>
+      <button class="begin-btn" style="margin-top:22px" onclick="doReset()">Climb Again</button>
+    </div>
+  `;
+
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════
+// MATH
+// ══════════════════════════════════════════════════════════
+function renderMath(el) {
+  if (typeof renderMathInElement === 'function') {
+    renderMathInElement(el || document.body, {
+      delimiters: [
+        {left: "\\(", right: "\\)", display: false},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "$$", right: "$$", display: true}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  renderMath(document.body);
+  updateNav();
+  drawTree();
+});
+</script>
+</body>
+</html>
