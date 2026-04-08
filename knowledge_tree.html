@@ -3,1357 +3,1253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Knowledge Tree · Gas Laws · Prototype</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<title>MVT Augmented — Money Value of Time</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════
-   DESIGN TOKENS
-   ═══════════════════════════════════════════ */
 :root {
-  --bg: #08080d;
-  --bg-card: #0f0f17;
-  --bg-card-alt: #13131f;
-  --bg-remedial: #140e16;
+  --bg-deep: #0a0a0f;
+  --bg-panel: #12121a;
+  --bg-card: #1a1a26;
+  --bg-input: #22222e;
   --gold: #c9a84c;
-  --gold-dim: #7a6a30;
-  --gold-glow: rgba(201,168,76,0.12);
-  --gold-bright: #e8cc6a;
-  --green: #5eead4;
-  --green-glow: rgba(94,234,212,0.12);
-  --green-dim: #1a3a35;
-  --red: #f0796b;
-  --red-glow: rgba(240,121,107,0.1);
-  --blue: #7cacf8;
-  --purple: #b49cfa;
-  --orange: #f4a56c;
-  --text: #cdc8be;
-  --text-bright: #eae5db;
-  --text-dim: #6b6560;
-  --text-faint: #3d3935;
-  --bark: #5c4a32;
-  --bark-light: #8a7352;
-  --leaf: #3a7a4a;
-  --leaf-light: #5cb86e;
-  --root-color: #7a6245;
-  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
-  --display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
-  --mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --radius: 5px;
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --gold-dim: #8a7435;
+  --gold-bright: #e8c95a;
+  --text-primary: #e8e4dc;
+  --text-secondary: #9a9590;
+  --text-muted: #5a5550;
+  --green: #4ecdc4;
+  --blue: #5b8def;
+  --red: #e8574a;
+  --purple: #9b72cf;
+  --orange: #e89b4a;
+  --border: #2a2a36;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --sans: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
 }
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.68;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
-/* ═══════════════════════════════════════════
-   STICKY NAV
-   ═══════════════════════════════════════════ */
-.nav {
-  position: sticky; top: 0; z-index: 200;
-  background: rgba(8,8,13,0.94);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(201,168,76,0.1);
-  padding: 9px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 10px;
-}
-.nav-title {
-  font-family: var(--display); font-size: 1rem; font-weight: 600;
-  color: var(--gold); letter-spacing: 0.05em;
-}
-.nav-scores {
-  display: flex; gap: 16px; align-items: center;
-  font-family: var(--mono); font-size: 0.76rem;
-}
-.nav-scores .lbl { color: var(--text-dim); }
-.nav-scores .val { font-weight: 600; }
-.nav-scores .val.pts { color: var(--green); }
-.nav-scores .val.of { color: var(--blue); }
-.nav-scores .val.pct { color: var(--gold); }
-.nav-btns { display: flex; gap: 6px; }
-.nav-btn {
-  font-family: var(--mono); font-size: 0.7rem;
-  padding: 4px 10px; border: 1px solid var(--gold-dim);
-  background: transparent; color: var(--gold);
-  border-radius: var(--radius); cursor: pointer;
-  transition: 0.25s var(--ease);
-}
-.nav-btn:hover { background: var(--gold-glow); border-color: var(--gold); }
-
-/* ═══════════════════════════════════════════
-   LAYOUT
-   ═══════════════════════════════════════════ */
-.page { max-width: 900px; margin: 0 auto; padding: 0 18px; }
-
-/* ═══════════════════════════════════════════
-   TREE SVG
-   ═══════════════════════════════════════════ */
-.tree-container {
-  position: relative;
-  width: 100%; max-width: 860px; margin: 20px auto 0;
-  background: var(--bg-card);
-  border: 1px solid rgba(201,168,76,0.08);
-  border-radius: 10px;
-  overflow: hidden;
-  transition: 0.4s var(--ease);
-}
-.tree-container.collapsed { max-height: 60px; cursor: pointer; }
-.tree-container.collapsed .tree-toggle-text::after { content: ' ▸ expand'; }
-.tree-container:not(.collapsed) .tree-toggle-text::after { content: ' ▾ collapse'; }
-.tree-toggle {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 16px; cursor: pointer;
-  font-family: var(--mono); font-size: 0.72rem;
-  color: var(--gold-dim); letter-spacing: 0.1em; text-transform: uppercase;
-  user-select: none;
-}
-.tree-svg-wrap {
-  padding: 10px 10px 16px;
-  overflow-x: auto;
-}
-#treeSvg { display: block; margin: 0 auto; }
-
-/* Node circles in SVG */
-.tree-node { cursor: default; transition: 0.3s var(--ease); }
-.tree-node circle { transition: 0.4s var(--ease); }
-.tree-node text { font-family: 'JetBrains Mono', monospace; pointer-events: none; }
-.tree-edge { transition: 0.5s var(--ease); }
-
-/* ═══════════════════════════════════════════
-   INTRO
-   ═══════════════════════════════════════════ */
-.intro {
-  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
-  border: 1px solid rgba(201,168,76,0.15);
-  border-radius: 10px; padding: 38px 34px; margin: 24px 0 28px;
-  position: relative;
-}
-.intro::after {
-  content: ''; position: absolute; top: -40%; right: -20%;
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-.intro h2 {
-  font-family: var(--display); font-size: 1.7rem; font-weight: 700;
-  color: var(--gold); margin-bottom: 14px; line-height: 1.3;
-}
-.intro p { margin-bottom: 10px; font-size: 1rem; }
-.intro .aside {
-  font-style: italic; color: var(--gold-dim);
-  border-left: 2px solid var(--gold-dim); padding-left: 14px; margin: 14px 0;
-}
-.intro .mechanic {
-  font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim);
-  background: rgba(255,255,255,0.02); border-radius: var(--radius);
-  padding: 12px 16px; margin-top: 14px; line-height: 1.7;
-}
-.begin-btn {
-  display: inline-block; margin-top: 18px;
-  font-family: var(--display); font-size: 1.1rem; font-weight: 600;
-  padding: 13px 36px;
-  background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 100%);
-  color: var(--bg); border: none; border-radius: var(--radius);
-  cursor: pointer; transition: 0.3s var(--ease); letter-spacing: 0.04em;
-}
-.begin-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(201,168,76,0.25);
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
 }
 
-/* ═══════════════════════════════════════════
-   BREADCRUMB
-   ═══════════════════════════════════════════ */
-.crumbs {
-  display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
-  font-family: var(--mono); font-size: 0.68rem; margin: 16px 0 10px;
-  min-height: 20px;
+/* Header */
+.header {
+  text-align: center;
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
 }
-.crumb {
-  padding: 1px 7px; border-radius: 3px;
-  transition: 0.25s var(--ease);
+.header h1 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.3rem;
 }
-.crumb.done { background: rgba(94,234,212,0.1); color: var(--green); }
-.crumb.active { background: rgba(201,168,76,0.18); color: var(--gold); font-weight: 600; }
-.crumb.remedial { background: rgba(240,121,107,0.1); color: var(--red); font-style: italic; }
-.crumb-arrow { color: var(--text-faint); margin: 0 1px; }
-
-/* ═══════════════════════════════════════════
-   QUESTION CARD
-   ═══════════════════════════════════════════ */
-.qcard {
-  background: var(--bg-card);
-  border: 1px solid rgba(201,168,76,0.14);
-  border-radius: 10px; padding: 28px 26px; margin-bottom: 18px;
-  position: relative;
-  animation: slideUp 0.35s var(--ease);
+.header .subtitle {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.qcard.remedial-card {
-  border-color: rgba(240,121,107,0.18);
-  background: var(--bg-remedial);
-}
-.qcard.glow-correct {
-  border-color: rgba(94,234,212,0.3);
-  box-shadow: 0 0 20px rgba(94,234,212,0.06);
-}
-
-.qcard-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px; flex-wrap: wrap; gap: 6px;
-}
-.qcard-id {
-  font-family: var(--mono); font-size: 0.7rem;
-  color: var(--text-dim); letter-spacing: 0.06em;
-}
-.qcard-meta { display: flex; gap: 8px; align-items: center; }
-
-.badge {
-  font-family: var(--mono); font-size: 0.65rem;
-  padding: 2px 7px; border-radius: 3px; letter-spacing: 0.05em;
-}
-.badge.root { background: rgba(122,98,69,0.2); color: var(--root-color); }
-.badge.trunk { background: rgba(92,74,50,0.25); color: var(--bark-light); }
-.badge.branch { background: rgba(58,122,74,0.2); color: var(--leaf-light); }
-.badge.canopy { background: rgba(228,204,106,0.12); color: var(--gold-bright); }
-.badge.remedial { background: rgba(240,121,107,0.12); color: var(--red); font-style: italic; }
-
-.pts-badge {
-  font-family: var(--mono); font-size: 0.68rem; color: var(--gold);
-}
-
-.qtext {
-  font-size: 1.05rem; line-height: 1.72; margin-bottom: 16px; color: var(--text-bright);
-}
-
-/* Options */
-.opts { display: flex; flex-direction: column; gap: 7px; }
-.opt {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 11px 15px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: var(--radius); cursor: pointer;
-  transition: 0.25s var(--ease);
-  font-family: var(--serif); font-size: 0.97rem; color: var(--text); line-height: 1.55;
-  text-align: left;
-}
-.opt:hover:not(.locked) {
-  background: rgba(201,168,76,0.06);
-  border-color: rgba(201,168,76,0.22);
-}
-.opt .letter {
-  font-family: var(--mono); font-size: 0.74rem; font-weight: 600;
-  color: var(--gold); flex-shrink: 0;
-  width: 22px; height: 22px;
-  display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--gold-dim); border-radius: 3px; margin-top: 1px;
-  transition: 0.25s var(--ease);
-}
-.opt.correct-pick { background: rgba(94,234,212,0.08); border-color: var(--green); }
-.opt.correct-pick .letter { background: var(--green); color: var(--bg); border-color: var(--green); }
-.opt.wrong-pick { background: rgba(240,121,107,0.07); border-color: var(--red); }
-.opt.wrong-pick .letter { background: var(--red); color: var(--bg); border-color: var(--red); }
-.opt.show-correct { border-color: rgba(94,234,212,0.3); }
-.opt.locked { cursor: default; opacity: 0.55; }
-
-/* Feedback */
-.fb {
-  padding: 13px 16px; border-radius: var(--radius);
-  margin-top: 12px; font-size: 0.9rem; line-height: 1.65;
-  animation: slideUp 0.25s var(--ease);
-}
-.fb.ok { background: rgba(94,234,212,0.07); border: 1px solid rgba(94,234,212,0.18); }
-.fb.ok .fb-title { color: var(--green); font-weight: 600; }
-.fb.nope { background: rgba(240,121,107,0.06); border: 1px solid rgba(240,121,107,0.16); }
-.fb.nope .fb-title { color: var(--red); font-weight: 600; }
-.fb .fb-explain { color: var(--text); margin-top: 6px; font-size: 0.88rem; }
-
-/* ═══════════════════════════════════════════
-   BIFURCATION
-   ═══════════════════════════════════════════ */
-.bifur {
-  background: linear-gradient(140deg, rgba(201,168,76,0.04), rgba(180,156,250,0.04));
-  border: 1px solid rgba(201,168,76,0.18);
-  border-radius: 10px; padding: 24px 26px; margin: 18px 0;
-  animation: slideUp 0.35s var(--ease);
-}
-.bifur h4 {
-  font-family: var(--mono); font-size: 0.74rem;
-  color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em;
-  margin-bottom: 8px;
-}
-.bifur p { font-size: 0.93rem; margin-bottom: 14px; }
-.bifur-choices { display: flex; gap: 10px; flex-wrap: wrap; }
-.bifur-btn {
-  font-family: var(--display); font-size: 0.95rem; font-weight: 600;
-  padding: 10px 22px;
-  border: 1px solid var(--gold-dim); background: rgba(201,168,76,0.04);
-  color: var(--gold); border-radius: var(--radius); cursor: pointer;
-  transition: 0.25s var(--ease);
-}
-.bifur-btn:hover:not(:disabled) { background: rgba(201,168,76,0.12); border-color: var(--gold); }
-.bifur-btn:disabled { opacity: 0.35; cursor: default; }
-.bifur-btn .bp { font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim); display: block; margin-top: 2px; }
-
-/* Revisit */
-.revisit-box {
-  background: linear-gradient(140deg, rgba(94,234,212,0.05), rgba(124,172,248,0.05));
-  border: 1px solid rgba(94,234,212,0.2);
-  border-radius: 10px; padding: 20px 24px; margin: 16px 0;
-  animation: slideUp 0.35s var(--ease);
-}
-.revisit-box h4 {
-  font-family: var(--mono); font-size: 0.74rem;
-  color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-.revisit-box .penalty {
-  font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
-}
-
-/* ═══════════════════════════════════════════
-   SUMMARY
-   ═══════════════════════════════════════════ */
-.summary {
-  background: linear-gradient(160deg, var(--bg-card), var(--bg-card-alt));
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 10px; padding: 36px 32px; margin: 28px 0;
-  animation: slideUp 0.5s var(--ease);
-}
-.summary h2 {
-  font-family: var(--display); font-size: 1.5rem; color: var(--gold); margin-bottom: 18px;
-}
-.summary-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px;
-}
-.sstat {
-  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
-  border-radius: var(--radius); padding: 16px; text-align: center;
-}
-.sstat .sv {
-  font-family: var(--mono); font-size: 1.7rem; font-weight: 700; color: var(--gold);
-}
-.sstat .sl {
-  font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px;
-}
-
-.knowledge-list { margin-top: 16px; }
-.knowledge-list h3 {
-  font-family: var(--mono); font-size: 0.74rem; color: var(--gold-dim);
-  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
-}
-.kitem {
-  display: flex; align-items: center; gap: 10px;
-  padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+.header .equation {
+  font-family: var(--mono);
   font-size: 0.88rem;
-}
-.kitem .ki { font-size: 0.82rem; flex-shrink: 0; width: 18px; text-align: center; }
-.kitem .ki.lit { color: var(--green); }
-.kitem .ki.dim { color: var(--red); }
-.kitem .ki.dark { color: var(--text-faint); }
-.kitem .kn { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); width: 28px; flex-shrink: 0; }
-.kitem .kt { color: var(--text); }
-.kitem .kp { font-family: var(--mono); font-size: 0.7rem; color: var(--gold-dim); margin-left: auto; white-space: nowrap; }
-
-/* ═══════════════════════════════════════════
-   FOOTER
-   ═══════════════════════════════════════════ */
-.foot {
-  text-align: center; padding: 36px 20px 28px;
-  font-family: var(--mono); font-size: 0.66rem;
-  color: var(--text-faint); letter-spacing: 0.06em; line-height: 1.9;
-  border-top: 1px solid rgba(201,168,76,0.06); margin-top: 36px;
+  color: var(--gold-dim);
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel);
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════ */
-@media (max-width: 640px) {
-  .nav { padding: 7px 12px; }
-  .nav-title { font-size: 0.88rem; }
-  .nav-scores { gap: 10px; font-size: 0.68rem; }
-  .intro { padding: 26px 20px; }
-  .intro h2 { font-size: 1.35rem; }
-  .qcard { padding: 22px 18px; }
-  .summary-grid { grid-template-columns: 1fr 1fr; }
-  .bifur-choices { flex-direction: column; }
+/* Section containers */
+.section-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.8rem;
+  margin-bottom: 2rem;
 }
+.section-box h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-box h2 .h2sub {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.4rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  width: fit-content;
+}
+.mode-btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1.2rem;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mode-btn.active {
+  background: var(--gold-dim);
+  color: var(--bg-deep);
+  font-weight: 500;
+}
+.mode-btn:hover:not(.active) {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+/* Controls grid (direct mode) */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.control-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+}
+.control-item label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+.control-item label .val {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--gold);
+  min-width: 2.5em;
+  text-align: right;
+}
+.control-item .desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--bg-input);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--bg-deep);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--bg-deep);
+  cursor: pointer;
+}
+
+/* Questionnaire */
+.q-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.q-group-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.8rem 0 0.3rem;
+  margin-top: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.q-group-label.q-gamma { color: var(--green); }
+.q-group-label.q-eta { color: var(--blue); }
+.q-group-label.q-delta { color: var(--red); }
+.q-group-label.q-rho { color: var(--orange); }
+
+.q-item {
+  display: grid;
+  grid-template-columns: 1fr auto 2.5rem;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.q-item:last-child { border-bottom: none; }
+
+.q-text {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+.q-text .q-hint {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  font-style: italic;
+}
+
+.q-item input[type="range"] {
+  width: 140px;
+}
+
+.q-val {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--gold);
+  text-align: right;
+}
+
+/* Derived parameters readout */
+.derived-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.derived-item {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.derived-item .dlabel { color: var(--text-muted); }
+.derived-item .dval { color: var(--gold-bright); font-weight: 500; }
+.derived-item .dname {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+/* Readout bar */
+.readout-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.readout-item {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.readout-item .rlabel { color: var(--text-muted); }
+.readout-item .rval { color: var(--gold-bright); font-weight: 500; }
+
+/* Charts */
+.charts-section h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 720px) { .chart-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.2rem 0.8rem;
+}
+.chart-card.full-width { grid-column: 1 / -1; }
+.chart-card h3 {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.chart-wrap { position: relative; height: 260px; }
+.chart-wrap.tall { height: 300px; }
+
+/* Footer */
+.footer-quote {
+  text-align: center;
+  padding: 2.5rem 1rem 1rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+.footer-quote blockquote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.footer-quote .attribution {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Waterfall */
+.waterfall-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+@media (max-width: 720px) { .waterfall-layout { grid-template-columns: 1fr; } }
+
+.waterfall-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.wf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.wf-row .wf-label { color: var(--text-secondary); }
+.wf-row .wf-val { font-weight: 500; }
+.wf-row.wf-gross { background: rgba(201,168,76,0.1); border-left: 3px solid var(--gold); }
+.wf-row.wf-gross .wf-val { color: var(--gold-bright); }
+.wf-row.wf-tax { background: rgba(232,87,74,0.06); border-left: 3px solid var(--red); }
+.wf-row.wf-tax .wf-val { color: var(--red); }
+.wf-row.wf-fixed { background: rgba(91,141,239,0.06); border-left: 3px solid var(--blue); }
+.wf-row.wf-fixed .wf-val { color: var(--blue); }
+.wf-row.wf-living { background: rgba(155,114,207,0.06); border-left: 3px solid var(--purple); }
+.wf-row.wf-living .wf-val { color: var(--purple); }
+.wf-row.wf-surplus { background: rgba(78,205,196,0.1); border-left: 3px solid var(--green); }
+.wf-row.wf-surplus .wf-val { color: var(--green); font-size: 1rem; }
+
+.waterfall-narrative {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  border-left: 3px solid var(--gold);
+}
+.waterfall-narrative p {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1.65;
+  margin-bottom: 0.6rem;
+}
+.waterfall-narrative p:last-child { margin-bottom: 0; }
+.waterfall-narrative .wn-highlight {
+  color: var(--gold-bright);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.waterfall-narrative .wn-warn {
+  color: var(--red);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+/* Utility */
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- NAV -->
-<nav class="nav">
-  <span class="nav-title">The Knowledge Tree · Prototype</span>
-  <div class="nav-scores">
-    <span><span class="lbl">Illuminated </span><span class="val pts" id="nScore">0</span></span>
-    <!-- <span><span class="lbl">of </span><span class="val of" id="nTotal">0</span><span class="lbl"> available</span></span>
-    <span><span class="val pct" id="nPct">--</span><span class="lbl">%</span></span> -->
-    <span><span class="lbl">Secured on attempted </span><span class="val pct" id="nPct">--</span><span class="lbl">%</span></span>
+  <div class="header">
+    <h1>Money Value of Time</h1>
+    <div class="subtitle">AUGMENTED MODEL — MODIGLIANI + GOMPERTZ + COBB-DOUGLAS</div>
+    <div class="equation">M(t) = [λ_E(t)·E' + λ_F(t)·F' + λ_U(t)·U'] · min(E',F',U')^η · S(t)</div>
   </div>
-  <div class="nav-btns">
-    <button class="nav-btn" onclick="toggleTree()">Tree</button>
-    <button class="nav-btn" onclick="doReset()">Reset</button>
-  </div>
-</nav>
 
-<!-- TREE VIS -->
-<div class="page">
-<div class="tree-container collapsed" id="treeBox" onclick="toggleTree()">
-  <div class="tree-toggle"><span class="tree-toggle-text">Knowledge Tree</span></div>
-  <div class="tree-svg-wrap" id="treeSvgWrap"></div>
-</div>
+  <!-- ============ CALIBRATION SECTION ============ -->
+  <div class="section-box">
+    <h2>Calibration
+      <span class="h2sub">The model has four structural parameters. Determine yours from reflective questions, or set them directly.</span>
+    </h2>
 
-<!-- INTRO -->
-<div id="introBox" class="intro">
-  <h2>Map What You Know</h2>
-  <p>
-    A conventional exam score compresses performance into a single percentage.
-    It records what was secured, but tells you very little about how understanding
-    is actually organised. A result like 74% may say what was gained, but it does
-    not show where knowledge is secure, where it is partial, or how far a learner
-    can travel into deeper application.
-  </p>
-  <div class="aside">
-    This prototype treats assessment as a <strong>knowledge tree</strong>.
-    Multiple <strong>roots</strong> allow entry through different foundational ideas.
-    These converge into a shared <strong>trunk</strong> of core definitions and relationships.
-    From there, <strong>branches</strong> open into deeper applications, while the
-    <strong>canopy</strong> holds synthesis questions with the highest reward.
-    The aim is not just to total marks, but to make the structure of understanding visible.
-  </div>
-  <p>
-    The model is designed around three dimensions. <strong>Breadth</strong> is shown by
-    traversing multiple roots and lower branches. <strong>Depth</strong> is shown by climbing
-    into more demanding branches and canopy questions. <strong>Recovery</strong> is built in:
-    a wrong answer need not end the route, but can redirect the learner through a shorter
-    remedial path testing the same idea in a more accessible form.
-  </p>
-  <p>
-    This is a work in progress rather than a finished assessment system. The present version
-    explores the core metaphor and mechanics: weighted routes, visible bifurcation points,
-    and partial recovery after error. The next stage is to make the underlying design more
-    rigorous: clearer traversal rules, clearer trade-offs between breadth and depth, and a
-    richer end profile than a single score alone.
-  </p>
-  <div class="mechanic">
-    Prototype mechanics:<br>
-    ROOT = 1 pt &nbsp;·&nbsp; TRUNK = 2 pts &nbsp;·&nbsp; BRANCH = 3 pts &nbsp;·&nbsp; CANOPY = 4 pts<br>
-    Wrong answer → remedial detour → revisit at 75%<br>
-    Bifurcation points → route choice with visible trade-offs<br>
-    Current build explores one possible tree, not yet a final scoring model
-  </div>
-  <button class="begin-btn" onclick="begin()">Begin Prototype</button>
-</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-questionnaire" onclick="setMode('questionnaire')">Questionnaire</button>
+      <button class="mode-btn" id="btn-direct" onclick="setMode('direct')">Direct Sliders</button>
+    </div>
 
-<!-- BREADCRUMB -->
-<div class="crumbs" id="crumbBox"></div>
+    <!-- === QUESTIONNAIRE MODE === -->
+    <div id="mode-q">
 
-<!-- QUESTION AREA -->
-<div id="qArea"></div>
-
-<!-- SUMMARY -->
-<div id="summaryBox" style="display:none"></div>
-</div>
-
-<footer class="foot">
-  Prototype assessment model for mapped understanding &middot; built by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames
-</footer>
-
-<script>
-// ══════════════════════════════════════════════════════════
-// QUESTION DATA
-// ══════════════════════════════════════════════════════════
-// Node types: "q" = question, "bif" = bifurcation
-// Levels: root, trunk, branch, canopy
-// Wrong branches have isRemedial:true and revisits:<parentId>
-
-const Q = {
-  // ── ROOTS (wide entry, 1 pt each) ──────────────────
-  R1: {
-    id:"R1", type:"q", level:"root", pts:1, topic:"What is pressure?",
-    q:"Pressure is defined as:",
-    opts:[
-      {l:"A", t:"Force multiplied by area"},
-      {l:"B", t:"Force per unit area"},
-      {l:"C", t:"Energy per unit volume"},
-      {l:"D", t:"Mass per unit area"}
-    ],
-    ans:"B",
-    expl:"\\(p = F/A\\), measured in pascals (Pa = N m\\(^{-2}\\)). The same force concentrated on a smaller area creates higher pressure. A stiletto heel vs a flat shoe: same weight, wildly different pressure.",
-    next:"R2", wrongNext:"WR1"
-  },
-  WR1: {
-    id:"WR1", type:"q", level:"root", pts:0, isRemedial:true, topic:"Calculating pressure",
-    q:"A 600 N person stands on one foot (area 0.009 m\\(^2\\)). The pressure on the ground is:",
-    opts:[
-      {l:"A", t:"5.4 Pa"},
-      {l:"B", t:"5 400 Pa"},
-      {l:"C", t:"\\(6.7 \\times 10^4\\) Pa"},
-      {l:"D", t:"\\(5.4 \\times 10^6\\) Pa"}
-    ],
-    ans:"C",
-    expl:"\\(p = F/A = 600 / 0.009 = 66\\,700 \\approx 6.7 \\times 10^4\\) Pa. Pressure is force <em>divided by</em> area. Multiplying gives nonsensical units (N m\\(^2\\)).",
-    revisits:"R1"
-  },
-
-  R2: {
-    id:"R2", type:"q", level:"root", pts:1, topic:"Kelvin conversion",
-    q:"27\\(^\\circ\\)C expressed in kelvin is:",
-    opts:[
-      {l:"A", t:"27 K"}, {l:"B", t:"246 K"}, {l:"C", t:"300 K"}, {l:"D", t:"373 K"}
-    ],
-    ans:"C",
-    expl:"\\(T(\\text{K}) = T(^\\circ\\text{C}) + 273 = 300\\) K. Forgetting this conversion is the most common gas law error. Every gas law formula demands kelvin.",
-    next:"R3", wrongNext:"WR2"
-  },
-  WR2: {
-    id:"WR2", type:"q", level:"root", pts:0, isRemedial:true, topic:"Absolute zero",
-    q:"Absolute zero (0 K) corresponds to:",
-    opts:[
-      {l:"A", t:"0\\(^\\circ\\)C"},
-      {l:"B", t:"\\(-273\\,^\\circ\\)C"},
-      {l:"C", t:"\\(-100\\,^\\circ\\)C"},
-      {l:"D", t:"Depends on the gas"}
-    ],
-    ans:"B",
-    expl:"0 K = \\(-273\\,^\\circ\\)C. At absolute zero, molecular kinetic energy reaches its quantum minimum. The kelvin scale places its origin here.",
-    revisits:"R2"
-  },
-
-  R3: {
-    id:"R3", type:"q", level:"root", pts:1, topic:"Molecular origin of pressure",
-    q:"In the kinetic model, gas pressure arises from:",
-    opts:[
-      {l:"A", t:"Molecules pushing against each other"},
-      {l:"B", t:"Molecules colliding with the container walls"},
-      {l:"C", t:"Gravitational weight of the gas"},
-      {l:"D", t:"Intermolecular attractive forces"}
-    ],
-    ans:"B",
-    expl:"Billions of molecular collisions with the walls each second produce a measurable force per unit area. In an ideal gas there are no intermolecular forces between collisions, and molecules don't push each other: they bounce.",
-    next:"R4", wrongNext:"WR3"
-  },
-  WR3: {
-    id:"WR3", type:"q", level:"root", pts:0, isRemedial:true, topic:"Ideal gas assumptions",
-    q:"Which is an assumption of the ideal gas model?",
-    opts:[
-      {l:"A", t:"Molecules attract each other between collisions"},
-      {l:"B", t:"Collisions are perfectly elastic"},
-      {l:"C", t:"Molecules have significant volume"},
-      {l:"D", t:"Collision duration is long compared to flight time"}
-    ],
-    ans:"B",
-    expl:"The four core assumptions: (1) point-like molecules, (2) perfectly elastic collisions, (3) no intermolecular forces except during collisions, (4) negligible collision duration.",
-    revisits:"R3"
-  },
-
-  R4: {
-    id:"R4", type:"q", level:"root", pts:1, topic:"Moles and Avogadro",
-    q:"How many molecules are in 0.1 mol of a gas? (\\(N_A = 6.02 \\times 10^{23}\\) mol\\(^{-1}\\))",
-    opts:[
-      {l:"A", t:"\\(6.02 \\times 10^{22}\\)"},
-      {l:"B", t:"\\(6.02 \\times 10^{23}\\)"},
-      {l:"C", t:"\\(6.02 \\times 10^{24}\\)"},
-      {l:"D", t:"\\(6.02 \\times 10^{21}\\)"}
-    ],
-    ans:"A",
-    expl:"\\(N = nN_A = 0.1 \\times 6.02 \\times 10^{23} = 6.02 \\times 10^{22}\\). The mole bridges the lab scale (grams, litres) to the molecular scale. Every gas law calculation passes through it.",
-    next:"TRUNK_GATE", wrongNext:"WR4"
-  },
-  WR4: {
-    id:"WR4", type:"q", level:"root", pts:0, isRemedial:true, topic:"Molar mass and counting",
-    q:"3.2 g of O\\(_2\\) (molar mass 32 g mol\\(^{-1}\\)) contains how many moles?",
-    opts:[
-      {l:"A", t:"0.01 mol"}, {l:"B", t:"0.1 mol"}, {l:"C", t:"1.0 mol"}, {l:"D", t:"10 mol"}
-    ],
-    ans:"B",
-    expl:"\\(n = M/M_m = 3.2/32 = 0.1\\) mol. Then \\(N = 0.1 \\times 6.02 \\times 10^{23} = 6.02 \\times 10^{22}\\) molecules.",
-    revisits:"R4"
-  },
-
-  // ── TRUNK GATE (convergence bifurcation) ──────────
-  TRUNK_GATE: {
-    id:"TRUNK_GATE", type:"bif",
-    text:"The roots converge. You've shown breadth across the foundations. Now the trunk rises: core gas law relationships. This is the load-bearing structure. From here, branches will diverge.",
-    choices:[
-      {label:"Ascend the Trunk", target:"T1", info:"6 pts through core gas laws"}
-    ]
-  },
-
-  // ── TRUNK (2 pts each) ─────────────────────────────
-  T1: {
-    id:"T1", type:"q", level:"trunk", pts:2, topic:"Boyle's Law calculation",
-    q:"A gas at 100 kPa occupies 80 cm\\(^3\\). Compressed isothermally to 20 cm\\(^3\\), the new pressure is:",
-    opts:[
-      {l:"A", t:"25 kPa"}, {l:"B", t:"200 kPa"}, {l:"C", t:"400 kPa"}, {l:"D", t:"800 kPa"}
-    ],
-    ans:"C",
-    expl:"\\(p_1V_1 = p_2V_2 \\Rightarrow p_2 = 100 \\times 80/20 = 400\\) kPa. Volume quartered, pressure quadrupled. Microscopically: same molecules, quarter the space, four times the wall-collision frequency.",
-    next:"T2", wrongNext:"WT1"
-  },
-  WT1: {
-    id:"WT1", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Inverse proportionality",
-    q:"If \\(p \\propto 1/V\\) at constant \\(T\\), a graph of \\(p\\) vs \\(1/V\\) is:",
-    opts:[
-      {l:"A", t:"A hyperbola"}, {l:"B", t:"A straight line through the origin"},
-      {l:"C", t:"An exponential"}, {l:"D", t:"A line with non-zero intercept"}
-    ],
-    ans:"B",
-    expl:"\\(p = k \\cdot (1/V)\\) is linear through the origin with gradient \\(k = nRT\\). The \\(p\\) vs \\(V\\) graph is the hyperbola. Linearising by plotting against the reciprocal reveals the proportionality.",
-    revisits:"T1"
-  },
-
-  T2: {
-    id:"T2", type:"q", level:"trunk", pts:2, topic:"Charles' Law",
-    q:"A gas at 27\\(^\\circ\\)C occupies volume \\(V\\). At constant pressure, the temperature for volume \\(2V\\) is:",
-    opts:[
-      {l:"A", t:"54\\(^\\circ\\)C"}, {l:"B", t:"327\\(^\\circ\\)C"}, {l:"C", t:"600\\(^\\circ\\)C"}, {l:"D", t:"546\\(^\\circ\\)C"}
-    ],
-    ans:"B",
-    expl:"\\(T_1 = 300\\) K. \\(V_2/V_1 = T_2/T_1 \\Rightarrow T_2 = 600\\) K = 327\\(^\\circ\\)C. The trap: doubling the Celsius value gives 54\\(^\\circ\\)C, which is wrong because Charles' Law requires kelvin. Always convert first.",
-    next:"T3", wrongNext:"WT2"
-  },
-  WT2: {
-    id:"WT2", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Direct proportionality in kelvin",
-    q:"A gas at 300 K occupies 3.0 L. At 150 K (constant \\(p\\)), the volume is:",
-    opts:[
-      {l:"A", t:"1.5 L"}, {l:"B", t:"6.0 L"}, {l:"C", t:"0.75 L"}, {l:"D", t:"3.0 L"}
-    ],
-    ans:"A",
-    expl:"\\(V_2 = 3.0 \\times 150/300 = 1.5\\) L. Half the kelvin temperature, half the volume. The linear relationship is precisely why the kelvin scale exists.",
-    revisits:"T2"
-  },
-
-  T3: {
-    id:"T3", type:"q", level:"trunk", pts:2, topic:"Combined gas law",
-    q:"Gas at 300 K, \\(10^5\\) Pa, \\(2 \\times 10^{-3}\\) m\\(^3\\) is changed to 400 K and \\(2 \\times 10^5\\) Pa. Volume becomes:",
-    opts:[
-      {l:"A", t:"\\(4.0 \\times 10^{-3}\\) m\\(^3\\)"},
-      {l:"B", t:"\\(1.33 \\times 10^{-3}\\) m\\(^3\\)"},
-      {l:"C", t:"\\(2.67 \\times 10^{-3}\\) m\\(^3\\)"},
-      {l:"D", t:"\\(1.0 \\times 10^{-3}\\) m\\(^3\\)"}
-    ],
-    ans:"B",
-    expl:"\\(V_2 = V_1(p_1/p_2)(T_2/T_1) = 2 \\times 10^{-3} \\times \\frac{1}{2} \\times \\frac{4}{3} \\approx 1.33 \\times 10^{-3}\\) m\\(^3\\). Two competing effects: pressure doubling halves volume, temperature rising by 4/3 expands it. The combined result: about 2/3 of the original.",
-    next:"BRANCH_FORK", wrongNext:"WT3"
-  },
-  WT3: {
-    id:"WT3", type:"q", level:"trunk", pts:0, isRemedial:true, topic:"Identifying what's constant",
-    q:"A sealed rigid container is heated from 288 K to 318 K. Initial pressure 200 kPa. New pressure:",
-    opts:[
-      {l:"A", t:"175 kPa"}, {l:"B", t:"200 kPa"}, {l:"C", t:"221 kPa"}, {l:"D", t:"318 kPa"}
-    ],
-    ans:"C",
-    expl:"Sealed + rigid = constant volume: \\(p_2 = 200 \\times 318/288 \\approx 221\\) kPa. The first step is always: what's held constant? That determines which law applies.",
-    revisits:"T3"
-  },
-
-  // ── BRANCH FORK (divergence) ──────────────────────
-  BRANCH_FORK: {
-    id:"BRANCH_FORK", type:"bif",
-    text:"The trunk has carried you through the core gas law calculations. Now the branches diverge. Each tests deeper understanding in a different domain. Choose your ascent, or come back and explore another.",
-    choices:[
-      {label:"Kinetic Derivation", target:"B1", info:"6 pts, leads to canopy"},
-      {label:"Thermo Processes", target:"B4", info:"6 pts, leads to canopy"},
-      {label:"See results so far", target:"END"}
-    ]
-  },
-
-  // ── BRANCH A: Kinetic Theory (3 pts each) ─────────
-  B1: {
-    id:"B1", type:"q", level:"branch", pts:3, topic:"Isotropy in the derivation",
-    q:"In deriving \\(pV = \\tfrac{1}{3}Nm\\overline{c^2}\\), the step \\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\) relies on:",
-    opts:[
-      {l:"A", t:"Elastic collisions"},
-      {l:"B", t:"Large number of molecules"},
-      {l:"C", t:"Random, isotropic motion (no preferred direction)"},
-      {l:"D", t:"Negligible molecular volume"}
-    ],
-    ans:"C",
-    expl:"Isotropy: \\(\\overline{u^2} = \\overline{v^2} = \\overline{w^2}\\). Since \\(\\overline{c^2} = \\overline{u^2} + \\overline{v^2} + \\overline{w^2} = 3\\overline{u^2}\\), we get \\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\). Each assumption does specific work: elasticity conserves KE; isotropy splits the velocity components; large \\(N\\) justifies statistical averaging.",
-    next:"B2", wrongNext:"WB1"
-  },
-  WB1: {
-    id:"WB1", type:"q", level:"branch", pts:0, isRemedial:true, topic:"What each assumption does",
-    q:"The assumption of perfectly elastic collisions specifically ensures:",
-    opts:[
-      {l:"A", t:"\\(\\overline{u^2} = \\tfrac{1}{3}\\overline{c^2}\\)"},
-      {l:"B", t:"Kinetic energy is conserved in collisions"},
-      {l:"C", t:"Straight-line travel between collisions"},
-      {l:"D", t:"The gas obeys \\(pV = nRT\\)"}
-    ],
-    ans:"B",
-    expl:"Each assumption has a precise role. Elastic \\(\\Rightarrow\\) KE conserved. No forces \\(\\Rightarrow\\) straight-line travel. Isotropy \\(\\Rightarrow\\) component splitting. The equation of state emerges from the whole derivation, not any single assumption.",
-    revisits:"B1"
-  },
-
-  B2: {
-    id:"B2", type:"q", level:"branch", pts:3, topic:"RMS speed calculation",
-    q:"Four molecules: 100, 200, 300, 400 m s\\(^{-1}\\). The RMS speed is:",
-    opts:[
-      {l:"A", t:"250 m s\\(^{-1}\\)"}, {l:"B", t:"274 m s\\(^{-1}\\)"},
-      {l:"C", t:"300 m s\\(^{-1}\\)"}, {l:"D", t:"316 m s\\(^{-1}\\)"}
-    ],
-    ans:"B",
-    expl:"\\(\\overline{c^2} = (10^4 + 4 \\times 10^4 + 9 \\times 10^4 + 16 \\times 10^4)/4 = 75\\,000\\). \\(c_{\\text{rms}} = \\sqrt{75\\,000} \\approx 274\\) m s\\(^{-1}\\). This exceeds the arithmetic mean (250) because squaring weights faster molecules more heavily, exactly as kinetic energy demands.",
-    next:"CANOPY_A", wrongNext:"WB2"
-  },
-  WB2: {
-    id:"WB2", type:"q", level:"branch", pts:0, isRemedial:true, topic:"Why RMS, not mean?",
-    q:"We use RMS speed rather than the arithmetic mean because:",
-    opts:[
-      {l:"A", t:"It is always smaller, giving a conservative estimate"},
-      {l:"B", t:"KE depends on \\(v^2\\), requiring the mean of squared speeds"},
-      {l:"C", t:"The arithmetic mean can't be calculated for distributions"},
-      {l:"D", t:"They are identical for large \\(N\\)"}
-    ],
-    ans:"B",
-    expl:"\\(E_k = \\tfrac{1}{2}mv^2\\) requires \\(\\overline{v^2}\\), not \\((\\bar{v})^2\\). These differ for any spread of values. The RMS is the natural average when the quantity of interest is proportional to the square of what you're averaging.",
-    revisits:"B2"
-  },
-
-  // ── CANOPY A ───────────────────────────────────────
-  CANOPY_A: {
-    id:"CANOPY_A", type:"bif",
-    text:"You've climbed the kinetic theory branch. One final canopy question tests synthesis across the whole derivation.",
-    choices:[
-      {label:"Canopy: Temperature and Speed", target:"C1", info:"4 pts"},
-      {label:"Try Thermo Processes instead", target:"B4", info:"6 pts"},
-      {label:"See results", target:"END"}
-    ]
-  },
-
-  C1: {
-    id:"C1", type:"q", level:"canopy", pts:4, topic:"\\(c_{\\text{rms}}\\) and temperature",
-    q:"A gas heated from 300 K to 1200 K at constant volume. The RMS speed changes by a factor of:",
-    opts:[
-      {l:"A", t:"4"}, {l:"B", t:"2"}, {l:"C", t:"\\(\\sqrt{2}\\)"}, {l:"D", t:"16"}
-    ],
-    ans:"B",
-    expl:"\\(c_{\\text{rms}} \\propto \\sqrt{T}\\), so the factor is \\(\\sqrt{1200/300} = \\sqrt{4} = 2\\). Common trap: temperature quadrupled so speed quadruples. No. \\(E_k \\propto T\\) and \\(E_k \\propto v^2\\), so \\(v \\propto \\sqrt{T}\\). Mean KE increases by 4; speed only by 2.",
-    next:"POST_C1", wrongNext:"WC1"
-  },
-  WC1: {
-    id:"WC1", type:"q", level:"canopy", pts:0, isRemedial:true, topic:"Square-root proportionality",
-    q:"Given \\(E_k = \\tfrac{3}{2}kT\\) and \\(E_k = \\tfrac{1}{2}mc_{\\text{rms}}^2\\), it follows that \\(c_{\\text{rms}} \\propto\\):",
-    opts:[
-      {l:"A", t:"\\(T\\)"}, {l:"B", t:"\\(T^2\\)"}, {l:"C", t:"\\(\\sqrt{T}\\)"}, {l:"D", t:"\\(1/T\\)"}
-    ],
-    ans:"C",
-    expl:"Equating: \\(c_{\\text{rms}} = \\sqrt{3kT/m} \\propto \\sqrt{T}\\). Doubling \\(T\\) gives a speed factor of \\(\\sqrt{2} \\approx 1.41\\). Quadrupling \\(T\\) doubles the speed.",
-    revisits:"C1"
-  },
-
-  POST_C1: {
-    id:"POST_C1", type:"bif",
-    text:"Canopy reached on the kinetic branch. Your tree is filling with light.",
-    choices:[
-      {label:"Thermo Processes branch", target:"B4", info:"6 pts"},
-      {label:"See full results", target:"END"}
-    ]
-  },
-
-  // ── BRANCH B: Thermodynamic Processes (3 pts each) ─
-  B4: {
-    id:"B4", type:"q", level:"branch", pts:3, topic:"p-V diagram shapes",
-    q:"On a \\(p\\)-\\(V\\) diagram, an isothermal process appears as:",
-    opts:[
-      {l:"A", t:"Horizontal line"}, {l:"B", t:"Vertical line"},
-      {l:"C", t:"Hyperbola"}, {l:"D", t:"Straight line through origin"}
-    ],
-    ans:"C",
-    expl:"Isothermal: \\(pV = \\text{const}\\), so \\(p = k/V\\), a rectangular hyperbola. Isobaric = horizontal. Isochoric = vertical. The graph shape follows directly from which variable is frozen.",
-    next:"B5", wrongNext:"WB4"
-  },
-  WB4: {
-    id:"WB4", type:"q", level:"branch", pts:0, isRemedial:true, topic:"Process names",
-    q:"'Isochoric' means constant:",
-    opts:[
-      {l:"A", t:"Pressure"}, {l:"B", t:"Temperature"}, {l:"C", t:"Volume"}, {l:"D", t:"Entropy"}
-    ],
-    ans:"C",
-    expl:"Greek roots: <em>iso</em> = equal, <em>choros</em> = space/volume. Isobaric = constant pressure (<em>baros</em> = weight). Isothermal = constant temperature (<em>thermos</em> = heat).",
-    revisits:"B4"
-  },
-
-  B5: {
-    id:"B5", type:"q", level:"branch", pts:3, topic:"Work done by a gas",
-    q:"A gas at constant 8 Pa expands from 10 m\\(^3\\) to 25 m\\(^3\\). Work done by the gas:",
-    opts:[
-      {l:"A", t:"80 J"}, {l:"B", t:"120 J"}, {l:"C", t:"200 J"}, {l:"D", t:"0 J"}
-    ],
-    ans:"B",
-    expl:"\\(W = p\\Delta V = 8 \\times 15 = 120\\) J. Work = area under the curve on a \\(p\\)-\\(V\\) diagram. For constant pressure, this is a rectangle. Positive: gas pushes outward, transferring energy to surroundings.",
-    next:"CANOPY_B", wrongNext:"WB5"
-  },
-  WB5: {
-    id:"WB5", type:"q", level:"branch", pts:0, isRemedial:true, topic:"When work is zero",
-    q:"For an isochoric process, the work done is:",
-    opts:[
-      {l:"A", t:"\\(pV\\)"}, {l:"B", t:"\\(p\\Delta V\\)"}, {l:"C", t:"Zero"}, {l:"D", t:"\\(nRT\\)"}
-    ],
-    ans:"C",
-    expl:"\\(\\Delta V = 0 \\Rightarrow W = p\\Delta V = 0\\). On a \\(p\\)-\\(V\\) diagram, an isochoric process is a vertical line with zero area beneath it. All added energy goes to internal energy, not mechanical work.",
-    revisits:"B5"
-  },
-
-  CANOPY_B: {
-    id:"CANOPY_B", type:"bif",
-    text:"The thermo processes branch is climbed. A canopy synthesis question awaits.",
-    choices:[
-      {label:"Canopy: Cycle Analysis", target:"C2", info:"4 pts"},
-      {label:"Try Kinetic branch", target:"B1", info:"6 pts"},
-      {label:"See results", target:"END"}
-    ]
-  },
-
-  C2: {
-    id:"C2", type:"q", level:"canopy", pts:4, topic:"Thermodynamic cycle",
-    q:"Cycle: A(10,2) \\(\\to\\) B(10,8) \\(\\to\\) C(25,8) \\(\\to\\) A on a \\(p\\)-\\(V\\) diagram (m\\(^3\\), Pa). Net work per cycle:",
-    opts:[
-      {l:"A", t:"0 J"}, {l:"B", t:"45 J"}, {l:"C", t:"120 J"}, {l:"D", t:"195 J"}
-    ],
-    ans:"B",
-    expl:"A\\(\\to\\)B: isochoric, \\(W=0\\). B\\(\\to\\)C: isobaric, \\(W=8 \\times 15=120\\) J. C\\(\\to\\)A: trapezium \\(= \\tfrac{1}{2}(8+2)(15) = 75\\) J of compression. Net: \\(120 - 75 = 45\\) J = enclosed area. Clockwise cycle = positive net work = heat engine.",
-    next:"POST_C2", wrongNext:"WC2"
-  },
-  WC2: {
-    id:"WC2", type:"q", level:"canopy", pts:0, isRemedial:true, topic:"Net work = enclosed area",
-    q:"In a closed thermodynamic cycle, the net work equals:",
-    opts:[
-      {l:"A", t:"Total area under all curves"},
-      {l:"B", t:"Area enclosed by the cycle"},
-      {l:"C", t:"Zero (returns to initial state)"},
-      {l:"D", t:"Maximum pressure times maximum volume"}
-    ],
-    ans:"B",
-    expl:"\\(\\Delta U = 0\\) for a complete cycle (state function returns to start), so First Law gives \\(Q_{\\text{net}} = W_{\\text{net}} =\\) enclosed area. It's not zero: different paths do different work. That's the whole point of thermodynamic cycles.",
-    revisits:"C2"
-  },
-
-  POST_C2: {
-    id:"POST_C2", type:"bif",
-    text:"Both canopy and branch illuminated on this path.",
-    choices:[
-      {label:"Kinetic branch", target:"B1", info:"6 pts"},
-      {label:"See full results", target:"END"}
-    ]
-  }
-};
-
-// ══════════════════════════════════════════════════════════
-// TREE LAYOUT: Positions for SVG
-// ══════════════════════════════════════════════════════════
-// Conceptual: roots at bottom, canopy at top
-// Layout: x=0..800, y=0(canopy)..500(roots)
-const LAYOUT = {
-  // Roots (bottom, spread wide)
-  R1: {x:100, y:500}, R2: {x:300, y:500}, R3: {x:500, y:500}, R4: {x:700, y:500},
-  // Trunk (converged center)
-  T1: {x:400, y:390}, T2: {x:400, y:315}, T3: {x:400, y:240},
-  // Branch fork
-  // Kinetic branch (left)
-  B1: {x:210, y:185}, B2: {x:160, y:115},
-  // Thermo branch (right)
-  B4: {x:590, y:185}, B5: {x:640, y:115},
-  // Canopy
-  C1: {x:120, y:50}, C2: {x:680, y:50}
-};
-
-const EDGES = [
-  ["R1","T1"], ["R2","T1"], ["R3","T1"], ["R4","T1"],
-  ["T1","T2"], ["T2","T3"],
-  ["T3","B1"], ["T3","B4"],
-  ["B1","B2"], ["B2","C1"],
-  ["B4","B5"], ["B5","C2"]
-];
-
-// ══════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════
-let S = {
-  started: false,
-  score: 0,
-  attempted: 0,
-  path: [],
-  answered: {},    // id -> {correct, pts}
-  current: null,
-  revisiting: {},  // id -> true
-  visited: new Set()
-};
-
-function doReset() {
-  S = { started:false, score:0, attempted:0, path:[], answered:{}, current:null, revisiting:{}, visited:new Set() };
-  document.getElementById('introBox').style.display = '';
-  document.getElementById('qArea').innerHTML = '';
-  document.getElementById('crumbBox').innerHTML = '';
-  document.getElementById('summaryBox').style.display = 'none';
-  updateNav();
-  drawTree();
-}
-
-function begin() {
-  S.started = true;
-  document.getElementById('introBox').style.display = 'none';
-  const tb = document.getElementById('treeBox');
-  tb.classList.remove('collapsed');
-  tb.onclick = null;
-  go("R1");
-}
-
-// ══════════════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════════════
-function go(id) {
-  if (id === "END") { showSummary(); return; }
-  const node = Q[id];
-  if (!node) { showSummary(); return; }
-
-  // Skip if already answered (unless revisiting)
-  if (node.type === "q" && S.answered[id] && !S.revisiting[id]) {
-    if (node.next) go(node.next);
-    else showSummary();
-    return;
-  }
-
-  S.current = id;
-  S.visited.add(id);
-  if (!node.isRemedial) S.path.push(id);
-
-  updateCrumbs();
-  drawTree();
-
-  if (node.type === "bif") renderBif(node);
-  else renderQ(node);
-
-  setTimeout(() => {
-    document.getElementById('qArea').scrollIntoView({ behavior:'smooth', block:'start' });
-  }, 80);
-}
-
-// ══════════════════════════════════════════════════════════
-// RENDER QUESTION
-// ══════════════════════════════════════════════════════════
-function renderQ(n) {
-  const area = document.getElementById('qArea');
-  const isRevisit = !!S.revisiting[n.id];
-  const isRemedial = !!n.isRemedial;
-  const lvlNames = {root:'Root', trunk:'Trunk', branch:'Branch', canopy:'Canopy'};
-  const ptsShow = isRevisit ? `${Math.round(n.pts * 0.75)} pts (75%)` : isRemedial ? 'remedial' : `${n.pts} pt${n.pts!==1?'s':''}`;
-
-  area.innerHTML = `
-    <div class="qcard ${isRemedial ? 'remedial-card' : ''}" id="qc-${n.id}">
-      <div class="qcard-head">
-        <span class="qcard-id">${n.id} &middot; ${n.topic}</span>
-        <div class="qcard-meta">
-          <span class="badge ${isRemedial ? 'remedial' : n.level}">${isRemedial ? 'Remedial' : lvlNames[n.level]}</span>
-          <span class="pts-badge">${ptsShow}</span>
+      <div class="q-group-label q-gamma">γ — Life-Balance Aversion</div>
+      <div class="q-grid">
+        <div class="q-item">
+          <div class="q-text">
+            Would you rather have all three dimensions of life (income, health, meaning) at 6/10 — or one at 9 and another at 3?
+            <span class="q-hint">1 = happy to sacrifice one for another · 10 = need them all balanced</span>
+          </div>
+          <input type="range" id="q1" min="1" max="10" step="1" value="5">
+          <div class="q-val" id="q1v">5</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            If your health declined sharply but your income stayed high, how much would that bother you relative to the reverse?
+            <span class="q-hint">1 = money compensates for most things · 10 = no amount of money offsets poor health</span>
+          </div>
+          <input type="range" id="q2" min="1" max="10" step="1" value="6">
+          <div class="q-val" id="q2v">6</div>
         </div>
       </div>
-      <div class="qtext">${n.q}</div>
-      <div class="opts" id="opts-${n.id}">
-        ${n.opts.map(o => `
-          <button class="opt" data-l="${o.l}" onclick="pick('${n.id}','${o.l}')">
-            <span class="letter">${o.l}</span><span>${o.t}</span>
-          </button>
-        `).join('')}
+
+      <div class="q-group-label q-eta">η — Weakest-Link Sensitivity</div>
+      <div class="q-grid">
+        <div class="q-item">
+          <div class="q-text">
+            Can someone with a serious chronic condition still lead a deeply fulfilling life?
+            <span class="q-hint">1 = absolutely, other dimensions compensate fully · 10 = a collapsed dimension ruins everything</span>
+          </div>
+          <input type="range" id="q3" min="1" max="10" step="1" value="4">
+          <div class="q-val" id="q3v">4</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            If you were financially comfortable but had no sense of purpose or connection, how liveable is that?
+            <span class="q-hint">1 = fine, comfort is enough · 10 = meaninglessness is intolerable regardless of wealth</span>
+          </div>
+          <input type="range" id="q4" min="1" max="10" step="1" value="6">
+          <div class="q-val" id="q4v">6</div>
+        </div>
       </div>
-      <div id="fb-${n.id}"></div>
+
+      <div class="q-group-label q-delta">δ — Leisure Dividend from Retirement</div>
+      <div class="q-grid">
+        <div class="q-item">
+          <div class="q-text">
+            How much does your work currently drain versus energise you?
+            <span class="q-hint">1 = I love my work, retirement would bore me · 10 = work is a grind, I live for time off</span>
+          </div>
+          <input type="range" id="q5" min="1" max="10" step="1" value="5">
+          <div class="q-val" id="q5v">5</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            Do you have activities, relationships, or projects that would expand meaningfully if you had more free time?
+            <span class="q-hint">1 = not really · 10 = extensive plans and passions waiting</span>
+          </div>
+          <input type="range" id="q6" min="1" max="10" step="1" value="6">
+          <div class="q-val" id="q6v">6</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            How optimistic are you about your physical capacity to enjoy leisure in your 60s and 70s?
+            <span class="q-hint">1 = I expect significant limitations · 10 = I expect to be active and capable</span>
+          </div>
+          <input type="range" id="q7" min="1" max="10" step="1" value="6">
+          <div class="q-val" id="q7v">6</div>
+        </div>
+      </div>
+
+      <div class="q-group-label q-rho">ρ — Time Preference (Patience)</div>
+      <div class="q-grid">
+        <div class="q-item">
+          <div class="q-text">
+            Would you rather have £10,000 now or £13,000 in three years?
+            <span class="q-hint">1 = take the money now, always · 10 = I'd wait for the larger sum without hesitation</span>
+          </div>
+          <input type="range" id="q8" min="1" max="10" step="1" value="5">
+          <div class="q-val" id="q8v">5</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            How confident are you that institutions (NHS, state pension, social safety net) will function well when you're old?
+            <span class="q-hint">1 = very worried — better to consume value now · 10 = confident the future is well-provisioned</span>
+          </div>
+          <input type="range" id="q9" min="1" max="10" step="1" value="4">
+          <div class="q-val" id="q9v">4</div>
+        </div>
+        <div class="q-item">
+          <div class="q-text">
+            If everyone retired at 55, would the economy collapse or would automation and productivity absorb it?
+            <span class="q-hint">1 = total collapse, dependency crisis · 10 = society would adapt fine, work is already over-fetishised</span>
+          </div>
+          <input type="range" id="q10" min="1" max="10" step="1" value="4">
+          <div class="q-val" id="q10v">4</div>
+        </div>
+      </div>
+
+      <!-- Derived parameters -->
+      <div class="derived-bar" id="derived-bar"></div>
     </div>
-  `;
-  renderMath(area);
+
+    <!-- === DIRECT SLIDER MODE === -->
+    <div id="mode-d" class="hidden">
+      <div class="controls-grid">
+        <div class="control-item">
+          <label>γ  Risk Aversion <span class="val" id="gamma-val">2.0</span></label>
+          <input type="range" id="gamma" min="0.5" max="6" step="0.1" value="2.0">
+          <div class="desc">Higher γ → weights shift faster toward scarce dimensions</div>
+        </div>
+        <div class="control-item">
+          <label>η  Penalty Exponent <span class="val" id="eta-val">0.30</span></label>
+          <input type="range" id="eta" min="0" max="1" step="0.05" value="0.30">
+          <div class="desc">0 = additive (original). 1 = geometric-mean. Penalises dimensional collapse</div>
+        </div>
+        <div class="control-item">
+          <label>δ  Leisure Dividend <span class="val" id="delta-val">0.15</span></label>
+          <input type="range" id="delta" min="0" max="0.6" step="0.01" value="0.15">
+          <div class="desc">U-boost from retirement. Creates E↔U tension for interior optimum</div>
+        </div>
+        <div class="control-item">
+          <label>ρ  Time Preference <span class="val" id="rho-val">0.040</span></label>
+          <input type="range" id="rho" min="0" max="0.10" step="0.005" value="0.04">
+          <div class="desc">Pure impatience + institutional scepticism</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared: retirement age + current age -->
+    <div class="controls-grid" style="margin-top:1rem;">
+      <div class="control-item">
+        <label>a_r  Retirement Age <span class="val" id="retire-val">65</span></label>
+        <input type="range" id="retire" min="50" max="80" step="1" value="65">
+        <div class="desc">Controls E falloff and U leisure boost timing</div>
+      </div>
+      <div class="control-item">
+        <label>Your Age <span class="val" id="age-val">45</span></label>
+        <input type="range" id="current-age" min="18" max="85" step="1" value="45">
+        <div class="desc">For RSI and opportunity cost readout</div>
+      </div>
+    </div>
+
+    <div class="readout-bar" id="readout-bar"></div>
+  </div>
+
+  <!-- ============ FINANCIAL POSITION ============ -->
+  <div class="section-box">
+    <h2>Financial Position
+      <span class="h2sub">Your income waterfall: how gross income flows through obligations to the disposable surplus where the RSI operates.</span>
+    </h2>
+
+    <div class="controls-grid">
+      <div class="control-item">
+        <label>Gross Annual Income £ <span class="val" id="fin-gross-val">50,000</span></label>
+        <input type="range" id="fin-gross" min="15000" max="200000" step="1000" value="50000">
+      </div>
+      <div class="control-item">
+        <label>Fixed Obligations £/yr <span class="val" id="fin-fixed-val">18,000</span></label>
+        <input type="range" id="fin-fixed" min="0" max="80000" step="500" value="18000">
+        <div class="desc">Rent/mortgage, utilities, insurance, council tax, minimum debt payments</div>
+      </div>
+      <div class="control-item">
+        <label>Living Costs £/yr <span class="val" id="fin-living-val">10,000</span></label>
+        <input type="range" id="fin-living" min="0" max="40000" step="500" value="10000">
+        <div class="desc">Food, transport, clothing, essential spending</div>
+      </div>
+      <div class="control-item">
+        <label>High-Interest Debt £ <span class="val" id="fin-debt-val">0</span></label>
+        <input type="range" id="fin-debt" min="0" max="50000" step="500" value="0">
+        <div class="desc">Credit cards, personal loans (rate > inflation + ρ)</div>
+      </div>
+      <div class="control-item">
+        <label>Emergency Buffer £ <span class="val" id="fin-buffer-val">5,000</span></label>
+        <input type="range" id="fin-buffer" min="0" max="50000" step="500" value="5000">
+        <div class="desc">Current rainy-day savings (target: 3–6 months of fixed obligations)</div>
+      </div>
+      <div class="control-item">
+        <label>Net Wealth £ <span class="val" id="fin-wealth-val">100,000</span></label>
+        <input type="range" id="fin-wealth" min="0" max="2000000" step="5000" value="100000">
+        <div class="desc">Pension pot + ISAs + equity − debts. Modifies effective RSI</div>
+      </div>
+      <div class="control-item">
+        <label>Target Standard <span class="val" id="fin-target-val">Moderate</span></label>
+        <input type="range" id="fin-target" min="0" max="2" step="1" value="1">
+        <div class="desc">PLSA Retirement Living Standard: Minimum / Moderate / Comfortable</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ INCOME WATERFALL OUTPUT ============ -->
+  <div class="section-box">
+    <h2>Income Waterfall
+      <span class="h2sub">How your disposable surplus decomposes into four buckets — prioritised by urgency, guided by the RSI.</span>
+    </h2>
+
+    <div class="waterfall-layout">
+      <div class="waterfall-left">
+        <div class="chart-wrap tall"><canvas id="c-waterfall"></canvas></div>
+      </div>
+      <div class="waterfall-right" id="waterfall-detail"></div>
+    </div>
+
+    <!-- Allocation bar chart -->
+    <div style="margin-top:1.5rem;">
+      <h3 style="font-family:var(--mono);font-size:0.72rem;font-weight:400;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.6rem;">Surplus Allocation: 4 Buckets (£/month)</h3>
+      <div class="chart-wrap"><canvas id="c-buckets"></canvas></div>
+    </div>
+
+    <!-- Effective RSI comparison -->
+    <div style="margin-top:1.5rem;">
+      <h3 style="font-family:var(--mono);font-size:0.72rem;font-weight:400;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.6rem;">RSI Raw vs Wealth-Adjusted</h3>
+      <div class="chart-wrap"><canvas id="c-rsi-adj"></canvas></div>
+    </div>
+
+    <!-- Narrative output -->
+    <div class="waterfall-narrative" id="waterfall-narrative"></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-section">
+    <h2 style="font-family:var(--serif);font-weight:600;font-size:1.4rem;color:var(--gold);margin-bottom:1.2rem;">Model Output</h2>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>1 · Equilibrium Weights λ(t)</h3>
+        <div class="chart-wrap"><canvas id="c-weights"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>2 · Gompertz Survival S(t)</h3>
+        <div class="chart-wrap"><canvas id="c-survival"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>3 · Components E', F', U' (normalised)</h3>
+        <div class="chart-wrap"><canvas id="c-components"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>4 · Additive vs Discriminatory M(t)</h3>
+        <div class="chart-wrap"><canvas id="c-compare"></canvas></div>
+      </div>
+      <div class="chart-card full-width">
+        <h3>5 · Survival-Weighted Value: M(t)·S(t)·e<sup style="font-size:0.6rem">-ρt</sup></h3>
+        <div class="chart-wrap tall"><canvas id="c-weighted"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>6 · RSI: Set-Aside Indicator</h3>
+        <div class="chart-wrap"><canvas id="c-rsi"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>7 · Lifetime Value vs Retirement Age</h3>
+        <div class="chart-wrap"><canvas id="c-scan"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-quote">
+    <blockquote>
+      The time value of money discounts the future.<br>
+      The money value of time redeems it.
+    </blockquote>
+    <div class="attribution">— McCulloch-James, MVT (2025)</div>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const AGES = Array.from({length: 75}, (_, i) => i + 16);
+
+function lerp(x, xs, ys) {
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[xs.length-1]) return ys[ys.length-1];
+  let i = 0;
+  while (xs[i+1] < x) i++;
+  const t = (x - xs[i]) / (xs[i+1] - xs[i]);
+  return ys[i] + t * (ys[i+1] - ys[i]);
+}
+function norm01(arr) {
+  const mn = Math.min(...arr), mx = Math.max(...arr), d = mx - mn || 1e-9;
+  return arr.map(v => (v - mn) / d);
 }
 
-function pick(id, letter) {
-  const n = Q[id];
-  const isRevisit = !!S.revisiting[id];
-  const key = isRevisit ? id+'_rev' : id;
-  if (S.answered[key]) return;
+const ASHE_X = [17,20,25.5,34.5,44.5,54.5,65];
+const ASHE_Y = [90.4,287.1,574.9,684.2,703.3,650.6,504.7];
+const E_BASE = AGES.map(a => Math.max(0, lerp(a, ASHE_X, ASHE_Y)));
 
-  const correct = letter === n.ans;
-  let pts = 0;
-  if (correct) {
-    pts = isRevisit ? Math.round(n.pts * 0.75) : n.pts;
-    S.score += pts;
+const EQ_X = [16,30,50,70,90];
+const EQ_Y = [0.95,0.913,0.869,0.799,0.705];
+const F_RAW = AGES.map(a => Math.max(0.3, Math.min(1, lerp(a, EQ_X, EQ_Y))));
+const F_NORM = norm01(F_RAW);
+
+const U_X = [17.5,22,27,32,37,42,47,52,57,62,67,72,77,82,87,92.5];
+const U_Y = [7.62,7.35,7.41,7.41,7.34,7.28,7.19,7.18,7.27,7.53,7.81,7.81,7.74,7.64,7.54,7.39];
+const U_RAW = AGES.map(a => lerp(a, U_X, U_Y));
+const U_NORM = norm01(U_RAW);
+
+// ================================================================
+// QUESTIONNAIRE → PARAMETER MAPPING
+// ================================================================
+/*
+  Mapping rationale:
+
+  γ (risk aversion / life-balance):
+    Q1: balance preference (1-10)
+    Q2: health-vs-money asymmetry (1-10)
+    γ = 0.5 + 5.5 × mean(q1, q2) / 10
+    Range: [0.5, 6.0]
+
+  η (weakest-link penalty):
+    Q3: can a collapsed dimension be compensated? (1=yes, 10=no)
+    Q4: is meaninglessness tolerable with comfort? (1=yes, 10=no)
+    η = mean(q3, q4) / 10
+    Range: [0.0, 1.0]
+
+  δ (leisure dividend):
+    Q5: work drain vs energise (10=drain → high δ)
+    Q6: unfulfilled passions waiting (10=many → high δ)
+    Q7: physical optimism for retirement years (10=optimistic → high δ)
+    δ = 0.6 × mean(q5, q6, q7) / 10
+    Range: [0.0, 0.6]
+    
+    Q7 matters because δ is only valuable if you expect the health
+    to actually enjoy it. Pessimism about late-life capacity should
+    reduce δ (the boost won't materialise if F is too low).
+
+  ρ (time preference / impatience):
+    Q8: £10k now vs £13k in 3 years (10=patient → low ρ)
+    Q9: institutional confidence (10=confident → low ρ)
+    Q10: welfare sustainability (10=optimistic → low ρ)
+    ρ = 0.10 × (1 - mean(q8, q9, q10) / 10)
+    Range: [0.0, 0.10]
+    
+    Q9-Q10 capture the social discount: if you believe the state
+    pension will be underfunded because nobody's working, that's
+    rational grounds for higher ρ (consume value sooner).
+*/
+
+function questToParams() {
+  const q = id => parseInt(document.getElementById(id).value);
+  const q1=q('q1'), q2=q('q2'), q3=q('q3'), q4=q('q4'), q5=q('q5');
+  const q6=q('q6'), q7=q('q7'), q8=q('q8'), q9=q('q9'), q10=q('q10');
+
+  const gamma = 0.5 + 5.5 * (q1 + q2) / 20;
+  const eta   = (q3 + q4) / 20;
+  const delta = 0.6 * (q5 + q6 + q7) / 30;
+  const rho   = 0.10 * (1 - (q8 + q9 + q10) / 30);
+
+  return { gamma, eta, delta, rho };
+}
+
+function updateDerivedBar() {
+  const p = questToParams();
+  const bar = document.getElementById('derived-bar');
+  bar.innerHTML = [
+    { sym: 'γ', val: p.gamma.toFixed(2), name: 'life-balance aversion', color: 'var(--green)' },
+    { sym: 'η', val: p.eta.toFixed(2),   name: 'weakest-link penalty',  color: 'var(--blue)' },
+    { sym: 'δ', val: p.delta.toFixed(2), name: 'leisure dividend',      color: 'var(--red)' },
+    { sym: 'ρ', val: p.rho.toFixed(3),   name: 'time preference',       color: 'var(--orange)' },
+  ].map(d => `<div class="derived-item">
+    <span class="dlabel" style="color:${d.color}">${d.sym}</span>
+    <span class="dval"> = ${d.val}</span>
+    <span class="dname">${d.name}</span>
+  </div>`).join('');
+}
+
+// ================================================================
+// MODE SWITCHING
+// ================================================================
+let currentMode = 'questionnaire';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-q').classList.toggle('hidden', mode !== 'questionnaire');
+  document.getElementById('mode-d').classList.toggle('hidden', mode !== 'direct');
+  document.getElementById('btn-questionnaire').classList.toggle('active', mode === 'questionnaire');
+  document.getElementById('btn-direct').classList.toggle('active', mode === 'direct');
+  render();
+}
+
+function getParams() {
+  if (currentMode === 'questionnaire') {
+    return questToParams();
   }
-  if (!n.isRemedial && !isRevisit) S.attempted += n.pts;
+  return {
+    gamma: parseFloat(document.getElementById('gamma').value),
+    eta:   parseFloat(document.getElementById('eta').value),
+    delta: parseFloat(document.getElementById('delta').value),
+    rho:   parseFloat(document.getElementById('rho').value),
+  };
+}
 
-  S.answered[key] = { correct, pts };
-  if (isRevisit) S.answered[id] = { correct, pts };
+// ================================================================
+// MODEL
+// ================================================================
+function retirementFalloff(ages, a0, k=3, floor=0.3) {
+  return ages.map(a => floor + (1-floor) / (1 + Math.exp((a-a0)/k)));
+}
+function gompertzSurvival(ages, alpha=0.0002, beta=0.085, t0=20) {
+  return ages.map(a => Math.exp(-(alpha/beta)*(Math.exp(beta*(a-t0))-1)));
+}
+function leisureBoost(ages, ar, delta, k=3) {
+  return ages.map(a => delta / (1 + Math.exp(-(a-ar)/k)));
+}
+function trapz(y, x) {
+  let s=0; for(let i=1;i<y.length;i++) s+=(y[i]+y[i-1])*(x[i]-x[i-1])/2; return s;
+}
 
-  // Lock options
-  const wrap = document.getElementById(`opts-${id}`);
-  wrap.querySelectorAll('.opt').forEach(btn => {
-    const bl = btn.dataset.l;
-    btn.classList.add('locked'); btn.onclick = null;
-    if (bl === letter && correct) btn.classList.add('correct-pick');
-    if (bl === letter && !correct) btn.classList.add('wrong-pick');
-    if (bl === n.ans && !correct) btn.classList.add('show-correct');
+function modiglianiWeights(idx, E, F, U, D, gamma) {
+  const rem = (arr) => {
+    const sl=arr.slice(idx), dl=D.slice(idx), xs=AGES.slice(idx);
+    if(sl.length<2) return 1e-8;
+    return Math.max(trapz(sl.map((v,i)=>v*dl[i]), xs), 1e-8);
+  };
+  const rE=rem(E), rF=rem(F), rU=rem(U);
+  const ig = -1/gamma;
+  let wE=Math.pow(rE,ig), wF=Math.pow(rF,ig), wU=Math.pow(rU,ig);
+  const t=wE+wF+wU;
+  return [wE/t, wF/t, wU/t];
+}
+
+function computeModel(params) {
+  const {gamma, eta, delta, rho, retireAge} = params;
+  const fall = retirementFalloff(AGES, retireAge);
+  const E_eff = E_BASE.map((e,i) => e*fall[i]);
+  const E_n = norm01(E_eff);
+  const boost = leisureBoost(AGES, retireAge, delta);
+  const U_b = U_NORM.map((u,i) => Math.min(1, u+boost[i]));
+  const S = gompertzSurvival(AGES);
+  const D = AGES.map((a,i) => S[i]*Math.exp(-rho*(a-AGES[0])));
+  const lE=[], lF=[], lU=[];
+  for(let i=0;i<AGES.length;i++){
+    const [we,wf,wu] = modiglianiWeights(i, E_n, F_NORM, U_b, D, gamma);
+    lE.push(we); lF.push(wf); lU.push(wu);
+  }
+  const M_add = AGES.map((_,i) => lE[i]*E_n[i]+lF[i]*F_NORM[i]+lU[i]*U_b[i]);
+  const M_disc = AGES.map((_,i) => {
+    const a = M_add[i];
+    const fl = Math.min(E_n[i], F_NORM[i], U_b[i]);
+    return a * Math.pow(Math.max(fl,1e-6), eta);
   });
-
-  // Glow card
-  if (correct) document.getElementById(`qc-${id}`).classList.add('glow-correct');
-
-  // Feedback
-  const fb = document.getElementById(`fb-${id}`);
-  fb.innerHTML = `
-    <div class="fb ${correct ? 'ok' : 'nope'}">
-      <div class="fb-title">${correct ? `+${pts} illuminated${isRevisit ? ' (75% recovery)' : ''}` : isRevisit ? 'Not recovered this time.' : 'Not yet.'}</div>
-      <div class="fb-explain">${n.expl}</div>
-    </div>
-  `;
-  renderMath(fb);
-  updateNav();
-  drawTree();
-
-  // Next
-  setTimeout(() => {
-    if (n.isRemedial && n.revisits) {
-      showRevisitOffer(n);
-      return;
-    }
-    if (correct || isRevisit) {
-      if (n.next) go(n.next); else showSummary();
-    } else {
-      if (n.wrongNext) go(n.wrongNext);
-      else if (n.next) go(n.next);
-      else showSummary();
-    }
-  }, 1600);
+  const M_w = AGES.map((_,i)=>M_disc[i]*D[i]);
+  const mMax = Math.max(...M_disc);
+  const RSI = AGES.map((a,i) => a<40 ? 0 : 1-M_disc[i]/mMax);
+  return { E_n, F_NORM, U_b, S, D, lE, lF, lU, M_add, M_disc, M_w, RSI,
+    lt_raw: trapz(M_disc,AGES),
+    lt_surv: trapz(M_disc.map((m,i)=>m*S[i]),AGES),
+    lt_full: trapz(M_w,AGES) };
 }
 
-function showRevisitOffer(remedialNode) {
-  const parentId = remedialNode.revisits;
-  const parent = Q[parentId];
-  const area = document.getElementById('qArea');
-  area.innerHTML += `
-    <div class="revisit-box">
-      <h4>Revisit Opportunity</h4>
-      <p>You've explored the remedial path. Return to <strong>${parentId}</strong> (${parent.topic}) 
-         and try again.</p>
-      <p class="penalty">Correct = 75% of original marks. Wrong = no recovery, but the explanation still illuminates.</p>
-      <button class="bifur-btn" onclick="doRevisit('${parentId}')">
-        Revisit ${parentId}
-      </button>
-    </div>
-  `;
+function lifetimeScan(params) {
+  const ras = Array.from({length:31},(_,i)=>i+50);
+  const raw=[], surv=[], full=[];
+  for(const ra of ras){
+    const o = computeModel({...params, retireAge:ra});
+    raw.push(o.lt_raw); surv.push(o.lt_surv); full.push(o.lt_full);
+  }
+  return {ras, raw, surv, full};
 }
 
-function doRevisit(id) {
-  S.revisiting[id] = true;
-  go(id);
-}
-
-// ══════════════════════════════════════════════════════════
-// RENDER BIFURCATION
-// ══════════════════════════════════════════════════════════
-function renderBif(n) {
-  const area = document.getElementById('qArea');
-  const chs = n.choices.map(c => {
-    const done = c.target !== "END" && Q[c.target] && Q[c.target].type === "q" && S.answered[c.target];
-    return {...c, done};
-  });
-
-  area.innerHTML = `
-    <div class="bifur">
-      <h4>Bifurcation</h4>
-      <p>${n.text}</p>
-      <div class="bifur-choices">
-        ${chs.map(c => `
-          <button class="bifur-btn" ${c.done ? 'disabled' : ''} onclick="go('${c.target}')">
-            ${c.label}
-            <span class="bp">${c.done ? '(illuminated)' : c.info}</span>
-          </button>
-        `).join('')}
-      </div>
-    </div>
-  `;
-  renderMath(area);
-}
-
-// ══════════════════════════════════════════════════════════
-// NAV + CRUMBS
-// ══════════════════════════════════════════════════════════
-function updateNav() {
-  const mainNodes = Object.values(Q).filter(n => n.type==="q" && !n.isRemedial);
-  const totalPts = mainNodes.reduce((s,n) => s + n.pts, 0);
-  document.getElementById('nScore').textContent = S.score;
-  document.getElementById('nTotal').textContent = totalPts;
-  const pct = S.attempted > 0 ? Math.round(S.score / S.attempted * 100) : '--';
-  document.getElementById('nPct').textContent = pct;
-}
-
-function updateCrumbs() {
-  const box = document.getElementById('crumbBox');
-  const unique = [...new Set(S.path)];
-  box.innerHTML = unique.map((id, i) => {
-    const n = Q[id];
-    if (!n || n.type === 'bif') return '';
-    const isCur = id === S.current;
-    const ans = S.answered[id];
-    let cls = 'done';
-    if (isCur) cls = 'active';
-    else if (n.isRemedial) cls = 'remedial';
-    return `${i > 0 ? '<span class="crumb-arrow">&#x2192;</span>' : ''}<span class="crumb ${cls}">${id}</span>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════════════════════════
-// TREE SVG DRAWING
-// ══════════════════════════════════════════════════════════
-
-// Topic labels for each node (short, for the SVG)
-const NODE_LABELS = {
-  R1: "Pressure", R2: "Kelvin", R3: "Molecular model", R4: "Moles",
-  T1: "Boyle's Law", T2: "Charles' Law", T3: "Combined Law",
-  B1: "Isotropy", B2: "RMS speed", B4: "p-V diagrams", B5: "Work done",
-  C1: "Speed & temp", C2: "Thermo cycle"
+// ================================================================
+// CHARTS
+// ================================================================
+const charts = {};
+const CJ = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:250},
+  plugins:{
+    legend:{labels:{color:'#9a9590',font:{family:"'IBM Plex Mono'",size:10},boxWidth:12}},
+    title:{display:false}
+  },
+  scales:{
+    x:{ticks:{color:'#5a5550',font:{family:"'IBM Plex Mono'",size:9}},grid:{color:'rgba(255,255,255,0.04)'}},
+    y:{ticks:{color:'#5a5550',font:{family:"'IBM Plex Mono'",size:9}},grid:{color:'rgba(255,255,255,0.06)'}}
+  }
 };
-
-function drawTree() {
-  const W = 800, H = 580;
-  const wrap = document.getElementById('treeSvgWrap');
-
-  let svg = `<svg id="treeSvg" viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-height:480px;">`;
-
-  // Definitions: glows, gradients
-  svg += `<defs>
-    <radialGradient id="bgGlow" cx="50%" cy="75%" r="55%">
-      <stop offset="0%" stop-color="rgba(122,98,69,0.1)"/>
-      <stop offset="100%" stop-color="transparent"/>
-    </radialGradient>
-    <filter id="litGlow">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="activeGlow">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  </defs>`;
-
-  // Background
-  svg += `<rect width="${W}" height="${H}" fill="url(#bgGlow)" rx="8"/>`;
-
-  // Zone labels (prominent)
-  svg += `<text x="400" y="558" text-anchor="middle" fill="rgba(160,140,100,0.5)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em">ROOTS</text>`;
-  svg += `<text x="35" y="330" text-anchor="middle" fill="rgba(140,120,80,0.4)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em" transform="rotate(-90,35,330)">TRUNK</text>`;
-  svg += `<text x="400" y="22" text-anchor="middle" fill="rgba(200,180,100,0.4)" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" letter-spacing="0.2em">CANOPY</text>`;
-  svg += `<text x="180" y="145" text-anchor="middle" fill="rgba(90,184,110,0.3)" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.15em">KINETIC THEORY</text>`;
-  svg += `<text x="620" y="145" text-anchor="middle" fill="rgba(90,184,110,0.3)" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.15em">THERMO PROCESSES</text>`;
-
-  // Ground line
-  svg += `<line x1="60" y1="530" x2="740" y2="530" stroke="rgba(160,140,100,0.25)" stroke-width="1.5" stroke-dasharray="6,4"/>`;
-
-  // ── EDGES ──
-  EDGES.forEach(([a,b]) => {
-    const pa = LAYOUT[a], pb = LAYOUT[b];
-    if (!pa || !pb) return;
-    const aLit = S.answered[a] && S.answered[a].correct;
-    const bLit = S.answered[b] && S.answered[b].correct;
-    const bothLit = aLit && bLit;
-    const eitherLit = aLit || bLit;
-
-    // Base: clearly visible warm brown. Lit: bright teal. Partial: medium.
-    let col, w, dash = '';
-    if (bothLit) {
-      col = '#5eead4'; w = 3.5;
-    } else if (eitherLit) {
-      col = 'rgba(94,234,212,0.4)'; w = 2.5;
-    } else {
-      col = 'rgba(180,160,120,0.45)'; w = 2;
-    }
-
-    if (a.startsWith('R')) {
-      // Curved root paths converging
-      const mx = (pa.x + pb.x) / 2;
-      const my = (pa.y + pb.y) / 2 - 30;
-      svg += `<path d="M${pa.x} ${pa.y} Q${mx} ${my} ${pb.x} ${pb.y}" fill="none" stroke="${col}" stroke-width="${w}" ${dash} opacity="1"/>`;
-    } else {
-      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${col}" stroke-width="${w}" ${dash}/>`;
-    }
-  });
-
-  // ── NODES ──
-  Object.entries(LAYOUT).forEach(([id, pos]) => {
-    const n = Q[id];
-    if (!n) return;
-    const ans = S.answered[id];
-    const lit = ans && ans.correct;
-    const wrong = ans && !ans.correct;
-    const active = id === S.current;
-    const label = NODE_LABELS[id] || id;
-
-    // Sizing by level
-    let r = 18;
-    if (n.level === 'canopy') r = 24;
-    else if (n.level === 'branch') r = 20;
-    else if (n.level === 'root') r = 16;
-
-    let fill, stroke, textCol, sw, filter = '';
-    const ptsBadge = n.pts;
-
-    if (lit) {
-      // Bright, glowing
-      if (n.level === 'canopy') {
-        fill = 'rgba(228,204,106,0.35)'; stroke = '#e8cc6a'; textCol = '#f5e8a0';
-      } else {
-        fill = 'rgba(94,234,212,0.25)'; stroke = '#5eead4'; textCol = '#a8f5e8';
-      }
-      sw = 2.5;
-      filter = 'filter="url(#litGlow)"';
-    } else if (wrong) {
-      fill = 'rgba(240,121,107,0.15)'; stroke = '#f0796b'; textCol = '#f0a090'; sw = 2;
-    } else if (active) {
-      fill = 'rgba(201,168,76,0.2)'; stroke = '#c9a84c'; textCol = '#e8d080'; sw = 2.5;
-      filter = 'filter="url(#activeGlow)"';
-    } else {
-      // UNVISITED: clearly visible, muted but not invisible
-      fill = 'rgba(60,55,45,0.7)';
-      stroke = 'rgba(180,160,120,0.6)';
-      textCol = 'rgba(200,185,155,0.8)';
-      sw = 1.8;
-    }
-
-    svg += `<g class="tree-node" ${filter}>`;
-
-    // Outer ring for canopy nodes
-    if (n.level === 'canopy') {
-      svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${r+5}" fill="none" stroke="${lit ? 'rgba(228,204,106,0.2)' : 'rgba(180,160,120,0.15)'}" stroke-width="1" stroke-dasharray="3,3"/>`;
-    }
-
-    // Main circle
-    svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
-
-    // Node ID
-    svg += `<text x="${pos.x}" y="${pos.y + 1}" text-anchor="middle" dominant-baseline="central" fill="${textCol}" font-size="${n.level === 'canopy' ? 11 : 10}" font-weight="600">${id}</text>`;
-
-    // Topic label below
-    const labelY = pos.y + r + 14;
-    const labelCol = lit ? textCol : 'rgba(180,165,135,0.65)';
-    svg += `<text x="${pos.x}" y="${labelY}" text-anchor="middle" fill="${labelCol}" font-family="EB Garamond, serif" font-size="11" font-style="italic">${label}</text>`;
-
-    // Points indicator
-    if (lit && ans) {
-      svg += `<text x="${pos.x}" y="${labelY + 14}" text-anchor="middle" fill="${textCol}" font-size="8" opacity="0.8">+${ans.pts}</text>`;
-    } else if (!lit && !wrong) {
-      svg += `<text x="${pos.x}" y="${labelY + 14}" text-anchor="middle" fill="rgba(160,145,115,0.4)" font-size="8">${ptsBadge} pt${ptsBadge>1?'s':''}</text>`;
-    }
-
-    svg += `</g>`;
-  });
-
-  svg += `</svg>`;
-  wrap.innerHTML = svg;
+function ds(label,data,color,opts={}){
+  return{label,data,borderColor:color,
+    backgroundColor:opts.fill?color.replace(')',',0.12)').replace('rgb','rgba'):'transparent',
+    borderWidth:opts.width||2,pointRadius:0,tension:0.35,fill:opts.fill||false,
+    borderDash:opts.dash||[],...(opts.extra||{})};
 }
-
-function toggleTree() {
-  const tb = document.getElementById('treeBox');
-  if (tb.classList.contains('collapsed')) {
-    tb.classList.remove('collapsed');
-    tb.onclick = null;
-    drawTree();
-  } else {
-    tb.classList.add('collapsed');
-    tb.onclick = () => toggleTree();
+function mc(id,type,datasets,opts={}){
+  if(charts[id])charts[id].destroy();
+  let cfg=JSON.parse(JSON.stringify(CJ));
+  if(opts.yMax)cfg.scales.y.max=opts.yMax;
+  if(opts.yMin!==undefined)cfg.scales.y.min=opts.yMin;
+  if(opts.xLabel)cfg.scales.x.title={display:true,text:opts.xLabel,color:'#5a5550',font:{family:"'IBM Plex Mono'",size:9}};
+  // Allow extra options to override (for stacked bars etc)
+  if(opts.extra){
+    if(opts.extra.indexAxis) cfg.indexAxis = opts.extra.indexAxis;
+    if(opts.extra.scales) cfg.scales = opts.extra.scales;
   }
+  charts[id]=new Chart(document.getElementById(id),{type,data:{labels:opts.labels||AGES,datasets},options:cfg});
 }
 
-// ══════════════════════════════════════════════════════════
-// SUMMARY
-// ══════════════════════════════════════════════════════════
-function showSummary() {
-  document.getElementById('qArea').innerHTML = '';
-  const panel = document.getElementById('summaryBox');
-  panel.style.display = '';
+// ================================================================
+// FINANCIAL WATERFALL
+// ================================================================
+const PLSA_ANNUAL = [14400, 31300, 43100]; // min, moderate, comfortable (2025/26)
+const PLSA_LABELS = ['Minimum','Moderate','Comfortable'];
+const STATE_PENSION_ANNUAL = 11973; // 2025/26 full new state pension
 
-  const mainNodes = Object.values(Q).filter(n => n.type==="q" && !n.isRemedial);
-  const totalPts = mainNodes.reduce((s,n) => s + n.pts, 0);
-  const pct = S.attempted > 0 ? Math.round(S.score / S.attempted * 100) : 0;
+function estimateTax(gross) {
+  // Simplified UK income tax + NI 2025/26
+  const pa = 12570;
+  let tax = 0;
+  if (gross > pa) tax += Math.min(gross - pa, 50270 - pa) * 0.20;
+  if (gross > 50270) tax += Math.min(gross - 50270, 125140 - 50270) * 0.40;
+  if (gross > 125140) tax += (gross - 125140) * 0.45;
+  // NI (employee class 1)
+  const niThresh = 12570;
+  const niUpper = 50270;
+  let ni = 0;
+  if (gross > niThresh) ni += Math.min(gross - niThresh, niUpper - niThresh) * 0.08;
+  if (gross > niUpper) ni += (gross - niUpper) * 0.02;
+  return Math.round(tax + ni);
+}
 
-  // Build knowledge list
-  const litItems = [], dimItems = [], darkItems = [];
-  mainNodes.forEach(n => {
-    const a = S.answered[n.id];
-    if (a && a.correct) litItems.push(n);
-    else if (a && !a.correct) dimItems.push(n);
-    else darkItems.push(n);
-  });
+function computeWaterfall(out, currentAge) {
+  const gross = parseFloat(document.getElementById('fin-gross').value);
+  const fixed = parseFloat(document.getElementById('fin-fixed').value);
+  const living = parseFloat(document.getElementById('fin-living').value);
+  const debt = parseFloat(document.getElementById('fin-debt').value);
+  const buffer = parseFloat(document.getElementById('fin-buffer').value);
+  const wealth = parseFloat(document.getElementById('fin-wealth').value);
+  const targetIdx = parseInt(document.getElementById('fin-target').value);
+  const retireAge = parseInt(document.getElementById('retire').value);
 
-  const renderItems = (items, icon, cls) => items.map(n => {
-    const a = S.answered[n.id];
-    const ptsText = a ? (a.correct ? `+${a.pts}` : '0') : `${n.pts} pts`;
-    return `<div class="kitem"><span class="ki ${cls}">${icon}</span><span class="kn">${n.id}</span><span class="kt">${n.topic}</span><span class="kp">${ptsText}</span></div>`;
-  }).join('');
+  const taxNI = estimateTax(gross);
+  const net = gross - taxNI;
+  const discretionary = Math.max(0, net - fixed);
+  const surplus = Math.max(0, discretionary - living);
 
-  panel.innerHTML = `
-    <div class="summary">
-      <h2>Your Current Knowledge Profile</h2>
-      <div class="summary-grid">
-        <div class="sstat"><div class="sv" style="color:var(--green)">${S.score}</div><div class="sl">Illuminated</div></div>
-        <div class="sstat"><div class="sv">${totalPts}</div><div class="sl">Total Available</div></div>
-        <div class="sstat"><div class="sv" style="color:${pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red)'}">${pct}%</div><div class="sl">Of Attempted</div></div>
-      </div>
-      <p style="font-size:0.92rem; color:var(--text-dim); margin-bottom: 4px;">
-           This prototype reports more than a flat percentage. It shows which parts of the tree were secured,
-           which were attempted but not yet secured, and which remain unexplored.
-           You illuminated ${S.score} of ${totalPts} available points across ${litItems.length + dimItems.length} questions attempted.
-           ${darkItems.length > 0 ? `${darkItems.length} node${darkItems.length>1?'s':''} remain unexplored, representing branches still available for traversal.` : 'Every branch has been visited in this run.'}
-      </p>
-      <div class="knowledge-list">
-        <h3>What You've Shown</h3>
-        ${renderItems(litItems, '&#x2736;', 'lit')}
-        ${dimItems.length ? '<h3 style="margin-top:14px">Attempted but Not Yet Secured</h3>' + renderItems(dimItems, '&#x25C7;', 'dim') : ''}
-        ${darkItems.length ? '<h3 style="margin-top:14px">Unexplored Branches</h3>' + renderItems(darkItems, '&#x25CB;', 'dark') : ''}
-      </div>
-      <button class="begin-btn" style="margin-top:22px" onclick="doReset()">Climb Again</button>
-    </div>
+  // RSI at current age
+  const ci = AGES.indexOf(currentAge);
+  const rsiRaw = ci >= 0 ? out.RSI[ci] : 0;
+  const sNow = ci >= 0 ? out.S[ci] : 0.5;
+
+  // Wealth target: PV of remaining retirement consumption
+  const targetAnnual = PLSA_ANNUAL[targetIdx];
+  const yearsInRetirement = Math.max(1, 90 - retireAge);
+  // Simple annuity PV with mortality weighting
+  let wTarget = 0;
+  for (let y = 0; y < yearsInRetirement; y++) {
+    const age = retireAge + y;
+    if (age > 90) break;
+    const sAge = Math.exp(-(0.0002/0.085) * (Math.exp(0.085*(age-20)) - 1));
+    const disc = 1 / Math.pow(1.03, y);
+    wTarget += (targetAnnual - STATE_PENSION_ANNUAL) * sAge * disc;
+  }
+  wTarget = Math.max(0, wTarget);
+
+  // Effective RSI: reduced by wealth already accumulated
+  const wealthRatio = wTarget > 0 ? Math.min(1, wealth / wTarget) : 1;
+  const rsiEffective = rsiRaw * Math.max(0, 1 - wealthRatio);
+
+  // Buffer target: 4 months of fixed obligations
+  const bufferTarget = (fixed / 12) * 4;
+  const bufferDeficit = Math.max(0, bufferTarget - buffer);
+
+  // Bucket allocation (annual)
+  let b1_buffer = 0, b2_debt = 0, b3_present = 0, b4_future = 0;
+  let remaining = surplus;
+
+  // Priority 1: buffer deficit (spread over 12 months, cap at surplus)
+  if (bufferDeficit > 0) {
+    b1_buffer = Math.min(remaining, bufferDeficit);
+    remaining -= b1_buffer;
+  }
+
+  // Priority 2: high-interest debt (aggressive: 30% of remaining, or all debt/year)
+  if (debt > 0 && remaining > 0) {
+    b2_debt = Math.min(remaining, Math.min(remaining * 0.30, debt));
+    remaining -= b2_debt;
+  }
+
+  // Priority 3 & 4: split by effective RSI
+  b4_future = remaining * rsiEffective;
+  b3_present = remaining - b4_future;
+
+  return {
+    gross, taxNI, net, fixed, living, discretionary, surplus,
+    b1_buffer, b2_debt, b3_present, b4_future,
+    bufferTarget, bufferDeficit, debt, wealth, wTarget,
+    rsiRaw, rsiEffective, wealthRatio,
+    targetLabel: PLSA_LABELS[targetIdx],
+    targetAnnual
+  };
+}
+
+function renderWaterfall(out, currentAge) {
+  const wf = computeWaterfall(out, currentAge);
+  const fmt = v => '£' + Math.round(v).toLocaleString();
+  const fmtM = v => '£' + Math.round(v/12).toLocaleString() + '/mo';
+
+  // Detail rows
+  document.getElementById('waterfall-detail').innerHTML = `
+    <div class="wf-row wf-gross"><span class="wf-label">Gross Income</span><span class="wf-val">${fmt(wf.gross)}</span></div>
+    <div class="wf-row wf-tax"><span class="wf-label">Tax + NI</span><span class="wf-val">−${fmt(wf.taxNI)}</span></div>
+    <div class="wf-row" style="border-left:3px solid var(--text-muted);background:rgba(255,255,255,0.02)"><span class="wf-label">Net Income</span><span class="wf-val" style="color:var(--text-primary)">${fmt(wf.net)}</span></div>
+    <div class="wf-row wf-fixed"><span class="wf-label">Fixed Obligations</span><span class="wf-val">−${fmt(wf.fixed)}</span></div>
+    <div class="wf-row wf-living"><span class="wf-label">Living Costs</span><span class="wf-val">−${fmt(wf.living)}</span></div>
+    <div class="wf-row wf-surplus"><span class="wf-label">Disposable Surplus</span><span class="wf-val">${fmt(wf.surplus)}</span></div>
   `;
 
-  panel.scrollIntoView({ behavior: 'smooth' });
-}
+  // Waterfall chart (stacked horizontal bar)
+  mc('c-waterfall', 'bar', [
+    { label: 'Tax+NI', data: [wf.taxNI], backgroundColor: 'rgba(232,87,74,0.6)', borderWidth: 0 },
+    { label: 'Fixed', data: [wf.fixed], backgroundColor: 'rgba(91,141,239,0.5)', borderWidth: 0 },
+    { label: 'Living', data: [wf.living], backgroundColor: 'rgba(155,114,207,0.5)', borderWidth: 0 },
+    { label: 'Surplus', data: [wf.surplus], backgroundColor: 'rgba(78,205,196,0.5)', borderWidth: 0 },
+  ], {
+    labels: ['Income'],
+    extra: {
+      indexAxis: 'y',
+      scales: {
+        x: { stacked: true, ticks: { color: '#5a5550', font: { family: "'IBM Plex Mono'", size: 9 }, callback: v => '£'+Math.round(v/1000)+'k' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { stacked: true, display: false }
+      }
+    }
+  });
 
-// ══════════════════════════════════════════════════════════
-// MATH
-// ══════════════════════════════════════════════════════════
-function renderMath(el) {
-  if (typeof renderMathInElement === 'function') {
-    renderMathInElement(el || document.body, {
-      delimiters: [
-        {left: "\\(", right: "\\)", display: false},
-        {left: "\\[", right: "\\]", display: true},
-        {left: "$$", right: "$$", display: true}
-      ],
-      throwOnError: false
-    });
+  // Bucket allocation chart
+  mc('c-buckets', 'bar', [
+    { label: '1. Buffer', data: [wf.b1_buffer/12], backgroundColor: 'rgba(232,155,74,0.7)', borderWidth: 0 },
+    { label: '2. Debt', data: [wf.b2_debt/12], backgroundColor: 'rgba(232,87,74,0.7)', borderWidth: 0 },
+    { label: '3. Present (U·F·S)', data: [wf.b3_present/12], backgroundColor: 'rgba(78,205,196,0.7)', borderWidth: 0 },
+    { label: '4. Future (RSI)', data: [wf.b4_future/12], backgroundColor: 'rgba(201,168,76,0.7)', borderWidth: 0 },
+  ], {
+    labels: ['Monthly'],
+    extra: {
+      indexAxis: 'y',
+      scales: {
+        x: { stacked: true, ticks: { color: '#5a5550', font: { family: "'IBM Plex Mono'", size: 9 }, callback: v => '£'+Math.round(v) }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { stacked: true, display: false }
+      }
+    }
+  });
+
+  // RSI raw vs adjusted chart
+  const ci = AGES.indexOf(currentAge);
+  const rsiAdj = AGES.map((a, i) => {
+    const raw = out.RSI[i];
+    return raw * Math.max(0, 1 - wf.wealthRatio);
+  });
+  mc('c-rsi-adj', 'line', [
+    ds('RSI raw', out.RSI, '#e89b4a', { dash: [4,3] }),
+    ds('RSI effective (wealth-adjusted)', rsiAdj, '#c9a84c', { fill: true, width: 2.5 }),
+  ], { yMax: 1 });
+
+  // Narrative
+  const pctFuture = wf.surplus > 0 ? (wf.b4_future / wf.surplus * 100).toFixed(0) : 0;
+  const pctPresent = wf.surplus > 0 ? (wf.b3_present / wf.surplus * 100).toFixed(0) : 0;
+
+  let narrative = '';
+
+  if (wf.surplus <= 0) {
+    narrative = `<p>Your fixed obligations and living costs consume your entire net income. There is no surplus to allocate. The MVT model cannot guide saving when there is nothing to save — the priority is reducing fixed obligations or increasing gross income.</p>`;
+  } else {
+    narrative = `<p>Your disposable surplus is <span class="wn-highlight">${fmt(wf.surplus)}/yr (${fmtM(wf.surplus)})</span>. `;
+
+    if (wf.bufferDeficit > 0) {
+      narrative += `Your emergency buffer is <span class="wn-warn">${fmt(wf.bufferDeficit)}</span> short of the 4-month target (${fmt(wf.bufferTarget)}). This is the first claim on surplus — protecting against E(t) discontinuities. `;
+    }
+
+    if (wf.debt > 0) {
+      narrative += `You carry <span class="wn-warn">${fmt(wf.debt)}</span> in high-interest debt, which consumes future earnings capacity. The model directs ${fmtM(wf.b2_debt)} toward accelerated repayment. `;
+    }
+
+    narrative += `</p><p>After buffer and debt claims, the RSI splits remaining surplus: <span class="wn-highlight">${pctPresent}% to present consumption</span> (experiences, health, relationships while F(t)×S(t) is high) and <span class="wn-highlight">${pctFuture}% to future set-aside</span> (pension, ISA).`;
+
+    if (wf.wealthRatio >= 0.9) {
+      narrative += ` Your accumulated wealth already covers <span class="wn-highlight">${(wf.wealthRatio*100).toFixed(0)}%</span> of your ${wf.targetLabel} retirement target (${fmt(wf.wTarget)} present value). The effective RSI has been reduced accordingly — <em>you have already purchased most of your future time-value</em>. The model suggests directing more surplus toward present U(t) investment.`;
+    } else if (wf.wealthRatio > 0.5) {
+      narrative += ` Your wealth covers <span class="wn-highlight">${(wf.wealthRatio*100).toFixed(0)}%</span> of the ${wf.targetLabel} target. The gap is ${fmt(wf.wTarget - wf.wealth)}.`;
+    } else {
+      narrative += ` Your wealth covers only <span class="wn-warn">${(wf.wealthRatio*100).toFixed(0)}%</span> of the ${wf.targetLabel} retirement target (${fmt(wf.wTarget)}). The effective RSI remains close to the raw value — future set-aside is the priority.`;
+    }
+
+    narrative += `</p><p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.5rem;">Monthly: Buffer ${fmtM(wf.b1_buffer)} · Debt ${fmtM(wf.b2_debt)} · Present ${fmtM(wf.b3_present)} · Future ${fmtM(wf.b4_future)} · Total ${fmtM(wf.surplus)}</p>`;
   }
+
+  document.getElementById('waterfall-narrative').innerHTML = narrative;
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  renderMath(document.body);
-  updateNav();
-  drawTree();
+// ================================================================
+// RENDER
+// ================================================================
+function render() {
+  const params = getParams();
+  const retireAge = parseInt(document.getElementById('retire').value);
+  const currentAge = parseInt(document.getElementById('current-age').value);
+  const fullParams = {...params, retireAge};
+
+  if(currentMode==='questionnaire') updateDerivedBar();
+
+  const out = computeModel(fullParams);
+  const scan = lifetimeScan(fullParams);
+
+  const ci = AGES.indexOf(currentAge);
+  const mNow = ci>=0 ? out.M_disc[ci].toFixed(3) : '—';
+  const rsiNow = ci>=0 ? (out.RSI[ci]*100).toFixed(1)+'%' : '—';
+  const lENow = ci>=0 ? out.lE[ci].toFixed(3) : '—';
+  const lFNow = ci>=0 ? out.lF[ci].toFixed(3) : '—';
+  const lUNow = ci>=0 ? out.lU[ci].toFixed(3) : '—';
+  const sNow = ci>=0 ? out.S[ci].toFixed(3) : '—';
+  const peakIdx = scan.full.indexOf(Math.max(...scan.full));
+  const optRetire = scan.ras[peakIdx];
+
+  document.getElementById('readout-bar').innerHTML = [
+    `<span class="rlabel">M(${currentAge})</span> <span class="rval">${mNow}</span>`,
+    `<span class="rlabel">RSI</span> <span class="rval">${rsiNow}</span>`,
+    `<span class="rlabel">λ_E</span> <span class="rval">${lENow}</span>`,
+    `<span class="rlabel">λ_F</span> <span class="rval">${lFNow}</span>`,
+    `<span class="rlabel">λ_U</span> <span class="rval">${lUNow}</span>`,
+    `<span class="rlabel">S(t)</span> <span class="rval">${sNow}</span>`,
+    `<span class="rlabel">∫M·D</span> <span class="rval">${out.lt_full.toFixed(2)}</span>`,
+    `<span class="rlabel">a*_r</span> <span class="rval">${optRetire}</span>`,
+  ].map(s=>`<div class="readout-item">${s}</div>`).join('');
+
+  mc('c-weights','line',[
+    ds('λ_E',out.lE,'#4ecdc4'), ds('λ_F',out.lF,'#5b8def'), ds('λ_U',out.lU,'#e8574a')
+  ],{yMax:1});
+
+  mc('c-survival','line',[ds('S(t)',out.S,'#5b8def',{fill:true})],{yMax:1.05});
+
+  mc('c-components','line',[
+    ds("E'(t)",out.E_n,'#4ecdc4'), ds("F'(t)",out.F_NORM,'#5b8def'), ds("U'(t)",out.U_b,'#e8574a')
+  ],{yMax:1.1});
+
+  mc('c-compare','line',[
+    ds('Additive',out.M_add,'#666',{dash:[5,4]}),
+    ds('Discriminatory',out.M_disc,'#9b72cf',{width:2.5})
+  ]);
+
+  const ptData = ci>=0 ? [{x:currentAge,y:out.M_w[ci]}] : [];
+  mc('c-weighted','line',[
+    ds('M(t)',out.M_disc,'rgba(155,114,207,0.3)',{dash:[4,3]}),
+    ds('M(t)·D(t)',out.M_w,'#c9a84c',{fill:true,width:2.5}),
+    {label:`Age ${currentAge}`,data:ptData,type:'scatter',backgroundColor:'#e8574a',pointRadius:5,borderColor:'#0a0a0f',borderWidth:2}
+  ]);
+
+  mc('c-rsi','line',[ds('RSI(t)',out.RSI,'#e89b4a',{fill:true})],{yMax:1});
+
+  mc('c-scan','line',[
+    ds('Survival-weighted',scan.surv,'#5b8def'),
+    ds('Full discount',scan.full,'#c9a84c',{width:2.5})
+  ],{labels:scan.ras, xLabel:'Retirement Age'});
+
+  // Financial waterfall
+  renderWaterfall(out, currentAge);
+}
+
+// ================================================================
+// WIRING
+// ================================================================
+// Questionnaire sliders
+for(let i=1;i<=10;i++){
+  const el = document.getElementById('q'+i);
+  el.addEventListener('input', () => { document.getElementById('q'+i+'v').textContent = el.value; });
+  el.addEventListener('change', render);
+}
+
+// Direct sliders
+const directIds = ['gamma','eta','delta','rho'];
+const directVals = ['gamma-val','eta-val','delta-val','rho-val'];
+const directFmt = [v=>v.toFixed(1), v=>v.toFixed(2), v=>v.toFixed(2), v=>v.toFixed(3)];
+directIds.forEach((id,i)=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>{document.getElementById(directVals[i]).textContent=directFmt[i](parseFloat(el.value));});
+  el.addEventListener('change', render);
 });
+
+// Shared sliders
+['retire','current-age'].forEach(id=>{
+  const el=document.getElementById(id);
+  const vid = id==='retire'?'retire-val':'age-val';
+  el.addEventListener('input',()=>{document.getElementById(vid).textContent=el.value;});
+  el.addEventListener('change', render);
+});
+
+// Financial sliders
+const finFmt = {
+  'fin-gross': v => '£'+Math.round(v).toLocaleString(),
+  'fin-fixed': v => '£'+Math.round(v).toLocaleString(),
+  'fin-living': v => '£'+Math.round(v).toLocaleString(),
+  'fin-debt': v => '£'+Math.round(v).toLocaleString(),
+  'fin-buffer': v => '£'+Math.round(v).toLocaleString(),
+  'fin-wealth': v => '£'+Math.round(v).toLocaleString(),
+  'fin-target': v => ['Minimum','Moderate','Comfortable'][parseInt(v)]
+};
+Object.keys(finFmt).forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    document.getElementById(id+'-val').textContent = finFmt[id](parseFloat(el.value));
+  });
+  el.addEventListener('change', render);
+});
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(render, 150));
 </script>
 </body>
 </html>
