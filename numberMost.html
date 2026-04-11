@@ -26,6 +26,9 @@
     --dna-t: #3498db;
     --dna-g: #2ecc71;
     --dna-c: #f39c12;
+    --sym0: #2980b9;
+    --sym1: #c9a84c;
+    --sym2: #8e44ad;
     --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
     --mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
@@ -40,7 +43,6 @@ body {
     font-size: 17px;
 }
 
-/* Sticky Navigation */
 nav {
     position: sticky; top: 0; z-index: 100;
     background: rgba(13,13,15,0.92);
@@ -60,10 +62,8 @@ nav a {
 }
 nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-/* Main Container */
 .container { max-width: 1100px; margin: 0 auto; padding: 30px 24px 80px; }
 
-/* Hero */
 .hero {
     text-align: center; padding: 60px 20px 50px;
     border-bottom: 1px solid var(--gold-dim);
@@ -79,7 +79,6 @@ nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold)
     color: var(--text-dim); font-style: italic;
 }
 
-/* Section */
 section { margin-bottom: 55px; }
 section h2 {
     font-family: var(--serif); font-size: 1.7em; color: var(--gold);
@@ -92,7 +91,6 @@ section h3 {
 }
 p { margin-bottom: 14px; }
 
-/* Expandable Cards */
 details {
     background: var(--card); border: 1px solid #2a2a35;
     border-radius: 6px; margin-bottom: 14px;
@@ -105,12 +103,11 @@ summary {
     color: var(--gold); font-weight: 600;
     list-style: none; display: flex; align-items: center; gap: 10px;
 }
-summary::before { content: '▸'; transition: transform 0.2s; font-size: 0.8em; }
+summary::before { content: '\25B8'; transition: transform 0.2s; font-size: 0.8em; }
 details[open] summary::before { transform: rotate(90deg); }
 summary::-webkit-details-marker { display: none; }
 details .card-body { padding: 4px 18px 18px; }
 
-/* Code & Mono */
 code, .mono {
     font-family: var(--mono); font-size: 0.88em;
     background: rgba(201,168,76,0.08); padding: 2px 5px;
@@ -123,7 +120,6 @@ pre {
     line-height: 1.6; color: var(--text); margin: 12px 0;
 }
 
-/* DNA strand visualiser */
 .dna-strand {
     display: flex; flex-wrap: wrap; gap: 2px;
     margin: 12px 0; font-family: var(--mono);
@@ -140,10 +136,10 @@ pre {
 .dna-base.G { background: rgba(46,204,113,0.2); color: var(--dna-g); border: 1px solid var(--dna-g); }
 .dna-base.C { background: rgba(243,156,18,0.2); color: var(--dna-c); border: 1px solid var(--dna-c); }
 
-/* Binary string display */
 .bit-string {
     display: flex; flex-wrap: wrap; gap: 2px;
     margin: 10px 0; font-family: var(--mono);
+    min-height: 36px;
 }
 .bit {
     width: 26px; height: 32px; display: flex;
@@ -152,14 +148,14 @@ pre {
     border: 1px solid #333;
     transition: all 0.15s;
 }
-.bit.b0 { background: rgba(41,128,185,0.15); color: var(--blue); border-color: rgba(41,128,185,0.4); }
-.bit.b1 { background: rgba(201,168,76,0.15); color: var(--gold); border-color: rgba(201,168,76,0.4); }
+.bit.s0 { background: rgba(41,128,185,0.15); color: var(--sym0); border-color: rgba(41,128,185,0.4); }
+.bit.s1 { background: rgba(201,168,76,0.15); color: var(--sym1); border-color: rgba(201,168,76,0.4); }
+.bit.s2 { background: rgba(142,68,173,0.15); color: var(--sym2); border-color: rgba(142,68,173,0.4); }
 .bit.highlight {
     transform: scale(1.1);
     box-shadow: 0 0 8px var(--gold-glow);
 }
 
-/* Interactive Controls */
 .controls-bar {
     display: flex; flex-wrap: wrap; gap: 12px;
     align-items: center; margin: 16px 0;
@@ -184,7 +180,22 @@ button.ctrl-btn.danger:hover { background: var(--red); }
 button.ctrl-btn.success { border-color: var(--green); }
 button.ctrl-btn.success:hover { background: var(--green); }
 
-/* Choice buttons for path building */
+.toggle-group {
+    display: flex; border: 1px solid var(--gold-dim); border-radius: 4px; overflow: hidden;
+}
+.toggle-group button {
+    font-family: var(--mono); font-size: 0.82em;
+    background: var(--card); color: var(--text-dim);
+    border: none; border-right: 1px solid var(--gold-dim);
+    padding: 7px 16px; cursor: pointer;
+    transition: all 0.2s;
+}
+.toggle-group button:last-child { border-right: none; }
+.toggle-group button.active {
+    background: var(--gold); color: var(--bg); font-weight: 600;
+}
+.toggle-group button:hover:not(.active) { background: var(--card-hover); color: var(--text); }
+
 .choice-row { display: flex; gap: 14px; margin: 14px 0; }
 .choice-btn {
     width: 56px; height: 56px; border-radius: 50%;
@@ -193,16 +204,17 @@ button.ctrl-btn.success:hover { background: var(--green); }
     color: var(--text); cursor: pointer; transition: all 0.2s;
 }
 .choice-btn:hover:not(:disabled):not(.dead) {
-    border-color: var(--gold); color: var(--gold);
     box-shadow: 0 0 14px var(--gold-glow);
     transform: scale(1.08);
 }
 .choice-btn.dead { border-color: var(--red); color: var(--red); opacity: 0.45; cursor: not-allowed; }
 .choice-btn.win { border-color: var(--green); color: var(--green); }
+.choice-btn.live0 { border-color: var(--sym0); color: var(--sym0); }
+.choice-btn.live1 { border-color: var(--sym1); color: var(--sym1); }
+.choice-btn.live2 { border-color: var(--sym2); color: var(--sym2); }
 
-/* Stats table */
 .stats-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px; margin: 14px 0;
 }
 .stat-card {
@@ -215,15 +227,15 @@ button.ctrl-btn.success:hover { background: var(--green); }
     letter-spacing: 0.08em;
 }
 .stat-card .value {
-    font-family: var(--serif); font-size: 1.6em;
+    font-family: var(--serif); font-size: 1.5em;
     color: var(--gold); font-weight: 700;
 }
 
-/* Tuple list */
 .tuple-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 4px; margin: 10px 0;
     font-family: var(--mono); font-size: 0.8em;
+    max-height: 320px; overflow-y: auto;
 }
 .tuple-tag {
     background: var(--card); border: 1px solid #2a2a35;
@@ -233,7 +245,6 @@ button.ctrl-btn.success:hover { background: var(--green); }
 .tuple-tag.found { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
 .tuple-tag.latest { color: var(--green); border-color: var(--green); background: rgba(39,174,96,0.08); }
 
-/* Entropy bar chart */
 .entropy-bar-container { margin: 14px 0; }
 .entropy-row {
     display: flex; align-items: center; gap: 8px; margin: 3px 0;
@@ -248,22 +259,43 @@ button.ctrl-btn.success:hover { background: var(--green); }
     height: 100%; border-radius: 3px;
     transition: width 0.4s ease;
 }
-.entropy-val { width: 50px; color: var(--gold); font-size: 0.9em; }
+.entropy-val { width: 60px; color: var(--gold); font-size: 0.9em; }
 
-/* Status messages */
 .msg { padding: 10px 14px; border-radius: 5px; margin: 10px 0; font-size: 0.95em; }
 .msg.error { background: rgba(192,57,43,0.1); border: 1px solid var(--red); color: var(--red); }
 .msg.success { background: rgba(39,174,96,0.1); border: 1px solid var(--green); color: var(--green); }
 .msg.info { background: rgba(41,128,185,0.1); border: 1px solid var(--blue); color: var(--blue); }
 
-/* Equation display */
 .equation {
     text-align: center; padding: 16px; margin: 14px 0;
     background: var(--card); border: 1px solid #2a2a35;
     border-radius: 6px; font-size: 1.1em;
 }
 
-/* Footer */
+.ref-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--mono); font-size: 0.78em;
+}
+.ref-table th {
+    text-align: left; padding: 8px; color: var(--gold);
+    border-bottom: 1px solid var(--gold-dim);
+}
+.ref-table td {
+    padding: 8px; border-bottom: 1px solid #222;
+}
+.ref-table td.seq-cell {
+    word-break: break-all; max-width: 420px; font-size: 0.9em;
+}
+.ref-table tr.k3 { background: rgba(142,68,173,0.04); }
+
+.mode-badge {
+    display: inline-block; font-family: var(--mono); font-size: 0.72em;
+    padding: 3px 10px; border-radius: 12px; margin-left: 8px;
+    vertical-align: middle; letter-spacing: 0.04em;
+}
+.mode-badge.binary { background: rgba(41,128,185,0.15); color: var(--blue); border: 1px solid rgba(41,128,185,0.4); }
+.mode-badge.ternary { background: rgba(142,68,173,0.15); color: var(--purple); border: 1px solid rgba(142,68,173,0.4); }
+
 footer {
     text-align: center; padding: 30px;
     border-top: 1px solid var(--gold-dim);
@@ -272,11 +304,10 @@ footer {
     color: var(--text-dim); letter-spacing: 0.06em;
 }
 
-/* Responsive */
 @media (max-width: 700px) {
     .hero h1 { font-size: 1.8em; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .tuple-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+    .tuple-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
 }
 </style>
 </head>
@@ -318,10 +349,10 @@ footer {
 </details>
 
 <details>
-<summary>DNA as a quaternary code</summary>
+<summary>DNA as a quaternary code &mdash; and the ternary stepping stone</summary>
 <div class="card-body">
-<p>DNA uses four nucleotides rather than two bits, giving a quaternary (base-4) alphabet. A codon is a 3-tuple of this alphabet, yielding 4<sup>3</sup> = 64 possible codons that map to 20 amino acids plus stop signals. The genetic code is therefore a windowed read of a long non-repeating string, exactly the structure we are about to explore in binary.</p>
-<p>The key analogy: a <strong>reading frame</strong> slides along the DNA strand one position at a time, extracting overlapping n-tuples, just as we extract overlapping binary substrings from a De Bruijn sequence.</p>
+<p>DNA uses four nucleotides (A, T, G, C), giving a quaternary alphabet. A codon is a 3-tuple, yielding 4<sup>3</sup> = 64 possible codons mapping to 20 amino acids plus stop signals. The genetic code is a windowed read of a long string, exactly the structure we explore here.</p>
+<p>The jump from binary (k=2) to quaternary (k=4) is large. <strong>Ternary (k=3)</strong> provides a natural intermediate: three symbols give 3<sup>n</sup> possible n-tuples, and the De Bruijn sequence B(3, n) has length 3<sup>n</sup> + n &minus; 1. Use the toggle in the explorer below to switch between binary and ternary and watch how the combinatorial space grows. Ternary 3-tuples (27 words, length 29) sit neatly between binary 4-tuples (16 words, length 19) and binary 5-tuples (32 words, length 36), making the comparison illuminating.</p>
 </div>
 </details>
 </section>
@@ -339,16 +370,16 @@ footer {
 <details>
 <summary>Maximal entropy and the De Bruijn bound</summary>
 <div class="card-body">
-<p>There are 2<sup>n</sup> distinct binary strings of length n. A binary string of length L contains (L &minus; n + 1) overlapping n-tuples. For every n-tuple to appear exactly once, we need L &minus; n + 1 = 2<sup>n</sup>, giving:</p>
-<div class="equation">L = 2<sup>n</sup> + n &minus; 1</div>
-<p>This is the length of a <strong>De Bruijn sequence</strong> B(2, n). When every n-tuple appears with equal frequency (once), the empirical entropy of the n-tuple distribution is maximised at exactly n bits. The sequence is a <em>maximum entropy</em> object for its window size.</p>
+<p>Over an alphabet of size k, there are k<sup>n</sup> distinct strings of length n. A sequence of length L contains (L &minus; n + 1) overlapping n-tuples. For every n-tuple to appear exactly once:</p>
+<div class="equation">L = k<sup>n</sup> + n &minus; 1</div>
+<p>This is the linear length of a <strong>De Bruijn sequence</strong> B(k, n). When every n-tuple appears with equal frequency (once), the empirical entropy of the n-tuple distribution is maximised at log<sub>2</sub>(k<sup>n</sup>) = n log<sub>2</sub> k bits. For binary this is n bits; for ternary, n log<sub>2</sub> 3 &asymp; 1.585n bits.</p>
 </div>
 </details>
 
 <details>
 <summary>Hypothesis: what happens if we try to exceed this bound?</summary>
 <div class="card-body">
-<p>Suppose you have placed all 2<sup>n</sup> distinct n-tuples. Any further bit creates a new n-tuple from the last (n&minus;1) bits plus the new bit. But all 2<sup>n</sup> possibilities are exhausted: the new n-tuple <em>must</em> be a repeat. The pigeonhole principle prevents extension. The De Bruijn length is therefore both the maximum and the minimum for a complete catalogue.</p>
+<p>Suppose you have placed all k<sup>n</sup> distinct n-tuples. Any further symbol creates a new n-tuple from the last (n&minus;1) symbols plus the new one. But all k<sup>n</sup> possibilities are exhausted: the new n-tuple <em>must</em> be a repeat. The pigeonhole principle prevents extension. The De Bruijn length is therefore both the maximum and the minimum for a complete catalogue.</p>
 </div>
 </details>
 </section>
@@ -357,20 +388,20 @@ footer {
 <section id="debruijn">
 <h2>III. De Bruijn Sequences: The Construction</h2>
 
-<p>A De Bruijn sequence B(k, n) over an alphabet of size k is a cyclic sequence in which every possible string of length n appears exactly once as a contiguous substring. For binary (k=2), the <em>linear</em> (non-cyclic) form appends (n&minus;1) bits to close the cycle, giving a total length of 2<sup>n</sup> + n &minus; 1.</p>
+<p>A De Bruijn sequence B(k, n) over an alphabet of size k is a cyclic sequence in which every possible string of length n appears exactly once as a contiguous substring. The <em>linear</em> form appends (n&minus;1) symbols to close the cycle, giving total length k<sup>n</sup> + n &minus; 1.</p>
 
 <details>
 <summary>The graph-theoretic view: Eulerian circuits on De Bruijn graphs</summary>
 <div class="card-body">
-<p>Build a directed graph whose nodes are all binary strings of length (n&minus;1). Draw an edge from node u to node v whenever the last (n&minus;2) characters of u match the first (n&minus;2) characters of v, labelling the edge with the n-character string formed by appending v's last character to u. This graph has exactly 2<sup>n</sup> edges. A De Bruijn sequence corresponds to an <strong>Eulerian circuit</strong>: a path that traverses every edge exactly once.</p>
-<p>The number of distinct De Bruijn sequences B(2, n) grows super-exponentially. For n=3 there are 2, for n=4 there are 16, and the count is given by the BEST theorem (de Bruijn, Ehrenfest, Smith, Tutte).</p>
+<p>Build a directed graph whose nodes are all strings of length (n&minus;1) over the k-symbol alphabet. Draw an edge from node u to node v whenever u's last (n&minus;2) characters match v's first (n&minus;2) characters, labelling the edge with the n-character string formed by appending v's last character to u. This graph has exactly k<sup>n</sup> edges (each node has out-degree k). A De Bruijn sequence corresponds to an <strong>Eulerian circuit</strong>: a path traversing every edge exactly once.</p>
+<p>For ternary, each node has out-degree 3 instead of 2, and the graph is denser. The number of distinct De Bruijn sequences is given by the BEST theorem and grows super-exponentially in both k and n.</p>
 </div>
 </details>
 
 <details>
-<summary>Martin's algorithm (greedy/prefer-zero)</summary>
+<summary>Lyndon word concatenation (works for any k)</summary>
 <div class="card-body">
-<p>A simple greedy strategy works for manual exploration: at each step, try appending 0; if that creates a repeated n-tuple, try 1. But pure greedy can hit dead ends. The mathematically guaranteed construction uses <strong>Lyndon word concatenation</strong>: enumerate all binary Lyndon words of lengths dividing n in lexicographic order, concatenate them, and wrap cyclically.</p>
+<p>The algorithm below produces a valid B(k, n) for <em>any</em> alphabet size k. It enumerates Lyndon words whose lengths divide n in lexicographic order and concatenates them. This is O(k<sup>n</sup>) and guaranteed to produce a valid sequence.</p>
 <pre>
 def debruijn(k, n):
     """Lyndon word concatenation for B(k, n)."""
@@ -391,11 +422,13 @@ def debruijn(k, n):
     db(1, 1)
     return sequence  # cyclic; append [:n-1] for linear
 
-# Example: linear B(2, 4)
+# Binary B(2, 4): length 19
 cyc = debruijn(2, 4)
-linear = cyc + cyc[:3]
-print(''.join(map(str, linear)))
-# -> 0000100110101111000
+print(''.join(map(str, cyc + cyc[:3])))
+
+# Ternary B(3, 3): length 29
+cyc = debruijn(3, 3)
+print(''.join(map(str, cyc + cyc[:2])))
 </pre>
 </div>
 </details>
@@ -405,31 +438,30 @@ print(''.join(map(str, linear)))
 <section id="explorer">
 <h2>IV. Interactive Path Explorer</h2>
 
-<p>Build a De Bruijn sequence bit by bit. The explorer shows you which moves are legal (no repeated n-tuple), tracks Shannon entropy of your growing tuple distribution, and flags when you complete a full sequence or hit a dead end.</p>
+<p>Build a De Bruijn sequence symbol by symbol. Toggle between <strong>binary</strong> (k=2) and <strong>ternary</strong> (k=3) to see how the combinatorial space changes. The explorer tracks which moves are legal, live Shannon entropy, and running checksum.</p>
 
 <div class="controls-bar">
-    <label>n-tuple size:</label>
-    <select id="nSelect" onchange="resetExplorer()">
-        <option value="3">3 (target: 10 bits)</option>
-        <option value="4">4 (target: 19 bits)</option>
-        <option value="5">5 (target: 36 bits)</option>
-        <option value="6">6 (target: 69 bits)</option>
-        <option value="7">7 (target: 134 bits)</option>
-        <option value="8">8 (target: 263 bits)</option>
-    </select>
+    <label>Alphabet:</label>
+    <div class="toggle-group" id="alphaToggle">
+        <button class="active" onclick="setAlphabet(2)">k=2 Binary</button>
+        <button onclick="setAlphabet(3)">k=3 Ternary</button>
+    </div>
+
+    <label>n-tuple:</label>
+    <select id="nSelect" onchange="resetExplorer()"></select>
+
     <button class="ctrl-btn" onclick="undoMove()">&#x21BA; Undo</button>
     <button class="ctrl-btn danger" onclick="resetExplorer()">Reset</button>
     <button class="ctrl-btn success" onclick="autoSolve()">Auto-solve</button>
 </div>
 
+<div id="modeLabel" style="margin-bottom:8px;"></div>
+
 <div class="stats-grid" id="statsGrid"></div>
 
 <div id="seqDisplay" class="bit-string"></div>
 
-<div class="choice-row">
-    <button id="btn0" class="choice-btn" onclick="makeMove(0)">0</button>
-    <button id="btn1" class="choice-btn" onclick="makeMove(1)">1</button>
-</div>
+<div class="choice-row" id="choiceRow"></div>
 
 <div id="statusMsg"></div>
 
@@ -447,18 +479,18 @@ print(''.join(map(str, linear)))
 <details>
 <summary>Why does a complete De Bruijn sequence maximise entropy?</summary>
 <div class="card-body">
-<p>In a complete B(2, n), every n-tuple appears exactly once, so each has probability p = 1/2<sup>n</sup>. The entropy is:</p>
+<p>In a complete B(k, n), every n-tuple appears exactly once, so each has probability p = 1/k<sup>n</sup>. The entropy is:</p>
 <div class="equation">
-H = &minus;2<sup>n</sup> &times; (1/2<sup>n</sup>) &times; log<sub>2</sub>(1/2<sup>n</sup>) = n bits
+H = &minus;k<sup>n</sup> &times; (1/k<sup>n</sup>) &times; log<sub>2</sub>(1/k<sup>n</sup>) = n log<sub>2</sub> k &nbsp; bits
 </div>
-<p>This is the theoretical maximum for an n-bit alphabet. Any repetition would increase some tuple's count at the expense of a missing tuple, reducing entropy below n. The De Bruijn sequence is therefore the <strong>maximum entropy binary string</strong> for window size n.</p>
+<p>For binary (k=2) this gives n bits. For ternary (k=3) it gives n &times; log<sub>2</sub> 3 &asymp; 1.585n bits. This is the theoretical maximum for an n-window over a k-symbol alphabet. Any repetition reduces entropy below this ceiling.</p>
 </div>
 </details>
 
 <details>
-<summary>Partial sequences and approach to maximum entropy</summary>
+<summary>Comparing binary and ternary growth</summary>
 <div class="card-body">
-<p>As you build the sequence in the explorer, watch the live entropy climb. Each new unique tuple increases the count of distinct symbols in the distribution. The entropy rises steeply at first (new tuples are cheap) and saturates as you approach the target. A dead-end path will have lower entropy than a complete solution, revealing that the greedy path was locally optimal but globally suboptimal.</p>
+<p>The sequence length grows as k<sup>n</sup> + n &minus; 1, so ternary sequences are dramatically longer for the same n. For n=4: binary needs 19 symbols (16 tuples), ternary needs 84 (81 tuples). For n=5: binary gives 36 symbols, ternary gives 248. This mirrors the jump from binary computing to the richer alphabets found in biology: more symbols per position means exponentially more combinatorial possibilities per window.</p>
 </div>
 </details>
 </section>
@@ -467,49 +499,46 @@ H = &minus;2<sup>n</sup> &times; (1/2<sup>n</sup>) &times; log<sub>2</sub>(1/2<s
 <section id="checksum">
 <h2>VI. Checksums and Verification</h2>
 
-<p>The PDF's spreadsheets use a neat verification trick: if every n-tuple from <code>000...0</code> to <code>111...1</code> appears exactly once, then the sum of their decimal values equals a known target. For an n-tuple, the integers 0 through 2<sup>n</sup>&minus;1 each appear once, so:</p>
+<p>If every n-tuple over a k-symbol alphabet appears exactly once, each tuple can be read as a base-k integer from 0 to k<sup>n</sup>&minus;1, and their sum is:</p>
 
 <div class="equation">
-Checksum = &sum;<sub>k=0</sub><sup>2<sup>n</sup>&minus;1</sup> k = 2<sup>n</sup>(2<sup>n</sup> &minus; 1) / 2
+Checksum = &sum;<sub>i=0</sub><sup>k<sup>n</sup>&minus;1</sup> i = k<sup>n</sup>(k<sup>n</sup> &minus; 1) / 2
 </div>
 
 <details>
-<summary>Checksum values by n</summary>
+<summary>Checksum reference table (both alphabets)</summary>
 <div class="card-body">
 <div id="checksumTable"></div>
 </div>
 </details>
 
 <details>
-<summary>Beyond binary: quaternary checksums and codon space</summary>
+<summary>Beyond ternary: quaternary checksums and codon space</summary>
 <div class="card-body">
-<p>For DNA's 4-letter alphabet with codon length 3, there are 4<sup>3</sup> = 64 codons. A De Bruijn sequence B(4, 3) would have length 4<sup>3</sup> + 2 = 66 bases and contain every possible codon exactly once. The quaternary checksum would be &sum;<sub>k=0</sub><sup>63</sup> k = 2016. Real genomes are far longer than 66 bases, so codons repeat abundantly, but the information-theoretic principle remains: non-repetition at a given window size characterises maximal local information density.</p>
+<p>For DNA's 4-letter alphabet with codon length 3, there are 4<sup>3</sup> = 64 codons. A De Bruijn sequence B(4, 3) would have length 66 bases containing every possible codon exactly once, with checksum 2016. Real genomes are far longer, so codons repeat abundantly, but the principle stands: non-repetition at a given window size characterises maximal local information density.</p>
+<p>The ternary case (k=3) in the explorer above is the nearest tractable stepping stone to this biological reality, bridging the gap between the binary toy model and the full quaternary codon space.</p>
 </div>
 </details>
 </section>
 
 <!-- ============ SECTION 7: REFERENCE TABLE ============ -->
 <section id="table">
-<h2>VII. Reference: B(2, n) for n = 2 to 8</h2>
-<p>Each row shows the parameters and one valid De Bruijn sequence (prefer-zero construction).</p>
+<h2>VII. Reference: B(k, n)</h2>
+<p>Parameters and one valid De Bruijn sequence (Lyndon word construction) for each configuration. Ternary rows shaded.</p>
 <div id="referenceTable" style="overflow-x:auto;"></div>
 </section>
 
-</div><!-- /container -->
+</div>
 
 <footer>
-    Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · LeeMcCullochJames
+    Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames
 </footer>
 
 <script>
-// ==================== DE BRUIJN GENERATOR ====================
-// Uses Lyndon word concatenation (the standard mathematical construction)
-function generateDebruijn(n) {
-    if (n === 1) return [0, 1, 0]; // linear: 0,1 + wrap 0
-    const k = 2;
+// ==================== DE BRUIJN GENERATOR (arbitrary k) ====================
+function generateDebruijn(k, n) {
     const a = new Array(k * n).fill(0);
     const cyclic = [];
-    
     function db(t, p) {
         if (t > n) {
             if (n % p === 0) {
@@ -524,18 +553,15 @@ function generateDebruijn(n) {
             }
         }
     }
-    
     db(1, 1);
-    // Append first (n-1) bits to make the linear (non-cyclic) form
-    const linear = cyclic.concat(cyclic.slice(0, n - 1));
-    return linear;
+    return cyclic.concat(cyclic.slice(0, n - 1));
 }
 
 // Pre-generate solutions
 const SOLUTIONS = {};
-for (let n = 2; n <= 8; n++) {
-    SOLUTIONS[n] = generateDebruijn(n);
-}
+function solKey(k, n) { return k + ':' + n; }
+for (let n = 2; n <= 8; n++) SOLUTIONS[solKey(2, n)] = generateDebruijn(2, n);
+for (let n = 2; n <= 5; n++) SOLUTIONS[solKey(3, n)] = generateDebruijn(3, n);
 
 // ==================== DNA DEMO ====================
 (function() {
@@ -550,26 +576,28 @@ for (let n = 2; n <= 8; n++) {
 })();
 
 // ==================== EXPLORER STATE ====================
-let N = 3;
-let sequence = [];
-let history = [];
-let seenTuples = new Set();
+let K = 2, N = 3;
+let sequence = [], history = [];
 
-function getTarget() { return (1 << N) + N - 1; }
+function totalTuples() { return Math.pow(K, N); }
+function getTarget() { return totalTuples() + N - 1; }
+
+function toBaseK(i, k, n) {
+    let s = '';
+    for (let d = 0; d < n; d++) { s = (i % k) + s; i = Math.floor(i / k); }
+    return s;
+}
+
 function getAllTuples() {
-    const all = [];
-    for (let i = 0; i < (1 << N); i++) {
-        all.push(i.toString(2).padStart(N, '0'));
-    }
+    const all = [], total = totalTuples();
+    for (let i = 0; i < total; i++) all.push(toBaseK(i, K, N));
     return all;
 }
 
 function extractTuples(seq) {
-    const tuples = [];
-    for (let i = 0; i <= seq.length - N; i++) {
-        tuples.push(seq.slice(i, i + N).join(''));
-    }
-    return tuples;
+    const t = [];
+    for (let i = 0; i <= seq.length - N; i++) t.push(seq.slice(i, i + N).join(''));
+    return t;
 }
 
 function hasDuplicate(seq) {
@@ -606,24 +634,70 @@ function computeChecksum(seq) {
         const t = seq.slice(i, i + N).join('');
         if (!seen.has(t)) {
             seen.add(t);
-            sum += parseInt(t, 2);
+            sum += parseInt(t, K);
         }
     }
     return sum;
+}
+
+function targetChecksum() {
+    const m = totalTuples();
+    return m * (m - 1) / 2;
+}
+
+// ==================== UI ====================
+function populateNSelect() {
+    const sel = document.getElementById('nSelect');
+    sel.innerHTML = '';
+    const maxN = K === 2 ? 8 : 5;
+    if (N > maxN) N = maxN;
+    for (let n = 2; n <= maxN; n++) {
+        const total = Math.pow(K, n);
+        const len = total + n - 1;
+        const opt = document.createElement('option');
+        opt.value = n;
+        opt.textContent = n + '  (' + total + ' tuples, ' + len + ' sym)';
+        if (n === N) opt.selected = true;
+        sel.appendChild(opt);
+    }
+    sel.value = N;
+}
+
+function setAlphabet(k) {
+    K = k;
+    const btns = document.querySelectorAll('#alphaToggle button');
+    btns[0].className = k === 2 ? 'active' : '';
+    btns[1].className = k === 3 ? 'active' : '';
+    populateNSelect();
+    resetExplorer();
 }
 
 function resetExplorer() {
     N = parseInt(document.getElementById('nSelect').value);
     sequence = new Array(N - 1).fill(0);
     history = [];
-    seenTuples = new Set();
+    buildChoiceButtons();
+    showStatus('', '');
     updateExplorerUI();
 }
 
-function makeMove(bit) {
-    const next = sequence.concat(bit);
+function buildChoiceButtons() {
+    const row = document.getElementById('choiceRow');
+    row.innerHTML = '';
+    for (let s = 0; s < K; s++) {
+        const btn = document.createElement('button');
+        btn.id = 'btnSym' + s;
+        btn.className = 'choice-btn';
+        btn.textContent = s;
+        btn.onclick = () => makeMove(s);
+        row.appendChild(btn);
+    }
+}
+
+function makeMove(sym) {
+    const next = sequence.concat(sym);
     if (hasDuplicate(next)) {
-        showStatus(`Dead end: tuple "${next.slice(-N).join('')}" already exists.`, 'error');
+        showStatus('Dead end: tuple "' + next.slice(-N).join('') + '" already exists.', 'error');
         return;
     }
     history.push([...sequence]);
@@ -631,7 +705,7 @@ function makeMove(bit) {
     showStatus('', '');
     updateExplorerUI();
     if (sequence.length >= getTarget()) {
-        showStatus(`Complete! All ${1 << N} tuples found in ${getTarget()} bits.`, 'success');
+        showStatus('Complete! All ' + totalTuples() + ' tuples found in ' + getTarget() + ' symbols.', 'success');
     }
 }
 
@@ -644,152 +718,186 @@ function undoMove() {
 }
 
 function autoSolve() {
-    sequence = [...SOLUTIONS[N]];
+    const key = solKey(K, N);
+    if (!SOLUTIONS[key]) {
+        showStatus('No pre-computed solution for B(' + K + ', ' + N + ').', 'error');
+        return;
+    }
+    sequence = [...SOLUTIONS[key]];
     history = [];
-    showStatus(`Auto-solved: B(2, ${N}) loaded (${getTarget()} bits).`, 'success');
+    showStatus('Auto-solved: B(' + K + ', ' + N + ') loaded (' + getTarget() + ' symbols).', 'success');
     updateExplorerUI();
 }
 
 function showStatus(msg, type) {
     const el = document.getElementById('statusMsg');
     if (!msg) { el.innerHTML = ''; return; }
-    el.innerHTML = `<div class="msg ${type}">${msg}</div>`;
+    el.innerHTML = '<div class="msg ' + type + '">' + msg + '</div>';
 }
 
 function updateExplorerUI() {
-    // Stats
     const target = getTarget();
     const tuples = extractTuples(sequence);
     const uniqueTuples = new Set(tuples);
-    const totalPossible = 1 << N;
+    const totalPoss = totalTuples();
     const entropy = computeEntropy(sequence);
-    const maxEntropy = N;
+    const maxEntropy = N * Math.log2(K);
     const checksum = computeChecksum(sequence);
-    const targetChecksum = totalPossible * (totalPossible - 1) / 2;
+    const tgtChecksum = targetChecksum();
 
-    document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><div class="label">Length</div><div class="value">${sequence.length} / ${target}</div></div>
-        <div class="stat-card"><div class="label">Unique ${N}-tuples</div><div class="value">${uniqueTuples.size} / ${totalPossible}</div></div>
-        <div class="stat-card"><div class="label">Entropy</div><div class="value">${entropy.toFixed(3)}</div></div>
-        <div class="stat-card"><div class="label">Max entropy</div><div class="value">${maxEntropy}.000</div></div>
-        <div class="stat-card"><div class="label">Checksum</div><div class="value">${checksum}</div></div>
-        <div class="stat-card"><div class="label">Target checksum</div><div class="value">${targetChecksum}</div></div>
-    `;
+    // Mode label
+    const modeStr = K === 2 ? 'Binary' : 'Ternary';
+    const badgeClass = K === 2 ? 'binary' : 'ternary';
+    document.getElementById('modeLabel').innerHTML =
+        '<span class="mode-badge ' + badgeClass + '">B(' + K + ', ' + N + ')</span> ' +
+        '<span style="color:var(--text-dim); font-family:var(--mono); font-size:0.82em;">' +
+        modeStr + ' &middot; ' + totalPoss + ' tuples &middot; target ' + target + ' symbols</span>';
+
+    // Stats
+    document.getElementById('statsGrid').innerHTML =
+        '<div class="stat-card"><div class="label">Length</div><div class="value">' + sequence.length + ' / ' + target + '</div></div>' +
+        '<div class="stat-card"><div class="label">Unique ' + N + '-tuples</div><div class="value">' + uniqueTuples.size + ' / ' + totalPoss + '</div></div>' +
+        '<div class="stat-card"><div class="label">Entropy (bits)</div><div class="value">' + entropy.toFixed(3) + '</div></div>' +
+        '<div class="stat-card"><div class="label">Max entropy</div><div class="value">' + maxEntropy.toFixed(3) + '</div></div>' +
+        '<div class="stat-card"><div class="label">Checksum</div><div class="value">' + checksum.toLocaleString() + '</div></div>' +
+        '<div class="stat-card"><div class="label">Target chk</div><div class="value">' + tgtChecksum.toLocaleString() + '</div></div>';
 
     // Sequence display
     const seqEl = document.getElementById('seqDisplay');
     seqEl.innerHTML = '';
-    sequence.forEach((b, i) => {
+    sequence.forEach(function(s, i) {
         const el = document.createElement('div');
-        el.className = `bit b${b}`;
+        el.className = 'bit s' + s;
         if (i >= sequence.length - N && sequence.length >= N) el.classList.add('highlight');
-        el.textContent = b;
+        el.textContent = s;
         seqEl.appendChild(el);
     });
 
-    // Button states
-    const btn0 = document.getElementById('btn0');
-    const btn1 = document.getElementById('btn1');
-    const dead0 = hasDuplicate(sequence.concat(0));
-    const dead1 = hasDuplicate(sequence.concat(1));
-    btn0.className = `choice-btn ${dead0 ? 'dead' : ''} ${sequence.length >= target ? 'win' : ''}`;
-    btn1.className = `choice-btn ${dead1 ? 'dead' : ''} ${sequence.length >= target ? 'win' : ''}`;
+    // Choice button states
+    for (let s = 0; s < K; s++) {
+        const btn = document.getElementById('btnSym' + s);
+        if (!btn) continue;
+        const dead = hasDuplicate(sequence.concat(s));
+        const won = sequence.length >= target;
+        btn.className = 'choice-btn';
+        if (dead) btn.classList.add('dead');
+        else if (won) btn.classList.add('win');
+        else btn.classList.add('live' + s);
+    }
 
     // Tuple grid
-    const allT = getAllTuples();
-    const latestTuple = tuples.length > 0 ? tuples[tuples.length - 1] : null;
     const grid = document.getElementById('tupleGrid');
-    grid.innerHTML = '';
-    allT.forEach(t => {
-        const el = document.createElement('div');
-        el.className = 'tuple-tag';
-        if (uniqueTuples.has(t)) el.classList.add('found');
-        if (t === latestTuple) el.classList.add('latest');
-        el.textContent = t;
-        grid.appendChild(el);
-    });
+    if (totalPoss > 512) {
+        grid.innerHTML = '<p style="color:var(--text-dim); font-size:0.85em; grid-column:1/-1;">Tuple grid hidden for ' + totalPoss + ' tuples. Stats and entropy tracked above.</p>';
+    } else {
+        var allT = getAllTuples();
+        var latestTuple = tuples.length > 0 ? tuples[tuples.length - 1] : null;
+        grid.innerHTML = '';
+        allT.forEach(function(t) {
+            var el = document.createElement('div');
+            el.className = 'tuple-tag';
+            if (uniqueTuples.has(t)) el.classList.add('found');
+            if (t === latestTuple) el.classList.add('latest');
+            el.textContent = t;
+            grid.appendChild(el);
+        });
+    }
 
     // Entropy display
-    const entEl = document.getElementById('entropyDisplay');
-    const pct = maxEntropy > 0 ? (entropy / maxEntropy * 100) : 0;
-    entEl.innerHTML = `
-        <div class="entropy-bar-container">
-            <div class="entropy-row">
-                <span class="entropy-label">H(X)</span>
-                <div class="entropy-bar-bg">
-                    <div class="entropy-bar-fill" style="width:${pct}%; background: linear-gradient(90deg, var(--blue), var(--gold));"></div>
-                </div>
-                <span class="entropy-val">${entropy.toFixed(3)}</span>
-            </div>
-            <div class="entropy-row">
-                <span class="entropy-label">Max</span>
-                <div class="entropy-bar-bg">
-                    <div class="entropy-bar-fill" style="width:100%; background: var(--gold-dim); opacity:0.4;"></div>
-                </div>
-                <span class="entropy-val">${maxEntropy}.000</span>
-            </div>
-        </div>
-        <p style="font-size:0.88em; color:var(--text-dim); margin-top:6px;">
-            Coverage: ${uniqueTuples.size}/${totalPossible} tuples &mdash;
-            Checksum: ${checksum}/${targetChecksum}
-            ${checksum === targetChecksum && uniqueTuples.size === totalPossible ? ' ✓ verified' : ''}
-        </p>
-    `;
+    var entEl = document.getElementById('entropyDisplay');
+    var pct = maxEntropy > 0 ? (entropy / maxEntropy * 100) : 0;
+    var gradStops = K === 3
+        ? 'var(--sym0), var(--sym1), var(--sym2)'
+        : 'var(--sym0), var(--sym1)';
+    var verified = (checksum === tgtChecksum && uniqueTuples.size === totalPoss);
+    entEl.innerHTML =
+        '<div class="entropy-bar-container">' +
+            '<div class="entropy-row">' +
+                '<span class="entropy-label">H(X)</span>' +
+                '<div class="entropy-bar-bg">' +
+                    '<div class="entropy-bar-fill" style="width:' + pct + '%; background: linear-gradient(90deg, ' + gradStops + ');"></div>' +
+                '</div>' +
+                '<span class="entropy-val">' + entropy.toFixed(3) + '</span>' +
+            '</div>' +
+            '<div class="entropy-row">' +
+                '<span class="entropy-label">Max</span>' +
+                '<div class="entropy-bar-bg">' +
+                    '<div class="entropy-bar-fill" style="width:100%; background: var(--gold-dim); opacity:0.4;"></div>' +
+                '</div>' +
+                '<span class="entropy-val">' + maxEntropy.toFixed(3) + '</span>' +
+            '</div>' +
+        '</div>' +
+        '<p style="font-size:0.85em; color:var(--text-dim); margin-top:6px;">' +
+            'Coverage: ' + uniqueTuples.size + '/' + totalPoss + ' tuples &mdash; ' +
+            'Checksum: ' + checksum.toLocaleString() + '/' + tgtChecksum.toLocaleString() +
+            (verified ? ' &#10003; verified' : '') +
+        '</p>';
 }
 
 // ==================== CHECKSUM TABLE ====================
 (function() {
-    const el = document.getElementById('checksumTable');
-    let html = '<table style="width:100%; border-collapse:collapse; font-family:var(--mono); font-size:0.85em;">';
-    html += '<tr style="border-bottom:1px solid var(--gold-dim);"><th style="text-align:left; padding:6px; color:var(--gold);">n</th><th style="text-align:right; padding:6px; color:var(--gold);">2<sup>n</sup></th><th style="text-align:right; padding:6px; color:var(--gold);">Seq length</th><th style="text-align:right; padding:6px; color:var(--gold);">Checksum</th></tr>';
-    for (let n = 2; n <= 8; n++) {
-        const p = 1 << n;
-        const L = p + n - 1;
-        const cs = p * (p - 1) / 2;
-        html += `<tr style="border-bottom:1px solid #222;"><td style="padding:6px;">${n}</td><td style="text-align:right; padding:6px;">${p}</td><td style="text-align:right; padding:6px;">${L}</td><td style="text-align:right; padding:6px;">${cs.toLocaleString()}</td></tr>`;
-    }
+    var el = document.getElementById('checksumTable');
+    var html = '<table class="ref-table"><tr><th>k</th><th>n</th><th>k<sup>n</sup></th><th style="text-align:right">Length</th><th style="text-align:right">Checksum</th><th style="text-align:right">Max H (bits)</th></tr>';
+    [2, 3].forEach(function(k) {
+        var maxN = k === 2 ? 8 : 5;
+        for (var n = 2; n <= maxN; n++) {
+            var p = Math.pow(k, n);
+            var L = p + n - 1;
+            var cs = p * (p - 1) / 2;
+            var H = n * Math.log2(k);
+            var cls = k === 3 ? ' class="k3"' : '';
+            html += '<tr' + cls + '><td>' + k + '</td><td>' + n + '</td><td>' + p + '</td>' +
+                '<td style="text-align:right">' + L.toLocaleString() + '</td>' +
+                '<td style="text-align:right">' + cs.toLocaleString() + '</td>' +
+                '<td style="text-align:right">' + H.toFixed(3) + '</td></tr>';
+        }
+    });
     html += '</table>';
     el.innerHTML = html;
 })();
 
 // ==================== REFERENCE TABLE ====================
 (function() {
-    const el = document.getElementById('referenceTable');
-    let html = '<table style="width:100%; border-collapse:collapse; font-family:var(--mono); font-size:0.78em;">';
-    html += '<tr style="border-bottom:1px solid var(--gold-dim);"><th style="text-align:left; padding:8px; color:var(--gold);">n</th><th style="text-align:right; padding:8px; color:var(--gold);">2<sup>n</sup></th><th style="text-align:right; padding:8px; color:var(--gold);">Length</th><th style="text-align:right; padding:8px; color:var(--gold);">Checksum</th><th style="text-align:left; padding:8px; color:var(--gold);">Sequence (prefer-zero)</th></tr>';
-    for (let n = 2; n <= 8; n++) {
-        const p = 1 << n;
-        const L = p + n - 1;
-        const cs = p * (p - 1) / 2;
-        const seq = SOLUTIONS[n].join('');
-        // For long sequences, show truncated
-        const display = seq.length > 80 ? seq.slice(0, 40) + ' ... ' + seq.slice(-40) : seq;
-        html += `<tr style="border-bottom:1px solid #222;">
-            <td style="padding:8px;">${n}</td>
-            <td style="text-align:right; padding:8px;">${p}</td>
-            <td style="text-align:right; padding:8px;">${L}</td>
-            <td style="text-align:right; padding:8px;">${cs.toLocaleString()}</td>
-            <td style="padding:8px; word-break:break-all; max-width:500px; font-size:0.9em;">${display}</td>
-        </tr>`;
-    }
+    var el = document.getElementById('referenceTable');
+    var html = '<table class="ref-table"><tr><th>k</th><th>n</th><th>k<sup>n</sup></th><th style="text-align:right">Length</th><th style="text-align:right">Checksum</th><th>Sequence (Lyndon)</th></tr>';
+    [2, 3].forEach(function(k) {
+        var maxN = k === 2 ? 8 : 5;
+        for (var n = 2; n <= maxN; n++) {
+            var key = solKey(k, n);
+            var sol = SOLUTIONS[key];
+            if (!sol) continue;
+            var p = Math.pow(k, n);
+            var L = p + n - 1;
+            var cs = p * (p - 1) / 2;
+            var seq = sol.join('');
+            var display = seq.length > 80 ? seq.slice(0, 36) + ' &hellip; ' + seq.slice(-36) : seq;
+            var cls = k === 3 ? ' class="k3"' : '';
+            html += '<tr' + cls + '><td>' + k + '</td><td>' + n + '</td>' +
+                '<td>' + p + '</td>' +
+                '<td style="text-align:right">' + L.toLocaleString() + '</td>' +
+                '<td style="text-align:right">' + cs.toLocaleString() + '</td>' +
+                '<td class="seq-cell">' + display + '</td></tr>';
+        }
+    });
     html += '</table>';
     el.innerHTML = html;
 })();
 
 // ==================== NAV HIGHLIGHTING ====================
-const sections = document.querySelectorAll('section');
-const navLinks = document.querySelectorAll('nav a');
-window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(s => {
+var sections = document.querySelectorAll('section');
+var navLinks = document.querySelectorAll('nav a');
+window.addEventListener('scroll', function() {
+    var current = '';
+    sections.forEach(function(s) {
         if (window.scrollY >= s.offsetTop - 120) current = s.id;
     });
-    navLinks.forEach(a => {
+    navLinks.forEach(function(a) {
         a.classList.toggle('active', a.getAttribute('href') === '#' + current);
     });
 });
 
-// Init
+// ==================== INIT ====================
+populateNSelect();
 resetExplorer();
 </script>
 
