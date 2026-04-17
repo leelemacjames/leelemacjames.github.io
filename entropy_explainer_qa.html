@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entropy · Microstates · Second Law</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --bg2: #11121a;
+    --bg3: #161820;
+    --gold: #c8a96e;
+    --gold2: #dbb955;
+    --gold-dim: rgba(200,169,110,0.15);
+    --gold-faint: rgba(200,169,110,0.06);
+    --text: #d4cfc4;
+    --text-dim: #8a8578;
+    --text-faint: #4a4840;
+    --border: rgba(200,169,110,0.18);
+    --border-faint: rgba(200,169,110,0.07);
+    --red: #c46a50;
+    --blue: #5a8fa8;
+    --green: #6a9a7a;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(200,169,110,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: 3.2rem;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    color: #e8e2d8;
+    line-height: 1.15;
+  }
+  header h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .header-sub {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    margin-top: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Nav ── */
+  nav {
+    padding: 0 4rem;
+    border-bottom: 1px solid var(--border-faint);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  nav button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1rem 1.4rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 4rem 5rem;
+  }
+
+  /* ── Sections ── */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* ── Prose ── */
+  .section-title {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    color: #e8e2d8;
+    margin-bottom: 0.4rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 1rem;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 1.2rem;
+    padding-left: 1.1rem;
+  }
+  p {
+    margin-bottom: 1.2rem;
+    color: var(--text);
+    font-size: 1.05rem;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--gold);
+    margin: 2rem 0 0.8rem;
+    font-style: italic;
+  }
+
+  /* ── Callout boxes ── */
+  .callout {
+    background: var(--gold-faint);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 1rem;
+  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .formula {
+    background: var(--bg3);
+    border: 1px solid var(--border-faint);
+    padding: 1rem 1.5rem;
+    margin: 1.2rem 0;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--gold2);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .formula .small {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--sans);
+    letter-spacing: 0;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+  }
+  th {
+    background: var(--gold-faint);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border-faint);
+    color: var(--text);
+  }
+  tr:hover td { background: var(--gold-faint); }
+
+  /* ── MCQ Quiz ── */
+  .quiz-container { display: flex; flex-direction: column; gap: 2rem; }
+  .q-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-faint);
+    padding: 1.6rem 1.8rem;
+    position: relative;
+  }
+  .q-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: 1.2rem; right: 1.4rem;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+  }
+  .q-text {
+    font-size: 1.05rem;
+    margin-bottom: 1.2rem;
+    color: #e0dbd2;
+    line-height: 1.6;
+  }
+  .q-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .opt-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border-faint);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    text-align: left;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-faint);
+  }
+  .opt-btn .opt-letter {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    min-width: 1rem;
+    padding-top: 0.05rem;
+  }
+  .opt-btn.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(106,154,122,0.08);
+  }
+  .opt-btn.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(196,106,80,0.08);
+  }
+  .opt-btn:disabled { cursor: default; }
+  .feedback {
+    margin-top: 1rem;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    border-left: 2px solid var(--text-faint);
+    padding-left: 0.8rem;
+    display: none;
+    line-height: 1.6;
+  }
+  .feedback.show { display: block; }
+  .feedback .correct-label { color: var(--green); font-weight: 500; }
+  .feedback .wrong-label { color: var(--red); font-weight: 500; }
+
+  /* ── Free Q&A ── */
+  .qa-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .qa-chat {
+    background: var(--bg2);
+    border: 1px solid var(--border-faint);
+    min-height: 280px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .msg {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    max-width: 85%;
+  }
+  .msg-user {
+    align-self: flex-end;
+    background: var(--gold-faint);
+    border: 1px solid var(--border);
+    padding: 0.7rem 1rem;
+    color: var(--gold2);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+  }
+  .msg-ai {
+    align-self: flex-start;
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 1rem;
+    border-left: 2px solid var(--border);
+    padding-left: 1rem;
+  }
+  .msg-ai strong { color: var(--gold); font-weight: 500; }
+  .msg-ai em { color: var(--text-dim); }
+  .chat-input-row {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    resize: none;
+    height: 48px;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--gold); }
+  .chat-input::placeholder { color: var(--text-faint); }
+  .send-btn {
+    background: var(--gold-faint);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .send-btn:hover:not(:disabled) {
+    background: var(--gold);
+    color: var(--bg);
+  }
+  .send-btn:disabled { opacity: 0.4; cursor: default; }
+  .chip-row {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: none;
+    border: 1px solid var(--border-faint);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .typing-dot {
+    display: inline-block;
+    animation: blink 1s step-start infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── Visualisation: microstate diagram ── */
+  .vis-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border-faint);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .vis-title {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  canvas { display: block; }
+  .vis-controls {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    align-items: center;
+  }
+  .vis-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border-faint);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .vis-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .vis-stat {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+  .vis-stat span { color: var(--gold); }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border-faint);
+    padding: 1.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .footer-right {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-align: right;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    header, main, nav, footer { padding-left: 1.4rem; padding-right: 1.4rem; }
+    header h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">IB Physics · Thermodynamics · HL / SL</div>
+  <h1>Entropy, <em>Microstates</em><br>& the Second Law</h1>
+  <div class="header-sub">Statistical mechanics · Heat engines · Irreversibility · Boltzmann</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('concepts', this)">Concepts</button>
+  <button onclick="showSection('engine', this)">Heat Engine</button>
+  <button onclick="showSection('micro', this)">Microstates</button>
+  <button onclick="showSection('sim', this)">Simulation</button>
+  <button onclick="showSection('mcq', this)">MCQ Practice</button>
+  <button onclick="showSection('freeqa', this)">Ask Claude</button>
+</nav>
+
+<main>
+
+<!-- ══════════════ SECTION 1: CONCEPTS ══════════════ -->
+<div id="section-concepts" class="section visible">
+  <div class="section-num">§ 01</div>
+  <h2 class="section-title">What is Entropy?</h2>
+
+  <p>Entropy is a thermodynamic state function measuring how energy is <em>dispersed</em> across the available microstates of a system. It is not simply "disorder" — that is a useful intuition but imprecise. More accurately: entropy counts, logarithmically, the number of ways a system can be arranged at the microscopic level while presenting the same macroscopic appearance.</p>
+
+  <div class="formula">
+    S = k<sub>B</sub> ln Ω
+    <span class="small">Boltzmann's entropy formula · Ω = number of accessible microstates · k<sub>B</sub> = 1.38 × 10⁻²³ J K⁻¹</span>
+  </div>
+
+  <p>The key insight: a <strong>macrostate</strong> is what we observe (temperature, pressure, volume). A <strong>microstate</strong> is one specific configuration of all particles consistent with that macrostate. High-entropy macrostates are overwhelmingly probable simply because many more microstates realise them.</p>
+
+  <h3>Macrostate vs Microstate</h3>
+  <table>
+    <thead>
+      <tr><th>Concept</th><th>Scale</th><th>Example</th><th>Counted by</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Macrostate</td><td>Macroscopic</td><td>Gas at 300 K, 1 atm, 1 L</td><td>p, V, T, U</td></tr>
+      <tr><td>Microstate</td><td>Microscopic</td><td>Exact positions and momenta of all molecules</td><td>Ω</td></tr>
+      <tr><td>Entropy S</td><td>Bridge</td><td>S = k<sub>B</sub> ln Ω links the two</td><td>J K⁻¹</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The Clausius Definition</h3>
+  <p>In classical thermodynamics, for a reversible process, entropy change is defined by heat flow:</p>
+  <div class="formula">
+    ΔS = Q / T
+    <span class="small">Valid for reversible (quasi-static) processes · Q in joules · T in kelvin</span>
+  </div>
+  <p>For irreversible processes, ΔS<sub>universe</sub> &gt; 0. For reversible ones, ΔS<sub>universe</sub> = 0. Entropy can locally decrease (a refrigerator cools its interior) but must increase globally.</p>
+
+  <h3>The Second Law — Three Formulations</h3>
+  <div class="callout">
+    <div class="callout-label">Clausius</div>
+    Heat does not spontaneously flow from a cold body to a hot body.
+  </div>
+  <div class="callout">
+    <div class="callout-label">Kelvin–Planck</div>
+    No heat engine operating in a cycle can convert all its input heat into work.
+  </div>
+  <div class="callout">
+    <div class="callout-label">Entropy</div>
+    The total entropy of an isolated system never decreases. For irreversible processes it strictly increases; for reversible ones it remains constant.
+  </div>
+
+  <h3>Non-isolated Systems</h3>
+  <p>A non-isolated system <em>can</em> have its entropy decrease — but only if the surroundings gain at least as much entropy. Living organisms, refrigerators, and crystals forming from solution all locally decrease entropy, but they export it to their environment. The second law governs the <em>total</em> entropy of system plus surroundings.</p>
+
+  <div class="callout">
+    <div class="callout-label">Key distinction</div>
+    <strong>Isolated system:</strong> ΔS ≥ 0 always.<br>
+    <strong>Non-isolated system:</strong> ΔS can be negative, positive, or zero — but ΔS<sub>total</sub> = ΔS<sub>system</sub> + ΔS<sub>surroundings</sub> ≥ 0.
+  </div>
+</div>
+
+<!-- ══════════════ SECTION 2: HEAT ENGINE ══════════════ -->
+<div id="section-engine" class="section">
+  <div class="section-num">§ 02</div>
+  <h2 class="section-title">Heat Engines & Efficiency</h2>
+
+  <p>A heat engine operates between a hot reservoir at T<sub>H</sub> and a cold reservoir at T<sub>C</sub>, absorbing heat Q<sub>H</sub>, doing work W, and rejecting heat Q<sub>C</sub> to the cold reservoir. Energy conservation (first law) gives:</p>
+
+  <div class="formula">
+    W = Q<sub>H</sub> − Q<sub>C</sub>
+    <span class="small">Work output = heat absorbed − heat rejected</span>
+  </div>
+
+  <p>The thermal efficiency is the fraction of absorbed heat converted to useful work:</p>
+
+  <div class="formula">
+    η = W / Q<sub>H</sub> = 1 − Q<sub>C</sub>/Q<sub>H</sub>
+    <span class="small">Always &lt; 1 for any real engine</span>
+  </div>
+
+  <h3>The Carnot Limit</h3>
+  <p>The second law places an absolute ceiling on efficiency. The ideal (Carnot) engine — operating reversibly — achieves the maximum possible efficiency for given reservoir temperatures:</p>
+
+  <div class="formula">
+    η<sub>Carnot</sub> = 1 − T<sub>C</sub> / T<sub>H</sub>
+    <span class="small">Temperatures must be in kelvin · This is the theoretical maximum</span>
+  </div>
+
+  <p>Any real engine has η &lt; η<sub>Carnot</sub> because real processes are irreversible — friction, finite temperature differences, turbulence all generate entropy and waste energy as heat.</p>
+
+  <h3>Process Types on a pV Diagram</h3>
+  <table>
+    <thead>
+      <tr><th>Process</th><th>Constraint</th><th>Q</th><th>W</th><th>ΔU</th><th>ΔS</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Isothermal</td><td>T = const</td><td>Q = W</td><td>nRT ln(V₂/V₁)</td><td>0</td><td>Q/T ≠ 0</td></tr>
+      <tr><td>Adiabatic</td><td>Q = 0</td><td>0</td><td>−ΔU</td><td>W</td><td>0 (reversible)</td></tr>
+      <tr><td>Isovolumetric</td><td>V = const</td><td>nC<sub>V</sub>ΔT</td><td>0</td><td>Q</td><td>Q/T</td></tr>
+      <tr><td>Isobaric</td><td>p = const</td><td>nC<sub>P</sub>ΔT</td><td>pΔV</td><td>Q−W</td><td>Q/T</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Identifying Processes</h3>
+  <div class="callout">
+    <div class="callout-label">Adiabatic identification trick</div>
+    On a pV diagram, an adiabatic curve is <em>steeper</em> than an isotherm passing through the same point. This is because pV<sup>γ</sup> = const (adiabatic) vs pV = const (isothermal), and γ > 1. If two curves connect the same two pressure levels but one covers a greater volume range, the steeper one is adiabatic.
+  </div>
+
+  <h3>Entropy Changes in the Cycle</h3>
+  <p>Over a complete cycle, the gas returns to its initial state, so ΔS<sub>gas</sub> = 0 for the full cycle. Individual processes:</p>
+  <ul style="padding-left:1.4rem; margin-bottom:1.2rem; color:var(--text); line-height:2;">
+    <li><strong>Adiabatic:</strong> Q = 0 → ΔS = 0 (if reversible)</li>
+    <li><strong>Isothermal expansion (A→B in the paper's cycle):</strong> Heat flows <em>in</em> → ΔS = Q<sub>in</sub>/T > 0, entropy increases</li>
+    <li><strong>Isovolumetric cooling (B→C):</strong> Heat flows <em>out</em> → ΔS = Q<sub>out</sub>/T < 0, entropy decreases</li>
+  </ul>
+
+  <h3>Second Law Consistency Check</h3>
+  <p>Given T<sub>H</sub> = 602 K and T<sub>C</sub> = 92 K, the Carnot limit is:</p>
+  <div class="formula">
+    η<sub>Carnot</sub> = 1 − 92/602 ≈ 0.847
+    <span class="small">The actual engine runs at η ≈ 0.6, which is below this ceiling — fully consistent with the second law</span>
+  </div>
+</div>
+
+<!-- ══════════════ SECTION 3: MICROSTATES ══════════════ -->
+<div id="section-micro" class="section">
+  <div class="section-num">§ 03</div>
+  <h2 class="section-title">Microstates, Macrostates & Irreversibility</h2>
+
+  <p>Consider N distinguishable particles that can each occupy one of two halves of a box. Each particle's half-assignment is one binary "choice." A microstate specifies which half each individual particle is in. A macrostate specifies only the numbers in each half — not which particles.</p>
+
+  <h3>Counting Microstates</h3>
+  <p>If all N particles are in the left half (configuration A), there is exactly <strong>one</strong> microstate: the only assignment is {L, L, L, …, L}. If N/2 particles are in each half (configuration B), the number of microstates is:</p>
+
+  <div class="formula">
+    Ω<sub>B</sub> = C(N, N/2) = N! / ((N/2)!)²
+    <span class="small">For N = 20: Ω<sub>B</sub> = 184,756 vs Ω<sub>A</sub> = 1</span>
+  </div>
+
+  <p>This is why gases expand — not because they are "driven" to, but because the equal-split macrostate is astronomically more probable. The system random-walks through microstates, and almost all of them look like the equal-split macrostate.</p>
+
+  <h3>Why Expansion is Irreversible</h3>
+  <div class="callout">
+    <div class="callout-label">The irreversibility argument</div>
+    Starting in configuration A (Ω = 1, S = k<sub>B</sub> ln 1 = 0), the gas expands into configuration B (Ω ≫ 1, S = k<sub>B</sub> ln Ω ≫ 0). Entropy increases. For the reverse to occur spontaneously, every particle would need to return to one half simultaneously — this has probability 1/Ω<sub>B</sub>, which is vanishingly small for macroscopic N. The second law is thus a statistical statement about overwhelming probability, not a fundamental prohibition.
+  </div>
+
+  <h3>Energy Microstates (Q5 of the paper)</h3>
+  <p>Now suppose 6 particles share total energy 6E in integer units. Each assignment of energies to particles that sums to 6E is a microstate. Configuration A (one particle has all 6E) has exactly <strong>6 microstates</strong> — any of the six particles can be the one holding all the energy. Configuration B (energies distributed as 3E, 2E, E, 0, 0, 0) has 120 microstates — counted by the number of ways to assign those values to 6 distinguishable particles.</p>
+
+  <div class="formula">
+    ΔS = S<sub>B</sub> − S<sub>A</sub> = k<sub>B</sub>(ln 120 − ln 6) = k<sub>B</sub> ln 20 ≈ 3.0 k<sub>B</sub>
+    <span class="small">System will evolve from A toward B: entropy increases, more microstates accessible</span>
+  </div>
+
+  <h3>Boltzmann's Insight</h3>
+  <p>S = k<sub>B</sub> ln Ω is the bridge between the statistical (counting microstates) and thermodynamic (heat flow, temperature) descriptions of entropy. The logarithm is essential: it makes entropy <em>additive</em> for independent systems. If system 1 has Ω₁ microstates and system 2 has Ω₂, the combined system has Ω₁ × Ω₂ microstates, and S<sub>total</sub> = k<sub>B</sub> ln(Ω₁Ω₂) = S₁ + S₂.</p>
+</div>
+
+<!-- ══════════════ SECTION 4: SIMULATION ══════════════ -->
+<div id="section-sim" class="section">
+  <div class="section-num">§ 04</div>
+  <h2 class="section-title">Particle Expansion Simulation</h2>
+  <p>Watch particles diffuse from one half of a container into the other. Each step, one random particle swaps halves with some probability. Observe how the system evolves irreversibly toward the equal-split macrostate.</p>
+
+  <div class="vis-wrap">
+    <div class="vis-title">Ideal gas free expansion · Two-half container</div>
+    <canvas id="simCanvas" width="760" height="200"></canvas>
+    <div class="vis-controls">
+      <button class="vis-btn" id="btnReset" onclick="simReset()">Reset</button>
+      <button class="vis-btn" id="btnStep" onclick="simStep()">Step ×1</button>
+      <button class="vis-btn" id="btnRun" onclick="simToggle()">Run</button>
+      <div class="vis-stat">Left: <span id="statL">20</span> &nbsp;|&nbsp; Right: <span id="statR">0</span> &nbsp;|&nbsp; S: <span id="statS">0.00</span> k<sub>B</sub></div>
+    </div>
+  </div>
+
+  <p style="font-family:var(--sans); font-size:0.85rem; color:var(--text-dim);">The entropy S = k<sub>B</sub> ln Ω where Ω = C(20, n<sub>R</sub>) is shown in units of k<sub>B</sub>. Notice how it rises rapidly and fluctuates around its maximum (near equal split), almost never returning to zero.</p>
+</div>
+
+<!-- ══════════════ SECTION 5: MCQ ══════════════ -->
+<div id="section-mcq" class="section">
+  <div class="section-num">§ 05</div>
+  <h2 class="section-title">MCQ Practice</h2>
+  <p style="font-family:var(--sans);font-size:0.85rem;color:var(--text-dim);margin-bottom:1.5rem;">Select your answer — feedback appears immediately.</p>
+
+  <div class="quiz-container" id="quizContainer"></div>
+</div>
+
+<!-- ══════════════ SECTION 6: FREE Q&A ══════════════ -->
+<div id="section-freeqa" class="section">
+  <div class="section-num">§ 06</div>
+  <h2 class="section-title">Ask Claude</h2>
+  <p style="font-family:var(--sans);font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Ask any question about entropy, microstates, heat engines, or the second law. Claude responds as an IB Physics tutor.</p>
+
+  <div class="qa-wrap">
+    <div class="chip-row" id="chipRow">
+      <button class="chip" onclick="useChip(this)">Why does entropy always increase?</button>
+      <button class="chip" onclick="useChip(this)">What makes a process irreversible?</button>
+      <button class="chip" onclick="useChip(this)">How is S = k ln Ω derived?</button>
+      <button class="chip" onclick="useChip(this)">Carnot vs real efficiency?</button>
+      <button class="chip" onclick="useChip(this)">Entropy of an adiabatic process</button>
+      <button class="chip" onclick="useChip(this)">Refrigerator entropy paradox</button>
+    </div>
+    <div class="qa-chat" id="qaChat">
+      <div class="msg msg-ai"><strong>Ready.</strong> Ask anything about entropy, microstates, or the second law.</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="qaInput" placeholder="Your question…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQ();}"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendQ()">Send</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="footer-left">IB Physics · Thermodynamics</div>
+  <div class="footer-right">Constructed by Silicon · Anthropic Claude<br>Architect Carbon · LeeMcCullochJames</div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('section-' + id).classList.add('visible');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   MCQ DATA
+═══════════════════════════════════════════ */
+const questions = [
+  {
+    q: "Which statement is correct about the entropy of a non-isolated system?",
+    opts: ["It always increases", "It always decreases", "It can only increase if the entropy of the surroundings decreases", "It can only decrease if the entropy of the surroundings increases"],
+    ans: 3,
+    fb: "A non-isolated system can exchange energy with its surroundings. Its entropy can decrease — but only if the surroundings gain at least as much entropy, keeping ΔS<sub>total</sub> ≥ 0. Answer D is correct: entropy of the system can only decrease if the surroundings' entropy increases."
+  },
+  {
+    q: "An energy of 200 J is transferred isothermally to an ideal gas at 27°C. What is the entropy change of the gas?",
+    opts: ["0.67 J K⁻¹", "0.14 J K⁻¹", "1.5 J K⁻¹", "7.4 J K⁻¹"],
+    ans: 0,
+    fb: "ΔS = Q/T = 200 / (27 + 273) = 200 / 300 ≈ 0.67 J K⁻¹. Always convert Celsius to Kelvin first!"
+  },
+  {
+    q: "A working refrigerator with the door open is placed in a sealed room. The entropy of the room:",
+    opts: ["is zero", "decreases", "remains unchanged", "increases"],
+    ans: 3,
+    fb: "The refrigerator does work (powered by electricity) on the gas inside it, pumping heat out. But the motor and compressor dissipate energy as heat into the room — irreversibly. The total entropy of the sealed room increases. Answer D."
+  },
+  {
+    q: "Gas particles initially occupy one half of a container (configuration A). After free expansion into both halves (configuration B), which is true?",
+    opts: [
+      "Configuration A has more microstates than B",
+      "The entropy in B is less than in A",
+      "Configuration B has more microstates because more arrangements of particles are possible",
+      "The process is reversible because total energy is conserved"
+    ],
+    ans: 2,
+    fb: "In configuration A (all particles left), Ω = 1. In configuration B (equal split), Ω = C(N, N/2) ≫ 1. More ways of arranging particles across both halves → more microstates → higher entropy. The process is irreversible because returning to A requires vanishingly improbable spontaneous correlation."
+  },
+  {
+    q: "A heat engine operates between 600 K and 100 K with efficiency 0.65. Is this consistent with the second law?",
+    opts: [
+      "No — the efficiency exceeds 1",
+      "Yes — the Carnot efficiency is ~0.83, and 0.65 < 0.83",
+      "No — the efficiency must equal the Carnot efficiency",
+      "Yes — any efficiency is allowed by the second law"
+    ],
+    ans: 1,
+    fb: "η<sub>Carnot</sub> = 1 − T<sub>C</sub>/T<sub>H</sub> = 1 − 100/600 ≈ 0.83. Since 0.65 < 0.83, the engine operates below the Carnot limit — consistent with the second law. Engines cannot exceed the Carnot efficiency; they can only fall short of it due to irreversibilities."
+  },
+  {
+    q: "For an adiabatic reversible expansion of an ideal gas, which is correct?",
+    opts: [
+      "ΔS > 0 because the gas expands",
+      "ΔS < 0 because temperature falls",
+      "ΔS = 0 because no heat is exchanged",
+      "ΔS = Q/T, which is non-zero"
+    ],
+    ans: 2,
+    fb: "For a reversible adiabatic (isentropic) process, Q = 0. Using ΔS = Q/T for reversible processes gives ΔS = 0. Entropy is constant — this is why adiabatic reversible processes are called isentropic. The gas cools as it expands, but with no heat exchange and no irreversibility, entropy doesn't change."
+  },
+  {
+    q: "An isolated system of 6 particles has Ω = 6 in configuration A and Ω = 120 in configuration B. What is ΔS = S_B − S_A in units of k_B?",
+    opts: ["ln(126)", "ln(20)", "ln(114)", "20"],
+    ans: 1,
+    fb: "ΔS = k<sub>B</sub>(ln Ω<sub>B</sub> − ln Ω<sub>A</sub>) = k<sub>B</sub> ln(Ω<sub>B</sub>/Ω<sub>A</sub>) = k<sub>B</sub> ln(120/6) = k<sub>B</sub> ln 20 ≈ 3.0 k<sub>B</sub>. The logarithm of the ratio, not the sum or difference of the raw counts."
+  },
+  {
+    q: "In a pV cycle, over one complete cycle the entropy change of the working gas is:",
+    opts: [
+      "Always positive",
+      "Always negative",
+      "Zero, because the gas returns to its initial state",
+      "Equal to W/T<sub>H</sub>"
+    ],
+    ans: 2,
+    fb: "Entropy is a state function. After one complete cycle, the gas returns to exactly the same thermodynamic state — same T, p, V, U, and S. Therefore ΔS<sub>gas</sub> = 0 over the full cycle. Individual legs may have positive or negative ΔS, but they cancel."
+  }
+];
+
+/* Build MCQ */
+(function buildQuiz() {
+  const c = document.getElementById('quizContainer');
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.dataset.num = `Q${i+1}`;
+    card.innerHTML = `
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((o,j) => `
+          <button class="opt-btn" onclick="checkAns(${i},${j},this)">
+            <span class="opt-letter">${['A','B','C','D'][j]}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="feedback" id="fb${i}"></div>
+    `;
+    c.appendChild(card);
+  });
+})();
+
+function checkAns(qi, selected, btn) {
+  const card = btn.closest('.q-card');
+  card.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  const correct = questions[qi].ans;
+  const fb = document.getElementById('fb' + qi);
+  if (selected === correct) {
+    btn.classList.add('correct');
+    fb.innerHTML = `<span class="correct-label">✓ Correct.</span> ${questions[qi].fb}`;
+  } else {
+    btn.classList.add('wrong');
+    card.querySelectorAll('.opt-btn')[correct].classList.add('correct');
+    fb.innerHTML = `<span class="wrong-label">✗ Incorrect.</span> ${questions[qi].fb}`;
+  }
+  fb.classList.add('show');
+}
+
+/* ═══════════════════════════════════════════
+   SIMULATION
+═══════════════════════════════════════════ */
+const N = 20;
+let particles = [];
+let simRunning = false;
+let simTimer = null;
+
+function factorial(n) {
+  let r = 1; for (let i=2;i<=n;i++) r*=i; return r;
+}
+function combinations(n, k) {
+  if (k < 0 || k > n) return 0;
+  return factorial(n) / (factorial(k) * factorial(n-k));
+}
+function entropy(nR) {
+  const om = combinations(N, nR);
+  return om > 0 ? Math.log(om) : 0;
+}
+
+function simReset() {
+  if (simRunning) simToggle();
+  particles = Array(N).fill(0); // all left
+  drawSim();
+}
+
+function simStep() {
+  const i = Math.floor(Math.random() * N);
+  // simple random walk: flip one particle
+  particles[i] = 1 - particles[i];
+  drawSim();
+}
+
+function simToggle() {
+  simRunning = !simRunning;
+  document.getElementById('btnRun').textContent = simRunning ? 'Pause' : 'Run';
+  if (simRunning) {
+    simTimer = setInterval(() => { simStep(); }, 80);
+  } else {
+    clearInterval(simTimer);
+  }
+}
+
+function drawSim() {
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle = '#11121a';
+  ctx.fillRect(0,0,W,H);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(200,169,110,0.3)';
+  ctx.setLineDash([4,4]);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W/2, 10); ctx.lineTo(W/2, H-10); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Border
+  ctx.strokeStyle = 'rgba(200,169,110,0.15)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(1,1,W-2,H-2);
+
+  // Labels
+  ctx.fillStyle = 'rgba(200,169,110,0.3)';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.fillText('LEFT', 12, 20);
+  ctx.fillText('RIGHT', W/2 + 12, 20);
+
+  // Particles
+  const nL = particles.filter(p=>p===0).length;
+  const nR = N - nL;
+
+  // Distribute positions quasi-randomly but stable
+  const posCache = getPositions();
+  particles.forEach((side, i) => {
+    const pos = posCache[i];
+    const cx = side === 0 ? pos.x * (W/2 - 20) + 10 : W/2 + pos.x * (W/2 - 20) + 10;
+    const cy = pos.y * (H - 30) + 20;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI*2);
+    ctx.fillStyle = side === 0 ? '#c8a96e' : '#5a8fa8';
+    ctx.fill();
+  });
+
+  // Stats
+  const S = entropy(nR);
+  document.getElementById('statL').textContent = nL;
+  document.getElementById('statR').textContent = nR;
+  document.getElementById('statS').textContent = S.toFixed(2);
+}
+
+// Stable pseudo-random positions per particle
+function getPositions() {
+  const pos = [];
+  for (let i=0;i<N;i++) {
+    // deterministic hash
+    const t = i * 0.618033988749;
+    pos.push({ x: (t % 1), y: ((i * 0.381966011) % 1) });
+  }
+  return pos;
+}
+
+simReset();
+
+/* ═══════════════════════════════════════════
+   FREE Q&A
+═══════════════════════════════════════════ */
+function useChip(btn) {
+  document.getElementById('qaInput').value = btn.textContent;
+  sendQ();
+}
+
+async function sendQ() {
+  const input = document.getElementById('qaInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  const chat = document.getElementById('qaChat');
+  const sendBtn = document.getElementById('sendBtn');
+
+  // Add user message
+  const uMsg = document.createElement('div');
+  uMsg.className = 'msg msg-user';
+  uMsg.textContent = question;
+  chat.appendChild(uMsg);
+  input.value = '';
+  sendBtn.disabled = true;
+
+  // Typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'msg msg-ai';
+  typing.innerHTML = '<span class="typing-dot">▋</span>';
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
+  const systemPrompt = `You are an expert IB Physics tutor specialising in thermodynamics. Answer questions about entropy, microstates, macrostates, the second law of thermodynamics, heat engines, Boltzmann's formula S = k_B ln Ω, Carnot efficiency, and irreversibility.
+
+Be concise but precise. Use mathematical notation where helpful (plain text: e.g. S = k_B ln Ω). Highlight key formulae. Speak at IB HL level but be accessible. Keep responses under 250 words. Do not use markdown bold or asterisks — just plain text with clear structure.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: question }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
+
+    // Format: bold first sentence
+    const lines = text.split('\n').filter(l=>l.trim());
+    const formatted = lines.map((l, i) => {
+      if (i === 0) return `<strong>${l}</strong>`;
+      return l;
+    }).join('<br>');
+
+    typing.innerHTML = formatted;
+  } catch (e) {
+    typing.innerHTML = `<em>Error: ${e.message}</em>`;
+  }
+
+  sendBtn.disabled = false;
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>
+</body>
+</html>
