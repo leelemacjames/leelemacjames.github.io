@@ -451,7 +451,43 @@
     border-radius: 6px;
   }
 
-  .hidden { display: none; }
+  .btn-submit-amber {
+    background: rgba(212,180,88,0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight: 500;
+    width: 100%;
+    margin-top: 10px;
+    text-align: center;
+    padding: 12px;
+  }
+  .btn-submit-amber:hover {
+    background: rgba(212,180,88,0.28);
+    color: var(--text);
+  }
+  .btn-submit-red {
+    background: rgba(212,88,88,0.15);
+    border-color: var(--red);
+    color: var(--red);
+    font-weight: 500;
+    width: 100%;
+    margin-top: 10px;
+    text-align: center;
+    padding: 12px;
+    animation: pulse-red 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+  }
+  .submit-status {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 8px;
+    min-height: 1.2em;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -550,8 +586,9 @@
         <input id="studentName" type="text" placeholder="Enter your name" />
         <label for="cohortName">Class</label>
         <input id="cohortName" type="text" placeholder="Enter your class" />
-        <input id="sheetUrl" type="hidden" value="https://script.google.com/macros/s/AKfycbzeBVvWCKM4ypJ1hTVPP0EfZdbQuQBuON24HBKnfHizge4Pge0omzLvRCWk7vKVrCFF/exec" />
-        <div id="storageStatus" class="status"></div>
+        <input id="sheetUrl" type="hidden" value="https://script.google.com/macros/s/AKfycbxmltHBMhweop7l97qRO04jT-Un4CZuILEJzqq-jzbGkR4aE-69o3Kr4av0FeSxVMCL/exec" />
+        <button class="btn btn-submit-amber" id="manualSubmitBtn" onclick="manualSubmit()">Submit results so far</button>
+        <div class="submit-status" id="submitStatus"></div>
       </div>
 
       <div class="card card-sm">
@@ -779,6 +816,11 @@ const quizData = [
 /* Build shuffled runtime once per load */
 const runtimes = quizData.map(item => buildItemRuntime(item));
 
+/* ─── session ID — unique per page load, used to upsert single row ─── */
+function makeSessionId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
 let state = {
   index: 0,
   revealCount: 1,
@@ -786,8 +828,9 @@ let state = {
   confidence3: null,
   confidence5: null,
   answerAt3: null,
-  deflectorGuess: null,   // which clue number (1-5) the student thinks was the false trail
-  results: []
+  deflectorGuess: null,
+  results: [],
+  sessionId: makeSessionId()
 };
 
 const quizCard     = document.getElementById('quizCard');
@@ -804,22 +847,46 @@ function mean(arr) {
   return c.length ? c.reduce((a,b) => a+b, 0) / c.length : 0;
 }
 
-/* ─── send after every item (partial data safe) ─── */
-async function pushRow() {
+/* ─── push / upsert ─── */
+async function pushRow(isManual) {
   const url = document.getElementById('sheetUrl').value.trim();
-  if (!url) return;
+  if (!url || !state.results.length) return;
+  const statusEl = document.getElementById('submitStatus');
+  const btn = document.getElementById('manualSubmitBtn');
   try {
-    // no-cors: Apps Script POST endpoint redirects; no-cors avoids the CORS preflight error.
-    // We can't read the response in no-cors mode, but the data lands in the sheet.
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(buildSessionObject())
     });
+    if (isManual) {
+      if (statusEl) statusEl.textContent = `Sent ${state.results.length} of ${quizData.length} items.`;
+    }
   } catch (err) {
     console.warn('Push failed:', err);
+    if (isManual && statusEl) statusEl.textContent = 'Send failed — check connection.';
   }
+}
+
+function manualSubmit() {
+  if (!state.results.length) {
+    document.getElementById('submitStatus').textContent = 'No answers to submit yet.';
+    return;
+  }
+  const btn = document.getElementById('manualSubmitBtn');
+  const remaining = quizData.length - state.results.length;
+  if (remaining > 0) {
+    // Turn red with grit prompt
+    btn.className = 'btn btn-submit-red';
+    btn.textContent = `Submitting early — ${remaining} word${remaining > 1 ? 's' : ''} skipped. Lacking grit?`;
+    document.getElementById('submitStatus').textContent = 'Partial results sent.';
+  } else {
+    btn.className = 'btn btn-submit-amber';
+    btn.textContent = 'Submitted ✓';
+    document.getElementById('submitStatus').textContent = 'All results sent.';
+  }
+  pushRow(true);
 }
 
 /* ─── render ─── */
@@ -989,7 +1056,14 @@ function submitItem() {
     changedAfter3, finalIsDeflector, correct, score, distortion
   });
 
-  pushRow();
+  /* Auto-push only when all items done; otherwise student uses the sidebar button */
+  if (state.index + 1 >= quizData.length) {
+    pushRow(false);
+    const btn = document.getElementById('manualSubmitBtn');
+    if (btn) { btn.className = 'btn btn-submit-amber'; btn.textContent = 'Submitted ✓'; }
+    const statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'All results sent automatically.';
+  }
 
   state.index++;
   state.revealCount    = 1;
@@ -1073,13 +1147,12 @@ function renderSummary() {
   `;
 
   document.getElementById('newSessionBtn').addEventListener('click', restartQuiz);
-  /* Final push in case student skipped to summary directly */
-  pushRow();
 }
 
 /* ─── session object ─── */
 function buildSessionObject() {
   return {
+    sessionId:          state.sessionId,
     timestamp:          new Date().toISOString(),
     studentName:        document.getElementById('studentName').value || '',
     cohortName:         document.getElementById('cohortName').value  || '',
@@ -1096,16 +1169,11 @@ function buildSessionObject() {
 }
 
 function restartQuiz() {
-  state = { index:0, revealCount:1, selected:null, confidence3:null, confidence5:null, answerAt3:null, deflectorGuess:null, results:[] };
+  state = { index:0, revealCount:1, selected:null, confidence3:null, confidence5:null, answerAt3:null, deflectorGuess:null, results:[], sessionId: makeSessionId() };
   quizCard.classList.remove('hidden');
   summaryCard.classList.add('hidden');
   renderQuiz();
 }
-
-renderQuiz();
-</script>
-</body>
-</html>
 
 renderQuiz();
 </script>
