@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Semantic Modality Probe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070910;
+    --panel: #0c1018;
+    --panel2: #111620;
+    --text: #f0ece4;
+    --text-dim: #ccc5bb;
+    --muted: #9a9490;
+    --line: #232b38;
+    --line-bright: #2c3c52;
+    --gold: #d4b458;
+    --gold-dim: #9a7e34;
+    --gold-glow: rgba(212,180,88,0.14);
+    --blue: #7aafe0;
+    --blue-dim: rgba(122,175,224,0.15);
+    --green: #82c88a;
+    --red: #d46868;
+    --li: #d88a6a;
+    --lo: #6aaad8;
+    --li-dim: rgba(216,138,106,0.14);
+    --lo-dim: rgba(106,170,216,0.14);
+    --serif: "Cormorant Garamond", Georgia, serif;
+    --mono: "IBM Plex Mono", Consolas, monospace;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 18px;
+    --shadow: 0 14px 40px rgba(0,0,0,0.5);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; font-size: 15.5px; line-height: 1.65; }
+
+  /* ── Layout ── */
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  .page-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 22px;
+    align-items: start;
+  }
+  @media (max-width: 920px) { .page-grid { grid-template-columns: 1fr; } }
+
+  /* ── Prose ── */
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0 0 10px; line-height: 1.1; }
+  h1 { font-size: clamp(2rem, 4vw, 3.2rem); }
+  h2 { font-size: 1.35rem; }
+  h3 { font-size: 1.05rem; }
+  p { margin: 0 0 12px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line-bright);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .card-sm { padding: 16px 18px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.88rem; }
+  .mono { font-family: var(--mono); font-size: 0.88em; }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0e1420 0%, #090c14 100%);
+    border: 1px solid var(--line-bright);
+    border-radius: 24px;
+    padding: 32px 36px 28px;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,180,88,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+
+  .preamble-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 28px;
+    margin-top: 22px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .preamble-grid { grid-template-columns: 1fr; } }
+
+  .preamble-col {}
+  .preamble-aside {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--line-bright);
+    border-radius: 16px;
+    padding: 20px 22px;
+  }
+  .aside-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .aside-divider {
+    border: none;
+    border-top: 1px solid var(--line-bright);
+    margin: 0;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold); opacity: 0.5; }
+
+  /* ── Pill ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 0; }
+  .pill {
+    font-family: var(--mono); font-size: 0.76rem; padding: 5px 11px;
+    border: 1px solid var(--line-bright); border-radius: 999px;
+    color: var(--muted); background: rgba(255,255,255,0.025);
+  }
+  .pill-gold { border-color: var(--gold-dim); color: var(--gold); }
+  .pill-li { border-color: rgba(200,120,90,0.4); color: var(--li); background: var(--li-dim); }
+  .pill-lo { border-color: rgba(90,155,200,0.4); color: var(--lo); background: var(--lo-dim); }
+
+  /* ── 2×2 MATRIX (static legend) ── */
+  .matrix-legend {
+    display: grid;
+    grid-template-columns: 56px 1fr 1fr;
+    grid-template-rows: 48px 1fr 1fr;
+    gap: 5px;
+    margin: 14px 0;
+    font-size: 0.8rem;
+  }
+  .ml-corner { /* empty */ }
+  .ml-col-head {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 0 10px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    white-space: nowrap;
+  }
+  .ml-row-head {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .ml-head-li { background: var(--li-dim); color: var(--li); border: 1px solid rgba(216,138,106,0.35); }
+  .ml-head-lo { background: var(--lo-dim); color: var(--lo); border: 1px solid rgba(106,170,216,0.35); }
+  .ml-cell {
+    border-radius: 12px;
+    padding: 13px 14px 11px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.022);
+    min-height: 80px;
+  }
+  .ml-cell-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 5px;
+    letter-spacing: 0.06em;
+  }
+  .ml-cell-body { font-size: 0.82rem; color: var(--text-dim); line-height: 1.45; }
+
+  /* li-li */ .cell-lili { border-color: rgba(216,138,106,0.25); background: rgba(216,138,106,0.07); }
+  /* li-lo */ .cell-lilo { border-color: rgba(180,155,140,0.22); background: rgba(180,155,140,0.06); }
+  /* lo-li */ .cell-loli { border-color: rgba(130,155,200,0.22); background: rgba(130,155,200,0.06); }
+  /* lo-lo */ .cell-lolo { border-color: rgba(106,170,216,0.25); background: rgba(106,170,216,0.07); }
+
+  /* ── Quiz card ── */
+  .item-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .item-counter {
+    font-family: var(--mono); font-size: 0.8rem; color: var(--muted);
+  }
+
+  /* Stage dots */
+  .stage-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stage-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line-bright);
+    background: var(--panel2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .stage-dot.done { border-color: var(--gold-dim); background: rgba(200,168,75,0.08); color: var(--gold); }
+  .stage-dot.current { border-color: var(--gold); background: rgba(200,168,75,0.16); color: var(--gold); font-weight: 700; }
+  .stage-dot.false-trail { border-color: var(--red); background: rgba(196,96,96,0.12); color: var(--red); }
+  .stage-dot.locked { opacity: 0.3; }
+  .stage-label {
+    font-family: var(--mono); font-size: 0.72rem;
+    color: var(--muted); white-space: nowrap;
+  }
+
+  /* Hidden sentence */
+  .prompt-box {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--line-bright);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+    margin: 16px 0 20px;
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  /* Reveals */
+  .reveals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 600px) { .reveals-grid { grid-template-columns: 1fr; } }
+
+  .reveal-card {
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.018);
+    transition: border-color 0.2s;
+    min-height: 72px;
+  }
+  .reveal-card.locked {
+    opacity: 0.22; cursor: default;
+  }
+  .reveal-card.false-trail {
+    border-color: rgba(196,96,96,0.4);
+    background: rgba(196,96,96,0.06);
+  }
+  .reveal-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 5px;
+  }
+  .regime-badge {
+    font-family: var(--mono); font-size: 0.66rem; padding: 3px 7px;
+    border-radius: 6px; white-space: nowrap; font-weight: 500;
+  }
+  .badge-lili { background: var(--li-dim); color: var(--li); border: 1px solid rgba(200,120,90,0.3); }
+  .badge-lilo { background: rgba(180,130,110,0.12); color: #c8a880; border: 1px solid rgba(200,168,120,0.3); }
+  .badge-loli { background: rgba(100,130,180,0.12); color: #8ab0d8; border: 1px solid rgba(120,160,200,0.3); }
+  .badge-lolo { background: var(--lo-dim); color: var(--lo); border: 1px solid rgba(90,155,200,0.3); }
+  .badge-false { background: rgba(196,96,96,0.12); color: var(--red); border: 1px solid rgba(196,96,96,0.3); }
+  .reveal-text { font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; }
+  .reveal-num { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+  /* Options */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 9px;
+    margin: 16px 0;
+  }
+  .option {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line-bright);
+    border-radius: 11px;
+    padding: 11px 14px;
+    cursor: pointer;
+    font: 300 0.9rem/1.4 var(--sans);
+    color: var(--text-dim);
+    text-align: center;
+    transition: all 0.16s;
+  }
+  .option:hover { border-color: var(--gold-dim); color: var(--text); background: var(--gold-glow); }
+  .option.selected { border-color: var(--gold); background: var(--gold-glow); color: var(--text); }
+
+  /* Confidence row */
+  .conf-block { margin: 14px 0; }
+  .conf-label {
+    font-family: var(--mono); font-size: 0.76rem;
+    color: var(--muted); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .conf-row { display: flex; gap: 7px; flex-wrap: wrap; }
+  .conf-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--line-bright);
+    background: var(--panel2);
+    color: var(--muted);
+    font-family: var(--mono); font-size: 0.85rem;
+    cursor: pointer; transition: all 0.16s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .conf-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .conf-btn.selected { border-color: var(--gold); background: rgba(200,168,75,0.18); color: var(--gold); font-weight: 700; }
+
+  /* Answer strip */
+  .answer-strip {
+    display: flex; gap: 18px; flex-wrap: wrap; align-items: center;
+    margin: 10px 0; font-size: 0.85rem;
+  }
+  .answer-strip strong { color: var(--text-dim); }
+
+  /* Buttons */
+  .btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line-bright);
+    color: var(--text-dim);
+    border-radius: 11px;
+    padding: 10px 18px;
+    font: 300 0.88rem/1 var(--sans);
+    cursor: pointer; transition: all 0.16s;
+  }
+  .btn:hover { border-color: var(--gold-dim); color: var(--text); background: var(--gold-glow); }
+  .btn-primary {
+    background: rgba(200,168,75,0.14);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: rgba(200,168,75,0.22); color: var(--text); }
+  .btn-danger { border-color: rgba(196,96,96,0.4); }
+  .btn-danger:hover { border-color: var(--red); color: var(--red); background: rgba(196,96,96,0.08); }
+  .btn-row { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+
+  /* ── Sidebar ── */
+  .sidebar { display: grid; gap: 18px; }
+
+  input[type="text"] {
+    width: 100%; padding: 10px 13px;
+    border-radius: 10px; border: 1px solid var(--line-bright);
+    background: rgba(0,0,0,0.4); color: var(--text);
+    font: 300 0.9rem/1 var(--sans);
+    margin: 6px 0 12px;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--gold-dim); }
+  label { display: block; font-size: 0.8rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.07em; }
+  .status { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 8px; min-height: 1.2em; }
+
+  /* ── Summary ── */
+  .summary-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px; margin-bottom: 18px;
+  }
+  .stat-box {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 2rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-desc { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); }
+
+  /* Matrix heat map in summary */
+  .matrix-wrap { margin: 20px 0; }
+  .matrix-title { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 10px; }
+  .matrix-heat {
+    display: grid;
+    grid-template-columns: 70px 1fr 1fr;
+    grid-template-rows: 30px 1fr 1fr;
+    gap: 5px;
+  }
+  .mh-corner {}
+  .mh-col-head {
+    text-align: center;
+    font-family: var(--mono); font-size: 0.72rem;
+    padding: 4px 6px; border-radius: 7px;
+    background: rgba(255,255,255,0.03); color: var(--muted);
+  }
+  .mh-row-head {
+    font-family: var(--mono); font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: flex-end;
+    text-align: right; padding-right: 8px;
+    color: var(--muted);
+  }
+  .mh-cell {
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+    padding: 12px 14px;
+    min-height: 72px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  .mh-cell-count { font-family: var(--serif); font-size: 1.8rem; line-height: 1; color: var(--text-dim); }
+  .mh-cell-words { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.4; font-family: var(--mono); }
+
+  /* Summary table */
+  .sum-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 14px; }
+  .sum-table th, .sum-table td {
+    border-bottom: 1px solid var(--line);
+    padding: 9px 8px; text-align: left; vertical-align: top;
+  }
+  .sum-table th { color: var(--muted); font-family: var(--mono); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 400; }
+  .correct-cell { color: var(--green); }
+  .wrong-cell { color: var(--red); }
+  .defl-cell { color: var(--red); font-style: italic; }
+
+  /* Item review in summary */
+  .item-review {
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.015);
+  }
+  .item-review-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .review-word {
+    font-family: var(--serif); font-size: 1.15rem; color: var(--text);
+  }
+  .quadrant-tag {
+    font-family: var(--mono); font-size: 0.7rem; padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Hero / preamble -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Semantic Modality Probe · Cross-curricular Language</div>
+      <h1>Words do work.<br>Which work, exactly?</h1>
+
+      <div class="preamble-grid">
+        <div class="preamble-col">
+          <p style="font-family:var(--serif);font-size:1.18rem;color:var(--text);line-height:1.65;margin-bottom:14px;">
+            Wittgenstein's question about language was simple and devastating: what does this word <em>do</em> here, in this sentence, in this practice? Not what does it name, but what work does placing it perform? For scientific and mathematical vocabulary, that question has unusually clean answers.
+          </p>
+          <p style="color:var(--text-dim);margin-bottom:14px;">
+            Words like <em>field</em>, <em>entropy</em>, and <em>resonance</em> carry structural commitments. To use them correctly in a model is to accept certain inferences and foreclose others. A student who writes "energy is conserved" and a student who understands that conservation follows from time-translation symmetry via Noether's theorem are separated by something that no amount of vocabulary fluency closes on its own. The probe here is designed to make that gap visible and measurable across different registers of use.
+          </p>
+          <p style="color:var(--text-dim);margin-bottom:0;">
+            There is a second motivation. Effective writing — in science, in formal argument, in prompting AI systems — requires that words do their work without decoration. Poetry and allegory have their own rigour, but that rigour depends on controlled ambiguity, on resonance between possible readings. When precision is required, vagueness is not a stylistic choice but a failure of thought. Much contemporary scientific writing, and almost all padded institutional prose, mistakes the accumulation of correct-sounding terms for the articulation of a structure. This probe tests the opposite skill.
+          </p>
+        </div>
+        <div class="preamble-col">
+          <div class="preamble-aside">
+            <div class="aside-label">The core claim</div>
+            <p style="font-family:var(--serif);font-size:1.05rem;color:var(--text);line-height:1.6;margin-bottom:12px;">
+              A <em>semantic operator</em> is a word that preserves its structural invariant across four representational regimes: lyrical-in/lyrical-out, lyrical-in/logical-out, logical-in/lyrical-out, and logical-in/logical-out.
+            </p>
+            <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:12px;">
+              A small class of words survives all four without losing the invariant that makes them precise: <span style="color:var(--gold);font-family:var(--mono);">field, wave, energy, symmetry, entropy, resonance, phase, curvature, gradient, information</span>. What distinguishes them is historical depth — each was first a metaphor, became a model, cashed out as a formal object, and then returned to teaching as image again.
+            </p>
+            <div class="aside-divider"></div>
+            <div class="aside-label" style="margin-top:12px;">On padding</div>
+            <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0;">
+              The failure mode in weak scientific writing is not wrong words but structureless ones: nouns stacked into noun phrases, passive constructions hiding agents, intensifiers standing where quantities belong. This probe is a diagnostic for the opposite — words whose usefulness scales directly with the precision of their deployment.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pills" style="margin-top:18px;">
+        <div class="pill pill-gold">Wittgenstein: use, not meaning</div>
+        <div class="pill pill-li">li–li · resonance</div>
+        <div class="pill pill-li">li–lo · proto-theory</div>
+        <div class="pill pill-lo">lo–li · pedagogy</div>
+        <div class="pill pill-lo">lo–lo · formal system</div>
+        <div class="pill">cross-curricular language</div>
+        <div class="pill">semantic invariance test</div>
+        <div class="pill">prompting precision</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matrix legend -->
+  <div class="card card-sm" style="margin-bottom:20px;">
+    <h3 style="margin-bottom:6px;">The 2×2 modality matrix</h3>
+    <p class="small muted" style="margin-bottom:14px;">Each reveal clue is anchored in one regime. A word that survives all four without losing its invariant is a <em>semantic operator</em>.</p>
+    <div class="matrix-legend">
+      <div class="ml-corner"></div>
+      <div class="ml-col-head ml-head-li">Output: Lyrical — evokes, resonates</div>
+      <div class="ml-col-head ml-head-lo">Output: Logical — asserts, classifies</div>
+      <div class="ml-row-head ml-head-li">Input: Lyrical</div>
+      <div class="ml-cell cell-lili">
+        <div class="ml-cell-label">li–li · resonance loop</div>
+        <div class="ml-cell-body">Associative, affective. Evocative usage with no formal commitment yet.</div>
+      </div>
+      <div class="ml-cell cell-lilo">
+        <div class="ml-cell-label">li–lo · metaphor → model</div>
+        <div class="ml-cell-body">Intuition becomes constraint. Felt sense bridges to structure.</div>
+      </div>
+      <div class="ml-row-head ml-head-lo">Input: Logical</div>
+      <div class="ml-cell cell-loli">
+        <div class="ml-cell-label">lo–li · model → intuition</div>
+        <div class="ml-cell-body">Formal object rendered human. Pedagogical translation back to image.</div>
+      </div>
+      <div class="ml-cell cell-lolo">
+        <div class="ml-cell-label">lo–lo · formal system</div>
+        <div class="ml-cell-body">Equation, rule, definition. Operationally testable. The invariant cashes out.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid">
+    <!-- Main quiz -->
+    <div>
+      <div id="quizCard" class="card"></div>
+      <div id="summaryCard" class="card hidden"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="card card-sm">
+        <h2 style="margin-bottom:12px;">Session</h2>
+        <label for="studentName">Student name</label>
+        <input id="studentName" type="text" placeholder="Enter name" />
+        <label for="cohortName">Class / cohort</label>
+        <input id="cohortName" type="text" placeholder="Optional" />
+        <label for="sheetUrl">Webhook URL</label>
+        <input id="sheetUrl" type="text" placeholder="Optional Apps Script URL" />
+        <p class="small muted">If supplied, the app will POST one summary row per completed attempt.</p>
+        <div class="btn-row">
+          <button class="btn" id="exportCsvBtn">CSV</button>
+          <button class="btn" id="exportJsonBtn">JSON</button>
+          <button class="btn btn-danger" id="clearStorageBtn">Clear</button>
+        </div>
+        <div id="storageStatus" class="status"></div>
+      </div>
+
+      <div class="card card-sm">
+        <h2 style="margin-bottom:10px;">Scoring</h2>
+        <p class="small"><strong>Base:</strong> correct final answer = 1, otherwise 0.</p>
+        <p class="small"><strong>Deflector rule:</strong> landing on the false-trail word = 0, even if it is superficially correct.</p>
+        <p class="small"><strong>Semantic distortion D:</strong> composite of confidence calibration, stability across reveals, deflector avoidance, and correctness. Lower is better.</p>
+        <p class="small"><strong>Quadrant of final selection:</strong> recorded in the matrix heatmap.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   DATA — each item has 5 reveals:
+   [0] li–li  [1] li–lo  [2] lo–li  [3] = false trail  [4] lo–lo
+   The false trail is always index 3.
+═══════════════════════════════════════ */
+const REGIMES = [
+  { key: 'lili', label: 'li–li', desc: 'Lyrical in · Lyrical out', badgeClass: 'badge-lili' },
+  { key: 'lilo', label: 'li–lo', desc: 'Lyrical in · Logical out', badgeClass: 'badge-lilo' },
+  { key: 'loli', label: 'lo–li', desc: 'Logical in · Lyrical out', badgeClass: 'badge-loli' },
+  { key: 'false', label: 'false trail', desc: 'Embedded deflector', badgeClass: 'badge-false' },
+  { key: 'lolo', label: 'lo–lo', desc: 'Logical in · Logical out', badgeClass: 'badge-lolo' },
+];
+
+const quizData = [
+  {
+    id: 1,
+    word: 'energy',
+    hiddenSentence: 'A conserved scalar quantity associated with time-translation symmetry, tracking the capacity to generate change within a model, is called ______.',
+    invariant: 'capacity to generate change under constraints',
+    reveals: [
+      'People say they "have good" amounts of it on certain days.',                                                    // li–li
+      'Faraday\'s intuition about strained space became a quantity that flows, stores, and converts without loss.',    // li–lo
+      'Imagine money that can be exchanged for any currency but whose total in a closed wallet never changes.',         // lo–li
+      'It always points in the direction of motion.',                                                                  // FALSE TRAIL
+      'It is the Noether charge associated with time-translation invariance; for a particle: E = T + V = ½mv² + mgh.' // lo–lo
+    ],
+    options: ['momentum', 'energy', 'force', 'power', 'entropy'],
+    correct: 'energy',
+    deflectorTarget: 'momentum',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"He brings energy into any room."',
+      lilo: 'Intuitive capacity → conservation principle',
+      loli: '"Energy stored" / "energy flowing" — teaching metaphors for a conserved bookkeeping number',
+      lolo: 'E = T + V; Noether: time symmetry → energy conservation'
+    }
+  },
+  {
+    id: 2,
+    word: 'symmetry',
+    hiddenSentence: 'A property of a mathematical or physical structure that remains invariant under a specified class of transformations is called ______.',
+    invariant: 'invariance under a specified transformation',
+    reveals: [
+      'Faces judged beautiful are often described as having a lot of it.',                                             // li–li
+      'The intuition that "nothing changes when you turn it" became the engine of modern physics.',                    // li–lo
+      'Picture a snowflake: six transformations leave it looking identical — that discipline is the concept.',         // lo–li
+      'It is the state where opposing forces cancel out and net change is zero.',                                      // FALSE TRAIL
+      'Formally: a transformation T is a symmetry of object X if T(X) = X. In physics, groups act; Noether connects continuous symmetries to conservation laws.' // lo–lo
+    ],
+    options: ['equilibrium', 'symmetry', 'invariance', 'resonance', 'stability'],
+    correct: 'symmetry',
+    deflectorTarget: 'equilibrium',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"The symmetry of that argument is beautiful."',
+      lilo: 'Aesthetic balance → invariance under transformation',
+      loli: '"Rotating a square by 90° leaves it unchanged" — informal rendering of group action',
+      lolo: 'Group G acts on X; g∈G is a symmetry if g·X = X. Lie groups → Noether theorem'
+    }
+  },
+  {
+    id: 3,
+    word: 'field',
+    hiddenSentence: 'A function that assigns a physical quantity to every point in space (and possibly time), allowing local values to determine global behaviour without contact, is called a ______.',
+    invariant: 'distribution of value over space; local → global without contact',
+    reveals: [
+      'Farmers work in one; athletes compete in one; so do ideas in a conversation.',                                  // li–li
+      'Faraday drew lines of tension through empty space — an intuition that refused to accept action at a distance.',  // li–lo
+      'Think of temperature in a room: every point has a value, and those values tell you how heat will flow.',         // lo–li
+      'It is simply the set of all allowed input values for a function.',                                               // FALSE TRAIL
+      'Formally: a field φ: M → V assigns to each point x∈M a value in some vector space V. Examples: gravitational field g(x), electromagnetic tensor F_{μν}(x,t).' // lo–lo
+    ],
+    options: ['field', 'region', 'domain', 'space', 'gradient'],
+    correct: 'field',
+    deflectorTarget: 'domain',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"A field of influence"; "emotional field"',
+      lilo: 'Faraday\'s visual field lines → Maxwell\'s vector field equations',
+      loli: 'Temperature map, arrows at every point: formal object rendered spatially intuitive',
+      lolo: 'φ: M → V; E(x,t) as function on spacetime; gauge field A_μ'
+    }
+  },
+  {
+    id: 4,
+    word: 'resonance',
+    hiddenSentence: 'A selective amplification arising when an external driving frequency matches the natural frequency of a system, producing a peak in the amplitude response, is called ______.',
+    invariant: 'selective amplification under matching structure',
+    reveals: [
+      '"That idea really resonates with me" — an instinctive sense of alignment.',                                     // li–li
+      'The story of Tacoma Narrows: an intuition about "pushing at the right rhythm" became a model of catastrophic matching.', // li–lo
+      'Imagine pushing a child on a swing: small pushes at exactly the right moment grow into large motion.',          // lo–li
+      'It occurs whenever any two waves overlap and combine.',                                                          // FALSE TRAIL
+      'Formally: for a driven oscillator ẍ + 2γẋ + ω₀²x = F cos(ωt), amplitude peaks at ω ≈ ω₀ with height F/2γω₀.' // lo–lo
+    ],
+    options: ['interference', 'oscillation', 'resonance', 'vibration', 'amplification'],
+    correct: 'resonance',
+    deflectorTarget: 'interference',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"That resonates" — felt alignment without formal commitment',
+      lilo: 'Matching rhythm intuition → driven oscillator model',
+      loli: 'Swing analogy: formal amplitude peak rendered as push-at-the-right-moment',
+      lolo: 'ω = ω₀ condition; Lorentzian response peak; Q-factor'
+    }
+  },
+  {
+    id: 5,
+    word: 'entropy',
+    hiddenSentence: 'A measure proportional to the logarithm of the number of microstates accessible to a system consistent with its macrostate, and non-decreasing in any isolated process, is called ______.',
+    invariant: 'count of indistinguishable microstates; irreversibility measure',
+    reveals: [
+      '"Things fall apart; the centre cannot hold" — the universal drift toward disorder.',                             // li–li
+      'Boltzmann\'s intuition: counting the ways a gas could be arranged led to the arrow of time.',                   // li–lo
+      'Imagine a dye drop in water: spreading to fill the glass is not violent — it is just overwhelmingly more likely.', // lo–li
+      'It measures the maximum useful work extractable from a thermal system.',                                         // FALSE TRAIL
+      'S = k_B ln Ω; for a reversible process dS = dQ/T; the second law: dS ≥ 0 in an isolated system.'             // lo–lo
+    ],
+    options: ['energy', 'temperature', 'entropy', 'information', 'randomness'],
+    correct: 'entropy',
+    deflectorTarget: 'energy',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"Things fall into disorder" — everyday semantic drift',
+      lilo: 'Boltzmann\'s combinatorial intuition → S = k_B ln Ω',
+      loli: 'Dye diffusion, spread of probability: formal spread rendered as visual inevitability',
+      lolo: 'S = k_B ln Ω; dS = dQ/T; second law; Gibbs entropy'
+    }
+  },
+  {
+    id: 6,
+    word: 'wave',
+    hiddenSentence: 'A propagating disturbance that transports energy and phase through a medium (or field) without net transport of matter, characterised by wavelength, frequency, and amplitude, is called a ______.',
+    invariant: 'pattern + propagation; phase coherence without matter transport',
+    reveals: [
+      'A crowd "does the wave"; grief moves through a community like one.',                                            // li–li
+      'The analogy between water ripples and light — both "spread out" — seeded the wave theory of optics.',          // li–lo
+      'Think of stadium fans standing and sitting in sequence: the pattern travels, the fans stay in their seats.',    // lo–li
+      'It is anything that oscillates repeatedly in time at a single point.',                                          // FALSE TRAIL
+      '∂²ψ/∂t² = c²∇²ψ; characterised by ω, k, λ = 2π/k, phase velocity v = ω/k, group velocity dω/dk.'           // lo–lo
+    ],
+    options: ['oscillation', 'wave', 'pulse', 'vibration', 'disturbance'],
+    correct: 'wave',
+    deflectorTarget: 'oscillation',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: 'Crowd wave, emotional surge, "wave of change"',
+      lilo: 'Ripple analogy → sinusoidal model of light',
+      loli: 'Stadium fan sequence: propagation-without-transport made visual',
+      lolo: '∂²ψ/∂t² = c²∇²ψ; dispersion relation ω(k); ψ as field amplitude'
+    }
+  },
+  {
+    id: 7,
+    word: 'gradient',
+    hiddenSentence: 'A vector quantity giving the direction and rate of maximum increase of a scalar field at each point in space, and the scalar rate of change on a graph, is called a ______.',
+    invariant: 'rate of change; direction of steepest ascent',
+    reveals: [
+      '"A steep gradient of opinion" — the sense of a sharp difference across a gap.',                                 // li–li
+      'Fourier\'s intuition: heat "wants to flow" from hot to cold — following the gradient — became a field equation.', // li–lo
+      'On a hill, the gradient points the way you would roll if you let go: it encodes both direction and steepness.', // lo–li
+      'It is the height of the tallest point on a graph.',                                                             // FALSE TRAIL
+      '∇f = (∂f/∂x, ∂f/∂y, ∂f/∂z); on a graph: m = Δy/Δx; in physics: F = −∇V links force to potential.'        // lo–lo
+    ],
+    options: ['slope', 'derivative', 'gradient', 'curvature', 'differential'],
+    correct: 'gradient',
+    deflectorTarget: 'curvature',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"Gradient of opinion / temperature / tension" — felt sense of difference rate',
+      lilo: 'Heat-flow intuition → Fourier law J = −k∇T',
+      loli: 'Hill rolling: formal gradient rendered as direction of steepest descent',
+      lolo: '∇f; F = −∇V; del operator; Jacobian generalisation'
+    }
+  },
+  {
+    id: 8,
+    word: 'phase',
+    hiddenSentence: 'A measure of the position within a cycle of a periodic process, or a distinct region of matter with uniform thermodynamic properties, is called a ______.',
+    invariant: 'stage within a cycle; or a region of uniform state',
+    reveals: [
+      '"Just a phase" — something temporary, a passing state of being.',                                               // li–li
+      'The intuition that "where are you in the cycle?" became a measurable angle that predicts interference.',          // li–lo
+      'Picture a clock hand: the phase is not how fast it moves, but where it is pointing in its rotation right now.',  // lo–li
+      'It is the instantaneous frequency of an oscillating signal.',                                                    // FALSE TRAIL
+      'For A sin(ωt + φ), φ is the phase; in thermodynamics, a phase is a region of uniform intensive variables; phase transitions are classified by discontinuities in derivatives of free energy.' // lo–lo
+    ],
+    options: ['stage', 'frequency', 'phase', 'state', 'cycle'],
+    correct: 'phase',
+    deflectorTarget: 'frequency',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"Just a phase" — transient, cyclical state, cultural usage',
+      lilo: 'Positional intuition in a cycle → measurable angle predicting interference',
+      loli: 'Clock-hand analogy: phase as position-in-rotation, not rate',
+      lolo: 'A sin(ωt + φ); Landau phase theory; topological phase; Berry phase'
+    }
+  },
+  {
+    id: 9,
+    word: 'curvature',
+    hiddenSentence: 'A measure of how much a geometric object deviates from flatness at a point — equivalently, how much the path of a freely moving body bends — is called ______.',
+    invariant: 'deviation from flatness; intrinsic bending of a manifold',
+    reveals: [
+      '"The curvature of history" — the sense that events do not travel in straight lines.',                           // li–li
+      'Einstein\'s leap: gravity is not a force pulling things off straight paths — it is the curvature of the paths themselves.', // li–lo
+      'Imagine rolling a marble on a rubber sheet stretched down by a heavy ball: the marble curves toward the centre without being pushed.', // lo–li
+      'It is the rate at which the angle of a line changes along its length.',                                          // FALSE TRAIL
+      'Riemann tensor R^ρ_{σμν}; Gaussian curvature K = 1/R₁R₂; Einstein equations: G_{μν} = 8πT_{μν}.'           // lo–lo
+    ],
+    options: ['bending', 'curvature', 'torsion', 'deflection', 'geodesic'],
+    correct: 'curvature',
+    deflectorTarget: 'torsion',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"Curvature of history / narrative / argument"',
+      lilo: 'Rubber sheet intuition → Riemannian metric deviation from flat',
+      loli: 'Marble on rubber sheet: intrinsic curvature rendered as apparent attraction',
+      lolo: 'R^ρ_{σμν}; Ricci scalar; Einstein field equations'
+    }
+  },
+  {
+    id: 10,
+    word: 'information',
+    hiddenSentence: 'A measure of the reduction in uncertainty — formally the negative logarithm of probability — that determines the minimum number of binary questions required to identify a message from a source, is called ______.',
+    invariant: 'uncertainty reduction; minimum description length',
+    reveals: [
+      '"That meeting gave me a lot of information" — useful content received.',                                        // li–li
+      'Shannon\'s intuition: "how surprised are you?" translated into a computable number that predicts communication limits.', // li–lo
+      'Think of guessing a face card: each yes/no question removes some uncertainty. The total uncertainty is the information content.', // lo–li
+      'It is the meaningful interpretation a human extracts from a signal.',                                            // FALSE TRAIL
+      'H = −Σ p_i log₂ p_i bits; Shannon capacity C = B log₂(1 + S/N); information is syntactic, not semantic.'    // lo–lo
+    ],
+    options: ['data', 'signal', 'information', 'knowledge', 'entropy'],
+    correct: 'information',
+    deflectorTarget: 'entropy',
+    deflectorIndex: 3,
+    quadrantData: {
+      lili: '"Useful knowledge" — semantic, interpreter-dependent',
+      lilo: 'Surprise intuition → H = −Σ p_i log p_i',
+      loli: 'Card-guessing: formal entropy rendered as question-reduction',
+      lolo: 'Shannon entropy; Kolmogorov complexity; syntax-only; no semantics'
+    }
+  }
+];
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+const STORAGE_KEY = 'semantic_modality_probe_v1';
+let state = {
+  index: 0,
+  revealCount: 1,
+  selected: null,
+  confidence3: null,
+  confidence5: null,
+  answerAt3: null,
+  results: []
+};
+
+const quizCard = document.getElementById('quizCard');
+const summaryCard = document.getElementById('summaryCard');
+const storageStatus = document.getElementById('storageStatus');
+
+document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+document.getElementById('clearStorageBtn').addEventListener('click', clearStorage);
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function escapeHtml(t) {
+  return String(t ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function renderQuiz() {
+  if (state.index >= quizData.length) { renderSummary(); return; }
+  const item = quizData[state.index];
+
+  /* Stage dots */
+  const dots = REGIMES.map((r, i) => {
+    const shown = i < state.revealCount;
+    const isCurrent = i === state.revealCount - 1;
+    const isFalse = shown && i === item.deflectorIndex;
+    let cls = 'stage-dot';
+    if (isFalse && shown) cls += ' false-trail';
+    else if (isCurrent) cls += ' current';
+    else if (shown) cls += ' done';
+    else cls += ' locked';
+    const lbl = isFalse && shown ? '✕' : r.label;
+    return `<div class="${cls}" title="${r.desc}">${lbl}</div>`;
+  }).join('');
+
+  /* Reveal cards */
+  const revCards = item.reveals.map((text, i) => {
+    const shown = i < state.revealCount;
+    const regime = REGIMES[i];
+    if (!shown) {
+      return `<div class="reveal-card locked">
+        <div class="reveal-head"><span class="reveal-num">${i+1}</span></div>
+        <div class="reveal-text" style="opacity:0.4;font-style:italic;">hidden</div>
+      </div>`;
+    }
+    const isFalse = i === item.deflectorIndex;
+    return `<div class="reveal-card ${isFalse ? 'false-trail' : ''}">
+      <div class="reveal-head">
+        <span class="reveal-num">${i+1}</span>
+        <span class="regime-badge ${regime.badgeClass}">${isFalse ? 'false trail' : regime.label}</span>
+        <span class="small muted">${isFalse ? 'Embedded deflector — does this clue fit another word?' : regime.desc}</span>
+      </div>
+      <div class="reveal-text">${escapeHtml(text)}</div>
+    </div>`;
+  }).join('');
+
+  /* Options */
+  const opts = item.options.map(opt => {
+    const sel = state.selected === opt;
+    return `<div class="option ${sel ? 'selected' : ''}" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</div>`;
+  }).join('');
+
+  /* Confidence blocks */
+  let confHtml = '';
+  if (state.revealCount === 3) {
+    confHtml = `<div class="conf-block">
+      <div class="conf-label">Confidence after reveal 3 (1 = low, 5 = high)</div>
+      <div class="conf-row">${[1,2,3,4,5].map(n => `<button class="conf-btn ${state.confidence3===n?'selected':''}" data-rank="${n}" data-key="confidence3">${n}</button>`).join('')}</div>
+    </div>`;
+  }
+  if (state.revealCount === 5) {
+    confHtml = `<div class="conf-block">
+      <div class="conf-label">Final confidence after reveal 5 (1 = low, 5 = high)</div>
+      <div class="conf-row">${[1,2,3,4,5].map(n => `<button class="conf-btn ${state.confidence5===n?'selected':''}" data-rank="${n}" data-key="confidence5">${n}</button>`).join('')}</div>
+    </div>`;
+  }
+
+  const btnLabel = state.revealCount < 5 ? `Reveal ${state.revealCount + 1} <small style="opacity:0.6">${REGIMES[state.revealCount].label}</small>` : 'Submit item';
+
+  quizCard.innerHTML = `
+    <div class="item-header">
+      <div>
+        <h2 style="margin-bottom:4px;">Item ${state.index + 1} <span style="color:var(--muted);font-size:0.9rem;">of ${quizData.length}</span></h2>
+        <div class="small muted">Identify the word from sequential modality clues.</div>
+      </div>
+      <span class="item-counter">${state.index + 1} / ${quizData.length}</span>
+    </div>
+
+    <div class="stage-row" style="margin-bottom:18px;">
+      ${dots}
+      <span class="stage-label" style="margin-left:4px;">
+        ${state.revealCount < 5 ? `Regime: <strong>${REGIMES[state.revealCount-1].label}</strong> — ${REGIMES[state.revealCount-1].desc}` : 'All reveals shown'}
+      </span>
+    </div>
+
+    <div class="prompt-box">${escapeHtml(item.hiddenSentence)}</div>
+
+    <div class="reveals-grid">${revCards}</div>
+
+    <div class="answer-strip">
+      <span><strong>Selection:</strong> ${state.selected ? `<span style="color:var(--gold)">${escapeHtml(state.selected)}</span>` : '<span class="muted">none</span>'}</span>
+      ${state.answerAt3 ? `<span><strong>At reveal 3:</strong> <span style="color:var(--blue)">${escapeHtml(state.answerAt3)}</span></span>` : ''}
+    </div>
+
+    <div class="options-grid">${opts}</div>
+
+    ${confHtml}
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="nextBtn">${btnLabel}</button>
+      ${state.index > 0 || state.revealCount > 1 ? '<button class="btn" id="restartBtn">Restart</button>' : ''}
+    </div>
+  `;
+
+  quizCard.querySelectorAll('.option').forEach(el => {
+    el.addEventListener('click', () => { state.selected = el.dataset.opt; renderQuiz(); });
+  });
+  quizCard.querySelectorAll('.conf-btn').forEach(btn => {
+    btn.addEventListener('click', () => { state[btn.dataset.key] = Number(btn.dataset.rank); renderQuiz(); });
+  });
+  document.getElementById('nextBtn').addEventListener('click', handleNext);
+  const rb = document.getElementById('restartBtn');
+  if (rb) rb.addEventListener('click', restartQuiz);
+}
+
+function handleNext() {
+  if (state.revealCount === 3) {
+    if (!state.selected) return alert('Choose an answer after reveal 3 before continuing.');
+    if (state.confidence3 === null) return alert('Rate confidence after reveal 3.');
+    state.answerAt3 = state.selected;
+  }
+  if (state.revealCount < 5) {
+    state.revealCount++;
+    renderQuiz();
+    return;
+  }
+  if (!state.selected) return alert('Choose a final answer before submitting.');
+  if (state.confidence5 === null) return alert('Rate final confidence after reveal 5.');
+  submitItem();
+}
+
+function submitItem() {
+  const item = quizData[state.index];
+  const correct = state.selected === item.correct;
+  const finalIsDeflector = state.selected === item.deflectorTarget;
+  const changedAfter3 = state.answerAt3 !== null && state.answerAt3 !== state.selected;
+  const score = correct ? 1 : 0;
+  const distortion = calcDistortion({ correct, finalIsDeflector, changedAfter3, c3: state.confidence3, c5: state.confidence5 });
+
+  // Determine which quadrant the final answer "belongs to" based on which reveal was first shown
+  // We record the regime of the last shown reveal when the user locked in after reveal 5
+  state.results.push({
+    itemId: item.id,
+    word: item.word,
+    target: item.correct,
+    deflector: item.deflectorTarget,
+    answerAt3: state.answerAt3,
+    finalAnswer: state.selected,
+    confidence3: state.confidence3,
+    confidence5: state.confidence5,
+    changedAfter3, finalIsDeflector, correct, score, distortion
+  });
+
+  state.index++;
+  state.revealCount = 1;
+  state.selected = null;
+  state.confidence3 = null;
+  state.confidence5 = null;
+  state.answerAt3 = null;
+  renderQuiz();
+}
+
+function calcDistortion({ correct, finalIsDeflector, changedAfter3, c3, c5 }) {
+  const s3 = (c3 || 0) / 5;
+  const s5 = (c5 || 0) / 5;
+  const stability = changedAfter3 ? 0.4 : 1;
+  const noDeflector = finalIsDeflector ? 0 : 1;
+  const correctness = correct ? 1 : 0;
+  return Number((1 - (s3 + s5 + stability + noDeflector + correctness) / 5).toFixed(2));
+}
+
+/* ═══════════════════════════════════════
+   SUMMARY
+═══════════════════════════════════════ */
+function renderSummary() {
+  quizCard.classList.add('hidden');
+  summaryCard.classList.remove('hidden');
+
+  const total = state.results.reduce((a, b) => a + b.score, 0);
+  const avg3 = mean(state.results.map(r => r.confidence3));
+  const avg5 = mean(state.results.map(r => r.confidence5));
+  const avgD = mean(state.results.map(r => r.distortion)).toFixed(2);
+  const deflFalls = state.results.filter(r => r.finalIsDeflector).length;
+  const changed = state.results.filter(r => r.changedAfter3).length;
+
+  /* Build quadrant breakdown for heatmap */
+  /* We annotate based on: if correct, which regime "solved" it (first reveal = regime[0])
+     Here we just show how many were correct/wrong per item with invariant shown */
+
+  /* Item review blocks */
+  const reviewHtml = quizData.map(item => {
+    const r = state.results.find(x => x.itemId === item.id);
+    if (!r) return '';
+    const correctIcon = r.correct ? '✓' : '✗';
+    const colour = r.correct ? 'var(--green)' : 'var(--red)';
+    return `<div class="item-review">
+      <div class="item-review-head">
+        <span class="review-word">${item.word}</span>
+        <span style="color:${colour};font-family:var(--mono);font-size:0.9rem;">${correctIcon}</span>
+        ${r.finalIsDeflector ? '<span style="color:var(--red);font-size:0.78rem;font-family:var(--mono);">landed on deflector</span>' : ''}
+        ${r.changedAfter3 ? '<span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">changed after R3</span>' : ''}
+        <span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">D = ${r.distortion}</span>
+      </div>
+      <div class="small muted" style="margin-bottom:6px;"><strong>Invariant:</strong> ${item.invariant}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:0.8rem;">
+        <div style="background:var(--li-dim);border:1px solid rgba(200,120,90,0.2);border-radius:8px;padding:8px;">
+          <div style="color:var(--li);font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">li–li</div>${item.quadrantData.lili}</div>
+        <div style="background:rgba(180,130,110,0.08);border:1px solid rgba(200,168,120,0.2);border-radius:8px;padding:8px;">
+          <div style="color:#c8a880;font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">li–lo</div>${item.quadrantData.lilo}</div>
+        <div style="background:rgba(100,130,180,0.08);border:1px solid rgba(120,160,200,0.2);border-radius:8px;padding:8px;">
+          <div style="color:#8ab0d8;font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">lo–li</div>${item.quadrantData.loli}</div>
+        <div style="background:var(--lo-dim);border:1px solid rgba(90,155,200,0.2);border-radius:8px;padding:8px;">
+          <div style="color:var(--lo);font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">lo–lo</div>${item.quadrantData.lolo}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  summaryCard.innerHTML = `
+    <h2 style="margin-bottom:16px;">Session summary</h2>
+    <p class="muted small"><strong>Student:</strong> ${escapeHtml(document.getElementById('studentName').value || 'Unnamed')}</p>
+
+    <div class="summary-stat-grid">
+      <div class="stat-box"><div class="stat-num">${total}/${quizData.length}</div><div class="stat-desc">score</div></div>
+      <div class="stat-box"><div class="stat-num">${avg3.toFixed(1)}</div><div class="stat-desc">avg confidence<br>at reveal 3</div></div>
+      <div class="stat-box"><div class="stat-num">${avg5.toFixed(1)}</div><div class="stat-desc">avg confidence<br>at reveal 5</div></div>
+      <div class="stat-box"><div class="stat-num">${avgD}</div><div class="stat-desc">avg semantic<br>distortion D</div></div>
+      <div class="stat-box"><div class="stat-num">${deflFalls}</div><div class="stat-desc">deflector<br>captures</div></div>
+      <div class="stat-box"><div class="stat-num">${changed}</div><div class="stat-desc">answers changed<br>after R3</div></div>
+    </div>
+
+    <div class="matrix-wrap">
+      <div class="matrix-title">Semantic operator status by word</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">A word that generates confusion across regimes indicates semantic drift. Review the invariant for each item below.</div>
+    </div>
+
+    <h3 style="margin-bottom:12px;">Item review — invariant and quadrant breakdown</h3>
+    ${reviewHtml}
+
+    <div class="btn-row" style="margin-top:18px;">
+      <button class="btn btn-primary" id="saveSessionBtn">Save session</button>
+      <button class="btn" id="sendSheetBtn">Send to webhook</button>
+      <button class="btn" id="newSessionBtn">New session</button>
+    </div>
+    <div id="sendStatus" class="status"></div>
+  `;
+
+  document.getElementById('saveSessionBtn').addEventListener('click', saveSession);
+  document.getElementById('sendSheetBtn').addEventListener('click', sendToWebhook);
+  document.getElementById('newSessionBtn').addEventListener('click', restartQuiz);
+}
+
+/* ═══════════════════════════════════════
+   PERSISTENCE / EXPORT
+═══════════════════════════════════════ */
+function mean(arr) {
+  const c = arr.filter(v => typeof v === 'number' && !isNaN(v));
+  return c.length ? c.reduce((a,b) => a+b, 0) / c.length : 0;
+}
+
+function buildSessionObject() {
+  return {
+    timestamp: new Date().toISOString(),
+    studentName: document.getElementById('studentName').value || '',
+    cohortName: document.getElementById('cohortName').value || '',
+    totalItems: quizData.length,
+    totalScore: state.results.reduce((a,b) => a+b.score, 0),
+    averageDistortion: +mean(state.results.map(r => r.distortion)).toFixed(2),
+    averageConfidence3: +mean(state.results.map(r => r.confidence3)).toFixed(2),
+    averageConfidence5: +mean(state.results.map(r => r.confidence5)).toFixed(2),
+    distractorFalls: state.results.filter(r => r.finalIsDeflector).length,
+    changedAfter3Count: state.results.filter(r => r.changedAfter3).length,
+    results: state.results
+  };
+}
+
+function saveSession() {
+  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  sessions.push(buildSessionObject());
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  document.getElementById('sendStatus').textContent = 'Saved locally.';
+  updateStorageStatus();
+}
+
+async function sendToWebhook() {
+  const url = document.getElementById('sheetUrl').value.trim();
+  const el = document.getElementById('sendStatus');
+  if (!url) { el.textContent = 'No webhook URL provided.'; return; }
+  try {
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(buildSessionObject()) });
+    el.textContent = res.ok ? 'Sent.' : `Webhook returned ${res.status}.`;
+  } catch { el.textContent = 'Send failed.'; }
+}
+
+function exportCSV() {
+  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  if (!sessions.length && !state.results.length) { storageStatus.textContent = 'No data.'; return; }
+  const header = ['timestamp','studentName','cohortName','totalItems','totalScore','averageDistortion','averageConfidence3','averageConfidence5','distractorFalls','changedAfter3Count'];
+  for (let i = 1; i <= quizData.length; i++) {
+    ['word','answerAt3','finalAnswer','confidence3','confidence5','changedAfter3','finalIsDeflector','score','distortion'].forEach(k => header.push(`Q${i}_${k}`));
+  }
+  const rows = [header];
+  const src = sessions.slice();
+  if (state.results.length) src.push(buildSessionObject());
+  src.forEach(s => {
+    const row = [s.timestamp,s.studentName,s.cohortName,s.totalItems,s.totalScore,s.averageDistortion,s.averageConfidence3,s.averageConfidence5,s.distractorFalls,s.changedAfter3Count];
+    for (let i = 1; i <= quizData.length; i++) {
+      const r = (s.results||[]).find(x => Number(x.itemId)===i) || {};
+      ['word','answerAt3','finalAnswer','confidence3','confidence5','changedAfter3','finalIsDeflector','score','distortion'].forEach(k => row.push(r[k] ?? ''));
+    }
+    rows.push(row);
+  });
+  downloadBlob(rows.map(r => r.map(csvEsc).join(',')).join('\n'), 'semantic_modality_sessions.csv', 'text/csv');
+  storageStatus.textContent = 'CSV exported.';
+}
+
+function exportJSON() {
+  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const payload = state.results.length ? sessions.concat([buildSessionObject()]) : sessions;
+  if (!payload.length) { storageStatus.textContent = 'No data.'; return; }
+  downloadBlob(JSON.stringify(payload, null, 2), 'semantic_modality_sessions.json', 'application/json');
+  storageStatus.textContent = 'JSON exported.';
+}
+
+function csvEsc(v) {
+  const s = String(v ?? '');
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+function downloadBlob(content, name, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+}
+
+function clearStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+  updateStorageStatus();
+}
+
+function updateStorageStatus() {
+  const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  storageStatus.textContent = `${s.length} saved session${s.length===1?'':'s'} in local storage.`;
+}
+
+function restartQuiz() {
+  state = { index:0, revealCount:1, selected:null, confidence3:null, confidence5:null, answerAt3:null, results:[] };
+  quizCard.classList.remove('hidden');
+  summaryCard.classList.add('hidden');
+  renderQuiz();
+}
+
+updateStorageStatus();
+renderQuiz();
+</script>
+</body>
+</html>
