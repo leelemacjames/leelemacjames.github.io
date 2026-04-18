@@ -786,6 +786,7 @@ let state = {
   confidence3: null,
   confidence5: null,
   answerAt3: null,
+  deflectorGuess: null,   // which clue number (1-5) the student thinks was the false trail
   results: []
 };
 
@@ -860,7 +861,7 @@ function renderQuiz() {
     return `<div class="option ${sel ? 'selected' : ''}" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</div>`;
   }).join('');
 
-  /* Confidence */
+  /* Confidence + deflector identification */
   let confHtml = '';
   if (state.revealCount === 3) {
     confHtml = `<div class="conf-block">
@@ -871,11 +872,21 @@ function renderQuiz() {
     </div>`;
   }
   if (state.revealCount === 5) {
-    confHtml = `<div class="conf-block">
-      <div class="conf-label">Final confidence after all clues (1 = low, 5 = high)</div>
+    confHtml = `
+    <div class="conf-block">
+      <div class="conf-label">Final confidence in your word answer (1 = low, 5 = high)</div>
       <div class="conf-row">${[1,2,3,4,5].map(n =>
         `<button class="conf-btn ${state.confidence5===n?'selected':''}" data-rank="${n}" data-key="confidence5">${n}</button>`
       ).join('')}</div>
+    </div>
+    <div class="conf-block" style="margin-top:16px;">
+      <div class="conf-label">Which clue was the false trail? Select a clue number.</div>
+      <div class="conf-row">
+        ${[1,2,3,4,5].map(n =>
+          `<button class="conf-btn ${state.deflectorGuess===n?'selected':''}" data-deflector="${n}">${n}</button>`
+        ).join('')}
+      </div>
+      <div class="small muted" style="margin-top:6px;">One clue was deliberately misleading. Which one do you think it was?</div>
     </div>`;
   }
 
@@ -923,7 +934,12 @@ function renderQuiz() {
     el.addEventListener('click', () => { state.selected = el.dataset.opt; renderQuiz(); });
   });
   quizCard.querySelectorAll('.conf-btn').forEach(btn => {
-    btn.addEventListener('click', () => { state[btn.dataset.key] = Number(btn.dataset.rank); renderQuiz(); });
+    if (btn.dataset.key) {
+      btn.addEventListener('click', () => { state[btn.dataset.key] = Number(btn.dataset.rank); renderQuiz(); });
+    }
+    if (btn.dataset.deflector) {
+      btn.addEventListener('click', () => { state.deflectorGuess = Number(btn.dataset.deflector); renderQuiz(); });
+    }
   });
   document.getElementById('nextBtn').addEventListener('click', handleNext);
   const rb = document.getElementById('restartBtn');
@@ -932,7 +948,7 @@ function renderQuiz() {
 
 function handleNext() {
   if (state.revealCount === 3) {
-    if (!state.selected)        return alert('Choose an answer before continuing.');
+    if (!state.selected)            return alert('Choose an answer before continuing.');
     if (state.confidence3 === null) return alert('Rate your confidence before continuing.');
     state.answerAt3 = state.selected;
   }
@@ -941,26 +957,31 @@ function handleNext() {
     renderQuiz();
     return;
   }
-  if (!state.selected)        return alert('Choose a final answer before submitting.');
+  if (!state.selected)            return alert('Choose a final answer before submitting.');
   if (state.confidence5 === null) return alert('Rate your final confidence before submitting.');
+  if (state.deflectorGuess === null) return alert('Identify which clue was the false trail before submitting.');
   submitItem();
 }
 
 function submitItem() {
   const item    = quizData[state.index];
   const runtime = runtimes[state.index];
-  const correct          = state.selected === item.correct;
-  const finalIsDeflector = state.selected === item.deflectorTarget;
-  const changedAfter3    = state.answerAt3 !== null && state.answerAt3 !== state.selected;
-  const score            = correct ? 1 : 0;
-  const distortion       = calcDistortion({ correct, finalIsDeflector, changedAfter3, c3: state.confidence3, c5: state.confidence5 });
+  const correct           = state.selected === item.correct;
+  const finalIsDeflector  = state.selected === item.deflectorTarget;
+  const changedAfter3     = state.answerAt3 !== null && state.answerAt3 !== state.selected;
+  const score             = correct ? 1 : 0;
+  const actualDeflectorPos = runtime.newDeflectorPos + 1;  // 1-indexed
+  const deflectorCorrect  = state.deflectorGuess === actualDeflectorPos;
+  const distortion        = calcDistortion({ correct, finalIsDeflector, changedAfter3, c3: state.confidence3, c5: state.confidence5 });
 
   state.results.push({
     itemId: item.id,
     word: item.word,
     target: item.correct,
     deflector: item.deflectorTarget,
-    deflectorPositionShown: runtime.newDeflectorPos + 1,  // 1-indexed position student saw
+    deflectorPositionShown: actualDeflectorPos,
+    deflectorGuess:   state.deflectorGuess,
+    deflectorCorrect,
     answerAt3:        state.answerAt3,
     finalAnswer:      state.selected,
     confidence3:      state.confidence3,
@@ -968,15 +989,15 @@ function submitItem() {
     changedAfter3, finalIsDeflector, correct, score, distortion
   });
 
-  /* Push partial row immediately after every item */
   pushRow();
 
   state.index++;
-  state.revealCount = 1;
-  state.selected    = null;
-  state.confidence3 = null;
-  state.confidence5 = null;
-  state.answerAt3   = null;
+  state.revealCount    = 1;
+  state.selected       = null;
+  state.confidence3    = null;
+  state.confidence5    = null;
+  state.answerAt3      = null;
+  state.deflectorGuess = null;
   renderQuiz();
 }
 
@@ -994,12 +1015,13 @@ function renderSummary() {
   quizCard.classList.add('hidden');
   summaryCard.classList.remove('hidden');
 
-  const total     = state.results.reduce((a,b) => a + b.score, 0);
-  const avg3      = mean(state.results.map(r => r.confidence3));
-  const avg5      = mean(state.results.map(r => r.confidence5));
-  const avgD      = mean(state.results.map(r => r.distortion)).toFixed(2);
-  const deflFalls = state.results.filter(r => r.finalIsDeflector).length;
-  const changed   = state.results.filter(r => r.changedAfter3).length;
+  const total       = state.results.reduce((a,b) => a + b.score, 0);
+  const avg3        = mean(state.results.map(r => r.confidence3));
+  const avg5        = mean(state.results.map(r => r.confidence5));
+  const avgD        = mean(state.results.map(r => r.distortion)).toFixed(2);
+  const deflFalls   = state.results.filter(r => r.finalIsDeflector).length;
+  const changed     = state.results.filter(r => r.changedAfter3).length;
+  const deflFound   = state.results.filter(r => r.deflectorCorrect).length;
 
   const reviewHtml = quizData.map(item => {
     const r = state.results.find(x => x.itemId === item.id);
@@ -1009,8 +1031,11 @@ function renderSummary() {
       <div class="item-review-head">
         <span class="review-word">${item.word}</span>
         <span style="color:${colour};font-family:var(--mono);font-size:0.9rem;">${r.correct ? '✓' : '✗'}</span>
-        ${r.finalIsDeflector ? '<span style="color:var(--red);font-size:0.78rem;font-family:var(--mono);">false trail</span>' : ''}
+        ${r.finalIsDeflector ? '<span style="color:var(--red);font-size:0.78rem;font-family:var(--mono);">landed on false trail</span>' : ''}
         ${r.changedAfter3    ? '<span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">changed at clue 3</span>' : ''}
+        <span style="color:${r.deflectorCorrect ? 'var(--green)' : 'var(--red)'};font-size:0.78rem;font-family:var(--mono);">
+          false trail: guessed clue ${r.deflectorGuess}, was clue ${r.deflectorPositionShown} ${r.deflectorCorrect ? '✓' : '✗'}
+        </span>
         <span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">D = ${r.distortion}</span>
       </div>
       <div class="small muted" style="margin-bottom:6px;"><strong>Invariant:</strong> ${item.invariant}</div>
@@ -1035,7 +1060,8 @@ function renderSummary() {
       <div class="stat-box"><div class="stat-num">${avg3.toFixed(1)}</div><div class="stat-desc">confidence at clue 3</div></div>
       <div class="stat-box"><div class="stat-num">${avg5.toFixed(1)}</div><div class="stat-desc">confidence at clue 5</div></div>
       <div class="stat-box"><div class="stat-num">${avgD}</div><div class="stat-desc">avg distortion D</div></div>
-      <div class="stat-box"><div class="stat-num">${deflFalls}</div><div class="stat-desc">false trail captures</div></div>
+      <div class="stat-box"><div class="stat-num">${deflFound}/${state.results.length}</div><div class="stat-desc">false trails found</div></div>
+      <div class="stat-box"><div class="stat-num">${deflFalls}</div><div class="stat-desc">misled by false trail</div></div>
       <div class="stat-box"><div class="stat-num">${changed}</div><div class="stat-desc">answers changed</div></div>
     </div>
     <h3 style="margin:16px 0 12px;">Word breakdown</h3>
@@ -1063,13 +1089,14 @@ function buildSessionObject() {
     averageConfidence3: +mean(state.results.map(r => r.confidence3)).toFixed(2),
     averageConfidence5: +mean(state.results.map(r => r.confidence5)).toFixed(2),
     distractorFalls:    state.results.filter(r => r.finalIsDeflector).length,
+    deflectorFound:     state.results.filter(r => r.deflectorCorrect).length,
     changedAfter3Count: state.results.filter(r => r.changedAfter3).length,
     results:            state.results
   };
 }
 
 function restartQuiz() {
-  state = { index:0, revealCount:1, selected:null, confidence3:null, confidence5:null, answerAt3:null, results:[] };
+  state = { index:0, revealCount:1, selected:null, confidence3:null, confidence5:null, answerAt3:null, deflectorGuess:null, results:[] };
   quizCard.classList.remove('hidden');
   summaryCard.classList.add('hidden');
   renderQuiz();
