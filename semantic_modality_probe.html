@@ -567,18 +567,32 @@
 
 <script>
 /* ═══════════════════════════════════════
-   DATA — each item has 5 reveals:
-   [0] li–li  [1] li–lo  [2] lo–li  [3] = false trail  [4] lo–lo
-   The false trail is always index 3.
+   REGIME DEFINITIONS (teacher-side only — never shown to student)
 ═══════════════════════════════════════ */
-const REGIMES = [
-  { key: 'lili', label: 'li–li', desc: 'Lyrical in · Lyrical out', badgeClass: 'badge-lili' },
-  { key: 'lilo', label: 'li–lo', desc: 'Lyrical in · Logical out', badgeClass: 'badge-lilo' },
-  { key: 'loli', label: 'lo–li', desc: 'Logical in · Lyrical out', badgeClass: 'badge-loli' },
-  { key: 'false', label: 'false trail', desc: 'Embedded deflector', badgeClass: 'badge-false' },
-  { key: 'lolo', label: 'lo–lo', desc: 'Logical in · Logical out', badgeClass: 'badge-lolo' },
-];
+const REGIME_COUNT = 5;
 
+/* Per-item runtime shuffle: deflector moved to a random position,
+   reveal order shuffled, regime labels never exposed in the UI.
+   Built once at load time so state is stable during a session. */
+function buildItemRuntime(item) {
+  // positions 0–3 are genuine regimes, position 4 is the deflector in source data
+  // We shuffle all 5 so the deflector lands anywhere
+  const indices = [0,1,2,3,4];
+  // Fisher-Yates
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  // Map shuffled positions back to reveals and find new deflector position
+  const shuffledReveals = indices.map(i => item.reveals[i]);
+  // Original deflector was at index 3 in source (indices[k] === 3 means that slot was the deflector)
+  const newDeflectorPos = indices.indexOf(item.deflectorIndex);
+  return { shuffledReveals, newDeflectorPos };
+}
+
+const STORAGE_KEY = 'semantic_modality_probe_v1';
+
+/* Build runtime shuffles once */
 const quizData = [
   {
     id: 1,
@@ -586,22 +600,17 @@ const quizData = [
     hiddenSentence: 'A conserved scalar quantity associated with time-translation symmetry, tracking the capacity to generate change within a model, is called ______.',
     invariant: 'capacity to generate change under constraints',
     reveals: [
-      'People say they "have good" amounts of it on certain days.',                                                    // li–li
-      'Faraday\'s intuition about strained space became a quantity that flows, stores, and converts without loss.',    // li–lo
-      'Imagine money that can be exchanged for any currency but whose total in a closed wallet never changes.',         // lo–li
-      'It always points in the direction of motion.',                                                                  // FALSE TRAIL
-      'It is the Noether charge associated with time-translation invariance; for a particle: E = T + V = ½mv² + mgh.' // lo–lo
+      'People say they "have good" amounts of it on certain days.',
+      'Faraday\'s intuition about strained space became a quantity that flows, stores, and converts without loss.',
+      'Imagine money that can be exchanged for any currency but whose total in a closed wallet never changes.',
+      'It always points in the direction of motion.',
+      'It is the Noether charge associated with time-translation invariance; for a particle: E = T + V = ½mv² + mgh.'
     ],
     options: ['momentum', 'energy', 'force', 'power', 'entropy'],
     correct: 'energy',
     deflectorTarget: 'momentum',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"He brings energy into any room."',
-      lilo: 'Intuitive capacity → conservation principle',
-      loli: '"Energy stored" / "energy flowing" — teaching metaphors for a conserved bookkeeping number',
-      lolo: 'E = T + V; Noether: time symmetry → energy conservation'
-    }
+    quadrantData: { lili: '"He brings energy into any room."', lilo: 'Intuitive capacity → conservation principle', loli: '"Energy stored" / "energy flowing" — teaching metaphors for a conserved bookkeeping number', lolo: 'E = T + V; Noether: time symmetry → energy conservation' }
   },
   {
     id: 2,
@@ -609,22 +618,17 @@ const quizData = [
     hiddenSentence: 'A property of a mathematical or physical structure that remains invariant under a specified class of transformations is called ______.',
     invariant: 'invariance under a specified transformation',
     reveals: [
-      'Faces judged beautiful are often described as having a lot of it.',                                             // li–li
-      'The intuition that "nothing changes when you turn it" became the engine of modern physics.',                    // li–lo
-      'Picture a snowflake: six transformations leave it looking identical — that discipline is the concept.',         // lo–li
-      'It is the state where opposing forces cancel out and net change is zero.',                                      // FALSE TRAIL
-      'Formally: a transformation T is a symmetry of object X if T(X) = X. In physics, groups act; Noether connects continuous symmetries to conservation laws.' // lo–lo
+      'Faces judged beautiful are often described as having a lot of it.',
+      'The intuition that "nothing changes when you turn it" became the engine of modern physics.',
+      'Picture a snowflake: six transformations leave it looking identical.',
+      'It is the state where opposing forces cancel out and net change is zero.',
+      'Formally: a transformation T is a symmetry of object X if T(X) = X. Groups act; Noether connects continuous symmetries to conservation laws.'
     ],
     options: ['equilibrium', 'symmetry', 'invariance', 'resonance', 'stability'],
     correct: 'symmetry',
     deflectorTarget: 'equilibrium',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"The symmetry of that argument is beautiful."',
-      lilo: 'Aesthetic balance → invariance under transformation',
-      loli: '"Rotating a square by 90° leaves it unchanged" — informal rendering of group action',
-      lolo: 'Group G acts on X; g∈G is a symmetry if g·X = X. Lie groups → Noether theorem'
-    }
+    quadrantData: { lili: '"The symmetry of that argument is beautiful."', lilo: 'Aesthetic balance → invariance under transformation', loli: '"Rotating a square by 90° leaves it unchanged"', lolo: 'Group G acts on X; g∈G is a symmetry if g·X = X. Lie groups → Noether theorem' }
   },
   {
     id: 3,
@@ -632,22 +636,17 @@ const quizData = [
     hiddenSentence: 'A function that assigns a physical quantity to every point in space (and possibly time), allowing local values to determine global behaviour without contact, is called a ______.',
     invariant: 'distribution of value over space; local → global without contact',
     reveals: [
-      'Farmers work in one; athletes compete in one; so do ideas in a conversation.',                                  // li–li
-      'Faraday drew lines of tension through empty space — an intuition that refused to accept action at a distance.',  // li–lo
-      'Think of temperature in a room: every point has a value, and those values tell you how heat will flow.',         // lo–li
-      'It is simply the set of all allowed input values for a function.',                                               // FALSE TRAIL
-      'Formally: a field φ: M → V assigns to each point x∈M a value in some vector space V. Examples: gravitational field g(x), electromagnetic tensor F_{μν}(x,t).' // lo–lo
+      'Farmers work in one; athletes compete in one; so do ideas in a conversation.',
+      'Faraday drew lines of tension through empty space — an intuition that refused to accept action at a distance.',
+      'Think of temperature in a room: every point has a value, and those values tell you how heat will flow.',
+      'It is simply the set of all allowed input values for a function.',
+      'Formally: a field φ: M → V assigns to each point x∈M a value in some vector space V. Examples: gravitational field g(x), electromagnetic tensor F_{μν}(x,t).'
     ],
     options: ['field', 'region', 'domain', 'space', 'gradient'],
     correct: 'field',
     deflectorTarget: 'domain',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"A field of influence"; "emotional field"',
-      lilo: 'Faraday\'s visual field lines → Maxwell\'s vector field equations',
-      loli: 'Temperature map, arrows at every point: formal object rendered spatially intuitive',
-      lolo: 'φ: M → V; E(x,t) as function on spacetime; gauge field A_μ'
-    }
+    quadrantData: { lili: '"A field of influence"; "emotional field"', lilo: 'Faraday\'s visual field lines → Maxwell\'s vector field equations', loli: 'Temperature map, arrows at every point', lolo: 'φ: M → V; E(x,t) as function on spacetime; gauge field A_μ' }
   },
   {
     id: 4,
@@ -655,22 +654,17 @@ const quizData = [
     hiddenSentence: 'A selective amplification arising when an external driving frequency matches the natural frequency of a system, producing a peak in the amplitude response, is called ______.',
     invariant: 'selective amplification under matching structure',
     reveals: [
-      '"That idea really resonates with me" — an instinctive sense of alignment.',                                     // li–li
-      'The story of Tacoma Narrows: an intuition about "pushing at the right rhythm" became a model of catastrophic matching.', // li–lo
-      'Imagine pushing a child on a swing: small pushes at exactly the right moment grow into large motion.',          // lo–li
-      'It occurs whenever any two waves overlap and combine.',                                                          // FALSE TRAIL
-      'Formally: for a driven oscillator ẍ + 2γẋ + ω₀²x = F cos(ωt), amplitude peaks at ω ≈ ω₀ with height F/2γω₀.' // lo–lo
+      '"That idea really resonates with me" — an instinctive sense of alignment.',
+      'The story of Tacoma Narrows: an intuition about "pushing at the right rhythm" became a model of catastrophic matching.',
+      'Imagine pushing a child on a swing: small pushes at exactly the right moment grow into large motion.',
+      'It occurs whenever any two waves overlap and combine.',
+      'Formally: for a driven oscillator ẍ + 2γẋ + ω₀²x = F cos(ωt), amplitude peaks at ω ≈ ω₀ with height F/2γω₀.'
     ],
     options: ['interference', 'oscillation', 'resonance', 'vibration', 'amplification'],
     correct: 'resonance',
     deflectorTarget: 'interference',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"That resonates" — felt alignment without formal commitment',
-      lilo: 'Matching rhythm intuition → driven oscillator model',
-      loli: 'Swing analogy: formal amplitude peak rendered as push-at-the-right-moment',
-      lolo: 'ω = ω₀ condition; Lorentzian response peak; Q-factor'
-    }
+    quadrantData: { lili: '"That resonates" — felt alignment without formal commitment', lilo: 'Matching rhythm intuition → driven oscillator model', loli: 'Swing analogy: formal amplitude peak rendered as push-at-the-right-moment', lolo: 'ω = ω₀ condition; Lorentzian response peak; Q-factor' }
   },
   {
     id: 5,
@@ -678,22 +672,17 @@ const quizData = [
     hiddenSentence: 'A measure proportional to the logarithm of the number of microstates accessible to a system consistent with its macrostate, and non-decreasing in any isolated process, is called ______.',
     invariant: 'count of indistinguishable microstates; irreversibility measure',
     reveals: [
-      '"Things fall apart; the centre cannot hold" — the universal drift toward disorder.',                             // li–li
-      'Boltzmann\'s intuition: counting the ways a gas could be arranged led to the arrow of time.',                   // li–lo
-      'Imagine a dye drop in water: spreading to fill the glass is not violent — it is just overwhelmingly more likely.', // lo–li
-      'It measures the maximum useful work extractable from a thermal system.',                                         // FALSE TRAIL
-      'S = k_B ln Ω; for a reversible process dS = dQ/T; the second law: dS ≥ 0 in an isolated system.'             // lo–lo
+      '"Things fall apart; the centre cannot hold" — the universal drift toward disorder.',
+      'Boltzmann\'s intuition: counting the ways a gas could be arranged led to the arrow of time.',
+      'Imagine a dye drop in water: spreading to fill the glass is not violent — it is just overwhelmingly more likely.',
+      'It measures the maximum useful work extractable from a thermal system.',
+      'S = k_B ln Ω; for a reversible process dS = dQ/T; the second law: dS ≥ 0 in an isolated system.'
     ],
     options: ['energy', 'temperature', 'entropy', 'information', 'randomness'],
     correct: 'entropy',
     deflectorTarget: 'energy',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"Things fall into disorder" — everyday semantic drift',
-      lilo: 'Boltzmann\'s combinatorial intuition → S = k_B ln Ω',
-      loli: 'Dye diffusion, spread of probability: formal spread rendered as visual inevitability',
-      lolo: 'S = k_B ln Ω; dS = dQ/T; second law; Gibbs entropy'
-    }
+    quadrantData: { lili: '"Things fall into disorder" — everyday semantic drift', lilo: 'Boltzmann\'s combinatorial intuition → S = k_B ln Ω', loli: 'Dye diffusion: formal spread rendered as visual inevitability', lolo: 'S = k_B ln Ω; dS = dQ/T; second law; Gibbs entropy' }
   },
   {
     id: 6,
@@ -701,22 +690,17 @@ const quizData = [
     hiddenSentence: 'A propagating disturbance that transports energy and phase through a medium (or field) without net transport of matter, characterised by wavelength, frequency, and amplitude, is called a ______.',
     invariant: 'pattern + propagation; phase coherence without matter transport',
     reveals: [
-      'A crowd "does the wave"; grief moves through a community like one.',                                            // li–li
-      'The analogy between water ripples and light — both "spread out" — seeded the wave theory of optics.',          // li–lo
-      'Think of stadium fans standing and sitting in sequence: the pattern travels, the fans stay in their seats.',    // lo–li
-      'It is anything that oscillates repeatedly in time at a single point.',                                          // FALSE TRAIL
-      '∂²ψ/∂t² = c²∇²ψ; characterised by ω, k, λ = 2π/k, phase velocity v = ω/k, group velocity dω/dk.'           // lo–lo
+      'A crowd "does the wave"; grief moves through a community like one.',
+      'The analogy between water ripples and light — both "spread out" — seeded the wave theory of optics.',
+      'Think of stadium fans standing and sitting in sequence: the pattern travels, the fans stay in their seats.',
+      'It is anything that oscillates repeatedly in time at a single point.',
+      '∂²ψ/∂t² = c²∇²ψ; characterised by ω, k, λ = 2π/k, phase velocity v = ω/k, group velocity dω/dk.'
     ],
     options: ['oscillation', 'wave', 'pulse', 'vibration', 'disturbance'],
     correct: 'wave',
     deflectorTarget: 'oscillation',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: 'Crowd wave, emotional surge, "wave of change"',
-      lilo: 'Ripple analogy → sinusoidal model of light',
-      loli: 'Stadium fan sequence: propagation-without-transport made visual',
-      lolo: '∂²ψ/∂t² = c²∇²ψ; dispersion relation ω(k); ψ as field amplitude'
-    }
+    quadrantData: { lili: 'Crowd wave, emotional surge, "wave of change"', lilo: 'Ripple analogy → sinusoidal model of light', loli: 'Stadium fan sequence: propagation-without-transport made visual', lolo: '∂²ψ/∂t² = c²∇²ψ; dispersion relation ω(k); ψ as field amplitude' }
   },
   {
     id: 7,
@@ -724,22 +708,17 @@ const quizData = [
     hiddenSentence: 'A vector quantity giving the direction and rate of maximum increase of a scalar field at each point in space, and the scalar rate of change on a graph, is called a ______.',
     invariant: 'rate of change; direction of steepest ascent',
     reveals: [
-      '"A steep gradient of opinion" — the sense of a sharp difference across a gap.',                                 // li–li
-      'Fourier\'s intuition: heat "wants to flow" from hot to cold — following the gradient — became a field equation.', // li–lo
-      'On a hill, the gradient points the way you would roll if you let go: it encodes both direction and steepness.', // lo–li
-      'It is the height of the tallest point on a graph.',                                                             // FALSE TRAIL
-      '∇f = (∂f/∂x, ∂f/∂y, ∂f/∂z); on a graph: m = Δy/Δx; in physics: F = −∇V links force to potential.'        // lo–lo
+      '"A steep gradient of opinion" — the sense of a sharp difference across a gap.',
+      'Fourier\'s intuition: heat "wants to flow" from hot to cold, following something that became a field equation.',
+      'On a hill, it points the way you would roll if you let go: encoding both direction and steepness.',
+      'It is the height of the tallest point on a graph.',
+      '∇f = (∂f/∂x, ∂f/∂y, ∂f/∂z); on a graph: m = Δy/Δx; in physics: F = −∇V links force to potential.'
     ],
     options: ['slope', 'derivative', 'gradient', 'curvature', 'differential'],
     correct: 'gradient',
     deflectorTarget: 'curvature',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"Gradient of opinion / temperature / tension" — felt sense of difference rate',
-      lilo: 'Heat-flow intuition → Fourier law J = −k∇T',
-      loli: 'Hill rolling: formal gradient rendered as direction of steepest descent',
-      lolo: '∇f; F = −∇V; del operator; Jacobian generalisation'
-    }
+    quadrantData: { lili: '"Gradient of opinion / temperature / tension"', lilo: 'Heat-flow intuition → Fourier law J = −k∇T', loli: 'Hill rolling: formal gradient rendered as direction of steepest descent', lolo: '∇f; F = −∇V; del operator; Jacobian generalisation' }
   },
   {
     id: 8,
@@ -747,22 +726,17 @@ const quizData = [
     hiddenSentence: 'A measure of the position within a cycle of a periodic process, or a distinct region of matter with uniform thermodynamic properties, is called a ______.',
     invariant: 'stage within a cycle; or a region of uniform state',
     reveals: [
-      '"Just a phase" — something temporary, a passing state of being.',                                               // li–li
-      'The intuition that "where are you in the cycle?" became a measurable angle that predicts interference.',          // li–lo
-      'Picture a clock hand: the phase is not how fast it moves, but where it is pointing in its rotation right now.',  // lo–li
-      'It is the instantaneous frequency of an oscillating signal.',                                                    // FALSE TRAIL
-      'For A sin(ωt + φ), φ is the phase; in thermodynamics, a phase is a region of uniform intensive variables; phase transitions are classified by discontinuities in derivatives of free energy.' // lo–lo
+      '"Just a phase" — something temporary, a passing state of being.',
+      'The intuition that "where are you in the cycle?" became a measurable angle that predicts interference.',
+      'Picture a clock hand: it is not how fast it moves, but where it points in its rotation right now.',
+      'It is the instantaneous frequency of an oscillating signal.',
+      'For A sin(ωt + φ), φ is the phase; in thermodynamics, a phase is a region of uniform intensive variables; transitions are classified by discontinuities in derivatives of free energy.'
     ],
     options: ['stage', 'frequency', 'phase', 'state', 'cycle'],
     correct: 'phase',
     deflectorTarget: 'frequency',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"Just a phase" — transient, cyclical state, cultural usage',
-      lilo: 'Positional intuition in a cycle → measurable angle predicting interference',
-      loli: 'Clock-hand analogy: phase as position-in-rotation, not rate',
-      lolo: 'A sin(ωt + φ); Landau phase theory; topological phase; Berry phase'
-    }
+    quadrantData: { lili: '"Just a phase" — transient, cyclical state', lilo: 'Positional intuition in a cycle → measurable angle predicting interference', loli: 'Clock-hand analogy: phase as position-in-rotation, not rate', lolo: 'A sin(ωt + φ); Landau phase theory; topological phase; Berry phase' }
   },
   {
     id: 9,
@@ -770,22 +744,17 @@ const quizData = [
     hiddenSentence: 'A measure of how much a geometric object deviates from flatness at a point — equivalently, how much the path of a freely moving body bends — is called ______.',
     invariant: 'deviation from flatness; intrinsic bending of a manifold',
     reveals: [
-      '"The curvature of history" — the sense that events do not travel in straight lines.',                           // li–li
-      'Einstein\'s leap: gravity is not a force pulling things off straight paths — it is the curvature of the paths themselves.', // li–lo
-      'Imagine rolling a marble on a rubber sheet stretched down by a heavy ball: the marble curves toward the centre without being pushed.', // lo–li
-      'It is the rate at which the angle of a line changes along its length.',                                          // FALSE TRAIL
-      'Riemann tensor R^ρ_{σμν}; Gaussian curvature K = 1/R₁R₂; Einstein equations: G_{μν} = 8πT_{μν}.'           // lo–lo
+      '"The curvature of history" — the sense that events do not travel in straight lines.',
+      'Einstein\'s leap: gravity is not a force pulling things off straight paths, it is the curvature of the paths themselves.',
+      'Imagine rolling a marble on a rubber sheet stretched down by a heavy ball: the marble curves without being pushed.',
+      'It is the rate at which the angle of a line changes along its length.',
+      'Riemann tensor R^ρ_{σμν}; Gaussian curvature K = 1/R₁R₂; Einstein equations: G_{μν} = 8πT_{μν}.'
     ],
     options: ['bending', 'curvature', 'torsion', 'deflection', 'geodesic'],
     correct: 'curvature',
     deflectorTarget: 'torsion',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"Curvature of history / narrative / argument"',
-      lilo: 'Rubber sheet intuition → Riemannian metric deviation from flat',
-      loli: 'Marble on rubber sheet: intrinsic curvature rendered as apparent attraction',
-      lolo: 'R^ρ_{σμν}; Ricci scalar; Einstein field equations'
-    }
+    quadrantData: { lili: '"Curvature of history / narrative / argument"', lilo: 'Rubber sheet intuition → Riemannian metric deviation from flat', loli: 'Marble on rubber sheet: intrinsic curvature rendered as apparent attraction', lolo: 'R^ρ_{σμν}; Ricci scalar; Einstein field equations' }
   },
   {
     id: 10,
@@ -793,29 +762,23 @@ const quizData = [
     hiddenSentence: 'A measure of the reduction in uncertainty — formally the negative logarithm of probability — that determines the minimum number of binary questions required to identify a message from a source, is called ______.',
     invariant: 'uncertainty reduction; minimum description length',
     reveals: [
-      '"That meeting gave me a lot of information" — useful content received.',                                        // li–li
-      'Shannon\'s intuition: "how surprised are you?" translated into a computable number that predicts communication limits.', // li–lo
-      'Think of guessing a face card: each yes/no question removes some uncertainty. The total uncertainty is the information content.', // lo–li
-      'It is the meaningful interpretation a human extracts from a signal.',                                            // FALSE TRAIL
-      'H = −Σ p_i log₂ p_i bits; Shannon capacity C = B log₂(1 + S/N); information is syntactic, not semantic.'    // lo–lo
+      '"That meeting gave me a lot of information" — useful content received.',
+      'Shannon\'s intuition: "how surprised are you?" translated into a computable number that predicts communication limits.',
+      'Think of guessing a face card: each yes/no question removes some uncertainty. The total uncertainty is the information content.',
+      'It is the meaningful interpretation a human extracts from a signal.',
+      'H = −Σ p_i log₂ p_i bits; Shannon capacity C = B log₂(1 + S/N); information is syntactic, not semantic.'
     ],
     options: ['data', 'signal', 'information', 'knowledge', 'entropy'],
     correct: 'information',
     deflectorTarget: 'entropy',
     deflectorIndex: 3,
-    quadrantData: {
-      lili: '"Useful knowledge" — semantic, interpreter-dependent',
-      lilo: 'Surprise intuition → H = −Σ p_i log p_i',
-      loli: 'Card-guessing: formal entropy rendered as question-reduction',
-      lolo: 'Shannon entropy; Kolmogorov complexity; syntax-only; no semantics'
-    }
+    quadrantData: { lili: '"Useful knowledge" — semantic, interpreter-dependent', lilo: 'Surprise intuition → H = −Σ p_i log p_i', loli: 'Card-guessing: formal entropy rendered as question-reduction', lolo: 'Shannon entropy; Kolmogorov complexity; syntax-only; no semantics' }
   }
 ];
 
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
-const STORAGE_KEY = 'semantic_modality_probe_v1';
+/* Build shuffled runtime once per load */
+const runtimes = quizData.map(item => buildItemRuntime(item));
+
 let state = {
   index: 0,
   revealCount: 1,
@@ -826,56 +789,67 @@ let state = {
   results: []
 };
 
-const quizCard = document.getElementById('quizCard');
-const summaryCard = document.getElementById('summaryCard');
-const storageStatus = document.getElementById('storageStatus');
+const quizCard     = document.getElementById('quizCard');
+const summaryCard  = document.getElementById('summaryCard');
 
-
-
-/* ═══════════════════════════════════════
-   RENDER
-═══════════════════════════════════════ */
+/* ─── helpers ─── */
 function escapeHtml(t) {
   return String(t ?? '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
+function mean(arr) {
+  const c = arr.filter(v => typeof v === 'number' && !isNaN(v));
+  return c.length ? c.reduce((a,b) => a+b, 0) / c.length : 0;
+}
 
+/* ─── send after every item (partial data safe) ─── */
+async function pushRow() {
+  const url = document.getElementById('sheetUrl').value.trim();
+  if (!url) return;
+  try {
+    // no-cors: Apps Script POST endpoint redirects; no-cors avoids the CORS preflight error.
+    // We can't read the response in no-cors mode, but the data lands in the sheet.
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildSessionObject())
+    });
+  } catch (err) {
+    console.warn('Push failed:', err);
+  }
+}
+
+/* ─── render ─── */
 function renderQuiz() {
   if (state.index >= quizData.length) { renderSummary(); return; }
-  const item = quizData[state.index];
 
-  /* Stage dots */
-  const dots = REGIMES.map((r, i) => {
-    const shown = i < state.revealCount;
-    const isCurrent = i === state.revealCount - 1;
-    const isFalse = shown && i === item.deflectorIndex;
+  const item    = quizData[state.index];
+  const runtime = runtimes[state.index];
+
+  /* Progress dots — just numbered, no regime labels */
+  const dots = Array.from({length: REGIME_COUNT}, (_, i) => {
+    const shown   = i < state.revealCount;
+    const current = i === state.revealCount - 1;
     let cls = 'stage-dot';
-    if (isFalse && shown) cls += ' false-trail';
-    else if (isCurrent) cls += ' current';
+    if (current) cls += ' current';
     else if (shown) cls += ' done';
     else cls += ' locked';
-    const lbl = isFalse && shown ? '✕' : r.label;
-    return `<div class="${cls}" title="${r.desc}">${lbl}</div>`;
+    return `<div class="${cls}">${i+1}</div>`;
   }).join('');
 
-  /* Reveal cards */
-  const revCards = item.reveals.map((text, i) => {
+  /* Reveal cards — no badges, no labels, no "false trail" announcement */
+  const revCards = runtime.shuffledReveals.map((text, i) => {
     const shown = i < state.revealCount;
-    const regime = REGIMES[i];
     if (!shown) {
       return `<div class="reveal-card locked">
         <div class="reveal-head"><span class="reveal-num">${i+1}</span></div>
-        <div class="reveal-text" style="opacity:0.4;font-style:italic;">hidden</div>
+        <div class="reveal-text" style="opacity:0.35;font-style:italic;">not yet revealed</div>
       </div>`;
     }
-    const isFalse = i === item.deflectorIndex;
-    return `<div class="reveal-card ${isFalse ? 'false-trail' : ''}">
-      <div class="reveal-head">
-        <span class="reveal-num">${i+1}</span>
-        <span class="regime-badge ${regime.badgeClass}">${isFalse ? 'false trail' : regime.label}</span>
-        <span class="small muted">${isFalse ? 'Embedded deflector — does this clue fit another word?' : regime.desc}</span>
-      </div>
+    return `<div class="reveal-card">
+      <div class="reveal-head"><span class="reveal-num">${i+1}</span></div>
       <div class="reveal-text">${escapeHtml(text)}</div>
     </div>`;
   }).join('');
@@ -886,36 +860,39 @@ function renderQuiz() {
     return `<div class="option ${sel ? 'selected' : ''}" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</div>`;
   }).join('');
 
-  /* Confidence blocks */
+  /* Confidence */
   let confHtml = '';
   if (state.revealCount === 3) {
     confHtml = `<div class="conf-block">
-      <div class="conf-label">Confidence after reveal 3 (1 = low, 5 = high)</div>
-      <div class="conf-row">${[1,2,3,4,5].map(n => `<button class="conf-btn ${state.confidence3===n?'selected':''}" data-rank="${n}" data-key="confidence3">${n}</button>`).join('')}</div>
+      <div class="conf-label">How confident are you right now? (1 = low, 5 = high)</div>
+      <div class="conf-row">${[1,2,3,4,5].map(n =>
+        `<button class="conf-btn ${state.confidence3===n?'selected':''}" data-rank="${n}" data-key="confidence3">${n}</button>`
+      ).join('')}</div>
     </div>`;
   }
   if (state.revealCount === 5) {
     confHtml = `<div class="conf-block">
-      <div class="conf-label">Final confidence after reveal 5 (1 = low, 5 = high)</div>
-      <div class="conf-row">${[1,2,3,4,5].map(n => `<button class="conf-btn ${state.confidence5===n?'selected':''}" data-rank="${n}" data-key="confidence5">${n}</button>`).join('')}</div>
+      <div class="conf-label">Final confidence after all clues (1 = low, 5 = high)</div>
+      <div class="conf-row">${[1,2,3,4,5].map(n =>
+        `<button class="conf-btn ${state.confidence5===n?'selected':''}" data-rank="${n}" data-key="confidence5">${n}</button>`
+      ).join('')}</div>
     </div>`;
   }
 
-  const btnLabel = state.revealCount < 5 ? `Reveal ${state.revealCount + 1} <small style="opacity:0.6">${REGIMES[state.revealCount].label}</small>` : 'Submit item';
+  const btnLabel = state.revealCount < 5 ? `Next clue (${state.revealCount + 1} of 5)` : 'Submit this word';
 
   quizCard.innerHTML = `
     <div class="item-header">
       <div>
-        <h2 style="margin-bottom:4px;">Item ${state.index + 1} <span style="color:var(--muted);font-size:0.9rem;">of ${quizData.length}</span></h2>
-        <div class="small muted">Identify the word from sequential modality clues.</div>
+        <h2 style="margin-bottom:4px;">Word ${state.index + 1} <span style="color:var(--muted);font-size:0.9rem;">of ${quizData.length}</span></h2>
+        <div class="small muted">Identify the word from the clues. Choose your answer at any point.</div>
       </div>
-      <span class="item-counter">${state.index + 1} / ${quizData.length}</span>
     </div>
 
     <div class="stage-row" style="margin-bottom:18px;">
       ${dots}
-      <span class="stage-label" style="margin-left:4px;">
-        ${state.revealCount < 5 ? `Regime: <strong>${REGIMES[state.revealCount-1].label}</strong> — ${REGIMES[state.revealCount-1].desc}` : 'All reveals shown'}
+      <span class="stage-label" style="margin-left:6px; color:var(--muted); font-size:0.8rem;">
+        Clue ${state.revealCount} of 5
       </span>
     </div>
 
@@ -924,8 +901,10 @@ function renderQuiz() {
     <div class="reveals-grid">${revCards}</div>
 
     <div class="answer-strip">
-      <span><strong>Selection:</strong> ${state.selected ? `<span style="color:var(--gold)">${escapeHtml(state.selected)}</span>` : '<span class="muted">none</span>'}</span>
-      ${state.answerAt3 ? `<span><strong>At reveal 3:</strong> <span style="color:var(--blue)">${escapeHtml(state.answerAt3)}</span></span>` : ''}
+      <span><strong>Your selection:</strong> ${state.selected
+        ? `<span style="color:var(--gold)">${escapeHtml(state.selected)}</span>`
+        : '<span class="muted">none yet</span>'}</span>
+      ${state.answerAt3 ? `<span><strong>At clue 3:</strong> <span style="color:var(--blue)">${escapeHtml(state.answerAt3)}</span></span>` : ''}
     </div>
 
     <div class="options-grid">${opts}</div>
@@ -934,7 +913,9 @@ function renderQuiz() {
 
     <div class="btn-row">
       <button class="btn btn-primary" id="nextBtn">${btnLabel}</button>
-      ${state.index > 0 || state.revealCount > 1 ? '<button class="btn" id="restartBtn">Restart</button>' : ''}
+      ${state.index > 0 || state.revealCount > 1
+        ? '<button class="btn" id="restartBtn">Restart</button>'
+        : ''}
     </div>
   `;
 
@@ -951,8 +932,8 @@ function renderQuiz() {
 
 function handleNext() {
   if (state.revealCount === 3) {
-    if (!state.selected) return alert('Choose an answer after reveal 3 before continuing.');
-    if (state.confidence3 === null) return alert('Rate confidence after reveal 3.');
+    if (!state.selected)        return alert('Choose an answer before continuing.');
+    if (state.confidence3 === null) return alert('Rate your confidence before continuing.');
     state.answerAt3 = state.selected;
   }
   if (state.revealCount < 5) {
@@ -960,118 +941,105 @@ function handleNext() {
     renderQuiz();
     return;
   }
-  if (!state.selected) return alert('Choose a final answer before submitting.');
-  if (state.confidence5 === null) return alert('Rate final confidence after reveal 5.');
+  if (!state.selected)        return alert('Choose a final answer before submitting.');
+  if (state.confidence5 === null) return alert('Rate your final confidence before submitting.');
   submitItem();
 }
 
 function submitItem() {
-  const item = quizData[state.index];
-  const correct = state.selected === item.correct;
+  const item    = quizData[state.index];
+  const runtime = runtimes[state.index];
+  const correct          = state.selected === item.correct;
   const finalIsDeflector = state.selected === item.deflectorTarget;
-  const changedAfter3 = state.answerAt3 !== null && state.answerAt3 !== state.selected;
-  const score = correct ? 1 : 0;
-  const distortion = calcDistortion({ correct, finalIsDeflector, changedAfter3, c3: state.confidence3, c5: state.confidence5 });
+  const changedAfter3    = state.answerAt3 !== null && state.answerAt3 !== state.selected;
+  const score            = correct ? 1 : 0;
+  const distortion       = calcDistortion({ correct, finalIsDeflector, changedAfter3, c3: state.confidence3, c5: state.confidence5 });
 
-  // Determine which quadrant the final answer "belongs to" based on which reveal was first shown
-  // We record the regime of the last shown reveal when the user locked in after reveal 5
   state.results.push({
     itemId: item.id,
     word: item.word,
     target: item.correct,
     deflector: item.deflectorTarget,
-    answerAt3: state.answerAt3,
-    finalAnswer: state.selected,
-    confidence3: state.confidence3,
-    confidence5: state.confidence5,
+    deflectorPositionShown: runtime.newDeflectorPos + 1,  // 1-indexed position student saw
+    answerAt3:        state.answerAt3,
+    finalAnswer:      state.selected,
+    confidence3:      state.confidence3,
+    confidence5:      state.confidence5,
     changedAfter3, finalIsDeflector, correct, score, distortion
   });
 
+  /* Push partial row immediately after every item */
+  pushRow();
+
   state.index++;
   state.revealCount = 1;
-  state.selected = null;
+  state.selected    = null;
   state.confidence3 = null;
   state.confidence5 = null;
-  state.answerAt3 = null;
+  state.answerAt3   = null;
   renderQuiz();
 }
 
 function calcDistortion({ correct, finalIsDeflector, changedAfter3, c3, c5 }) {
   const s3 = (c3 || 0) / 5;
   const s5 = (c5 || 0) / 5;
-  const stability = changedAfter3 ? 0.4 : 1;
-  const noDeflector = finalIsDeflector ? 0 : 1;
-  const correctness = correct ? 1 : 0;
+  const stability    = changedAfter3    ? 0.4 : 1;
+  const noDeflector  = finalIsDeflector ? 0   : 1;
+  const correctness  = correct          ? 1   : 0;
   return Number((1 - (s3 + s5 + stability + noDeflector + correctness) / 5).toFixed(2));
 }
 
-/* ═══════════════════════════════════════
-   SUMMARY
-═══════════════════════════════════════ */
+/* ─── summary ─── */
 function renderSummary() {
   quizCard.classList.add('hidden');
   summaryCard.classList.remove('hidden');
 
-  const total = state.results.reduce((a, b) => a + b.score, 0);
-  const avg3 = mean(state.results.map(r => r.confidence3));
-  const avg5 = mean(state.results.map(r => r.confidence5));
-  const avgD = mean(state.results.map(r => r.distortion)).toFixed(2);
+  const total     = state.results.reduce((a,b) => a + b.score, 0);
+  const avg3      = mean(state.results.map(r => r.confidence3));
+  const avg5      = mean(state.results.map(r => r.confidence5));
+  const avgD      = mean(state.results.map(r => r.distortion)).toFixed(2);
   const deflFalls = state.results.filter(r => r.finalIsDeflector).length;
-  const changed = state.results.filter(r => r.changedAfter3).length;
+  const changed   = state.results.filter(r => r.changedAfter3).length;
 
-  /* Build quadrant breakdown for heatmap */
-  /* We annotate based on: if correct, which regime "solved" it (first reveal = regime[0])
-     Here we just show how many were correct/wrong per item with invariant shown */
-
-  /* Item review blocks */
   const reviewHtml = quizData.map(item => {
     const r = state.results.find(x => x.itemId === item.id);
     if (!r) return '';
-    const correctIcon = r.correct ? '✓' : '✗';
     const colour = r.correct ? 'var(--green)' : 'var(--red)';
     return `<div class="item-review">
       <div class="item-review-head">
         <span class="review-word">${item.word}</span>
-        <span style="color:${colour};font-family:var(--mono);font-size:0.9rem;">${correctIcon}</span>
-        ${r.finalIsDeflector ? '<span style="color:var(--red);font-size:0.78rem;font-family:var(--mono);">landed on deflector</span>' : ''}
-        ${r.changedAfter3 ? '<span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">changed after R3</span>' : ''}
+        <span style="color:${colour};font-family:var(--mono);font-size:0.9rem;">${r.correct ? '✓' : '✗'}</span>
+        ${r.finalIsDeflector ? '<span style="color:var(--red);font-size:0.78rem;font-family:var(--mono);">false trail</span>' : ''}
+        ${r.changedAfter3    ? '<span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">changed at clue 3</span>' : ''}
         <span style="color:var(--muted);font-size:0.78rem;font-family:var(--mono);">D = ${r.distortion}</span>
       </div>
       <div class="small muted" style="margin-bottom:6px;"><strong>Invariant:</strong> ${item.invariant}</div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:0.8rem;">
-        <div style="background:var(--li-dim);border:1px solid rgba(200,120,90,0.2);border-radius:8px;padding:8px;">
+        <div style="background:var(--li-dim);border:1px solid rgba(216,138,106,0.2);border-radius:8px;padding:8px;">
           <div style="color:var(--li);font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">li–li</div>${item.quadrantData.lili}</div>
         <div style="background:rgba(180,130,110,0.08);border:1px solid rgba(200,168,120,0.2);border-radius:8px;padding:8px;">
           <div style="color:#c8a880;font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">li–lo</div>${item.quadrantData.lilo}</div>
         <div style="background:rgba(100,130,180,0.08);border:1px solid rgba(120,160,200,0.2);border-radius:8px;padding:8px;">
           <div style="color:#8ab0d8;font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">lo–li</div>${item.quadrantData.loli}</div>
-        <div style="background:var(--lo-dim);border:1px solid rgba(90,155,200,0.2);border-radius:8px;padding:8px;">
+        <div style="background:var(--lo-dim);border:1px solid rgba(106,170,216,0.2);border-radius:8px;padding:8px;">
           <div style="color:var(--lo);font-family:var(--mono);font-size:0.68rem;margin-bottom:3px;">lo–lo</div>${item.quadrantData.lolo}</div>
       </div>
     </div>`;
   }).join('');
 
   summaryCard.innerHTML = `
-    <h2 style="margin-bottom:16px;">Session summary</h2>
+    <h2 style="margin-bottom:16px;">Results</h2>
     <p class="muted small"><strong>Student:</strong> ${escapeHtml(document.getElementById('studentName').value || 'Unnamed')}</p>
-
     <div class="summary-stat-grid">
       <div class="stat-box"><div class="stat-num">${total}/${quizData.length}</div><div class="stat-desc">score</div></div>
-      <div class="stat-box"><div class="stat-num">${avg3.toFixed(1)}</div><div class="stat-desc">avg confidence<br>at reveal 3</div></div>
-      <div class="stat-box"><div class="stat-num">${avg5.toFixed(1)}</div><div class="stat-desc">avg confidence<br>at reveal 5</div></div>
-      <div class="stat-box"><div class="stat-num">${avgD}</div><div class="stat-desc">avg semantic<br>distortion D</div></div>
-      <div class="stat-box"><div class="stat-num">${deflFalls}</div><div class="stat-desc">deflector<br>captures</div></div>
-      <div class="stat-box"><div class="stat-num">${changed}</div><div class="stat-desc">answers changed<br>after R3</div></div>
+      <div class="stat-box"><div class="stat-num">${avg3.toFixed(1)}</div><div class="stat-desc">confidence at clue 3</div></div>
+      <div class="stat-box"><div class="stat-num">${avg5.toFixed(1)}</div><div class="stat-desc">confidence at clue 5</div></div>
+      <div class="stat-box"><div class="stat-num">${avgD}</div><div class="stat-desc">avg distortion D</div></div>
+      <div class="stat-box"><div class="stat-num">${deflFalls}</div><div class="stat-desc">false trail captures</div></div>
+      <div class="stat-box"><div class="stat-num">${changed}</div><div class="stat-desc">answers changed</div></div>
     </div>
-
-    <div class="matrix-wrap">
-      <div class="matrix-title">Semantic operator status by word</div>
-      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">A word that generates confusion across regimes indicates semantic drift. Review the invariant for each item below.</div>
-    </div>
-
-    <h3 style="margin-bottom:12px;">Item review — invariant and quadrant breakdown</h3>
+    <h3 style="margin:16px 0 12px;">Word breakdown</h3>
     ${reviewHtml}
-
     <div class="btn-row" style="margin-top:18px;">
       <button class="btn" id="newSessionBtn">New session</button>
     </div>
@@ -1079,103 +1047,25 @@ function renderSummary() {
   `;
 
   document.getElementById('newSessionBtn').addEventListener('click', restartQuiz);
-  sendToWebhook();
+  /* Final push in case student skipped to summary directly */
+  pushRow();
 }
 
-/* ═══════════════════════════════════════
-   PERSISTENCE / EXPORT
-═══════════════════════════════════════ */
-function mean(arr) {
-  const c = arr.filter(v => typeof v === 'number' && !isNaN(v));
-  return c.length ? c.reduce((a,b) => a+b, 0) / c.length : 0;
-}
-
+/* ─── session object ─── */
 function buildSessionObject() {
   return {
-    timestamp: new Date().toISOString(),
-    studentName: document.getElementById('studentName').value || '',
-    cohortName: document.getElementById('cohortName').value || '',
-    totalItems: quizData.length,
-    totalScore: state.results.reduce((a,b) => a+b.score, 0),
-    averageDistortion: +mean(state.results.map(r => r.distortion)).toFixed(2),
+    timestamp:          new Date().toISOString(),
+    studentName:        document.getElementById('studentName').value || '',
+    cohortName:         document.getElementById('cohortName').value  || '',
+    totalItems:         quizData.length,
+    totalScore:         state.results.reduce((a,b) => a+b.score, 0),
+    averageDistortion:  +mean(state.results.map(r => r.distortion)).toFixed(2),
     averageConfidence3: +mean(state.results.map(r => r.confidence3)).toFixed(2),
     averageConfidence5: +mean(state.results.map(r => r.confidence5)).toFixed(2),
-    distractorFalls: state.results.filter(r => r.finalIsDeflector).length,
+    distractorFalls:    state.results.filter(r => r.finalIsDeflector).length,
     changedAfter3Count: state.results.filter(r => r.changedAfter3).length,
-    results: state.results
+    results:            state.results
   };
-}
-
-function saveSession() {
-  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  sessions.push(buildSessionObject());
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-  document.getElementById('sendStatus').textContent = 'Saved locally.';
-  updateStorageStatus();
-}
-
-async function sendToWebhook() {
-  const url = document.getElementById('sheetUrl').value.trim();
-  const el = document.getElementById('sendStatus');
-  if (!url) { el.textContent = 'No webhook URL provided.'; return; }
-  try {
-    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(buildSessionObject()) });
-    el.textContent = res.ok ? 'Sent.' : `Webhook returned ${res.status}.`;
-  } catch { el.textContent = 'Send failed.'; }
-}
-
-function exportCSV() {
-  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  if (!sessions.length && !state.results.length) { storageStatus.textContent = 'No data.'; return; }
-  const header = ['timestamp','studentName','cohortName','totalItems','totalScore','averageDistortion','averageConfidence3','averageConfidence5','distractorFalls','changedAfter3Count'];
-  for (let i = 1; i <= quizData.length; i++) {
-    ['word','answerAt3','finalAnswer','confidence3','confidence5','changedAfter3','finalIsDeflector','score','distortion'].forEach(k => header.push(`Q${i}_${k}`));
-  }
-  const rows = [header];
-  const src = sessions.slice();
-  if (state.results.length) src.push(buildSessionObject());
-  src.forEach(s => {
-    const row = [s.timestamp,s.studentName,s.cohortName,s.totalItems,s.totalScore,s.averageDistortion,s.averageConfidence3,s.averageConfidence5,s.distractorFalls,s.changedAfter3Count];
-    for (let i = 1; i <= quizData.length; i++) {
-      const r = (s.results||[]).find(x => Number(x.itemId)===i) || {};
-      ['word','answerAt3','finalAnswer','confidence3','confidence5','changedAfter3','finalIsDeflector','score','distortion'].forEach(k => row.push(r[k] ?? ''));
-    }
-    rows.push(row);
-  });
-  downloadBlob(rows.map(r => r.map(csvEsc).join(',')).join('\n'), 'semantic_modality_sessions.csv', 'text/csv');
-  storageStatus.textContent = 'CSV exported.';
-}
-
-function exportJSON() {
-  const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  const payload = state.results.length ? sessions.concat([buildSessionObject()]) : sessions;
-  if (!payload.length) { storageStatus.textContent = 'No data.'; return; }
-  downloadBlob(JSON.stringify(payload, null, 2), 'semantic_modality_sessions.json', 'application/json');
-  storageStatus.textContent = 'JSON exported.';
-}
-
-function csvEsc(v) {
-  const s = String(v ?? '');
-  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
-}
-
-function downloadBlob(content, name, type) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content], {type}));
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
-}
-
-function clearStorage() {
-  localStorage.removeItem(STORAGE_KEY);
-  updateStorageStatus();
-}
-
-function updateStorageStatus() {
-  const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  storageStatus.textContent = `${s.length} saved session${s.length===1?'':'s'} in local storage.`;
 }
 
 function restartQuiz() {
