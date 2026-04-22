@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exact Values — From Surds to the Circle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fafaf7; --surface:#fff; --surface2:#f3f1ea;
+  --border:#d8d4c8; --gold:#a07820; --gold-dim:#c9a84c;
+  --text:#1a1a18; --text-dim:#5a5750; --text-faint:#a09c90;
+  --sin:#2e7d52; --cos:#2a5fa8; --hyp:#a07820; --ang:#b05030;
+  --c30:#b05030; --c45:#a07820; --c60:#2e7d52;
+  --c15:#7a4a8a; --c75:#2a5fa8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+/* NAV */
+.site-nav{width:100%;background:var(--surface);border-bottom:2px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:0;z-index:100;}
+.nav-tab{padding:.75rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);cursor:pointer;border:none;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;background:none;}
+.nav-tab:hover{color:var(--text-dim);}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* PAGES */
+.page{display:none;width:100%;max-width:1120px;}
+.page.active{display:block;}
+
+/* SECTION HEADER */
+.sec-hdr{padding:2rem 2.5rem 1.2rem;border-bottom:1px solid var(--border);}
+.sec-hdr h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.03em;}
+.sec-hdr h2 em{color:var(--gold);font-style:italic;}
+.sec-hdr .tag{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:.3rem;}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem 1.5rem;}
+.card-lbl{font-family:'JetBrains Mono',monospace;font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.55rem;}
+.card p{font-size:.9rem;color:var(--text-dim);line-height:1.7;}
+
+/* REVEAL BTN */
+.rev-btn{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:.45rem .9rem;cursor:pointer;transition:all .2s;margin-top:.5rem;}
+.rev-btn:hover{background:var(--gold);color:#fff;}
+
+/* REVEAL STAGE */
+.rstage{opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s;pointer-events:none;}
+.rstage.on{opacity:1;transform:none;pointer-events:auto;}
+
+/* VALUE CARD */
+.vcard{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.9rem 1.1rem;margin-bottom:.6rem;}
+.vcard .vlbl{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.35rem;}
+.vcard .vval{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:300;}
+.vcard .vexp{font-size:.84rem;color:var(--text-dim);font-style:italic;margin-top:.35rem;line-height:1.5;}
+.sin-v{color:var(--sin);} .cos-v{color:var(--cos);} .tan-v{color:var(--ang);}
+
+/* STEP DOTS */
+.dots{display:flex;gap:.45rem;margin-bottom:.5rem;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .3s;}
+.dot.done{background:var(--gold);}
+
+/* SUMMARY TABLE */
+.stbl{width:100%;border-collapse:collapse;font-size:.88rem;}
+.stbl th{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);padding:.38rem .5rem;text-align:center;border-bottom:1px solid var(--border);}
+.stbl td{padding:.42rem .5rem;text-align:center;border-bottom:1px solid var(--border);font-family:'Cormorant Garamond',serif;font-size:1rem;}
+.stbl tr:last-child td{border-bottom:none;}
+.t30{color:var(--c30);} .t45{color:var(--c45);} .t60{color:var(--c60);}
+.t15{color:var(--c15);} .t75{color:var(--c75);}
+
+/* TRIG LAYOUT */
+.trig-grid{display:grid;grid-template-columns:160px 1fr 200px;gap:1.5rem;padding:1.5rem 2rem;}
+.panel-lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.5rem;}
+.ang-btn{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;cursor:pointer;transition:all .25s;text-align:left;position:relative;overflow:hidden;width:100%;margin-bottom:.7rem;}
+.ang-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;transition:background .3s;}
+.ang-btn.b30::before{background:var(--c30);} .ang-btn.b45::before{background:var(--c45);} .ang-btn.b60::before{background:var(--c60);}
+.ang-btn:not(.on){opacity:.35;} .ang-btn:not(.on):hover{opacity:.65;}
+.ang-btn.on{opacity:1;border-color:var(--gold-dim);background:var(--surface2);}
+.ang-btn .adeg{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;line-height:1;}
+.ang-btn.b30 .adeg{color:var(--c30);} .ang-btn.b45 .adeg{color:var(--c45);} .ang-btn.b60 .adeg{color:var(--c60);}
+.ang-btn .aname{font-size:.8rem;color:var(--text-faint);font-style:italic;margin-top:.15rem;}
+.hint{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);text-align:center;margin-top:.4rem;}
+.sumbox{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.9rem 1rem;opacity:0;transition:opacity .7s;}
+.sumbox.on{opacity:1;}
+
+/* SURDS */
+.surds-body{padding:1.5rem 2.5rem;display:flex;flex-direction:column;gap:1.4rem;}
+.ety-box{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:4px;padding:1.3rem 1.5rem;display:flex;gap:1.8rem;align-items:flex-start;}
+.ety-big{font-family:'Cormorant Garamond',serif;font-size:3.2rem;font-weight:600;color:var(--gold);line-height:1;flex-shrink:0;}
+.ety-text p{font-size:.9rem;color:var(--text-dim);line-height:1.7;}
+
+.surd-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.sbox{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center;}
+.sbox .big{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;margin:.4rem 0;}
+.sbox .big.rat{color:var(--sin);} .sbox .big.irr{color:var(--c30);}
+.badge{font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.2rem .6rem;border-radius:2px;display:inline-block;}
+.badge.rat{background:#e8f4ee;color:var(--sin);} .badge.irr{background:#faeae4;color:var(--c30);}
+.sbox p{font-size:.86rem;color:var(--text-dim);margin-top:.6rem;line-height:1.55;}
+/* radicand annotation */
+.radical-diagram{display:flex;align-items:center;justify-content:center;gap:.4rem;margin:.4rem 0 .2rem;}
+.rd-sign{font-size:2rem;font-family:'Cormorant Garamond',serif;color:var(--c30);}
+.rd-ann{display:flex;flex-direction:column;align-items:center;}
+.rd-num{font-size:1.6rem;font-family:'Cormorant Garamond',serif;color:var(--c30);}
+.rd-bracket{width:2px;height:8px;background:var(--c30);margin:1px auto;}
+.rd-label{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--c30);letter-spacing:.1em;}
+
+.squeeze-demo{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem 1.5rem;}
+.sq-rows{display:flex;flex-direction:column;gap:.3rem;margin-top:.7rem;}
+.sq-row{display:flex;align-items:center;gap:.8rem;font-family:'JetBrains Mono',monospace;font-size:.74rem;opacity:0;transition:opacity .4s;}
+.sq-row.vis{opacity:1;}
+.sml{font-size:.6rem;padding:.1rem .4rem;border-radius:2px;}
+.sml.lo{background:#e8f4ee;color:var(--sin);} .sml.hi{background:#faeae4;color:var(--c30);}
+
+.simplify-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:.8rem;}
+.scard{border:1px solid var(--border);border-radius:4px;padding:.9rem .7rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);}
+.scard:hover{border-color:var(--gold-dim);background:var(--surface2);}
+.scard.open{background:var(--surface2);border-color:var(--gold-dim);}
+.scard .sn{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;}
+.scard .ss{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text-dim);margin-top:.4rem;line-height:1.8;display:none;}
+.scard.open .ss{display:block;}
+.scard .sa{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);margin-top:.3rem;display:none;}
+.scard.open .sa{display:block;}
+.scard .sh{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--text-faint);margin-top:.4rem;}
+
+.alg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem;}
+.alg-block .albl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);margin-bottom:.4rem;letter-spacing:.1em;text-transform:uppercase;}
+.alg-block .amath{font-family:'Cormorant Garamond',serif;font-size:1.2rem;line-height:2.1;}
+
+/* AILLES */
+.ailles-body{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;padding:1.5rem 2.5rem;}
+.astep-btn{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.75rem 1rem;cursor:pointer;text-align:left;transition:all .25s;display:flex;align-items:flex-start;gap:.7rem;width:100%;margin-bottom:.5rem;}
+.astep-btn .snum{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);flex-shrink:0;margin-top:.1rem;}
+.astep-btn .stxt{font-size:.86rem;color:var(--text-dim);line-height:1.4;}
+.astep-btn:hover{border-color:var(--gold-dim);}
+.astep-btn.on{border-color:var(--gold);background:var(--surface2);}
+.astep-btn.on .snum{color:var(--gold);}
+.astep-btn.on .stxt{color:var(--text);}
+.av-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;}
+.av{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.6rem .9rem;opacity:0;transition:opacity .5s;}
+.av.on{opacity:1;}
+.av .avl{font-family:'JetBrains Mono',monospace;font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.25rem;}
+.av .avv{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;}
+
+/* POLYGONS */
+.poly-body{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem 2.5rem;align-items:start;}
+.poly-btn{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.85rem 1.1rem;cursor:pointer;text-align:left;transition:all .25s;width:100%;margin-bottom:.5rem;}
+.poly-btn:not(.on){opacity:.45;}
+.poly-btn:hover:not(.on){opacity:.75;}
+.poly-btn.on{border-color:var(--gold-dim);background:var(--surface2);}
+.poly-btn .pname{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;}
+.poly-btn .pdet{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);margin-top:.15rem;letter-spacing:.08em;}
+.poly-info{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem;margin-top:.6rem;}
+.pcoords{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-dim);line-height:1.95;}
+.pcoords .rc{color:var(--sin);} .pcoords .ic{color:var(--c30);}
+.pverd{font-size:.86rem;color:var(--text-dim);line-height:1.6;font-style:italic;border-top:1px solid var(--border);padding-top:.7rem;margin-top:.7rem;}
+
+footer{width:100%;padding:.9rem 2.5rem;border-top:1px solid var(--border);display:flex;justify-content:center;margin-top:2rem;}
+footer p{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--text-faint);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <button class="nav-tab active" onclick="showPage('surds',this)">§1 · Surds &amp; Exact Values</button>
+  <button class="nav-tab" onclick="showPage('trig',this)">§2 · Three Triangles</button>
+  <button class="nav-tab" onclick="showPage('ailles',this)">§3 · Ailles Rectangle</button>
+  <button class="nav-tab" onclick="showPage('poly',this)">§4 · Inscribed Polygons</button>
+</nav>
+
+<!-- ═══════════════ §1 THREE TRIANGLES ═══════════════ -->
+<div class="page" id="pg-trig">
+  <div class="sec-hdr">
+    <h2>The <em>Three</em> Sacred Triangles</h2>
+    <div class="tag">Unit circle · first quadrant · 30° 45° 60° · slow reveal</div>
+  </div>
+  <div class="trig-grid">
+    <!-- LEFT -->
+    <div>
+      <div class="panel-lbl">Choose angle</div>
+      <button class="ang-btn b30 on" onclick="selAng(30)">
+        <div class="adeg">30°</div><div class="aname">the shallow one</div>
+      </button>
+      <button class="ang-btn b45" onclick="selAng(45)">
+        <div class="adeg">45°</div><div class="aname">the balanced one</div>
+      </button>
+      <button class="ang-btn b60" onclick="selAng(60)">
+        <div class="adeg">60°</div><div class="aname">the steep one</div>
+      </button>
+      <div style="margin-top:.8rem">
+        <div class="panel-lbl">Legend</div>
+        <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.3rem;font-size:.8rem;color:var(--text-dim)">
+          <div style="display:flex;align-items:center;gap:.5rem"><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" stroke="var(--hyp)" stroke-width="2.5"/></svg>hypotenuse = 1</div>
+          <div style="display:flex;align-items:center;gap:.5rem"><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" stroke="var(--sin)" stroke-width="2.5"/></svg>opposite (sin)</div>
+          <div style="display:flex;align-items:center;gap:.5rem"><svg width="24" height="8"><line x1="0" y1="4" x2="24" y2="4" stroke="var(--cos)" stroke-width="2.5"/></svg>adjacent (cos)</div>
+        </div>
+      </div>
+    </div>
+    <!-- SVG -->
+    <div>
+      <svg id="trig-svg" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+        <line x1="30" y1="210" x2="400" y2="210" stroke="#c8c4b8" stroke-width="1.5"/>
+        <line x1="210" y1="400" x2="210" y2="20" stroke="#c8c4b8" stroke-width="1.5"/>
+        <text x="396" y="225" fill="#a09c90" font-family="JetBrains Mono" font-size="11">x</text>
+        <text x="215" y="30" fill="#a09c90" font-family="JetBrains Mono" font-size="11">y</text>
+        <path d="M 210 30 A 180 180 0 0 1 390 210" fill="none" stroke="#c8c4b8" stroke-width="1" stroke-dasharray="4 4"/>
+        <circle cx="210" cy="210" r="180" fill="none" stroke="#e8e4d8" stroke-width="1"/>
+        <line x1="390" y1="207" x2="390" y2="213" stroke="#c8c4b8" stroke-width="1"/>
+        <text x="385" y="228" fill="#a09c90" font-family="JetBrains Mono" font-size="10" text-anchor="middle">1</text>
+        <line x1="207" y1="30" x2="213" y2="30" stroke="#c8c4b8" stroke-width="1"/>
+        <text x="198" y="35" fill="#a09c90" font-family="JetBrains Mono" font-size="10" text-anchor="end">1</text>
+        <g id="tri-g"></g>
+      </svg>
+      <!-- Tan visual fraction — shown when stage >= 2 -->
+      <div id="tan-display" style="display:none;margin-top:.6rem;padding:.7rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.5rem;" id="tan-lbl">tan 30°</div>
+        <div style="display:flex;align-items:center;gap:.8rem;justify-content:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ang);" id="tan-lhs">tan 30°</div>
+          <div style="color:var(--text-faint);font-size:1rem;">=</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--sin);padding-bottom:2px;border-bottom:1.5px solid var(--text-dim);" id="tan-num">sin 30°</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cos);padding-top:2px;" id="tan-den">cos 30°</div>
+          </div>
+          <div style="color:var(--text-faint);font-size:1rem;">=</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--sin);padding-bottom:2px;border-bottom:1.5px solid var(--text-dim);" id="tan-sval">1/2</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cos);padding-top:2px;" id="tan-cval">√3/2</div>
+          </div>
+          <div style="color:var(--text-faint);font-size:1rem;">=</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--ang);" id="tan-result">1/√3</div>
+        </div>
+        <div style="font-family:'EB Garamond',serif;font-size:.82rem;color:var(--text-faint);font-style:italic;margin-top:.4rem;text-align:center;" id="tan-hint">The ratio of opposite to adjacent — the slope of the hypotenuse.</div>
+      </div>
+      <div class="hint" id="trig-hint">Select an angle to begin</div>
+    </div>
+    <!-- RIGHT -->
+    <div>
+      <div class="dots"><div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div></div>
+      <div class="rstage on" id="st0">
+        <div class="vcard">
+          <div class="vlbl">The angle</div>
+          <div class="vval" id="v-ang" style="color:var(--gold)">30°</div>
+          <div class="vexp">Measured from positive x-axis. The hypotenuse reaches the unit circle here.</div>
+        </div>
+        <button class="rev-btn" onclick="revealT(1)">Show the sides ›</button>
+      </div>
+      <div class="rstage" id="st1">
+        <div class="vcard">
+          <div class="vlbl" id="lbl-cos">Adjacent — cos 30°</div>
+          <div class="vval cos-v" id="v-cos">—</div>
+          <div class="vexp" id="e-cos">The horizontal leg.</div>
+        </div>
+        <div class="vcard">
+          <div class="vlbl" id="lbl-sin">Opposite — sin 30°</div>
+          <div class="vval sin-v" id="v-sin">—</div>
+          <div class="vexp" id="e-sin">The vertical leg.</div>
+        </div>
+        <button class="rev-btn" onclick="revealT(2)">Now show tan ›</button>
+      </div>
+      <div class="rstage" id="st2">
+        <div class="vcard">
+          <div class="vlbl" id="lbl-tan">tan 30° = sin 30° / cos 30°</div>
+          <div class="vval tan-v" id="v-tan">—</div>
+          <div class="vexp" id="e-tan">The slope of the line.</div>
+        </div>
+        <button class="rev-btn" onclick="revealT(3)">See all three ›</button>
+      </div>
+      <div class="rstage" id="st3">
+        <div class="sumbox" id="sumbox">
+          <div class="panel-lbl" style="margin-bottom:.4rem">All three triangles</div>
+          <table class="stbl">
+            <tr><th>θ</th><th>cos θ</th><th>sin θ</th><th>tan θ</th></tr>
+            <tr><td class="t30">30°</td><td>√3/2</td><td>1/2</td><td>1/√3</td></tr>
+            <tr><td class="t45">45°</td><td>√2/2</td><td>√2/2</td><td>1</td></tr>
+            <tr><td class="t60">60°</td><td>1/2</td><td>√3/2</td><td>√3</td></tr>
+          </table>
+          <div style="font-size:.8rem;color:var(--text-faint);margin-top:.6rem;font-style:italic;">30° and 60° mirror each other — sin and cos swap. Every value is a surd.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ §2 SURDS ═══════════════ -->
+<div class="page active" id="pg-surds">
+  <div class="sec-hdr">
+    <h2>Surds &amp; <em>Exact</em> Values</h2>
+    <div class="tag">Why √2 is not 1.41421… · the mute number · simplifying by square factors</div>
+  </div>
+  <div class="surds-body">
+
+    <div class="ety-box">
+      <div class="ety-big">S</div>
+      <div class="ety-text">
+        <p><strong>Rational</strong> comes from the Latin <em>ratio</em> — "made to speak" — a number expressible exactly as a fraction p/q. Its opposite, <strong>irrational</strong>, means <em>mute</em>: a number that cannot speak itself as a ratio. The Arabic mathematician al-Khwarizmi used the term <strong>surd</strong> (from Arabic <em>aṣamm</em>, deaf) in the 9th century for roots that stay forever mute — they never terminate, never repeat.</p>
+        <p style="margin-top:.5rem">A <strong>surd</strong> is precisely a root that is irrational. The <strong>radical sign</strong> √ is the instruction to take the root; the number beneath it is the <strong>radicand</strong>. When the radicand is a perfect square, the root speaks (√4 = 2). When it is not, the root is mute — and we write the surd itself as the exact value, rather than any approximation.</p>
+      </div>
+    </div>
+
+    <div class="surd-compare">
+      <div class="sbox">
+        <div class="card-lbl">Rational root — not a surd</div>
+        <!-- SVG radical properly covering radicand -->
+        <svg viewBox="0 0 110 80" style="width:110px;height:80px;margin:.5rem auto;display:block;">
+          <!-- radical sign -->
+          <text x="10" y="62" font-family="Cormorant Garamond,serif" font-size="64" fill="#2e7d52" dominant-baseline="auto">&#x221A;</text>
+          <!-- vinculum (overline) over radicand -->
+          <line x1="43" y1="10" x2="100" y2="10" stroke="#2e7d52" stroke-width="2.5"/>
+          <!-- radicand -->
+          <text x="62" y="58" font-family="Cormorant Garamond,serif" font-size="46" fill="#2e7d52" text-anchor="middle">4</text>
+        </svg>
+        <!-- Chain: sqrt(4) = sqrt(2^2) = 2 -->
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--text-dim);line-height:2;margin:.3rem 0">
+          <svg viewBox="0 0 220 36" style="width:220px;height:36px;display:block;margin:0 auto">
+            <text x="2" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#2e7d52">&#x221A;</text>
+            <line x1="18" y1="6" x2="42" y2="6" stroke="#2e7d52" stroke-width="1.8"/>
+            <text x="24" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#2e7d52">4</text>
+            <text x="47" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#5a5750"> = </text>
+            <text x="74" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#2e7d52">&#x221A;</text>
+            <line x1="90" y1="6" x2="118" y2="6" stroke="#2e7d52" stroke-width="1.8"/>
+            <text x="93" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#2e7d52">2²</text>
+            <text x="122" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#5a5750"> = </text>
+            <text x="150" y="28" font-family="Cormorant Garamond,serif" font-size="22" fill="#2e7d52">2</text>
+          </svg>
+        </div>
+        <div class="badge rat">= 2 exactly</div>
+        <p style="margin-top:.7rem">The radicand 4 = 2². It is a perfect square, so the root speaks clearly. √4 is <em>not</em> a surd.</p>
+      </div>
+      <div class="sbox">
+        <div class="card-lbl">Irrational root — a surd</div>
+        <!-- Annotated SVG: radical sign named, radicand named, with vinculum clearly over it -->
+        <svg viewBox="0 0 180 110" style="width:180px;height:110px;margin:.3rem auto;display:block;">
+          <!-- annotation: radical sign -->
+          <text x="2" y="22" font-family="JetBrains Mono,monospace" font-size="8" fill="#b05030">radical sign</text>
+          <line x1="18" y1="25" x2="26" y2="38" stroke="#b05030" stroke-width="1"/>
+          <!-- radical sign -->
+          <text x="20" y="88" font-family="Cormorant Garamond,serif" font-size="64" fill="#b05030" dominant-baseline="auto">&#x221A;</text>
+          <!-- vinculum over radicand -->
+          <line x1="53" y1="36" x2="105" y2="36" stroke="#b05030" stroke-width="2.5"/>
+          <!-- radicand -->
+          <text x="79" y="84" font-family="Cormorant Garamond,serif" font-size="46" fill="#b05030" text-anchor="middle">2</text>
+          <!-- annotation: radicand -->
+          <line x1="79" y1="90" x2="79" y2="102" stroke="#b05030" stroke-width="1"/>
+          <text x="79" y="110" font-family="JetBrains Mono,monospace" font-size="8" fill="#b05030" text-anchor="middle">radicand</text>
+          <!-- power notation on right -->
+          <text x="108" y="60" font-family="Cormorant Garamond,serif" font-size="18" fill="#b05030">= 2</text>
+          <text x="130" y="50" font-family="Cormorant Garamond,serif" font-size="12" fill="#b05030">1/2</text>
+        </svg>
+        <div class="badge irr">= 1.41421356… (mute)</div>
+        <p style="margin-top:.7rem">The radicand 2 has no rational square root. The decimal never terminates, never repeats. Writing "√2" — equivalently 2<sup>½</sup> — is the <em>exact</em> name. Any decimal is merely an approximation.</p>
+      </div>
+    </div>
+
+    <div class="squeeze-demo">
+      <div class="card-lbl">Why decimals cannot reach √10 — the infinite squeeze</div>
+      <p style="font-size:.88rem;color:var(--text-dim);line-height:1.65">We need x such that x² = 10 <em>exactly</em>. Each decimal approximation traps the answer in a shrinking interval — but never catches it. This is what "irrational" means structurally: the rational numbers have a hole at exactly this point, and only the surd √10 names it.</p>
+      <div class="sq-rows" id="sq-rows"></div>
+      <button class="rev-btn" style="margin-top:.9rem" onclick="runSqueeze()">Run the squeeze ›</button>
+      <p style="font-size:.8rem;color:var(--text-faint);font-style:italic;margin-top:.7rem">The process continues forever. The surd √10 is the exact name — no decimal ever is.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Simplifying surds — tap each to reveal the working</div>
+      <p style="font-size:.88rem;color:var(--text-dim);line-height:1.6">Key rule: √(a×b) = √a × √b. To simplify, find the <strong>largest square factor</strong> of the radicand and pull it out. The remaining radicand should have no square factors — it is then fully simplified.</p>
+      <div class="simplify-grid" id="sim-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">The algebra of surds</div>
+      <div class="alg-grid">
+        <div class="alg-block">
+          <div class="albl">Multiplying</div>
+          <div class="amath">√a × √b = √(ab)<br>C√a × D√b = CD√(ab)</div>
+        </div>
+        <div class="alg-block">
+          <div class="albl">Dividing &amp; adding</div>
+          <div class="amath">√a ÷ √b = √(a/b)<br>2√5 + √5 = 3√5 (same radicand only)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ §3 AILLES ═══════════════ -->
+<div class="page" id="pg-ailles">
+  <div class="sec-hdr">
+    <h2>The <em>Ailles</em> Rectangle</h2>
+    <div class="tag">One construction · five exact angles · 15° 30° 45° 60° 75°</div>
+  </div>
+  <div style="padding:1.2rem 2.5rem .5rem">
+    <div class="card">
+      <div class="card-lbl">The idea</div>
+      <p>The Ailles Rectangle tiles a 30-60-90 triangle and a 45-45-90 triangle inside a single rectangle. Because their surd side lengths interact, the remaining sides of the rectangle yield exact values for sin 15° and cos 15° — derivable from the Big Three with no tables. Step through the construction.</p>
+    </div>
+  </div>
+  <div class="ailles-body">
+    <div>
+      <svg id="ailles-svg" viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:var(--surface);border:1px solid var(--border);border-radius:4px;display:block;">
+        <g id="ailles-g"></g>
+      </svg>
+      <div class="hint" id="ailles-hint">Click a step to build the construction</div>
+    </div>
+    <div>
+      <div class="panel-lbl">Build step by step</div>
+      <button class="astep-btn on" onclick="aillesStep(0,this)"><span class="snum">01</span><span class="stxt">Draw the rectangle — width (√3+1), height 1</span></button>
+      <button class="astep-btn" onclick="aillesStep(1,this)"><span class="snum">02</span><span class="stxt">Inscribe the 30-60-90 triangle — sides 1, √3, hypotenuse 2</span></button>
+      <button class="astep-btn" onclick="aillesStep(2,this)"><span class="snum">03</span><span class="stxt">Inscribe the 45-45-90 triangle — legs 1, 1, hypotenuse √2</span></button>
+      <button class="astep-btn" onclick="aillesStep(3,this)"><span class="snum">04</span><span class="stxt">Draw the long diagonal — length 2√2 — the 15° angle appears</span></button>
+      <button class="astep-btn" onclick="aillesStep(4,this)"><span class="snum">05</span><span class="stxt">Read off sin 15° and cos 15° from the surd geometry</span></button>
+      <div class="av-grid">
+        <div class="av" id="av0"><div class="avl">sin 15°</div><div class="avv" style="color:var(--c15)">(√6−√2)/4</div></div>
+        <div class="av" id="av1"><div class="avl">cos 15°</div><div class="avv" style="color:var(--c15)">(√6+√2)/4</div></div>
+        <div class="av" id="av2"><div class="avl">sin 75°</div><div class="avv" style="color:var(--c75)">(√6+√2)/4</div></div>
+        <div class="av" id="av3"><div class="avl">cos 75°</div><div class="avv" style="color:var(--c75)">(√6−√2)/4</div></div>
+      </div>
+      <div class="card" style="margin-top:.8rem">
+        <div class="card-lbl">How 15° appears</div>
+        <p style="font-size:.84rem">45° − 30° = 15°. The diagonal of the full rectangle makes a 15° angle with the top edge because the 45° triangle sits adjacent to the 30° angle of the other. The diagonal length is 2√2 (check: (√3+1)²+1² = 4+2√3 ... actually for the scaled version here the ratio gives the exact surds via opposite/hypotenuse). Rationalising opposite/hypotenuse gives (√6−√2)/4.</p>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 2.5rem 2rem">
+    <div class="card">
+      <div class="card-lbl">Extended exact values — all five angles from the Ailles construction</div>
+      <table class="stbl" style="margin-top:.5rem">
+        <tr><th>θ</th><th>sin θ</th><th>cos θ</th><th>tan θ</th></tr>
+        <tr><td class="t15">15°</td><td style="color:var(--c15)">(√6−√2)/4</td><td style="color:var(--c15)">(√6+√2)/4</td><td style="color:var(--c15)">2−√3</td></tr>
+        <tr><td class="t30">30°</td><td>1/2</td><td>√3/2</td><td>1/√3</td></tr>
+        <tr><td class="t45">45°</td><td>√2/2</td><td>√2/2</td><td>1</td></tr>
+        <tr><td class="t60">60°</td><td>√3/2</td><td>1/2</td><td>√3</td></tr>
+        <tr><td class="t75">75°</td><td style="color:var(--c75)">(√6+√2)/4</td><td style="color:var(--c75)">(√6−√2)/4</td><td style="color:var(--c75)">2+√3</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ §4 POLYGONS ═══════════════ -->
+<div class="page" id="pg-poly">
+  <div class="sec-hdr">
+    <h2>Polygons <em>Inscribed</em> in the Unit Circle</h2>
+    <div class="tag">Why vertices always land on surds · and the one exception</div>
+  </div>
+  <div style="padding:1.2rem 2.5rem .5rem">
+    <div class="card">
+      <div class="card-lbl">The central question</div>
+      <p>Every vertex of a regular polygon inscribed in the unit circle sits at (cos θ, sin θ). Since cos and sin are almost always surds, so are the vertex coordinates. But there is one exception. Explore. <span style="color:var(--sin);font-family:'JetBrains Mono',monospace;font-size:.7rem">● rational</span> &nbsp;<span style="color:var(--c30);font-family:'JetBrains Mono',monospace;font-size:.7rem">● irrational</span></p>
+    </div>
+  </div>
+  <div class="poly-body">
+    <div>
+      <svg id="poly-svg" viewBox="-130 -130 260 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:440px;height:auto;display:block;background:var(--surface);border:1px solid var(--border);border-radius:4px;">
+        <circle cx="0" cy="0" r="110" fill="none" stroke="#c8c4b8" stroke-width="1"/>
+        <line x1="-125" y1="0" x2="125" y2="0" stroke="#e0dbd0" stroke-width="1"/>
+        <line x1="0" y1="-125" x2="0" y2="125" stroke="#e0dbd0" stroke-width="1"/>
+        <line x1="110" y1="-3" x2="110" y2="3" stroke="#c8c4b8"/>
+        <text x="112" y="14" fill="#a09c90" font-family="JetBrains Mono" font-size="8">1</text>
+        <g id="poly-g"></g>
+      </svg>
+      <div class="hint" id="poly-hint">Select a polygon to inscribe it</div>
+    </div>
+    <div>
+      <div class="panel-lbl">Choose a polygon</div>
+      <button class="poly-btn on" onclick="selPoly(3,this)"><div class="pname">Triangle</div><div class="pdet">3 sides · 120° between vertices</div></button>
+      <button class="poly-btn" onclick="selPoly(4,this)"><div class="pname">Square</div><div class="pdet">4 sides · 90° between vertices</div></button>
+      <button class="poly-btn" onclick="selPoly(5,this)"><div class="pname">Pentagon</div><div class="pdet">5 sides · 72° between vertices</div></button>
+      <button class="poly-btn" onclick="selPoly(6,this)"><div class="pname">Hexagon</div><div class="pdet">6 sides · 60° between vertices</div></button>
+      <button class="poly-btn" onclick="selPoly(8,this)"><div class="pname">Octagon</div><div class="pdet">8 sides · 45° between vertices</div></button>
+      <button class="poly-btn" onclick="selPoly(12,this)"><div class="pname">Dodecagon</div><div class="pdet">12 sides · 30° between vertices</div></button>
+      <div class="poly-info">
+        <div class="card-lbl">Vertex coordinates</div>
+        <div class="pcoords" id="pcds">—</div>
+        <div class="pverd" id="pvrd">—</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 2.5rem 2rem">
+    <div class="card">
+      <div class="card-lbl">Niven's theorem &amp; the rational parametrisation</div>
+      <p>By <strong>Niven's theorem</strong> (1956), the only angles θ ∈ [0°, 90°] where both cos θ and sin θ are rational are 0° and 90°. This means the only inscribed regular polygon with all rational vertices is the square — its vertices are exactly the four axis intercepts (±1, 0) and (0, ±1).</p>
+      <p style="margin-top:.6rem">To generate <em>all</em> rational points on the unit circle systematically, set t = tan(θ/2). Then: cos θ = (1−t²)/(1+t²) and sin θ = 2t/(1+t²). Every rational t yields a rational point. This is the rational parametrisation of the circle — and it is exactly the Pythagorean triple construction in disguise: the triple (a, b, c) with a²+b²=c² corresponds to t = b/(a+c).</p>
+    </div>
+  </div>
+</div>
+
+<footer><p>Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · LeeMcCullochJames</p></footer>
+
+<script>
+const R = Math.PI/180;
+
+// ── NAV ──
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// §1  TRIG
+// ══════════════════════════════════════════
+const CX=210, CY=210, TR=180;
+const TDATA = {
+  30:{ce:'√3/2', se:'1/2', te:'1/√3', cv:Math.cos(30*R), sv:Math.sin(30*R), tv:Math.tan(30*R),
+      col:'var(--c30)', ch:'Longest adjacent: stays close to x-axis.', sh:'Half the hypotenuse — shortest opposite.', th:'Less than 1 — gentle slope.'},
+  45:{ce:'√2/2', se:'√2/2', te:'1',   cv:Math.cos(45*R), sv:Math.sin(45*R), tv:1,
+      col:'var(--c45)', ch:'Equal to sin — isosceles triangle.', sh:'Equal to cos — both legs same length.', th:'Exactly 1 — perfect diagonal.'},
+  60:{ce:'1/2',  se:'√3/2', te:'√3',  cv:Math.cos(60*R), sv:Math.sin(60*R), tv:Math.tan(60*R),
+      col:'var(--c60)', ch:'Half hypotenuse — swapped from 30°.', sh:'Longest opposite — point sits high.', th:'Greater than 1 — steep slope.'}
+};
+let cAng=30, cStage=0;
+
+function tpt(a){return{x:CX+TR*Math.cos(a*R), y:CY-TR*Math.sin(a*R)};}
+
+function drawTri(ang, stg){
+  const g=document.getElementById('tri-g'); g.innerHTML='';
+  const d=TDATA[ang], pt=tpt(ang), ft={x:pt.x, y:CY};
+
+  const ns='http://www.w3.org/2000/svg';
+  function ln(x1,y1,x2,y2,s,w,dash){
+    const e=document.createElementNS(ns,'line');
+    e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);
+    e.setAttribute('stroke',s);e.setAttribute('stroke-width',w||2);
+    if(dash)e.setAttribute('stroke-dasharray',dash); g.appendChild(e);}
+  function tx(x,y,t,f,sz,an){
+    const e=document.createElementNS(ns,'text');
+    e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('fill',f||'#5a5750');
+    e.setAttribute('font-size',sz||12);e.setAttribute('font-family','Cormorant Garamond,serif');
+    e.setAttribute('text-anchor',an||'middle');e.textContent=t;g.appendChild(e);}
+  function ci(cx,cy,r,f){
+    const e=document.createElementNS(ns,'circle');
+    e.setAttribute('cx',cx);e.setAttribute('cy',cy);e.setAttribute('r',r);
+    e.setAttribute('fill',f);e.setAttribute('stroke','none');g.appendChild(e);}
+  function arc(cx,cy,r,a0,a1,col){
+    const s={x:cx+r*Math.cos(a0*R),y:cy-r*Math.sin(a0*R)};
+    const ev={x:cx+r*Math.cos(a1*R),y:cy-r*Math.sin(a1*R)};
+    const e=document.createElementNS(ns,'path');
+    e.setAttribute('d',`M ${s.x} ${s.y} A ${r} ${r} 0 0 0 ${ev.x} ${ev.y}`);
+    e.setAttribute('fill','none');e.setAttribute('stroke',col);
+    e.setAttribute('stroke-width','1.5');e.setAttribute('stroke-dasharray','4 3');g.appendChild(e);}
+  function ra(x,y){
+    const e=document.createElementNS(ns,'path');
+    e.setAttribute('d',`M ${x-10} ${y} L ${x-10} ${y-10} L ${x} ${y-10}`);
+    e.setAttribute('fill','none');e.setAttribute('stroke','#b0a898');e.setAttribute('stroke-width','1.5');g.appendChild(e);}
+
+  arc(CX,CY,28,0,ang,d.col);
+  ci(CX,CY,4,'#a09c90');
+  ln(CX,CY,pt.x,pt.y,'var(--hyp)',2.5);
+  const mh={x:(CX+pt.x)/2,y:(CY+pt.y)/2};
+  tx(mh.x-10,mh.y-8,'1','var(--hyp)',14);
+  // Angle label: placed just outside the arc, close to origin
+  const arcLabelR = 42;
+  const arcMidAngle = ang/2;
+  const alx = CX + arcLabelR*Math.cos(arcMidAngle*R);
+  const aly = CY - arcLabelR*Math.sin(arcMidAngle*R);
+  tx(alx, aly, ang+'°', d.col, 12, 'start');
+  ci(pt.x,pt.y,5,d.col);
+
+  if(stg>=1){
+    ln(CX,CY,ft.x,CY,'var(--cos)',2.5);
+    ln(ft.x,CY,pt.x,pt.y,'var(--sin)',2.5);
+    ln(pt.x,pt.y,ft.x,CY,'#c8c4b8',1,'4 3');
+    ra(ft.x,CY);
+    const clx=(CX+ft.x)/2;
+    // cos label below horizontal leg
+    tx(clx,CY+16,'cos '+ang+'°','var(--cos)',12);
+    tx(clx,CY+29,'= '+d.ce,'var(--cos)',11);
+    // sin label: placed tight against the vertical leg, offset left by small amount
+    const sinMidY = (CY+pt.y)/2;
+    tx(ft.x-8, sinMidY-8, 'sin '+ang+'°', 'var(--sin)', 12, 'end');
+    tx(ft.x-8, sinMidY+7, '= '+d.se, 'var(--sin)', 11, 'end');
+  }
+  if(stg>=2){
+    // tan shown in panel below SVG, not on diagram
+  }
+}
+
+function updTrig(ang){
+  const d=TDATA[ang];
+  document.getElementById('v-ang').textContent=ang+'°';
+  document.getElementById('v-cos').textContent=d.ce+' ≈ '+d.cv.toFixed(3);
+  document.getElementById('v-sin').textContent=d.se+' ≈ '+d.sv.toFixed(3);
+  document.getElementById('v-tan').textContent=d.te+' ≈ '+d.tv.toFixed(3);
+  document.getElementById('e-cos').textContent=d.ch;
+  document.getElementById('e-sin').textContent=d.sh;
+  document.getElementById('e-tan').textContent=d.th;
+  document.getElementById('lbl-cos').textContent='Adjacent — cos '+ang+'°';
+  document.getElementById('lbl-sin').textContent='Opposite — sin '+ang+'°';
+  document.getElementById('lbl-tan').textContent='tan '+ang+'° = sin '+ang+'° / cos '+ang+'°';
+  // Populate tan fraction panel
+  document.getElementById('tan-lbl').textContent='tan '+ang+'° — the slope';
+  document.getElementById('tan-lhs').textContent='tan '+ang+'°';
+  document.getElementById('tan-num').textContent='sin '+ang+'° = '+d.se;
+  document.getElementById('tan-den').textContent='cos '+ang+'° = '+d.ce;
+  document.getElementById('tan-sval').textContent=d.se;
+  document.getElementById('tan-cval').textContent=d.ce;
+  document.getElementById('tan-result').textContent=d.te+' ≈ '+d.tv.toFixed(3);
+  document.getElementById('tan-hint').textContent=d.th;
+}
+
+function selAng(a){
+  cAng=a; cStage=0;
+  document.querySelectorAll('.ang-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.ang-btn.b'+a).classList.add('on');
+  for(let i=1;i<=3;i++) document.getElementById('st'+i).classList.remove('on');
+  document.getElementById('st0').classList.add('on');
+  document.getElementById('sumbox').classList.remove('on');
+  document.getElementById('tan-display').style.display='none';
+  for(let i=0;i<4;i++) document.getElementById('d'+i).classList.remove('done');
+  document.getElementById('d0').classList.add('done');
+  updTrig(a); drawTri(a,0);
+  document.getElementById('trig-hint').textContent='Hypotenuse = 1. Use the panel to reveal more.';
+}
+
+function revealT(s){
+  cStage=s;
+  document.getElementById('st'+s).classList.add('on');
+  document.getElementById('d'+s).classList.add('done');
+  drawTri(cAng,s);
+  if(s===2){ document.getElementById('tan-display').style.display='block'; }
+  if(s===3){setTimeout(()=>document.getElementById('sumbox').classList.add('on'),300);
+    document.getElementById('trig-hint').textContent='Explore all three triangles.';}
+}
+
+selAng(30);
+
+// ══════════════════════════════════════════
+// §2  SURDS
+// ══════════════════════════════════════════
+const sqData=[
+  {lo:'3.1', ls:9.61, hi:'3.2', hs:10.24},
+  {lo:'3.16', ls:9.9856, hi:'3.17', hs:10.0489},
+  {lo:'3.162', ls:9.998244, hi:'3.163', hs:10.004569},
+  {lo:'3.1622', ls:9.99950884, hi:'3.1623', hs:10.00014129},
+];
+let sqRunning=false;
+function runSqueeze(){
+  if(sqRunning)return; sqRunning=true;
+  const rows=document.getElementById('sq-rows'); rows.innerHTML='';
+  sqData.forEach((d,i)=>{
+    const row=document.createElement('div'); row.className='sq-row';
+    row.innerHTML=`<span style="color:var(--text-dim);width:130px">${d.lo}² = ${d.ls.toFixed(4)}</span><span class="sml lo">too small</span><span style="color:var(--text-faint);padding:0 .3rem">|</span><span style="color:var(--text-dim);width:130px">${d.hi}² = ${d.hs.toFixed(4)}</span><span class="sml hi">too large</span>`;
+    rows.appendChild(row);
+    setTimeout(()=>row.classList.add('vis'), i*600+200);
+  });
+  setTimeout(()=>{sqRunning=false;}, sqData.length*600+500);
+}
+
+const SURDS=[
+  {n:8,  steps:'√(4×2)\n= √4×√2\n= 2×√2', ans:'2√2'},
+  {n:12, steps:'√(4×3)\n= √4×√3\n= 2×√3', ans:'2√3'},
+  {n:18, steps:'√(9×2)\n= √9×√2\n= 3×√2', ans:'3√2'},
+  {n:20, steps:'√(4×5)\n= √4×√5\n= 2×√5', ans:'2√5'},
+  {n:27, steps:'√(9×3)\n= √9×√3\n= 3×√3', ans:'3√3'},
+  {n:32, steps:'√(16×2)\n= √16×√2\n= 4×√2', ans:'4√2'},
+  {n:48, steps:'√(16×3)\n= √16×√3\n= 4×√3', ans:'4√3'},
+  {n:75, steps:'√(25×3)\n= √25×√3\n= 5×√3', ans:'5√3'},
+];
+function buildSurdGrid(){
+  const g=document.getElementById('sim-grid');
+  SURDS.forEach(s=>{
+    const c=document.createElement('div'); c.className='scard';
+    // SVG radical with vinculum properly over radicand
+    const nDigits = String(s.n).length;
+    const vWidth = 22 + nDigits*14;
+    const svgW = 20 + vWidth;
+    const radSvg = `<svg viewBox="0 0 ${svgW} 52" style="width:${svgW}px;height:52px;display:block;margin:0 auto">
+      <text x="2" y="44" font-family="Cormorant Garamond,serif" font-size="40" fill="#1a1a18" dominant-baseline="auto">&#x221A;</text>
+      <line x1="${svgW-vWidth}" y1="8" x2="${svgW}" y2="8" stroke="#1a1a18" stroke-width="2"/>
+      <text x="${svgW-vWidth/2}" y="44" font-family="Cormorant Garamond,serif" font-size="30" fill="#1a1a18" text-anchor="middle">${s.n}</text>
+    </svg>`;
+    c.innerHTML=`<div style="margin:.4rem 0">${radSvg}</div><div class="ss" style="white-space:pre">${s.steps}</div><div class="sa">${s.ans}</div><div class="sh">tap to reveal</div>`;
+    c.onclick=()=>{c.classList.toggle('open'); c.querySelector('.sh').textContent=c.classList.contains('open')?'tap to hide':'tap to reveal';};
+    g.appendChild(c);
+  });
+}
+buildSurdGrid();
+
+// ══════════════════════════════════════════
+// §3  AILLES
+// ══════════════════════════════════════════
+// SVG viewBox 0 0 500 320
+// Rectangle: width proportional to (√3+1), height = 1
+// Map: rect from (40,60) to (460,260) → 420px wide, 200px tall
+const S3=Math.sqrt(3);
+const AX0=40, AY0=60, AW=420, AH=200; // SVG rect coords
+const TW=S3+1; // total width in math units
+function ax(x){return AX0+x/TW*AW;}
+function ay(y){return AY0+(1-y)*AH;}
+
+function aLine(g,x1,y1,x2,y2,stroke,sw,dash){
+  const ns='http://www.w3.org/2000/svg';
+  const e=document.createElementNS(ns,'line');
+  e.setAttribute('x1',ax(x1));e.setAttribute('y1',ay(y1));
+  e.setAttribute('x2',ax(x2));e.setAttribute('y2',ay(y2));
+  e.setAttribute('stroke',stroke||'#999');e.setAttribute('stroke-width',sw||2);
+  if(dash)e.setAttribute('stroke-dasharray',dash);
+  g.appendChild(e);}
+
+function aTx(g,x,y,t,fill,sz,anch,ital){
+  const ns='http://www.w3.org/2000/svg';
+  const e=document.createElementNS(ns,'text');
+  e.setAttribute('x',ax(x));e.setAttribute('y',ay(y));
+  e.setAttribute('fill',fill||'#5a5750');e.setAttribute('font-size',sz||11);
+  e.setAttribute('font-family','Cormorant Garamond,serif');
+  if(ital)e.setAttribute('font-style','italic');
+  e.setAttribute('text-anchor',anch||'middle');
+  e.textContent=t; g.appendChild(e);}
+
+function aRect(g,x,y,w,h,stroke,sw){
+  const ns='http://www.w3.org/2000/svg';
+  const e=document.createElementNS(ns,'rect');
+  e.setAttribute('x',ax(x));e.setAttribute('y',ay(y+h));
+  e.setAttribute('width',w/TW*AW);e.setAttribute('height',h*AH);
+  e.setAttribute('fill','none');e.setAttribute('stroke',stroke||'#c8c4b8');e.setAttribute('stroke-width',sw||1.5);
+  g.appendChild(e);}
+
+function drawAilles(step){
+  const g=document.getElementById('ailles-g'); g.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+
+  // ── helpers ──────────────────────────────────────────────
+  // All coordinates in SVG pixel space via ax()/ay()
+  // arcBetween: draws an angle arc centered at vertex (vx,vy),
+  //   from direction toward point A, sweeping toward direction of point B.
+  //   radius r, colour col, label string lbl placed outside arc.
+  function arcBetween(vx,vy, ax1,ay1, bx1,by1, r, col, lbl, sweep){
+    // direction angles in SVG pixel space
+    const a1 = Math.atan2(ay1-vy, ax1-vx);
+    const a2 = Math.atan2(by1-vy, bx1-vx);
+    const sx = vx + r*Math.cos(a1), sy = vy + r*Math.sin(a1);
+    const ex = vx + r*Math.cos(a2), ey = vy + r*Math.sin(a2);
+    // Compute angular span CCW from a1 to a2
+    let span = a2 - a1;
+    while(span < 0) span += 2*Math.PI;
+    while(span > 2*Math.PI) span -= 2*Math.PI;
+    // Use sweep=1 (CW in SVG) to go the short way if span>PI, otherwise sweep=0
+    const useSweep = sweep !== undefined ? sweep : (span > Math.PI ? 1 : 0);
+    const largeArc = 0; // always use small arc
+    const ea = document.createElementNS(ns,'path');
+    ea.setAttribute('d',`M ${sx} ${sy} A ${r} ${r} 0 ${largeArc} ${useSweep} ${ex} ${ey}`);
+    ea.setAttribute('fill','none'); ea.setAttribute('stroke',col);
+    ea.setAttribute('stroke-width',1.4); g.appendChild(ea);
+    if(lbl){
+      // label at midpoint angle of the drawn arc
+      const amid = useSweep===0
+        ? (span <= Math.PI ? a1 + span/2 : a1 - (2*Math.PI - span)/2)
+        : (span <= Math.PI ? a1 - span/2 : a1 + (2*Math.PI - span)/2);
+      const lx = vx + r*1.85*Math.cos(amid), ly = vy + r*1.85*Math.sin(amid);
+      const lt = document.createElementNS(ns,'text');
+      lt.setAttribute('x',lx); lt.setAttribute('y',ly+3);
+      lt.setAttribute('fill',col); lt.setAttribute('font-size',10);
+      lt.setAttribute('font-family','Cormorant Garamond,serif');
+      lt.setAttribute('text-anchor','middle'); lt.textContent=lbl;
+      g.appendChild(lt);
+    }
+  }
+
+  function rightAngleMark(vx,vy, ax1,ay1, bx1,by1, s){
+    // draw a small square at vertex showing right angle between directions to A and B
+    const sz = s||9;
+    const da = Math.atan2(ay1-vy, ax1-vx);
+    const db = Math.atan2(by1-vy, bx1-vx);
+    const px = vx + sz*Math.cos(da), py = vy + sz*Math.sin(da);
+    const qx = vx + sz*Math.cos(db), qy = vy + sz*Math.sin(db);
+    const mx = px + sz*Math.cos(db), my = py + sz*Math.sin(db);
+    const el=document.createElementNS(ns,'polyline');
+    el.setAttribute('points',`${px},${py} ${mx},${my} ${qx},${qy}`);
+    el.setAttribute('fill','none'); el.setAttribute('stroke','#b0a898');
+    el.setAttribute('stroke-width',1.2); g.appendChild(el);
+  }
+
+  // ── key SVG coords ────────────────────────────────────────
+  // Rectangle vertices in SVG px
+  const TL=[ax(0), ay(1)];   // top-left
+  const BL=[ax(0), ay(0)];   // bottom-left
+  const BM=[ax(S3), ay(0)];  // bottom-middle (divides base at √3)
+  const TM=[ax(S3), ay(1)];  // top-middle
+  const TR=[ax(TW), ay(1)];  // top-right
+  const BR=[ax(TW), ay(0)];  // bottom-right
+
+  // ── rectangle ────────────────────────────────────────────
+  aRect(g,0,0,TW,1,'#c8c4b8',1.8);
+  aTx(g,TW/2,-0.08,'width = √3 + 1 ≈ 2.73','#a09c90',10);
+  const el=document.createElementNS(ns,'text');
+  el.setAttribute('x',AX0-16); el.setAttribute('y',ay(0.5)+5);
+  el.setAttribute('fill','#a09c90'); el.setAttribute('font-size',10);
+  el.setAttribute('font-family','JetBrains Mono,monospace');
+  el.setAttribute('text-anchor','middle'); el.textContent='height = 1';
+  el.setAttribute('transform',`rotate(-90,${AX0-16},${ay(0.5)+5})`);
+  g.appendChild(el);
+
+  // ── step 1: 30-60-90 triangle ────────────────────────────
+  if(step>=1){
+    aLine(g,0,1,0,0,'var(--c30)',2.5);   // left side = 1
+    aLine(g,0,0,S3,0,'var(--c30)',2.5);  // base = √3
+    aLine(g,0,1,S3,0,'var(--c30)',3);    // hypotenuse = 2
+
+    // right angle at BL: between left side (going up) and base (going right)
+    rightAngleMark(BL[0],BL[1], TL[0],TL[1], BM[0],BM[1]);
+
+    // side labels
+    aTx(g,-0.12,0.5,'1','var(--c30)',13,'end',true);
+    aTx(g,S3/2,1.1,'√3','var(--c30)',13,'middle',true);
+    aTx(g,S3/2+0.1,0.58,'2','var(--c30)',14,'start',true);
+
+    // Arc at TL (60°): between left-edge-going-down and hypotenuse-going-to-BM
+    // vertex=TL, toward BL (down), toward BM (down-right)
+    arcBetween(TL[0],TL[1], BL[0],BL[1], BM[0],BM[1], 20,'var(--c30)','60°',0);
+
+    // Arc at BM (30°): between hypotenuse-going-to-TL and base-going-left-to-BL
+    // vertex=BM, toward TL (up-left), toward BL (left)
+    arcBetween(BM[0],BM[1], TL[0],TL[1], BL[0],BL[1], 20,'var(--c30)','30°',0);
+  }
+
+  // ── step 2: 45-45-90 triangle ────────────────────────────
+  if(step>=2){
+    aLine(g,S3,1,TW,1,'var(--c45)',2.5);  // top leg = 1
+    aLine(g,S3,1,S3,0,'var(--c45)',2.5);  // vertical leg = 1
+    aLine(g,TW,1,S3,0,'var(--c45)',3);    // hypotenuse = √2
+
+    // right angle at TM: between top leg (going right) and vertical (going down)
+    rightAngleMark(TM[0],TM[1], TR[0],TR[1], BM[0],BM[1]);
+
+    aTx(g,S3+(1/2),1.1,'1','var(--c45)',13,'middle',true);
+    aTx(g,S3+0.12,0.5,'1','var(--c45)',13,'start',true);
+    aTx(g,S3+0.62,0.42,'√2','var(--c45)',13,'start',true);
+
+    // Arc at TR (45°): between top-edge-going-left and hypotenuse-going-to-BM
+    // vertex=TR, toward TM (left), toward BM (down-left)
+    arcBetween(TR[0],TR[1], TM[0],TM[1], BM[0],BM[1], 20,'var(--c45)','45°',0);
+
+    // Arc at BM for 45-45-90 (45°): between vertical-going-up-to-TM and hyp-going-to-TR
+    // vertex=BM, toward TM (up), toward TR (up-right)
+    arcBetween(BM[0],BM[1], TM[0],TM[1], TR[0],TR[1], 32,'var(--c45)','45°',0);
+  }
+
+  // ── step 3: diagonal + 15° ───────────────────────────────
+  if(step>=3){
+    aLine(g,0,1,TW,0,'var(--c15)',2.5);  // diagonal TL→BR
+    aTx(g,TW/2,0.52,'2√2','var(--c15)',12,'middle',true);
+
+    // Arc at TL for 15°: between top-edge-going-right and diagonal-going-to-BR
+    // vertex=TL, toward TR (right), toward BR (down-right)
+    arcBetween(TL[0],TL[1], TR[0],TR[1], BR[0],BR[1], 24,'var(--c15)','15°',1);
+
+    // Arc at TL for 75°: between hypotenuse-of-30-60-90 (toward BM) and diagonal (toward BR)
+    // vertex=TL, toward BM, toward BR; placed at larger radius to avoid overlap
+    arcBetween(TL[0],TL[1], BM[0],BM[1], BR[0],BR[1], 38,'var(--c30)','75°',1);
+  }
+
+  // ── step 4: highlight sin 15° side ───────────────────────
+  if(step>=4){
+    aLine(g,S3,0,TW,0,'var(--c15)',4);
+    aTx(g,S3+(1/2),-0.1,'← opposite to 15° angle = 1','var(--c15)',9,'middle');
+    const rb=document.createElementNS(ns,'rect');
+    rb.setAttribute('x',AX0+5); rb.setAttribute('y',AY0+AH+30);
+    rb.setAttribute('width',AW-10); rb.setAttribute('height',36);
+    rb.setAttribute('fill','var(--surface2)'); rb.setAttribute('stroke','var(--gold-dim)');
+    rb.setAttribute('stroke-width',1); rb.setAttribute('rx',3); g.appendChild(rb);
+    const rtx=document.createElementNS(ns,'text');
+    rtx.setAttribute('x',AX0+AW/2); rtx.setAttribute('y',AY0+AH+54);
+    rtx.setAttribute('fill','var(--gold)'); rtx.setAttribute('font-size',13);
+    rtx.setAttribute('font-family','Cormorant Garamond,serif');
+    rtx.setAttribute('text-anchor','middle');
+    rtx.textContent='sin 15° = opp/hyp = 1/(2√2) → rationalise → (√6−√2)/4';
+    g.appendChild(rtx);
+    ['av0','av1','av2','av3'].forEach(id=>document.getElementById(id).classList.add('on'));
+  } else {
+    ['av0','av1','av2','av3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  }
+
+  const hints=[
+    'Rectangle frame: width = √3+1 ≈ 2.732, height = 1',
+    '30-60-90 triangle (terracotta): sides 1, √3, hypotenuse 2',
+    '45-45-90 triangle (amber): legs 1, 1, hypotenuse √2',
+    'Diagonal (purple) = 2√2; angle at top-left = 15° because 45°−30° = 15°',
+    'Bottom-right segment (length 1) is opposite to the 15° angle → sin 15°'
+  ];
+  document.getElementById('ailles-hint').textContent=hints[step];
+}
+
+function aillesStep(s,btn){
+  document.querySelectorAll('.astep-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  drawAilles(s);
+}
+drawAilles(0);
+
+// ══════════════════════════════════════════
+// §4  POLYGONS
+// ══════════════════════════════════════════
+const PR=110;
+const PDATA={
+  3:{col:'#b05030', angs:[90,210,330],
+     coords:[
+       {l:'V₁',t:'(cos 90°, sin 90°) = (0, 1)',r:true},
+       {l:'V₂',t:'(cos 210°, sin 210°) = (−√3/2, −1/2)',r:false},
+       {l:'V₃',t:'(cos 330°, sin 330°) = (√3/2, −1/2)',r:false},
+     ],
+     verd:'Two vertices involve ±√3/2 — the surd from cos 30°. Only V1 is rational, landing on the y-axis. The triangle 120° spacing unavoidably hits the 30° family of angles.'},
+  4:{col:'#2a5fa8', angs:[90,0,270,180],
+     coords:[
+       {l:'V₁',t:'(0, 1)',r:true},
+       {l:'V₂',t:'(1, 0)',r:true},
+       {l:'V₃',t:'(0, −1)',r:true},
+       {l:'V₄',t:'(−1, 0)',r:true},
+     ],
+     verd:'The square is the unique regular polygon with all rational vertices. Its 90° spacing puts every vertex exactly on an axis intercept — the only four points on the unit circle where both coordinates are integers.'},
+  5:{col:'#2e7d52', angs:[90,162,234,306,18],
+     coords:[
+       {l:'V₁',t:'(0, 1) — rational',r:true},
+       {l:'V₂',t:'(cos 18°, sin 18°) ≈ (0.951, 0.309)',r:false},
+       {l:'V₃',t:'(cos 306°, sin 306°) ≈ (0.588, −0.809)',r:false},
+       {l:'V₄',t:'(cos 234°, sin 234°) ≈ (−0.588, −0.809)',r:false},
+       {l:'V₅',t:'(cos 162°, sin 162°) ≈ (−0.951, 0.309)',r:false},
+     ],
+     verd:'Pentagon vertices involve cos 36° = (1+√5)/4 — containing the golden ratio φ = (1+√5)/2. Four of five vertices are irrational, with nested surds in both coordinates.'},
+  6:{col:'#7a4a8a', angs:[90,30,330,270,210,150],
+     coords:[
+       {l:'V₁',t:'(0, 1)',r:true},
+       {l:'V₂',t:'(√3/2, 1/2)',r:false},
+       {l:'V₃',t:'(√3/2, −1/2)',r:false},
+       {l:'V₄',t:'(0, −1)',r:true},
+       {l:'V₅',t:'(−√3/2, −1/2)',r:false},
+       {l:'V₆',t:'(−√3/2, 1/2)',r:false},
+     ],
+     verd:'60° spacing hits the special angles. Two vertices are rational (axis points). The other four involve ±√3/2 from cos/sin 30°. Four of six are irrational.'},
+  8:{col:'#a07820', angs:[90,45,0,315,270,225,180,135],
+     coords:[
+       {l:'V₁',t:'(0, 1)',r:true},
+       {l:'V₂',t:'(√2/2, √2/2)',r:false},
+       {l:'V₃',t:'(1, 0)',r:true},
+       {l:'V₄',t:'(√2/2, −√2/2)',r:false},
+       {l:'V5-V8',t:'symmetric repeats',r:false},
+     ],
+     verd:'45° spacing. Four axis vertices are rational; the other four involve ±√2/2 from cos 45°. Six of eight are irrational.'},
+  12:{col:'#b05030', angs:[90,60,30,0,330,300,270,240,210,180,150,120],
+      coords:[
+        {l:'V₁',t:'(0, 1)',r:true},
+        {l:'V₂',t:'(√3/2, 1/2)',r:false},
+        {l:'V₃',t:'(1/2 ... wait: cos30° = √3/2, sin30° = 1/2) = (√3/2, 1/2)',r:false},
+        {l:'V₄',t:'(1, 0)',r:true},
+        {l:'V5-V12',t:'symmetric repeats every 30°',r:false},
+      ],
+      verd:'30° spacing hits every special angle. Four axis vertices are rational. The remaining eight all involve √3/2 or √2/2 — surds from the 30° and 45° families.'},
+};
+
+let cPoly=3;
+function selPoly(n,btn){
+  cPoly=n;
+  document.querySelectorAll('.poly-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  drawPoly(n);
+  renderPolyInfo(n);
+}
+
+function drawPoly(n){
+  const g=document.getElementById('poly-g'); g.innerHTML='';
+  const d=PDATA[n];
+  const ns='http://www.w3.org/2000/svg';
+  const pts=d.angs.map(a=>({x:PR*Math.cos(a*R), y:-PR*Math.sin(a*R), a:a}));
+
+  // Polygon fill + outline
+  const poly=document.createElementNS(ns,'polygon');
+  poly.setAttribute('points',pts.map(p=>`${p.x},${p.y}`).join(' '));
+  poly.setAttribute('fill',d.col+'18');
+  poly.setAttribute('stroke',d.col);
+  poly.setAttribute('stroke-width',2);
+  g.appendChild(poly);
+
+  // Radii only — no angle arc labels
+  pts.forEach(p=>{
+    const ln=document.createElementNS(ns,'line');
+    ln.setAttribute('x1',0); ln.setAttribute('y1',0);
+    ln.setAttribute('x2',p.x); ln.setAttribute('y2',p.y);
+    ln.setAttribute('stroke',d.col+'66'); ln.setAttribute('stroke-width',1);
+    g.appendChild(ln);
+  });
+
+  // Vertex dots: green = rational, red = irrational
+  pts.forEach((p,i)=>{
+    const rat = i<d.coords.length ? d.coords[i].r : false;
+    const ci=document.createElementNS(ns,'circle');
+    ci.setAttribute('cx',p.x); ci.setAttribute('cy',p.y); ci.setAttribute('r',6);
+    ci.setAttribute('fill', rat ? 'var(--sin)' : 'var(--c30)');
+    ci.setAttribute('stroke','white'); ci.setAttribute('stroke-width',2);
+    g.appendChild(ci);
+  });
+
+  document.getElementById('poly-hint').textContent=
+    d.angs.length+'-gon — green = rational vertex · red = irrational';
+}
+
+function renderPolyInfo(n){
+  const d=PDATA[n];
+  document.getElementById('pcds').innerHTML=d.coords.map(c=>
+    `<div class="${c.r?'rc':'ic'}">${c.l}: ${c.t}</div>`
+  ).join('');
+  document.getElementById('pvrd').textContent=d.verd;
+}
+
+selPoly(3, document.querySelector('.poly-btn'));
+</script>
+</body>
+</html>
