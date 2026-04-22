@@ -377,11 +377,31 @@
       };
     }
 
+    function transformPoint(p) {
+      let q = { x: p.x, y: p.y };
+      const angleDeg = parseFloat(angleEl.value);
+      const scaleFactor = parseFloat(scaleEl.value);
+      const tx = parseFloat(translateXEl.value);
+      const ty = parseFloat(translateYEl.value);
+      const mode = modeEl.value;
+
+      if (mode === 'rotate' || mode === 'all') {
+        q = rotatedPoint(q.x, q.y, angleDeg * Math.PI / 180);
+      }
+      if (mode === 'scale' || mode === 'all') {
+        q = scaledPoint(q.x, q.y, scaleFactor);
+      }
+
+      q = translatedPoint(q.x, q.y, tx, ty);
+      return q;
+    }
+
     function drawDots(points, size, color, alpha) {
       ctx.save();
       ctx.fillStyle = color;
       ctx.globalAlpha = alpha;
       for (const p of points) {
+        if (p.x < -10 || p.x > W + 10 || p.y < -10 || p.y > H + 10) continue;
         ctx.beginPath();
         ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
         ctx.fill();
@@ -390,14 +410,14 @@
     }
 
     function draw() {
-      const mode = modeEl.value;
-      const pairMode = pairModeEl.value;
       const size = parseFloat(dotSizeEl.value);
       const overlayAlpha = parseFloat(opacityBEl.value);
       const angleDeg = parseFloat(angleEl.value);
       const scaleFactor = parseFloat(scaleEl.value);
       const tx = parseFloat(translateXEl.value);
       const ty = parseFloat(translateYEl.value);
+      const pairMode = pairModeEl.value;
+      const mode = modeEl.value;
 
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = '#05080d';
@@ -405,51 +425,20 @@
 
       drawDots(dotsA, size, '#d8dee9', 0.95);
 
-      const transformed = [];
-      if (mode === 'rotate') {
-        let angle = parseFloat(angleEl.value);
-        angle += animationDirection * speed * 18 * dt;
-        if (angle > 30) {
-          angle = 30;
-          animationDirection = -1;
-        }
-        if (angle < -30) {
-          angle = -30;
-          animationDirection = 1;
-        }
-        angleEl.value = angle.toFixed(2);
-        angleLabel.textContent = angle.toFixed(1);
-      } else if (mode === 'scale') {
-        let scale = parseFloat(scaleEl.value);
-        scale += animationDirection * speed * 0.02 * dt;
-        if (scale > 1.02) {
-          scale = 1.02;
-          animationDirection = -1;
-        }
-        if (scale < 0.90) {
-          scale = 0.90;
-          animationDirection = 1;
-        }
-        scaleEl.value = scale.toFixed(3);
-        scaleLabel.textContent = scale.toFixed(3);
-      } else {
-        let tx = parseFloat(translateXEl.value);
-        tx += animationDirection * speed * 60 * dt;
-        if (tx > 200) {
-          tx = 200;
-          animationDirection = -1;
-        }
-        if (tx < -200) {
-          tx = -200;
-          animationDirection = 1;
-        }
-        translateXEl.value = tx.toFixed(0);
-        translateXLabel.textContent = tx.toFixed(0);
-      } · Shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
-      } · Scale ${scaleFactor.toFixed(3)}`;
-      }
-
+      const transformed = dotsB.map(transformPoint);
       drawDots(transformed, size, '#8fb8ff', overlayAlpha);
+
+      let label = `${pairMode === 'copy' ? 'Copied' : 'Independent'} · `;
+      if (mode === 'rotate') {
+        label += `Rotation ${angleDeg.toFixed(1)}° + shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      } else if (mode === 'scale') {
+        label += `Scale ${scaleFactor.toFixed(3)} + shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      } else if (mode === 'translate') {
+        label += `Shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      } else {
+        label += `Rotate ${angleDeg.toFixed(1)}° · Scale ${scaleFactor.toFixed(3)} · Shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      }
+      transformReadout.textContent = label;
 
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -472,7 +461,7 @@
       const speed = parseFloat(speedEl.value);
       const mode = modeEl.value;
 
-      if (mode === 'rotate') {
+      if (mode === 'rotate' || mode === 'all') {
         let angle = parseFloat(angleEl.value);
         angle += animationDirection * speed * 18 * dt;
         if (angle > 30) {
@@ -484,8 +473,9 @@
           animationDirection = 1;
         }
         angleEl.value = angle.toFixed(2);
-        angleLabel.textContent = angle.toFixed(1);
-      } else {
+      }
+
+      if (mode === 'scale' || mode === 'all') {
         let scale = parseFloat(scaleEl.value);
         scale += animationDirection * speed * 0.02 * dt;
         if (scale > 1.02) {
@@ -497,9 +487,23 @@
           animationDirection = 1;
         }
         scaleEl.value = scale.toFixed(3);
-        scaleLabel.textContent = scale.toFixed(3);
       }
 
+      if (mode === 'translate' || mode === 'rotate' || mode === 'scale' || mode === 'all') {
+        let tx = parseFloat(translateXEl.value);
+        tx += animationDirection * speed * 60 * dt;
+        if (tx > 200) {
+          tx = 200;
+          animationDirection = -1;
+        }
+        if (tx < -200) {
+          tx = -200;
+          animationDirection = 1;
+        }
+        translateXEl.value = tx.toFixed(0);
+      }
+
+      updateLabels();
       draw();
       requestAnimationFrame(animate);
     }
@@ -517,20 +521,22 @@
 
     function updateModeUI() {
       const mode = modeEl.value;
-      rotationControls.style.display = mode === 'rotate' ? 'grid' : 'none';
-      scaleControls.style.display = mode === 'scale' ? 'grid' : 'none';
-      translateXControls.style.display = mode === 'translate' ? 'grid' : 'none';
-      translateYControls.style.display = mode === 'translate' ? 'grid' : 'none';
+      rotationControls.style.display = (mode === 'rotate' || mode === 'all') ? 'grid' : 'none';
+      scaleControls.style.display = (mode === 'scale' || mode === 'all') ? 'grid' : 'none';
+      translateXControls.style.display = 'grid';
+      translateYControls.style.display = 'grid';
       draw();
     }
 
-    modeEl.addEventListener('change', () => {
-      updateModeUI();
-    });
+    modeEl.innerHTML = `
+      <option value="rotate">Rotate field B</option>
+      <option value="scale">Scale field B</option>
+      <option value="translate">Translate field B</option>
+      <option value="all">Rotate + scale + translate</option>
+    `;
 
-    pairModeEl.addEventListener('change', () => {
-      regenerate();
-    });
+    modeEl.addEventListener('change', updateModeUI);
+    pairModeEl.addEventListener('change', regenerate);
 
     [pointCountEl, dotSizeEl, opacityBEl, angleEl, scaleEl, speedEl, translateXEl, translateYEl].forEach(el => {
       el.addEventListener('input', () => {
@@ -567,5 +573,6 @@
   </script>
 </body>
 </html>
+
 
 
