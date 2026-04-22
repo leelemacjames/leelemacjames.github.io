@@ -196,6 +196,14 @@
         </div>
 
         <div class="row">
+          <label for="pairMode">Relationship between fields</label>
+          <select id="pairMode">
+            <option value="independent">Independent random fields</option>
+            <option value="copy">Field B is a copy of field A</option>
+          </select>
+        </div>
+
+        <div class="row">
           <label for="pointCount">Number of dots per field: <span id="pointCountLabel">1200</span></label>
           <input id="pointCount" type="range" min="100" max="5000" step="100" value="1200" />
         </div>
@@ -238,7 +246,7 @@
 
       <div class="footer-note">
         In rotate mode, field B is spun about the canvas centre. In scale mode, field B is dilated about the same centre,
-        so 0.96 means a 4% contraction relative to field A.
+        so 0.96 means a 4% contraction relative to field A. Set field B to be a copy of field A to get the strongest visual effects.
       </div>
     </section>
 
@@ -271,6 +279,7 @@
 
     const modeEl = document.getElementById('mode');
     const pointCountEl = document.getElementById('pointCount');
+    const pairModeEl = document.getElementById('pairMode');
     const dotSizeEl = document.getElementById('dotSize');
     const opacityBEl = document.getElementById('opacityB');
     const angleEl = document.getElementById('angle');
@@ -317,7 +326,11 @@
     function regenerate() {
       const count = parseInt(pointCountEl.value, 10);
       dotsA = randomDots(count);
-      dotsB = randomDots(count);
+      if (pairModeEl.value === 'copy') {
+        dotsB = dotsA.map(p => ({ x: p.x, y: p.y }));
+      } else {
+        dotsB = randomDots(count);
+      }
       draw();
     }
 
@@ -353,6 +366,7 @@
 
     function draw() {
       const mode = modeEl.value;
+      const pairMode = pairModeEl.value;
       const size = parseFloat(dotSizeEl.value);
       const overlayAlpha = parseFloat(opacityBEl.value);
       const angleDeg = parseFloat(angleEl.value);
@@ -368,10 +382,10 @@
       if (mode === 'rotate') {
         const rad = angleDeg * Math.PI / 180;
         for (const p of dotsB) transformed.push(rotatedPoint(p.x, p.y, rad));
-        transformReadout.textContent = `Rotation ${angleDeg.toFixed(1)}°`;
+        transformReadout.textContent = `${pairMode === 'copy' ? 'Copied' : 'Independent'} · Rotation ${angleDeg.toFixed(1)}°`;
       } else {
         for (const p of dotsB) transformed.push(scaledPoint(p.x, p.y, scaleFactor));
-        transformReadout.textContent = `Scale ${scaleFactor.toFixed(3)}`;
+        transformReadout.textContent = `${pairMode === 'copy' ? 'Copied' : 'Independent'} · Scale ${scaleFactor.toFixed(3)}`;
       }
 
       drawDots(transformed, size, '#8fb8ff', overlayAlpha);
@@ -447,6 +461,10 @@
 
     modeEl.addEventListener('change', () => {
       updateModeUI();
+    });
+
+    pairModeEl.addEventListener('change', () => {
+      regenerate();
     });
 
     [pointCountEl, dotSizeEl, opacityBEl, angleEl, scaleEl, speedEl].forEach(el => {
