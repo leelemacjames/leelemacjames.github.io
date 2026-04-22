@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Y11 Physics Revision · Google Forms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --surface: #13151a;
+    --surface2: #1a1d24;
+    --border: #242830;
+    --gold: #c8a96e;
+    --gold-dim: #8a6f3f;
+    --text: #d4cfc7;
+    --text-dim: #6b6560;
+    --text-muted: #3e3b37;
+
+    --mech: #c8a96e;
+    --mech-dim: rgba(200,169,110,0.08);
+    --mech-mid: rgba(200,169,110,0.18);
+    --waves: #7ab8c8;
+    --waves-dim: rgba(122,184,200,0.08);
+    --waves-mid: rgba(122,184,200,0.18);
+    --buoy: #a8c89e;
+    --buoy-dim: rgba(168,200,158,0.08);
+    --buoy-mid: rgba(168,200,158,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* Filter tabs */
+  .filter-bar {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-right: 0.4rem;
+  }
+
+  .tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .tab:hover { border-color: var(--gold-dim); color: var(--text); }
+  .tab.active-all { border-color: var(--gold); color: var(--gold); background: rgba(200,169,110,0.06); }
+  .tab.active-mechanics { border-color: var(--mech); color: var(--mech); background: var(--mech-dim); }
+  .tab.active-waves { border-color: var(--waves); color: var(--waves); background: var(--waves-dim); }
+  .tab.active-buoyancy { border-color: var(--buoy); color: var(--buoy); background: var(--buoy-dim); }
+
+  /* Section headers */
+  .section {
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.15s; }
+  .section:nth-child(3) { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.4rem;
+    letter-spacing: 0.01em;
+  }
+
+  .section-title.mech { color: var(--mech); }
+  .section-title.waves { color: var(--waves); }
+  .section-title.buoy { color: var(--buoy); }
+
+  .section-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card.mech::before { background: var(--mech-dim); }
+  .card.waves::before { background: var(--waves-dim); }
+  .card.buoy::before { background: var(--buoy-dim); }
+
+  .card:hover { border-color: var(--border); transform: translateY(-1px); }
+  .card.mech:hover { border-color: var(--mech); box-shadow: 0 4px 24px rgba(200,169,110,0.1); }
+  .card.waves:hover { border-color: var(--waves); box-shadow: 0 4px 24px rgba(122,184,200,0.1); }
+  .card.buoy:hover { border-color: var(--buoy); box-shadow: 0 4px 24px rgba(168,200,158,0.1); }
+  .card:hover::before { opacity: 1; }
+
+  .card-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card.mech .card-code { color: var(--gold-dim); }
+  .card.waves .card-code { color: rgba(122,184,200,0.5); }
+  .card.buoy .card-code { color: rgba(168,200,158,0.5); }
+
+  .card-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.05rem;
+    line-height: 1.25;
+    color: var(--text);
+    flex: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-launch {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card:hover .card-launch { }
+  .card.mech:hover .card-launch { color: var(--mech); }
+  .card.waves:hover .card-launch { color: var(--waves); }
+  .card.buoy:hover .card-launch { color: var(--buoy); }
+
+  .arrow { transition: transform 0.2s; }
+  .card:hover .arrow { transform: translateX(3px); }
+
+  /* Hidden state */
+  .section.hidden { display: none; }
+  .card.hidden { display: none; }
+
+  /* Footer */
+  footer {
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  footer em { color: var(--gold-dim); font-style: normal; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <p class="eyebrow">Dwight School London · Y11 Physics Revision</p>
+    <h1>Set Quizzes <em>&amp; Diagnostics</em></h1>
+    <p class="subtitle">53 forms · mechanics · waves · buoyancy &amp; fluids</p>
+  </header>
+
+  <div class="filter-bar">
+    <span class="filter-label">Topic</span>
+    <button class="tab active-all" onclick="filter('all')">All</button>
+    <button class="tab" onclick="filter('mechanics')">Mechanics</button>
+    <button class="tab" onclick="filter('waves')">Waves</button>
+    <button class="tab" onclick="filter('buoyancy')">Buoyancy &amp; Fluids</button>
+  </div>
+
+  <!-- MECHANICS -->
+  <div class="section" id="sec-mechanics">
+    <div class="section-header">
+      <span class="section-title mech">Mechanics</span>
+      <span class="section-count">24 forms</span>
+    </div>
+    <div class="grid" id="grid-mechanics"></div>
+  </div>
+
+  <!-- WAVES -->
+  <div class="section" id="sec-waves">
+    <div class="section-header">
+      <span class="section-title waves">Waves</span>
+      <span class="section-count">22 forms</span>
+    </div>
+    <div class="grid" id="grid-waves"></div>
+  </div>
+
+  <!-- BUOYANCY -->
+  <div class="section" id="sec-buoyancy">
+    <div class="section-header">
+      <span class="section-title buoy">Buoyancy &amp; Fluids</span>
+      <span class="section-count">7 forms</span>
+    </div>
+    <div class="grid" id="grid-buoyancy"></div>
+  </div>
+
+  <footer>
+    <div>Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · <em>LeeMcCullochJames</em></div>
+    <div>Y11 Physics · Dwight School London · 2025</div>
+  </footer>
+
+</div>
+
+<script>
+const data = [
+  {"code":"2M2","label":"FBD · Free Fall","url":"https://forms.gle/DVMXReHzRY3YAQDQ6","category":"mechanics"},
+  {"code":"2M3","label":"Free Fall · Terminal Velocity","url":"https://forms.gle/RowP8UfLNZ8JWPaZ8","category":"mechanics"},
+  {"code":"2M4","label":"Moments","url":"https://forms.gle/QxdRKf1pk6B5AG2t9","category":"mechanics"},
+  {"code":"2M5","label":"Statics · Resolving Forces","url":"https://forms.gle/XMMVuEmQ43Bdz9Qb7","category":"mechanics"},
+  {"code":"2M6","label":"Free Fall · g","url":"https://forms.gle/AthLoVLxFnoeraFo7","category":"mechanics"},
+  {"code":"2M7","label":"Accelerated Motion","url":"https://forms.gle/CjAYzRAfa6giigCN7","category":"mechanics"},
+  {"code":"2M8","label":"Accelerated Motion II","url":"https://forms.gle/gyxFwoHBPQhakfbM7","category":"mechanics"},
+  {"code":"2M9","label":"Falling · g Short","url":"https://forms.gle/3wprUdaq9pSmScg3A","category":"mechanics"},
+  {"code":"2M10","label":"Net Forces","url":"https://forms.gle/1HnCM6S7oTFYRfhT6","category":"mechanics"},
+  {"code":"2M11","label":"Free Body Diagrams","url":"https://forms.gle/fsRMxjboJXKbkD5n6","category":"mechanics"},
+  {"code":"2M15","label":"Galileo Variations","url":"https://forms.gle/BcMMDoKsTgxyp7gP9","category":"mechanics"},
+  {"code":"2M18","label":"Broad Mechanics","url":"https://forms.gle/ftM8UCR69Es2rfJ17","category":"mechanics"},
+  {"code":"2M19","label":"Broad Mechanics · No Hints","url":"https://forms.gle/cY2B69SrYmSjFXsc6","category":"mechanics"},
+  {"code":"2M20","label":"Power · Work · Energy Conservation","url":"https://forms.gle/2HUF2LmjbVsr5bgg8","category":"mechanics"},
+  {"code":"2M22","label":"Work · Energy · Power","url":"https://forms.gle/GTdJpyKJRDuhrHcUA","category":"mechanics"},
+  {"code":"2M28","label":"Resolving Forces · Upthrust","url":"https://forms.gle/Xjf6Xjorkr8nFfPeA","category":"mechanics"},
+  {"code":"2M29","label":"F = ma","url":"https://forms.gle/mw67QkQj3fQRCeBz8","category":"mechanics"},
+  {"code":"2M30","label":"Newton 2 · Weight · Forces","url":"https://forms.gle/rGb6bXgy2TALmNmDA","category":"mechanics"},
+  {"code":"2M31","label":"Simple SUVAT","url":"https://forms.gle/uucbpzr2jEYWgQ9R6","category":"mechanics"},
+  {"code":"2M33","label":"Motion Graphs","url":"https://forms.gle/z4xR34CCatjv16k7A","category":"mechanics"},
+  {"code":"2M35","label":"SUVAT · Uniform Acceleration","url":"https://forms.gle/n2CJF3qUYTMPVqou7","category":"mechanics"},
+  {"code":"2M36","label":"Velocity &amp; Acceleration","url":"https://forms.gle/9Rq7M4R2EeFQbi7F8","category":"mechanics"},
+  {"code":"2M38","label":"Projectile Motion","url":"https://forms.gle/oQaDCCa34wEgoV4u7","category":"mechanics"},
+  {"code":"2M40","label":"Newton's Second Law","url":"https://forms.gle/fz9oCodLS5mtmwMF9","category":"mechanics"},
+  {"code":"4W0","label":"Wave Basics","url":"https://forms.gle/ZSYR8sgPr4fFHGbX9","category":"waves"},
+  {"code":"4W1","label":"Oscillation · SHM I","url":"https://forms.gle/GMtuDwFHu3h5eSQD8","category":"waves"},
+  {"code":"4W2","label":"Oscillation · SHM II","url":"https://forms.gle/5fxzvXpXFpCP2bGf7","category":"waves"},
+  {"code":"4W3","label":"Travelling Waves I","url":"https://forms.gle/pLEaioJM7hMS3BTc8","category":"waves"},
+  {"code":"4W4","label":"Progressive Waves","url":"https://forms.gle/ivr3i9gUij8JZQY36","category":"waves"},
+  {"code":"4W5","label":"Wave Behaviour I","url":"https://forms.gle/6StFAPJERTGcnaR99","category":"waves"},
+  {"code":"4W6","label":"Standing Waves I","url":"https://forms.gle/Mwac1X2rvsm11zTa6","category":"waves"},
+  {"code":"4W7","label":"Standing Waves II","url":"https://forms.gle/Tf9NseaepZP8Uti99","category":"waves"},
+  {"code":"4W8","label":"Travelling Waves II","url":"https://forms.gle/7vtKiWNQAwAxRJtZ7","category":"waves"},
+  {"code":"4W9","label":"Wave Behaviour II","url":"https://forms.gle/CiXWsfctgi2aXt8g9","category":"waves"},
+  {"code":"4W10","label":"Geometric Optics","url":"https://forms.gle/ZfhMTTXznbkJ9ZA78","category":"waves"},
+  {"code":"4W11","label":"Waves · Interference · Refraction","url":"https://forms.gle/as7zaf9Bq7FdgG7w8","category":"waves"},
+  {"code":"4W12","label":"Wavefronts","url":"https://forms.gle/TJHVmBL7uMP1rv7BA","category":"waves"},
+  {"code":"4W13","label":"Harmonics · Resonance","url":"https://forms.gle/2jvSyv6UgpX6agzq6","category":"waves"},
+  {"code":"4W14","label":"Light · Diffraction","url":"https://forms.gle/s1w8yY1gYisM4hnJ9","category":"waves"},
+  {"code":"4W16","label":"Standing Waves on Strings","url":"https://forms.gle/xmbzWoS9F82k9DWx7","category":"waves"},
+  {"code":"4W17","label":"Standing Waves in Tubes","url":"https://forms.gle/LgFYKMMzA8je77K96","category":"waves"},
+  {"code":"4W18","label":"Phase &amp; Superposition","url":"https://forms.gle/iFUfp2oaDVDHSyYx7","category":"waves"},
+  {"code":"4W19","label":"Waves &amp; Phase","url":"https://forms.gle/tiBp4p8Kfi6JV3ax6","category":"waves"},
+  {"code":"4W20","label":"Wave Properties · λ, T, A, φ","url":"https://forms.gle/WQDZsMBSs2KjxpiRA","category":"waves"},
+  {"code":"4W21","label":"Types of Waves","url":"https://forms.gle/Nv1ouM332wKNuAUW9","category":"waves"},
+  {"code":"4W22","label":"Refraction · Diffraction · Polarisation","url":"https://forms.gle/CBcEC89otGWrHJsZ9","category":"waves"},
+  {"code":"UT3","label":"Density","url":"https://forms.gle/Ci6iZ5RvZLVC8unA8","category":"buoyancy"},
+  {"code":"UT4","label":"Upthrust · Introduction","url":"https://forms.gle/CFLEzp27iNDnz5nn8","category":"buoyancy"},
+  {"code":"UT5b","label":"Pressure B","url":"https://forms.gle/MWUSDywGbiVQZo488","category":"buoyancy"},
+  {"code":"UT5c","label":"Pressure C","url":"https://forms.gle/WsJvYCp9MYz9e1NE8","category":"buoyancy"},
+  {"code":"UT6","label":"Upthrust","url":"https://forms.gle/Qx2ywt3RvwCabyU28","category":"buoyancy"},
+  {"code":"UT6b","label":"Archimedes' Principle","url":"https://forms.gle/TAPTim4BuHdx7pZ9A","category":"buoyancy"},
+  {"code":"UT8","label":"Drag Force","url":"https://forms.gle/EmnGtbaTRtvakz4n9","category":"buoyancy"}
+];
+
+const classMap = { mechanics: 'mech', waves: 'waves', buoyancy: 'buoy' };
+
+function buildCards() {
+  ['mechanics','waves','buoyancy'].forEach(cat => {
+    const grid = document.getElementById('grid-' + cat);
+    data.filter(d => d.category === cat).forEach(d => {
+      const a = document.createElement('a');
+      a.href = d.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'card ' + classMap[cat];
+      a.setAttribute('data-cat', cat);
+      a.innerHTML = `
+        <span class="card-code">${d.code}</span>
+        <span class="card-label">${d.label}</span>
+        <span class="card-launch">Open form <span class="arrow">→</span></span>
+      `;
+      grid.appendChild(a);
+    });
+  });
+}
+
+let current = 'all';
+const tabs = document.querySelectorAll('.tab');
+
+function filter(cat) {
+  current = cat;
+  tabs.forEach(t => {
+    t.className = 'tab';
+    if (t.textContent.toLowerCase().replace(/[^a-z]/g,'').includes(cat.replace('all','all'))) {
+      // handled below
+    }
+  });
+
+  // Reset all tabs
+  tabs.forEach(t => t.className = 'tab');
+  // Active tab
+  const labels = { all: 'all', mechanics: 'mechanics', waves: 'waves', buoyancy: 'buoyancy' };
+  tabs.forEach(t => {
+    const txt = t.textContent.toLowerCase();
+    if (cat === 'all' && txt === 'all') t.className = 'tab active-all';
+    if (cat === 'mechanics' && txt.includes('mechanic')) t.className = 'tab active-mechanics';
+    if (cat === 'waves' && txt.includes('wave')) t.className = 'tab active-waves';
+    if (cat === 'buoyancy' && txt.includes('buoy')) t.className = 'tab active-buoyancy';
+  });
+
+  ['mechanics','waves','buoyancy'].forEach(c => {
+    const sec = document.getElementById('sec-' + c);
+    if (cat === 'all' || cat === c) {
+      sec.classList.remove('hidden');
+    } else {
+      sec.classList.add('hidden');
+    }
+  });
+}
+
+buildCards();
+</script>
+</body>
+</html>
