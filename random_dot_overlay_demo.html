@@ -179,8 +179,28 @@
         </div>
       </div>
 
+      <div class="control-block">
+        <div class="row">
+          <label for="angularMode">Angular / scale mode</label>
+          <select id="angularMode">
+            <option value="rotate">Rotate field B</option>
+            <option value="scale">Scale field B</option>
+            <option value="rotate-scale">Rotate + scale</option>
+            <option value="none">No angular/scale transform</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="translationMode">Translation mode</label>
+          <select id="translationMode">
+            <option value="translate">Translate field B</option>
+            <option value="none">No translation</option>
+          </select>
+        </div>
+      </div>
+
       <div class="footer-note">
-        Translation is independent. You can rotate, scale, and translate field B at the same time. The strongest visual effects usually appear when field B is a copy of field A.
+        Angular/scale transformation and translation are controlled separately. The strongest visual effects usually appear when field B is a copy of field A.
       </div>
     </section>
 
@@ -211,6 +231,8 @@
     const ctx = canvas.getContext('2d');
 
     const pairModeEl = document.getElementById('pairMode');
+    const angularModeEl = document.getElementById('angularMode');
+    const translationModeEl = document.getElementById('translationMode');
     const pointCountEl = document.getElementById('pointCount');
     const dotSizeEl = document.getElementById('dotSize');
     const opacityBEl = document.getElementById('opacityB');
@@ -284,10 +306,20 @@
     }
 
     function transformPoint(p) {
-      let q = rotateAboutCentre(p.x, p.y, parseFloat(angleEl.value) * Math.PI / 180);
-      q = scaleAboutCentre(q.x, q.y, parseFloat(scaleEl.value));
-      q.x += parseFloat(translateXEl.value);
-      q.y += parseFloat(translateYEl.value);
+      let q = { x: p.x, y: p.y };
+      const angularMode = angularModeEl.value;
+      const translationMode = translationModeEl.value;
+
+      if (angularMode === 'rotate' || angularMode === 'rotate-scale') {
+        q = rotateAboutCentre(q.x, q.y, parseFloat(angleEl.value) * Math.PI / 180);
+      }
+      if (angularMode === 'scale' || angularMode === 'rotate-scale') {
+        q = scaleAboutCentre(q.x, q.y, parseFloat(scaleEl.value));
+      }
+      if (translationMode === 'translate') {
+        q.x += parseFloat(translateXEl.value);
+        q.y += parseFloat(translateYEl.value);
+      }
       return q;
     }
 
@@ -319,7 +351,18 @@
       drawDots(dotsA, size, '#d8dee9', 0.95);
       drawDots(dotsB.map(transformPoint), size, '#8fb8ff', opacityB);
 
-      transformReadout.textContent = `${pairModeEl.value === 'copy' ? 'Copied' : 'Independent'} · rotate ${angle.toFixed(1)}° · scale ${scale.toFixed(3)} · shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      const pairText = pairModeEl.value === 'copy' ? 'Copied' : 'Independent';
+      const angularText = angularModeEl.value === 'rotate'
+        ? `rotate ${angle.toFixed(1)}°`
+        : angularModeEl.value === 'scale'
+        ? `scale ${scale.toFixed(3)}`
+        : angularModeEl.value === 'rotate-scale'
+        ? `rotate ${angle.toFixed(1)}° · scale ${scale.toFixed(3)}`
+        : `no angular/scale transform`;
+      const translationText = translationModeEl.value === 'translate'
+        ? `shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`
+        : `no translation`;
+      transformReadout.textContent = `${pairText} · ${angularText} · ${translationText}`;
 
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -350,30 +393,38 @@
       const dt = (timestamp - lastTime) / 1000;
       lastTime = timestamp;
       const speed = parseFloat(speedEl.value);
+      const angularMode = angularModeEl.value;
+      const translationMode = translationModeEl.value;
 
-      let angle = parseFloat(angleEl.value);
-      angle += directionAngle * speed * 18 * dt;
-      if (angle > 30) { angle = 30; directionAngle = -1; }
-      if (angle < -30) { angle = -30; directionAngle = 1; }
-      angleEl.value = angle.toFixed(2);
+      if (angularMode === 'rotate' || angularMode === 'rotate-scale') {
+        let angle = parseFloat(angleEl.value);
+        angle += directionAngle * speed * 18 * dt;
+        if (angle > 30) { angle = 30; directionAngle = -1; }
+        if (angle < -30) { angle = -30; directionAngle = 1; }
+        angleEl.value = angle.toFixed(2);
+      }
 
-      let scale = parseFloat(scaleEl.value);
-      scale += directionScale * speed * 0.02 * dt;
-      if (scale > 1.02) { scale = 1.02; directionScale = -1; }
-      if (scale < 0.90) { scale = 0.90; directionScale = 1; }
-      scaleEl.value = scale.toFixed(3);
+      if (angularMode === 'scale' || angularMode === 'rotate-scale') {
+        let scale = parseFloat(scaleEl.value);
+        scale += directionScale * speed * 0.02 * dt;
+        if (scale > 1.02) { scale = 1.02; directionScale = -1; }
+        if (scale < 0.90) { scale = 0.90; directionScale = 1; }
+        scaleEl.value = scale.toFixed(3);
+      }
 
-      let tx = parseFloat(translateXEl.value);
-      tx += directionX * speed * 60 * dt;
-      if (tx > 200) { tx = 200; directionX = -1; }
-      if (tx < -200) { tx = -200; directionX = 1; }
-      translateXEl.value = tx.toFixed(0);
+      if (translationMode === 'translate') {
+        let tx = parseFloat(translateXEl.value);
+        tx += directionX * speed * 60 * dt;
+        if (tx > 200) { tx = 200; directionX = -1; }
+        if (tx < -200) { tx = -200; directionX = 1; }
+        translateXEl.value = tx.toFixed(0);
 
-      let ty = parseFloat(translateYEl.value);
-      ty += directionY * speed * 40 * dt;
-      if (ty > 200) { ty = 200; directionY = -1; }
-      if (ty < -200) { ty = -200; directionY = 1; }
-      translateYEl.value = ty.toFixed(0);
+        let ty = parseFloat(translateYEl.value);
+        ty += directionY * speed * 40 * dt;
+        if (ty > 200) { ty = 200; directionY = -1; }
+        if (ty < -200) { ty = -200; directionY = 1; }
+        translateYEl.value = ty.toFixed(0);
+      }
 
       updateLabels();
       draw();
@@ -381,6 +432,8 @@
     }
 
     pairModeEl.addEventListener('change', regenerate);
+    angularModeEl.addEventListener('change', draw);
+    translationModeEl.addEventListener('change', draw);
     pointCountEl.addEventListener('input', () => {
       updateLabels();
       regenerate();
