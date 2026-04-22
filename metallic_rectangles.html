@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metallic Rectangles — Golden · Silver</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fafaf7; --surface:#fff; --surface2:#f3f1ea;
+  --border:#d8d4c8; --gold:#a07820; --gold-dim:#c9a84c;
+  --text:#1a1a18; --text-dim:#5a5750; --text-faint:#a09c90;
+  --phi-col:#b05030; --sil-col:#2a5fa8; --rem-col:#2e7d52;
+  --sq-fill:rgba(160,120,32,0.18); --sq-stroke:#a07820;
+  --sq2-fill:rgba(42,95,168,0.18); --sq2-stroke:#2a5fa8;
+  --rem-fill:rgba(46,125,82,0.15); --rem-stroke:#2e7d52;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+/* NAV */
+.site-nav{width:100%;background:var(--surface);border-bottom:2px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:0;z-index:100;}
+.nav-tab{padding:.75rem 1.8rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);cursor:pointer;border:none;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;background:none;}
+.nav-tab:hover{color:var(--text-dim);}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.page{display:none;width:100%;max-width:1200px;}
+.page.active{display:block;}
+
+.sec-hdr{padding:1.8rem 2.5rem 1rem;border-bottom:1px solid var(--border);}
+.sec-hdr h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.03em;}
+.sec-hdr h2 em{color:var(--gold);font-style:italic;}
+.sec-hdr .tag{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--text-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:.3rem;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.4rem;}
+.card-lbl{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.45rem;}
+.card p{font-size:.9rem;color:var(--text-dim);line-height:1.7;}
+
+/* ── SUBDIVISION PAGE ── */
+.sub-layout{display:grid;grid-template-columns:260px 1fr;gap:1.5rem;padding:1.5rem 2rem;}
+
+.ctrl-block{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;margin-bottom:.8rem;}
+.ctrl-lbl{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.35rem;display:block;}
+select,.num-in{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:.4rem .6rem;font-family:'EB Garamond',serif;font-size:.9rem;appearance:none;}
+input[type=range]{width:100%;accent-color:var(--gold);cursor:pointer;margin-top:.2rem;}
+.range-val{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--gold);margin-top:.1rem;}
+
+.btn{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.45rem .9rem;cursor:pointer;transition:all .2s;}
+.btn:hover{background:var(--gold);color:#fff;}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem;}
+
+.pill-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem;}
+.pill{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.7rem 1rem;}
+.pill strong{display:block;font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--text-faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;}
+.pill span{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;}
+
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.82rem;color:var(--text-dim);margin-bottom:.6rem;}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+
+canvas{width:100%;height:auto;display:block;border:1px solid var(--border);border-radius:4px;background:#fff;}
+
+.eq-box{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-dim);line-height:2;margin-top:.4rem;}
+
+/* ── COLLINEARITY PAGE ── */
+.coll-layout{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:1.5rem 2.5rem;}
+.coll-layout svg{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:4px;}
+
+/* ── DIAGONAL CRITERION PAGE ── */
+.diag-layout{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;padding:1.5rem 2.5rem;}
+.gold-controls{display:flex;flex-direction:column;gap:.8rem;}
+.slider-wrap{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;}
+.slider-wrap label{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);display:block;margin-bottom:.4rem;}
+.slider-val{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--gold);margin-top:.3rem;}
+.ratio-display,.criterion-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.9rem 1.2rem;}
+.criterion-box.pass{border-color:#2e7d52;background:#f0f8f3;}
+.criterion-box.fail{border-color:var(--phi-col);background:#fdf3f0;}
+.criterion-box .clbl{font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem;}
+.criterion-box.pass .clbl{color:#2e7d52;}
+.criterion-box.fail .clbl{color:var(--phi-col);}
+.criterion-box .cresult{font-family:'JetBrains Mono',monospace;font-size:.68rem;margin-top:.35rem;}
+.criterion-box.pass .cresult{color:#2e7d52;}
+.criterion-box.fail .cresult{color:var(--phi-col);}
+.de-row{display:flex;align-items:center;gap:.5rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text-dim);padding:.18rem 0;}
+
+footer{width:100%;padding:.9rem 2.5rem;border-top:1px solid var(--border);display:flex;justify-content:center;margin-top:2rem;}
+footer p{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--text-faint);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <button class="nav-tab active" onclick="showPage('sub',this)">§1 · Rectangle Subdivision</button>
+  <button class="nav-tab" onclick="showPage('coll',this)">§2 · Collinearity Diagram</button>
+  <button class="nav-tab" onclick="showPage('diag',this)">§3 · Diagonal Criterion</button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     §1  SUBDIVISION EXPLORER
+══════════════════════════════════════════ -->
+<div class="page active" id="pg-sub">
+  <div class="sec-hdr">
+    <h2>Rectangle <em>Self-Similarity</em> Under Cutting</h2>
+    <div class="tag">Golden · Silver · remove squares and the same shape remains</div>
+  </div>
+
+  <div style="padding:1rem 2rem .5rem">
+    <div class="card">
+      <div class="card-lbl">The core idea</div>
+      <p>A <strong>golden rectangle</strong> (ratio φ ≈ 1.618) reproduces itself when one square is removed from it. A <strong>silver rectangle</strong> (ratio δ = 1+√2 ≈ 2.414) reproduces itself when two adjacent squares are removed. Both are metallic numbers — solutions to x = n + 1/x for integers n. The self-similar cut can be repeated indefinitely.</p>
+    </div>
+  </div>
+
+  <div class="sub-layout">
+    <!-- LEFT: controls -->
+    <div>
+      <div class="ctrl-block">
+        <span class="ctrl-lbl">Rectangle family</span>
+        <select id="family" onchange="draw()">
+          <option value="golden">Golden  (φ = (1+√5)/2)</option>
+          <option value="silver">Silver  (δ = 1+√2)</option>
+          <option value="compare">Compare both</option>
+        </select>
+      </div>
+
+      <div class="ctrl-block">
+        <span class="ctrl-lbl">Short side (px) — <span id="baseLabel">200</span></span>
+        <input type="range" id="baseWidth" min="80" max="280" step="2" value="200" oninput="document.getElementById('baseLabel').textContent=this.value;draw()">
+      </div>
+
+      <div class="ctrl-block">
+        <span class="ctrl-lbl">Subdivision depth — <span id="depthLabel">1</span></span>
+        <input type="range" id="depth" min="1" max="9" step="1" value="1" oninput="document.getElementById('depthLabel').textContent=this.value;manualDepth=null;draw()">
+        <div class="btn-row">
+          <button class="btn" onclick="stepDepth()">+ One cut ›</button>
+          <button class="btn" onclick="resetDepth()">Reset</button>
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <span class="ctrl-lbl">Show diagonal trace</span>
+        <select id="showTrace" onchange="draw()">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+
+      <div class="ctrl-block">
+        <span class="ctrl-lbl">Labels</span>
+        <select id="showLabels" onchange="draw()">
+          <option value="on">Show labels</option>
+          <option value="off">Hide</option>
+        </select>
+      </div>
+
+      <button class="btn" style="width:100%;margin-top:.3rem" onclick="downloadCanvas()">Download PNG ↓</button>
+
+      <div class="ctrl-block" style="margin-top:.8rem">
+        <div class="eq-box" id="eq-box">φ = 1 + 1/φ &nbsp;→&nbsp; φ² = φ + 1</div>
+        <p style="font-size:.84rem;color:var(--text-dim);margin-top:.5rem;line-height:1.6" id="rule-text">Remove one square of side equal to the short side — the remaining rectangle is golden again, scaled by 1/φ.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: canvas -->
+    <div>
+      <div class="pill-row">
+        <div class="pill"><strong>Ratio</strong><span id="r-ratio">φ ≈ 1.6180</span></div>
+        <div class="pill"><strong>Cut rule</strong><span id="r-cut">Remove 1 square</span></div>
+        <div class="pill"><strong>Scale per step</strong><span id="r-scale">1/φ ≈ 0.6180</span></div>
+        <div class="pill"><strong>Characteristic eq.</strong><span id="r-eq">x² = x + 1</span></div>
+      </div>
+
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--sq-stroke);opacity:.7"></span>removed square(s)</span>
+        <span><span class="swatch" style="background:var(--rem-stroke);opacity:.7"></span>remaining rectangle</span>
+        <span><span class="swatch" style="background:#9080c0;opacity:.7"></span>diagonal trace</span>
+      </div>
+
+      <canvas id="canvas" width="840" height="560"></canvas>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--text-faint);margin-top:.4rem;text-align:center" id="caption"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     §2  COLLINEARITY DIAGRAM
+══════════════════════════════════════════ -->
+<div class="page" id="pg-coll">
+  <div class="sec-hdr">
+    <h2>The <em>Collinearity</em> Property</h2>
+    <div class="tag">The metallic ratio is the unique x for which the three corner points are collinear</div>
+  </div>
+  <div style="padding:1rem 2.5rem .5rem">
+    <div class="card">
+      <div class="card-lbl">What the diagram shows</div>
+      <p>Stack the L-shaped pair of rectangles corner-to-corner as shown. For a generic x the diagonal of the combined figure does <em>not</em> pass through the interior corner. The golden ratio φ is the <em>unique</em> positive value of x for which all three labelled vertices are exactly collinear — the same line threads through every junction. The silver ratio δ = 1+√2 plays the same role in the analogous 2-square construction.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:2rem;padding:1.5rem 2.5rem;">
+    <!-- Golden collinearity SVG -->
+    <div>
+      <div class="card-lbl" style="padding:.4rem 0 .5rem;color:var(--phi-col);font-size:.65rem">Golden ratio φ = (1+√5)/2 ≈ 1.618 — one-square collinearity</div>
+      <svg id="coll-phi-svg" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:4px;"></svg>
+      <div style="display:flex;align-items:center;gap:1rem;margin-top:.6rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text-faint);white-space:nowrap">x =</span>
+        <input type="range" id="phi-slider" min="1.0" max="2.5" step="0.01" value="1.618" oninput="drawColl()" style="flex:1;accent-color:var(--phi-col)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--phi-col);min-width:44px;text-align:right" id="phi-val">1.618</span>
+        <button class="btn" onclick="document.getElementById('phi-slider').value=((1+Math.sqrt(5))/2).toFixed(3);drawColl()">→ φ</button>
+      </div>
+    </div>
+
+    <!-- Silver collinearity SVG -->
+    <div>
+      <div class="card-lbl" style="padding:.4rem 0 .5rem;color:var(--sil-col);font-size:.65rem">Silver ratio δ = 1+√2 ≈ 2.414 — two-square collinearity</div>
+      <svg id="coll-sil-svg" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:4px;"></svg>
+      <div style="display:flex;align-items:center;gap:1rem;margin-top:.6rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text-faint);white-space:nowrap">x =</span>
+        <input type="range" id="sil-slider" min="1.5" max="3.5" step="0.01" value="2.414" oninput="drawColl()" style="flex:1;accent-color:var(--sil-col)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--sil-col);min-width:44px;text-align:right" id="sil-val">2.414</span>
+        <button class="btn" onclick="document.getElementById('sil-slider').value=(1+Math.sqrt(2)).toFixed(3);drawColl()">→ δ</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:.5rem 2.5rem 2rem">
+    <div class="card">
+      <div class="card-lbl">The algebraic condition</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:.5rem">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text-dim);line-height:2.2;">
+            Golden (1 square): collinearity requires<br>
+            slope of left segment = slope of right segment<br>
+            <strong style="color:var(--phi-col)">x/1 = 1/x &nbsp;⟹&nbsp; x² = x+1 &nbsp;⟹&nbsp; x = φ</strong>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text-dim);line-height:2.2;">
+            Silver (2 squares): collinearity requires<br>
+            the same slope condition with doubled base<br>
+            <strong style="color:var(--sil-col)">x/1 = 1/(x−1) &nbsp;⟹&nbsp; x² = 2x+1 &nbsp;⟹&nbsp; x = δ</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     §3  DIAGONAL CRITERION
+══════════════════════════════════════════ -->
+<div class="page" id="pg-diag">
+  <div class="sec-hdr">
+    <h2>The <em>Diagonal</em> Criterion — H = h₁ + h₂</h2>
+    <div class="tag">When does the large diagonal equal the sum of the two sub-diagonals?</div>
+  </div>
+  <div style="padding:1rem 2.5rem .5rem">
+    <div class="card">
+      <div class="card-lbl">Setup</div>
+      <p>Divide a rectangle of total width <strong>x+1</strong> and height <strong>1</strong> at position x. The left sub-diagonal h₁ = √(1+x²), the right sub-diagonal h₂ = √(1+(x−1)²), the large diagonal H = √(x²+(1+x)²). The golden ratio φ is the unique positive solution to <strong>H = h₁ + h₂</strong>.</p>
+    </div>
+  </div>
+
+  <div class="diag-layout">
+    <!-- SVG canvas -->
+    <div>
+      <canvas id="diag-canvas" width="680" height="320" style="width:100%;height:auto;display:block;border:1px solid var(--border);border-radius:4px;background:#fff;"></canvas>
+      <div style="margin-top:.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.9rem 1.2rem;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.5rem;">Diagonal lengths</div>
+        <div class="de-row"><span style="color:var(--sq-stroke);min-width:50px;font-weight:500">h₁</span><span style="color:var(--text-faint)">=</span><span style="color:var(--text-dim);font-size:.85rem">√(1+x²)</span><span style="color:var(--text-faint)">=</span><span style="color:var(--sq-stroke)" id="dh1">—</span></div>
+        <div class="de-row"><span style="color:var(--sil-col);min-width:50px;font-weight:500">h₂</span><span style="color:var(--text-faint)">=</span><span style="color:var(--text-dim);font-size:.85rem">√(1+(x−1)²)</span><span style="color:var(--text-faint)">=</span><span style="color:var(--sil-col)" id="dh2">—</span></div>
+        <div class="de-row" style="border-top:1px solid var(--border);padding-top:.25rem;margin-top:.15rem"><span style="color:#555;min-width:50px;font-weight:500">H</span><span style="color:var(--text-faint)">=</span><span style="color:var(--text-dim);font-size:.85rem">√(x²+(1+x)²)</span><span style="color:var(--text-faint)">=</span><span style="color:#555" id="dH">—</span></div>
+        <div class="de-row" style="border-top:1px dashed var(--border);padding-top:.25rem;margin-top:.15rem"><span style="color:#9080c0;min-width:50px;font-weight:500">h₁+h₂</span><span style="color:var(--text-faint)">=</span><span style="color:#9080c0" id="dsum">—</span><span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;margin-left:.5rem" id="deq-sign"></span></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="gold-controls">
+      <div class="slider-wrap">
+        <label>Width ratio x</label>
+        <input type="range" id="x-slider" min="0.5" max="3.0" step="0.01" value="1.2" oninput="updateDiag()" style="accent-color:var(--gold)">
+        <div class="slider-val" id="x-display">x = 1.20</div>
+      </div>
+
+      <div class="ratio-display">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:.3rem">x : 1 ratio</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300" id="ratio-val">1.20 : 1</div>
+      </div>
+
+      <div class="criterion-box fail" id="crit-box">
+        <div class="clbl">H = h₁ + h₂ ?</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text-dim)" id="crit-val">—</div>
+        <div class="cresult" id="crit-result">Adjust x toward φ ≈ 1.618</div>
+      </div>
+
+      <div class="criterion-box fail" id="self-box">
+        <div class="clbl">x² = x+1 (golden)?</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text-dim)" id="self-val">—</div>
+        <div class="cresult" id="self-result">At φ: x²−x−1 = 0</div>
+      </div>
+
+      <button class="btn" onclick="document.getElementById('x-slider').value=((1+Math.sqrt(5))/2).toFixed(3);updateDiag()">Snap to φ ≈ 1.618 ›</button>
+      <button class="btn" onclick="document.getElementById('x-slider').value=(1+Math.sqrt(2)).toFixed(3);updateDiag()">Try δ = 1+√2 ≈ 2.414 ›</button>
+      <button class="btn" onclick="document.getElementById('x-slider').value='1.325';updateDiag()">Try plastic ≈ 1.325 ›</button>
+
+      <div class="card" style="margin-top:.2rem">
+        <div class="card-lbl">The algebra</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--text-dim);line-height:1.9">
+          H = h₁+h₂ implies H² = h₁²+h₂²+2h₁h₂<br>
+          Expanding: h₁h₂ = 2x−1<br>
+          At φ: x² = x+1, which is the only solution.<br>
+          φ = (1+√5)/2 ≈ 1.6180
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 2.5rem 2rem">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem;">
+      <div class="card"><div class="card-lbl">Golden φ</div><p style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--phi-col)">(1+√5)/2 ≈ 1.618</p><p style="margin-top:.4rem">x²=x+1. Remove 1 square; similar rectangle remains.</p></div>
+      <div class="card"><div class="card-lbl">Silver δ</div><p style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--sil-col)">1+√2 ≈ 2.414</p><p style="margin-top:.4rem">x²=2x+1. Remove 2 squares; similar rectangle remains. Related to the regular octagon.</p></div>
+      <div class="card"><div class="card-lbl">Plastic ρ</div><p style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--rem-col)">≈ 1.3247</p><p style="margin-top:.4rem">x³=x+1. Diagonal condition for the L-shaped pair. Smallest Pisot number.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer><p>Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · LeeMcCullochJames</p></footer>
+
+<script>
+const PHI = (1+Math.sqrt(5))/2;
+const SILVER = 1+Math.sqrt(2);
+
+// ── NAV ──────────────────────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+// §1  SUBDIVISION CANVAS
+// ══════════════════════════════════════════════════════════
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let manualDepth=null;
+
+function stepDepth(){
+  const el=document.getElementById('depth');
+  const cur=manualDepth===null?parseInt(el.value):manualDepth;
+  manualDepth=Math.min(cur+1,9);
+  document.getElementById('depthLabel').textContent=manualDepth;
+  draw();
+}
+function resetDepth(){
+  manualDepth=1;
+  document.getElementById('depthLabel').textContent=1;
+  document.getElementById('depth').value=1;
+  draw();
+}
+function downloadCanvas(){
+  const a=document.createElement('a');
+  a.download='metallic_rectangles.png';
+  a.href=canvas.toDataURL();
+  a.click();
+}
+
+function setInfo(fam){
+  const eqEl=document.getElementById('eq-box');
+  const rtEl=document.getElementById('rule-text');
+  const rr=document.getElementById('r-ratio');
+  const rc=document.getElementById('r-cut');
+  const rs=document.getElementById('r-scale');
+  const re=document.getElementById('r-eq');
+  const cap=document.getElementById('caption');
+
+  if(fam==='golden'){
+    eqEl.innerHTML='φ = 1 + 1/φ &nbsp;&nbsp;⟹&nbsp;&nbsp; φ² = φ + 1';
+    rtEl.textContent='Remove one square equal to the short side — the remaining rectangle is golden, scaled by 1/φ ≈ 0.618.';
+    rr.textContent='φ ≈ '+PHI.toFixed(5);
+    rc.textContent='Remove 1 square';
+    rs.textContent='1/φ ≈ '+(1/PHI).toFixed(5);
+    re.textContent='x² = x + 1';
+    cap.textContent='Each stage removes one golden square. The spiral converges on the golden pole.';
+  } else if(fam==='silver'){
+    eqEl.innerHTML='δ = 2 + 1/δ &nbsp;&nbsp;⟹&nbsp;&nbsp; δ² = 2δ + 1';
+    rtEl.textContent='Remove two adjacent squares equal to the short side — the remaining rectangle is silver, scaled by 1/δ ≈ 0.414.';
+    rr.textContent='δ ≈ '+SILVER.toFixed(5);
+    rc.textContent='Remove 2 squares';
+    rs.textContent='1/δ ≈ '+(1/SILVER).toFixed(5);
+    re.textContent='x² = 2x + 1';
+    cap.textContent='Each stage removes two silver squares. The spiral converges on the silver pole.';
+  } else {
+    eqEl.innerHTML='Golden: φ = 1+1/φ &nbsp;|&nbsp; Silver: δ = 2+1/δ';
+    rtEl.textContent='Shown side by side. Golden removes 1 square per step; silver removes 2.';
+    rr.textContent='φ and δ';
+    rc.textContent='1 vs 2 squares';
+    rs.textContent='1/φ vs 1/δ';
+    re.textContent='x²=x+1 vs x²=2x+1';
+    cap.textContent='Left: golden. Right: silver. Same logic, different integer in the self-similarity rule.';
+  }
+}
+
+function clr(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#fff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function lbl(text,x,y,col,sz){
+  ctx.save();
+  ctx.fillStyle=col||'#a09c90';
+  ctx.font=(sz||11)+'px JetBrains Mono,monospace';
+  ctx.fillText(text,x,y);
+  ctx.restore();
+}
+
+function drawRectOutline(x,y,w,h,stroke,lw){
+  ctx.save();
+  ctx.strokeStyle=stroke||'#c8c4b8';
+  ctx.lineWidth=lw||1.5;
+  ctx.strokeRect(x,y,w,h);
+  ctx.restore();
+}
+
+function fillBlock(x,y,w,h,fill,stroke,lw){
+  ctx.save();
+  ctx.fillStyle=fill;
+  ctx.strokeStyle=stroke;
+  ctx.lineWidth=lw||1.5;
+  ctx.fillRect(x,y,w,h);
+  ctx.strokeRect(x,y,w,h);
+  ctx.restore();
+}
+
+// Draw golden subdivision from top-left (x,y), short side s, n levels
+// Orientation alternates: start horizontal (long side is horizontal)
+function drawGolden(ox,oy,s,n,showLabels,showTrace,firstLabel){
+  let x=ox, y=oy, w=PHI*s, h=s;
+  let horiz=true; // long axis is horizontal
+
+  // trace points for spiral (centres of squares)
+  const tracePoints=[];
+
+  for(let i=0;i<n;i++){
+    // Draw full current rectangle outline
+    drawRectOutline(x,y,w,h,'#d8d4c8',1);
+
+    if(horiz){
+      // square on the left, width=h=s, height=h=s
+      const sqW=h;
+      fillBlock(x,y,sqW,h,'rgba(160,120,32,0.18)','#a07820',1.5);
+      if(showLabels && i===0) lbl(firstLabel||'square 1',x+4,y+14,'#a07820',10);
+      // remaining rectangle
+      const remX=x+sqW, remW=w-sqW;
+      fillBlock(remX,y,remW,h,'rgba(46,125,82,0.1)','#2e7d52',1.5);
+      if(showLabels && i===0) lbl('similar rect',remX+4,y+14,'#2e7d52',10);
+
+      tracePoints.push({cx:x+sqW/2, cy:y+h/2});
+
+      // Next: the remaining rect rotated — new short=remW, next is vertical
+      x=remX; w=remW; // stays same height
+      // new short side is remW, long side is h which = remW*PHI ✓
+      // but now long axis is vertical: swap
+      // Actually golden rect has w/h=PHI, remaining has h/remW=PHI
+      // so rotate: new rect is remW wide, h tall → h = PHI*remW
+      // For next iteration, treat short=remW, and it will be vertical
+      const newS=remW;
+      // new w and h after rotation for next step
+      w=newS; h=PHI*newS; // but we need to update position too
+      // Actually: remaining rect has width=remW, height=h (original short side)
+      // In next step it's vertical: short=remW, long=h=PHI*remW... but h already = PHI*remW since original s=h
+      // So just swap orientation tracking
+      horiz=false;
+      w=remW; h=PHI*remW;
+      // reposition: next rect fills remX,y with size remW x PHI*remW
+      // but original remaining was remX,y,remW,h... h IS PHI*remW ✓
+      x=remX; y=oy; // y stays same for horizontal layout first step
+      // Hmm this gets complicated with rotation. Use simpler approach below.
+    }
+  }
+  // Use spiral approach instead — cleaner
+}
+
+// Clean recursive spiral approach
+function drawGoldenSpiral(ox,oy,shortSide,n,showLabels,showTrace){
+  // Each step: current rect has long dim = ratio*short, short dim = short
+  // We keep track of orientation: 0=long-horiz, 1=long-vert, 2=long-horiz-flipped, 3=long-vert-flipped
+  let x=ox, y=oy, s=shortSide, ratio=PHI;
+  let orient=0; // 0: long horizontal, rect is s×(ratio*s) wait — w=ratio*s, h=s
+  // Simplified: just do left-to-right subdivision always (non-rotating) for clarity
+
+  let cx=ox, cy=oy, cw=ratio*s, ch=s;
+  const tracePoints=[];
+
+  for(let i=0;i<n;i++){
+    drawRectOutline(cx,cy,cw,ch,'#c8c4b8',1.2);
+
+    // Square = ch × ch on the left
+    const sqSide=ch;
+    fillBlock(cx,cy,sqSide,sqSide,'rgba(160,120,32,0.22)','#a07820',1.5);
+    if(showLabels) lbl('■ '+(i+1),cx+4,cy+13,'#a07820',9);
+
+    const remX=cx+sqSide;
+    const remW=cw-sqSide; // = (PHI-1)*ch = (1/PHI)*ch
+    fillBlock(remX,cy,remW,sqSide,'rgba(46,125,82,0.13)','#2e7d52',1.5);
+
+    tracePoints.push({cx:cx+sqSide/2, cy:cy+sqSide/2});
+    tracePoints.push({cx:remX+remW/2, cy:cy+sqSide/2});
+
+    // next iteration: remaining rect remX,cy,remW,sqSide — but now it's "tall"
+    // We'll just keep going left-to-right (non-spiral) — still shows the self-similarity
+    cx=remX;
+    cw=remW;
+    ch=sqSide;
+    // Check: remW/sqSide = (PHI*s - s)/s = PHI-1 = 1/PHI — correct, same ratio
+  }
+
+  if(showTrace && tracePoints.length>1){
+    ctx.save();
+    ctx.strokeStyle='rgba(144,128,192,0.7)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    tracePoints.forEach((p,i)=>i===0?ctx.moveTo(p.cx,p.cy):ctx.lineTo(p.cx,p.cy));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    tracePoints.forEach(p=>{
+      ctx.save();ctx.fillStyle='rgba(144,128,192,0.8)';
+      ctx.beginPath();ctx.arc(p.cx,p.cy,3,0,2*Math.PI);ctx.fill();ctx.restore();
+    });
+  }
+}
+
+function drawSilverSpiral(ox,oy,shortSide,n,showLabels,showTrace){
+  let cx=ox, cy=oy, cw=SILVER*shortSide, ch=shortSide;
+  const tracePoints=[];
+
+  for(let i=0;i<n;i++){
+    drawRectOutline(cx,cy,cw,ch,'#c8c4b8',1.2);
+
+    // Two squares
+    const sqSide=ch;
+    fillBlock(cx,cy,sqSide,sqSide,'rgba(42,95,168,0.18)','#2a5fa8',1.5);
+    fillBlock(cx+sqSide,cy,sqSide,sqSide,'rgba(42,95,168,0.18)','#2a5fa8',1.5);
+    if(showLabels) lbl('■■ '+(i+1),cx+4,cy+13,'#2a5fa8',9);
+
+    const remX=cx+2*sqSide;
+    const remW=cw-2*sqSide;
+    fillBlock(remX,cy,remW,sqSide,'rgba(46,125,82,0.13)','#2e7d52',1.5);
+
+    tracePoints.push({cx:cx+sqSide,cy:cy+sqSide/2});
+    tracePoints.push({cx:remX+remW/2,cy:cy+sqSide/2});
+
+    cx=remX; cw=remW; ch=sqSide;
+  }
+
+  if(showTrace && tracePoints.length>1){
+    ctx.save();
+    ctx.strokeStyle='rgba(144,128,192,0.7)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    tracePoints.forEach((p,i)=>i===0?ctx.moveTo(p.cx,p.cy):ctx.lineTo(p.cx,p.cy));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    tracePoints.forEach(p=>{
+      ctx.save();ctx.fillStyle='rgba(144,128,192,0.8)';
+      ctx.beginPath();ctx.arc(p.cx,p.cy,3,0,2*Math.PI);ctx.fill();ctx.restore();
+    });
+  }
+}
+
+function draw(){
+  clr();
+  const fam=document.getElementById('family').value;
+  const s=parseInt(document.getElementById('baseWidth').value);
+  const n=manualDepth===null?parseInt(document.getElementById('depth').value):manualDepth;
+  const trace=document.getElementById('showTrace').value==='on';
+  const labels=document.getElementById('showLabels').value==='on';
+
+  setInfo(fam);
+
+  if(fam==='golden'){
+    lbl('Golden  φ ≈ '+PHI.toFixed(4),20,30,'#a07820',12);
+    drawGoldenSpiral(20,50,s,n,labels,trace);
+  } else if(fam==='silver'){
+    lbl('Silver  δ ≈ '+SILVER.toFixed(4),20,30,'#2a5fa8',12);
+    drawSilverSpiral(20,50,s,n,labels,trace);
+  } else {
+    // Compare: golden on top half, silver on bottom half
+    const sSmall=Math.min(s,100);
+    lbl('Golden  φ ≈ '+PHI.toFixed(4),20,30,'#a07820',12);
+    drawGoldenSpiral(20,50,sSmall,n,labels,trace);
+    lbl('Silver  δ ≈ '+SILVER.toFixed(4),20,310,'#2a5fa8',12);
+    drawSilverSpiral(20,330,sSmall,n,labels,trace);
+  }
+}
+
+draw();
+
+// ══════════════════════════════════════════════════════════
+// §2  COLLINEARITY DIAGRAMS
+// ══════════════════════════════════════════════════════════
+// Each diagram shows the L-shaped pair of rectangles and the diagonal line.
+// For the golden case: two rectangles of size x×1 (left) and 1×x (right/top stacked)
+// The three vertices that must be collinear are:
+//   P1 = bottom-left of left rect
+//   P2 = inner corner (junction between the two rects)
+//   P3 = top-right of right rect
+// The diagonal passes through P1 and P3; collinearity means P2 lies ON that line.
+//
+// Layout in SVG coords (y down):
+// Left rect: x wide, 1 tall → scaled by U px per unit
+// Right rect: 1 wide, x tall → stacked to right and above
+
+function drawCollSVG(svgId, x, nSquares){
+  const svg=document.getElementById(svgId);
+  svg.innerHTML='';
+  const isPhi = nSquares===1;
+  const col = isPhi ? '#b05030' : '#2a5fa8';
+  const ratio = isPhi ? x : x; // the x value (both use same slider logic)
+
+  // Scale: SVG is 380×280, margins 30px
+  const U=60; // px per math unit for height=1
+  const margin=40;
+
+  // Geometry (in math units, y up):
+  // Left rect:  width=ratio, height=1   → bottom-left at (0,0)
+  // Right rect: width=1, height=ratio   → sits to the right; bottom at (ratio,0), so it goes up by ratio
+
+  // SVG coords (y down), origin at bottom-left of left rect:
+  // SVG origin placed at margin from left, and y such that the top of right rect fits
+  const svgH=280, svgW=380;
+  const maxMathW = ratio+1;
+  const maxMathH = Math.max(1, ratio); // right rect is ratio tall
+  const scaleX = Math.min(U, (svgW-2*margin)/maxMathW);
+  const scaleY = Math.min(U, (svgH-2*margin)/maxMathH);
+  const sc = Math.min(scaleX, scaleY, 70);
+
+  // SVG origin of math (0,0) = bottom-left of left rect
+  const ox = margin;
+  const oy = svgH - margin; // bottom of left rect in SVG (y increases downward)
+
+  function mx(mathX){ return ox + mathX*sc; }
+  function my(mathY){ return oy - mathY*sc; } // flip y
+
+  const ns='http://www.w3.org/2000/svg';
+  function mkEl(tag,attrs){
+    const e=document.createElementNS(ns,tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    return e;
+  }
+
+  // ── Left rectangle: ratio × 1 ──
+  const lx=mx(0), ly=my(1), lw=ratio*sc, lh=1*sc;
+  svg.appendChild(mkEl('rect',{x:lx,y:ly,width:lw,height:lh,fill:col+'18',stroke:col,'stroke-width':1.5}));
+
+  // ── Right rectangle: 1 × ratio (stacked above, right of left rect) ──
+  // In the PDF: right rect sits at x=ratio to x=ratio+1, y=0 to y=ratio (going up)
+  // but the diagram shows them with shared bottom edge at y=0 for right rect bottom
+  // and left rect height=1, so right rect bottom is at y=0 and top is at y=ratio
+  const rx=mx(ratio), ry=my(ratio), rw=1*sc, rh=ratio*sc;
+  svg.appendChild(mkEl('rect',{x:rx,y:ry,width:rw,height:rh,fill:col+'28',stroke:col,'stroke-width':1.5}));
+
+  // ── Three collinearity vertices ──
+  // P1 = bottom-left of left rect = (0,0)
+  // P2 = inner corner = (ratio,1) — top-right of left rect = bottom-left of right rect... 
+  //      wait: left rect goes from y=0 to y=1; right rect from y=0 to y=ratio
+  //      inner corner where they share: (ratio, 1) for golden (ratio=phi, right rect height=phi)
+  //      Actually the junction in the PDF is at (ratio, 1) — top of left rect, bottom of right block
+  //      but right rect bottom is y=0... hmm.
+  // Let me re-read the PDF: the two rects share a horizontal bottom and the right rect 
+  // goes from y=0 UP to y=ratio. Left rect goes from y=0 to y=1 (shorter).
+  // Inner corner = top-right of LEFT rect = (ratio, 1)
+  // P1 = bottom-left = (0, 0)
+  // P2 = top-right of left rect = (ratio, 1)   ← this is what must be ON the diagonal
+  // P3 = top-right of right rect = (ratio+1, ratio)
+  const P1={mx:0,         my_:0};
+  const P2={mx:ratio,     my_:1};
+  const P3={mx:ratio+1,   my_:ratio};
+
+  // ── Diagonal line P1→P3 ──
+  svg.appendChild(mkEl('line',{
+    x1:mx(P1.mx),y1:my(P1.my_),
+    x2:mx(P3.mx),y2:my(P3.my_),
+    stroke:'#333','stroke-width':1.8
+  }));
+
+  // ── P2 projected onto P1P3 line to show alignment ──
+  const dx=P3.mx-P1.mx, dy_=P3.my_-P1.my_;
+  const lineLen=Math.sqrt(dx*dx+dy_*dy_);
+  const ux=dx/lineLen, uy=dy_/lineLen;
+  const projT = (P2.mx-P1.mx)*ux + (P2.my_-P1.my_)*uy;
+  const projX = P1.mx + projT*ux;
+  const projY_ = P1.my_ + projT*uy;
+  const isCollinear = Math.abs(P2.mx - projX) < 0.001 && Math.abs(P2.my_ - projY_) < 0.001;
+
+  // Draw actual P2 point
+  const p2col = isCollinear ? '#2e7d52' : col;
+  svg.appendChild(mkEl('circle',{cx:mx(P2.mx),cy:my(P2.my_),r:5,fill:p2col}));
+  // Draw projected point on line (shows the gap)
+  if(!isCollinear){
+    svg.appendChild(mkEl('circle',{cx:mx(projX),cy:my(projY_),r:4,fill:'none',stroke:col,'stroke-width':1.5,'stroke-dasharray':'3 2'}));
+    svg.appendChild(mkEl('line',{
+      x1:mx(P2.mx),y1:my(P2.my_),
+      x2:mx(projX),y2:my(projY_),
+      stroke:col,'stroke-width':1.2,'stroke-dasharray':'4 3'
+    }));
+  }
+
+  // Draw P1 and P3
+  svg.appendChild(mkEl('circle',{cx:mx(P1.mx),cy:my(P1.my_),r:5,fill:'#333'}));
+  svg.appendChild(mkEl('circle',{cx:mx(P3.mx),cy:my(P3.my_),r:5,fill:'#333'}));
+
+  // ── Dimension labels ──
+  function txt(x,y,t,fill,sz,anchor){
+    const e=document.createElementNS(ns,'text');
+    e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('fill',fill||'#5a5750');
+    e.setAttribute('font-size',sz||11);e.setAttribute('font-family','Cormorant Garamond,serif');
+    e.setAttribute('text-anchor',anchor||'middle');e.textContent=t;return e;
+  }
+  // bottom axis: label "ratio" and "1"
+  svg.appendChild(txt(mx(ratio/2),my(-0.08),'x',col,13));
+  svg.appendChild(txt(mx(ratio+0.5),my(-0.08),'1',col,13));
+  // left axis: label "1" and "x"
+  svg.appendChild(txt(mx(-0.12),my(0.5),'1',col,12,'end'));
+  svg.appendChild(txt(mx(ratio+1.12),my(ratio/2),'x',col,12,'start'));
+
+  // collinear/not label
+  const vertexErr = Math.sqrt((P2.mx-projX)**2+(P2.my_-projY_)**2);
+  const gapPx = vertexErr*sc;
+  const statusCol = gapPx<2 ? '#2e7d52' : col;
+  const statusTxt = gapPx<2 ? '✓ collinear at x='+x.toFixed(3) : 'gap = '+gapPx.toFixed(1)+'px at x='+x.toFixed(3);
+  svg.appendChild(txt(svgW/2,svgH-8,statusTxt,statusCol,10));
+
+  // x equation
+  const xLabel = isPhi
+    ? 'x² = x+1 → x = φ = (1+√5)/2'
+    : 'x² = 2x+1 → x = δ = 1+√2';
+  svg.appendChild(txt(svgW/2,20,xLabel,'#5a5750',10));
+}
+
+function drawColl(){
+  const phiX=parseFloat(document.getElementById('phi-slider').value);
+  const silX=parseFloat(document.getElementById('sil-slider').value);
+  document.getElementById('phi-val').textContent=phiX.toFixed(3);
+  document.getElementById('sil-val').textContent=silX.toFixed(3);
+  drawCollSVG('coll-phi-svg', phiX, 1);
+  drawCollSVG('coll-sil-svg', silX, 2);
+}
+drawColl();
+
+// ══════════════════════════════════════════════════════════
+// §3  DIAGONAL CRITERION CANVAS
+// ══════════════════════════════════════════════════════════
+const dcanvas=document.getElementById('diag-canvas');
+const dctx=dcanvas.getContext('2d');
+
+function updateDiag(){
+  const xv=parseFloat(document.getElementById('x-slider').value);
+  document.getElementById('x-display').textContent='x = '+xv.toFixed(2);
+  document.getElementById('ratio-val').textContent=xv.toFixed(3)+' : 1';
+
+  const h1=Math.sqrt(1+xv*xv);
+  const h2=Math.sqrt(1+(xv-1)*(xv-1));
+  const H=Math.sqrt(xv*xv+(1+xv)*(1+xv));
+  const sum=h1+h2;
+  const diff=H-sum;
+
+  document.getElementById('dh1').textContent=h1.toFixed(4);
+  document.getElementById('dh2').textContent=h2.toFixed(4);
+  document.getElementById('dH').textContent=H.toFixed(4);
+  document.getElementById('dsum').textContent=sum.toFixed(4);
+
+  const eqEl=document.getElementById('deq-sign');
+  const tol=0.012;
+  if(Math.abs(diff)<tol){eqEl.textContent='= H ✓';eqEl.style.color='#2e7d52';}
+  else if(sum<H){eqEl.textContent='< H';eqEl.style.color='#b05030';}
+  else{eqEl.textContent='> H';eqEl.style.color='#b05030';}
+
+  const cb=document.getElementById('crit-box');
+  document.getElementById('crit-val').textContent='H − (h₁+h₂) = '+(diff>=0?'+':'')+diff.toFixed(4);
+  if(Math.abs(diff)<tol){cb.className='criterion-box pass';document.getElementById('crit-result').textContent='Golden criterion satisfied: x ≈ φ';}
+  else{cb.className='criterion-box fail';document.getElementById('crit-result').textContent=diff>0?'H > sum — x too small':'H < sum — x too large';}
+
+  const sb=document.getElementById('self-box');
+  const sdiff=xv*xv-(xv+1);
+  document.getElementById('self-val').textContent='x²−x−1 = '+sdiff.toFixed(4);
+  if(Math.abs(sdiff)<0.04){sb.className='criterion-box pass';document.getElementById('self-result').textContent='x² = x+1 holds: x = φ ✓';}
+  else{sb.className='criterion-box fail';document.getElementById('self-result').textContent=sdiff>0?'x too large':'x too small';}
+
+  drawDiagCanvas(xv, h1, h2, H);
+}
+
+function drawDiagCanvas(xv, h1, h2, H){
+  const W=dcanvas.width, Ht=dcanvas.height;
+  dctx.clearRect(0,0,W,Ht);
+  dctx.fillStyle='#fff';
+  dctx.fillRect(0,0,W,Ht);
+
+  const GY0=60, GH=140;
+  const GX0=50, MAX_W=560;
+  const scale=MAX_W/(3+1);
+  const totalW=(xv+1)*scale;
+  const xDivPx=GX0+xv*scale;
+  const rightH=xv*scale;
+  const rightY=GY0+GH-rightH;
+
+  // Left sub-rect: x wide, 1 tall
+  dctx.save();
+  dctx.fillStyle='rgba(160,120,32,0.1)';
+  dctx.strokeStyle='#a07820';
+  dctx.lineWidth=1.5;
+  dctx.fillRect(GX0,GY0,xv*scale,GH);
+  dctx.strokeRect(GX0,GY0,xv*scale,GH);
+  dctx.restore();
+
+  // Right sub-rect: 1 wide, x tall
+  dctx.save();
+  dctx.fillStyle='rgba(42,95,168,0.1)';
+  dctx.strokeStyle='#2a5fa8';
+  dctx.lineWidth=1.5;
+  dctx.fillRect(xDivPx,rightY,1*scale,rightH);
+  dctx.strokeRect(xDivPx,rightY,1*scale,rightH);
+  dctx.restore();
+
+  // Divider
+  dctx.save();
+  dctx.strokeStyle='#d8d4c8';
+  dctx.setLineDash([4,3]);
+  dctx.beginPath();dctx.moveTo(xDivPx,GY0);dctx.lineTo(xDivPx,GY0+GH);dctx.stroke();
+  dctx.setLineDash([]);
+  dctx.restore();
+
+  function diag(x1,y1,x2,y2,col,lbl2,sw,dash){
+    dctx.save();
+    dctx.strokeStyle=col;dctx.lineWidth=sw||2;
+    if(dash)dctx.setLineDash(dash);
+    dctx.beginPath();dctx.moveTo(x1,y1);dctx.lineTo(x2,y2);dctx.stroke();
+    dctx.setLineDash([]);
+    if(lbl2){
+      dctx.fillStyle=col;
+      dctx.font='bold 11px JetBrains Mono,monospace';
+      const mx=(x1+x2)/2, my2=(y1+y2)/2;
+      dctx.fillText(lbl2,mx+6,my2-4);
+    }
+    dctx.restore();
+  }
+
+  // h1: bottom-left of left rect to top-right of left rect
+  diag(GX0,GY0+GH,xDivPx,GY0,'#a07820','h₁');
+  // h2: bottom-left of right rect to top-right of right rect
+  diag(xDivPx,GY0+GH,xDivPx+1*scale,rightY,'#2a5fa8','h₂');
+  // H: overall diagonal from bottom-left to top-right of right rect
+  const oTop=Math.min(GY0,rightY);
+  diag(GX0,GY0+GH,xDivPx+1*scale,oTop,'#555','H',2,[6,3]);
+
+  // Labels
+  function tx(text,x,y,col,sz,align){
+    dctx.save();dctx.fillStyle=col||'#a09c90';
+    dctx.font=(sz||10)+'px JetBrains Mono,monospace';
+    dctx.textAlign=align||'center';
+    dctx.fillText(text,x,y);dctx.restore();
+  }
+  tx('x',GX0+xv*scale/2,GY0+GH+20,'#a07820',12);
+  tx('1',xDivPx+0.5*scale,GY0+GH+20,'#2a5fa8',12);
+  tx('1',GX0-18,GY0+GH/2,'#a09c90',11);
+  if(xv>1.05) tx('x',xDivPx+1*scale+18,(GY0+GH+rightY)/2,'#2a5fa8',11);
+
+  // φ tick
+  const phiPx=GX0+PHI*scale;
+  if(phiPx<GX0+MAX_W){
+    dctx.save();dctx.strokeStyle='#c05080';dctx.lineWidth=1.5;
+    dctx.beginPath();dctx.moveTo(phiPx,GY0+GH+8);dctx.lineTo(phiPx,GY0+GH+22);dctx.stroke();
+    dctx.fillStyle='#c05080';dctx.font='10px JetBrains Mono,monospace';dctx.textAlign='center';
+    dctx.fillText('φ',phiPx,GY0+GH+32);dctx.restore();
+  }
+}
+
+updateDiag();
+</script>
+</body>
+</html>
