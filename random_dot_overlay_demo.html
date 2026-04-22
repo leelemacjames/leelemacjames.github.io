@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Dot Overlay Demo</title>
+  <style>
+    :root {
+      --bg: #0e1116;
+      --panel: #171c24;
+      --panel-2: #1f2631;
+      --text: #e9eef7;
+      --muted: #a7b1c2;
+      --accent: #8fb8ff;
+      --line: #2a3342;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 8px;
+    }
+
+    p, label, .small, button, select, input {
+      font-size: 0.95rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .control-block {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .row:last-child {
+      margin-bottom: 0;
+    }
+
+    .inline {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    select,
+    button,
+    input[type="number"] {
+      background: #0f141b;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    button {
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      background: #222c39;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .canvas-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .canvas-wrap {
+      background: #0a0e14;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      background: #05080d;
+    }
+
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .pill {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .pill strong {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 920px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel controls">
+      <div>
+        <h1>Random dot overlay</h1>
+        <p class="muted">
+          Two independent random-dot fields are drawn on the same canvas. The second field can be rotated or rescaled.
+          This lets you explore alignment effects, drift, and moiré-like structure from random point overlays.
+        </p>
+      </div>
+
+      <div class="control-block">
+        <div class="row">
+          <label for="mode">Transformation mode</label>
+          <select id="mode">
+            <option value="rotate">Rotate field B</option>
+            <option value="scale">Scale field B</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="pointCount">Number of dots per field: <span id="pointCountLabel">1200</span></label>
+          <input id="pointCount" type="range" min="100" max="5000" step="100" value="1200" />
+        </div>
+
+        <div class="row">
+          <label for="dotSize">Dot size: <span id="dotSizeLabel">1.6</span> px</label>
+          <input id="dotSize" type="range" min="0.5" max="4" step="0.1" value="1.6" />
+        </div>
+
+        <div class="row">
+          <label for="opacityB">Overlay opacity for field B: <span id="opacityBLabel">0.75</span></label>
+          <input id="opacityB" type="range" min="0.1" max="1" step="0.05" value="0.75" />
+        </div>
+      </div>
+
+      <div class="control-block">
+        <div class="row" id="rotationControls">
+          <label for="angle">Rotation angle: <span id="angleLabel">0.0</span>°</label>
+          <input id="angle" type="range" min="-30" max="30" step="0.1" value="0" />
+        </div>
+
+        <div class="row" id="scaleControls" style="display:none;">
+          <label for="scale">Scale factor: <span id="scaleLabel">0.960</span></label>
+          <input id="scale" type="range" min="0.85" max="1.05" step="0.001" value="0.96" />
+        </div>
+
+        <div class="row">
+          <label for="speed">Animation speed: <span id="speedLabel">0.40</span></label>
+          <input id="speed" type="range" min="0.01" max="2" step="0.01" value="0.40" />
+        </div>
+      </div>
+
+      <div class="control-block">
+        <div class="button-row">
+          <button id="regenBtn">Regenerate dots</button>
+          <button id="toggleAnimBtn">Start animation</button>
+          <button id="resetBtn">Reset transform</button>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        In rotate mode, field B is spun about the canvas centre. In scale mode, field B is dilated about the same centre,
+        so 0.96 means a 4% contraction relative to field A.
+      </div>
+    </section>
+
+    <section class="canvas-panel">
+      <div class="readout">
+        <div class="pill">
+          <strong>Field A</strong>
+          Fixed random dots
+        </div>
+        <div class="pill">
+          <strong>Field B</strong>
+          <span id="transformReadout">Rotation 0.0°</span>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="820" height="820"></canvas>
+      </div>
+
+      <div class="footer-note">
+        The two fields are drawn in different tones so the transformed overlay is visible. For a cleaner visual analogy to printed transparencies,
+        you can push the dot size down and the count up.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const modeEl = document.getElementById('mode');
+    const pointCountEl = document.getElementById('pointCount');
+    const dotSizeEl = document.getElementById('dotSize');
+    const opacityBEl = document.getElementById('opacityB');
+    const angleEl = document.getElementById('angle');
+    const scaleEl = document.getElementById('scale');
+    const speedEl = document.getElementById('speed');
+
+    const pointCountLabel = document.getElementById('pointCountLabel');
+    const dotSizeLabel = document.getElementById('dotSizeLabel');
+    const opacityBLabel = document.getElementById('opacityBLabel');
+    const angleLabel = document.getElementById('angleLabel');
+    const scaleLabel = document.getElementById('scaleLabel');
+    const speedLabel = document.getElementById('speedLabel');
+    const transformReadout = document.getElementById('transformReadout');
+
+    const rotationControls = document.getElementById('rotationControls');
+    const scaleControls = document.getElementById('scaleControls');
+
+    const regenBtn = document.getElementById('regenBtn');
+    const toggleAnimBtn = document.getElementById('toggleAnimBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const CX = W / 2;
+    const CY = H / 2;
+
+    let dotsA = [];
+    let dotsB = [];
+    let animating = false;
+    let lastTime = 0;
+    let animationDirection = 1;
+
+    function randomDots(count) {
+      const arr = [];
+      for (let i = 0; i < count; i++) {
+        arr.push({
+          x: Math.random() * W,
+          y: Math.random() * H
+        });
+      }
+      return arr;
+    }
+
+    function regenerate() {
+      const count = parseInt(pointCountEl.value, 10);
+      dotsA = randomDots(count);
+      dotsB = randomDots(count);
+      draw();
+    }
+
+    function rotatedPoint(x, y, angleRad) {
+      const dx = x - CX;
+      const dy = y - CY;
+      const c = Math.cos(angleRad);
+      const s = Math.sin(angleRad);
+      return {
+        x: CX + dx * c - dy * s,
+        y: CY + dx * s + dy * c
+      };
+    }
+
+    function scaledPoint(x, y, factor) {
+      return {
+        x: CX + (x - CX) * factor,
+        y: CY + (y - CY) * factor
+      };
+    }
+
+    function drawDots(points, size, color, alpha) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = alpha;
+      for (const p of points) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function draw() {
+      const mode = modeEl.value;
+      const size = parseFloat(dotSizeEl.value);
+      const overlayAlpha = parseFloat(opacityBEl.value);
+      const angleDeg = parseFloat(angleEl.value);
+      const scaleFactor = parseFloat(scaleEl.value);
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#05080d';
+      ctx.fillRect(0, 0, W, H);
+
+      drawDots(dotsA, size, '#d8dee9', 0.95);
+
+      const transformed = [];
+      if (mode === 'rotate') {
+        const rad = angleDeg * Math.PI / 180;
+        for (const p of dotsB) transformed.push(rotatedPoint(p.x, p.y, rad));
+        transformReadout.textContent = `Rotation ${angleDeg.toFixed(1)}°`;
+      } else {
+        for (const p of dotsB) transformed.push(scaledPoint(p.x, p.y, scaleFactor));
+        transformReadout.textContent = `Scale ${scaleFactor.toFixed(3)}`;
+      }
+
+      drawDots(transformed, size, '#8fb8ff', overlayAlpha);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(CX, 0);
+      ctx.lineTo(CX, H);
+      ctx.moveTo(0, CY);
+      ctx.lineTo(W, CY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function animate(timestamp) {
+      if (!animating) return;
+      if (!lastTime) lastTime = timestamp;
+      const dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      const speed = parseFloat(speedEl.value);
+      const mode = modeEl.value;
+
+      if (mode === 'rotate') {
+        let angle = parseFloat(angleEl.value);
+        angle += animationDirection * speed * 18 * dt;
+        if (angle > 30) {
+          angle = 30;
+          animationDirection = -1;
+        }
+        if (angle < -30) {
+          angle = -30;
+          animationDirection = 1;
+        }
+        angleEl.value = angle.toFixed(2);
+        angleLabel.textContent = angle.toFixed(1);
+      } else {
+        let scale = parseFloat(scaleEl.value);
+        scale += animationDirection * speed * 0.02 * dt;
+        if (scale > 1.02) {
+          scale = 1.02;
+          animationDirection = -1;
+        }
+        if (scale < 0.90) {
+          scale = 0.90;
+          animationDirection = 1;
+        }
+        scaleEl.value = scale.toFixed(3);
+        scaleLabel.textContent = scale.toFixed(3);
+      }
+
+      draw();
+      requestAnimationFrame(animate);
+    }
+
+    function updateLabels() {
+      pointCountLabel.textContent = pointCountEl.value;
+      dotSizeLabel.textContent = parseFloat(dotSizeEl.value).toFixed(1);
+      opacityBLabel.textContent = parseFloat(opacityBEl.value).toFixed(2);
+      angleLabel.textContent = parseFloat(angleEl.value).toFixed(1);
+      scaleLabel.textContent = parseFloat(scaleEl.value).toFixed(3);
+      speedLabel.textContent = parseFloat(speedEl.value).toFixed(2);
+    }
+
+    function updateModeUI() {
+      const mode = modeEl.value;
+      rotationControls.style.display = mode === 'rotate' ? 'grid' : 'none';
+      scaleControls.style.display = mode === 'scale' ? 'grid' : 'none';
+      draw();
+    }
+
+    modeEl.addEventListener('change', () => {
+      updateModeUI();
+    });
+
+    [pointCountEl, dotSizeEl, opacityBEl, angleEl, scaleEl, speedEl].forEach(el => {
+      el.addEventListener('input', () => {
+        updateLabels();
+        if (el === pointCountEl) {
+          regenerate();
+        } else {
+          draw();
+        }
+      });
+    });
+
+    regenBtn.addEventListener('click', regenerate);
+
+    toggleAnimBtn.addEventListener('click', () => {
+      animating = !animating;
+      toggleAnimBtn.textContent = animating ? 'Stop animation' : 'Start animation';
+      lastTime = 0;
+      if (animating) requestAnimationFrame(animate);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      angleEl.value = '0';
+      scaleEl.value = '0.96';
+      updateLabels();
+      draw();
+    });
+
+    updateLabels();
+    regenerate();
+    updateModeUI();
+  </script>
+</body>
+</html>
