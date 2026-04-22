@@ -192,6 +192,7 @@
           <select id="mode">
             <option value="rotate">Rotate field B</option>
             <option value="scale">Scale field B</option>
+            <option value="translate">Translate field B</option>
           </select>
         </div>
 
@@ -230,8 +231,20 @@
           <input id="scale" type="range" min="0.85" max="1.05" step="0.001" value="0.96" />
         </div>
 
+        <div class="row" id="translateXControls" style="display:none;">
+          <label for="translateX">Horizontal shift: <span id="translateXLabel">0</span> px</label>
+          <input id="translateX" type="range" min="-200" max="200" step="1" value="0" />
+        </div>
+
+        <div class="row" id="translateYControls" style="display:none;">
+          <label for="translateY">Vertical shift: <span id="translateYLabel">0</span> px</label>
+          <input id="translateY" type="range" min="-200" max="200" step="1" value="0" />
+        </div>
+
         <div class="row">
           <label for="speed">Animation speed: <span id="speedLabel">0.40</span></label>
+          <input id="speed" type="range" min="0.01" max="2" step="0.01" value="0.40" />
+        </div>Animation speed: <span id="speedLabel">0.40</span></label>
           <input id="speed" type="range" min="0.01" max="2" step="0.01" value="0.40" />
         </div>
       </div>
@@ -245,8 +258,7 @@
       </div>
 
       <div class="footer-note">
-        In rotate mode, field B is spun about the canvas centre. In scale mode, field B is dilated about the same centre,
-        so 0.96 means a 4% contraction relative to field A. Set field B to be a copy of field A to get the strongest visual effects.
+        In rotate mode, field B is spun about the canvas centre. In scale mode, field B is dilated about the same centre, so 0.96 means a 4% contraction relative to field A. In translate mode, field B is shifted rigidly in the plane. Set field B to be a copy of field A to get the strongest visual effects.
       </div>
     </section>
 
@@ -285,6 +297,8 @@
     const angleEl = document.getElementById('angle');
     const scaleEl = document.getElementById('scale');
     const speedEl = document.getElementById('speed');
+    const translateXEl = document.getElementById('translateX');
+    const translateYEl = document.getElementById('translateY');
 
     const pointCountLabel = document.getElementById('pointCountLabel');
     const dotSizeLabel = document.getElementById('dotSizeLabel');
@@ -292,10 +306,14 @@
     const angleLabel = document.getElementById('angleLabel');
     const scaleLabel = document.getElementById('scaleLabel');
     const speedLabel = document.getElementById('speedLabel');
+    const translateXLabel = document.getElementById('translateXLabel');
+    const translateYLabel = document.getElementById('translateYLabel');
     const transformReadout = document.getElementById('transformReadout');
 
     const rotationControls = document.getElementById('rotationControls');
     const scaleControls = document.getElementById('scaleControls');
+    const translateXControls = document.getElementById('translateXControls');
+    const translateYControls = document.getElementById('translateYControls');
 
     const regenBtn = document.getElementById('regenBtn');
     const toggleAnimBtn = document.getElementById('toggleAnimBtn');
@@ -352,6 +370,13 @@
       };
     }
 
+    function translatedPoint(x, y, tx, ty) {
+      return {
+        x: x + tx,
+        y: y + ty
+      };
+    }
+
     function drawDots(points, size, color, alpha) {
       ctx.save();
       ctx.fillStyle = color;
@@ -371,6 +396,8 @@
       const overlayAlpha = parseFloat(opacityBEl.value);
       const angleDeg = parseFloat(angleEl.value);
       const scaleFactor = parseFloat(scaleEl.value);
+      const tx = parseFloat(translateXEl.value);
+      const ty = parseFloat(translateYEl.value);
 
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = '#05080d';
@@ -380,12 +407,46 @@
 
       const transformed = [];
       if (mode === 'rotate') {
-        const rad = angleDeg * Math.PI / 180;
-        for (const p of dotsB) transformed.push(rotatedPoint(p.x, p.y, rad));
-        transformReadout.textContent = `${pairMode === 'copy' ? 'Copied' : 'Independent'} · Rotation ${angleDeg.toFixed(1)}°`;
+        let angle = parseFloat(angleEl.value);
+        angle += animationDirection * speed * 18 * dt;
+        if (angle > 30) {
+          angle = 30;
+          animationDirection = -1;
+        }
+        if (angle < -30) {
+          angle = -30;
+          animationDirection = 1;
+        }
+        angleEl.value = angle.toFixed(2);
+        angleLabel.textContent = angle.toFixed(1);
+      } else if (mode === 'scale') {
+        let scale = parseFloat(scaleEl.value);
+        scale += animationDirection * speed * 0.02 * dt;
+        if (scale > 1.02) {
+          scale = 1.02;
+          animationDirection = -1;
+        }
+        if (scale < 0.90) {
+          scale = 0.90;
+          animationDirection = 1;
+        }
+        scaleEl.value = scale.toFixed(3);
+        scaleLabel.textContent = scale.toFixed(3);
       } else {
-        for (const p of dotsB) transformed.push(scaledPoint(p.x, p.y, scaleFactor));
-        transformReadout.textContent = `${pairMode === 'copy' ? 'Copied' : 'Independent'} · Scale ${scaleFactor.toFixed(3)}`;
+        let tx = parseFloat(translateXEl.value);
+        tx += animationDirection * speed * 60 * dt;
+        if (tx > 200) {
+          tx = 200;
+          animationDirection = -1;
+        }
+        if (tx < -200) {
+          tx = -200;
+          animationDirection = 1;
+        }
+        translateXEl.value = tx.toFixed(0);
+        translateXLabel.textContent = tx.toFixed(0);
+      } · Shift (${tx.toFixed(0)}, ${ty.toFixed(0)}) px`;
+      } · Scale ${scaleFactor.toFixed(3)}`;
       }
 
       drawDots(transformed, size, '#8fb8ff', overlayAlpha);
@@ -450,12 +511,16 @@
       angleLabel.textContent = parseFloat(angleEl.value).toFixed(1);
       scaleLabel.textContent = parseFloat(scaleEl.value).toFixed(3);
       speedLabel.textContent = parseFloat(speedEl.value).toFixed(2);
+      translateXLabel.textContent = parseFloat(translateXEl.value).toFixed(0);
+      translateYLabel.textContent = parseFloat(translateYEl.value).toFixed(0);
     }
 
     function updateModeUI() {
       const mode = modeEl.value;
       rotationControls.style.display = mode === 'rotate' ? 'grid' : 'none';
       scaleControls.style.display = mode === 'scale' ? 'grid' : 'none';
+      translateXControls.style.display = mode === 'translate' ? 'grid' : 'none';
+      translateYControls.style.display = mode === 'translate' ? 'grid' : 'none';
       draw();
     }
 
@@ -467,7 +532,7 @@
       regenerate();
     });
 
-    [pointCountEl, dotSizeEl, opacityBEl, angleEl, scaleEl, speedEl].forEach(el => {
+    [pointCountEl, dotSizeEl, opacityBEl, angleEl, scaleEl, speedEl, translateXEl, translateYEl].forEach(el => {
       el.addEventListener('input', () => {
         updateLabels();
         if (el === pointCountEl) {
@@ -490,6 +555,8 @@
     resetBtn.addEventListener('click', () => {
       angleEl.value = '0';
       scaleEl.value = '0.96';
+      translateXEl.value = '0';
+      translateYEl.value = '0';
       updateLabels();
       draw();
     });
@@ -500,4 +567,5 @@
   </script>
 </body>
 </html>
+
 
