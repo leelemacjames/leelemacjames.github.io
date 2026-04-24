@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lines Meet Curves — Part I: Integers, Rationals, Irrationals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f13;
+  --bg-card: #16171d;
+  --bg-deep: #0b0c10;
+  --gold: #c9a84c;
+  --gold-dim: #8a7233;
+  --gold-bright: #e8c95a;
+  --text: #d4d0c8;
+  --text-dim: #8a877e;
+  --text-bright: #f0ece0;
+  --rational: #5b9bd5;
+  --rational-bg: rgba(91,155,213,0.12);
+  --irrational: #e07850;
+  --irrational-bg: rgba(224,120,80,0.12);
+  --integer: #6abf8a;
+  --integer-bg: rgba(106,191,138,0.12);
+  --conjugate: #b07de8;
+  --conjugate-bg: rgba(176,125,232,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-weight:400; line-height:1.7; }
+
+.container { max-width:1000px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+h1 { font-family:'Cormorant Garamond',serif; font-weight:700; font-size:clamp(1.8rem,4.5vw,2.8rem); color:var(--gold); text-align:center; margin-bottom:0.2rem; }
+.subtitle { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:0.5rem; letter-spacing:0.06em; text-transform:uppercase; }
+.page-nav { text-align:center; margin-bottom:2.5rem; }
+.page-nav a { font-family:'IBM Plex Mono',monospace; font-size:0.78rem; color:var(--gold-dim); text-decoration:none; border:1px solid var(--gold-dim); padding:0.3rem 0.9rem; border-radius:4px; transition:all 0.25s; }
+.page-nav a:hover { color:var(--gold); border-color:var(--gold); background:rgba(201,168,76,0.08); }
+.page-nav .active { color:var(--gold); border-color:var(--gold); background:rgba(201,168,76,0.1); }
+
+h2 { font-family:'Cormorant Garamond',serif; font-weight:600; font-size:1.5rem; color:var(--gold); margin:2.5rem 0 0.75rem; border-bottom:1px solid var(--gold-dim); padding-bottom:0.4rem; }
+h3 { font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--text-bright); margin:1.4rem 0 0.4rem; }
+p { margin-bottom:0.9rem; font-size:0.92rem; }
+
+.question-box { background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.02)); border-left:3px solid var(--gold); padding:0.9rem 1.15rem; margin:1.1rem 0; font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-style:italic; color:var(--gold-bright); border-radius:0 6px 6px 0; }
+
+.reveal-btn { display:inline-block; background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'IBM Plex Mono',monospace; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:4px; cursor:pointer; margin:0.4rem 0 0.9rem; transition:all 0.25s; letter-spacing:0.04em; }
+.reveal-btn:hover { background:rgba(201,168,76,0.12); border-color:var(--gold); }
+
+.reveal-content { max-height:0; overflow:hidden; transition:max-height 0.5s ease, opacity 0.4s ease; opacity:0; }
+.reveal-content.open { max-height:3000px; opacity:1; }
+
+.math-block { font-family:'IBM Plex Mono',monospace; font-size:0.85rem; background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15); padding:0.7rem 1.1rem; border-radius:6px; margin:0.9rem 0; text-align:center; color:var(--text-bright); overflow-x:auto; line-height:1.9; }
+.math-block .hl-rational { color:var(--rational); }
+.math-block .hl-irrational { color:var(--irrational); }
+.math-block .hl-integer { color:var(--integer); }
+
+.tag { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.72rem; padding:0.12rem 0.45rem; border-radius:3px; font-weight:500; }
+.tag-rational { background:var(--rational-bg); color:var(--rational); }
+.tag-irrational { background:var(--irrational-bg); color:var(--irrational); }
+.tag-integer { background:var(--integer-bg); color:var(--integer); }
+.tag-conjugate { background:var(--conjugate-bg); color:var(--conjugate); }
+
+.number-line { display:flex; gap:0.8rem; align-items:center; justify-content:center; margin:1.2rem 0; flex-wrap:wrap; }
+.number-line .nl-item { text-align:center; padding:0.5rem 0.8rem; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; min-width:100px; }
+.nl-integer { background:var(--integer-bg); border:1px solid rgba(106,191,138,0.3); }
+.nl-rational { background:var(--rational-bg); border:1px solid rgba(91,155,213,0.3); }
+.nl-irrational { background:var(--irrational-bg); border:1px solid rgba(224,120,80,0.3); }
+.nl-label { display:block; font-size:0.65rem; color:var(--text-dim); margin-bottom:0.2rem; text-transform:uppercase; letter-spacing:0.08em; }
+
+.panel { background:var(--bg-card); border:1px solid rgba(201,168,76,0.12); border-radius:10px; padding:1.5rem; margin:1.5rem 0; }
+.canvas-wrap { position:relative; width:100%; max-width:600px; margin:0 auto; }
+canvas { display:block; width:100%; border-radius:6px; background:var(--bg-deep); }
+
+/* Discrete slider styling */
+.slider-row { display:flex; align-items:center; gap:1rem; margin:1rem 0 0.5rem; flex-wrap:wrap; }
+.slider-row label { font-family:'IBM Plex Mono',monospace; font-size:0.82rem; color:var(--gold); min-width:50px; }
+.slider-val { font-family:'IBM Plex Mono',monospace; font-size:0.85rem; color:var(--text-bright); min-width:60px; text-align:right; }
+
+.discrete-slider { display:flex; align-items:center; gap:0; flex:1; min-width:200px; position:relative; height:40px; }
+.discrete-track { position:absolute; top:50%; left:20px; right:20px; height:3px; background:rgba(201,168,76,0.2); transform:translateY(-50%); border-radius:2px; }
+.discrete-fill { position:absolute; top:50%; left:20px; height:3px; background:var(--gold); transform:translateY(-50%); border-radius:2px; transition:width 0.15s; }
+.discrete-stop { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:var(--bg-card); border:2px solid var(--gold-dim); transform:translate(-50%,-50%); cursor:pointer; transition:all 0.15s; z-index:2; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; display:flex; align-items:center; justify-content:center; color:var(--text-dim); }
+.discrete-stop:hover { border-color:var(--gold); transform:translate(-50%,-50%) scale(1.15); }
+.discrete-stop.active { background:var(--gold); border-color:var(--gold-bright); color:var(--bg); font-weight:600; width:28px; height:28px; font-size:0.75rem; }
+.discrete-stop-label { position:absolute; top:26px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--text-dim); transform:translateX(-50%); white-space:nowrap; }
+
+.result-box { background:rgba(0,0,0,0.3); border:1px solid rgba(201,168,76,0.1); border-radius:6px; padding:0.75rem 1rem; margin-top:0.75rem; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; line-height:1.9; color:var(--text); }
+.lbl { color:var(--text-dim); }
+.v-rat { color:var(--rational); font-weight:500; }
+.v-irr { color:var(--irrational); font-weight:500; }
+.v-int { color:var(--integer); font-weight:500; }
+.v-gold { color:var(--gold-bright); font-weight:500; }
+.v-conj { color:var(--conjugate); font-weight:500; }
+
+.side-by-side { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0; }
+@media (max-width:700px) { .side-by-side { grid-template-columns:1fr; } }
+.compare-card { background:var(--bg-card); border-radius:10px; padding:1.15rem; border:1px solid rgba(201,168,76,0.1); }
+.compare-card h3 { margin-top:0; }
+
+.table-wrap { overflow-x:auto; margin:1rem 0; }
+table { width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; }
+th { text-align:left; color:var(--gold); border-bottom:1px solid var(--gold-dim); padding:0.5rem 0.6rem; font-weight:500; }
+td { padding:0.4rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.04); }
+tr:hover td { background:rgba(201,168,76,0.04); }
+
+.conjugate-box { background:var(--conjugate-bg); border:1px solid rgba(176,125,232,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1rem 0; }
+.conjugate-box h3 { color:var(--conjugate); margin-top:0; }
+
+footer { text-align:center; margin-top:4rem; padding-top:1.5rem; border-top:1px solid rgba(201,168,76,0.15); font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--text-dim); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Lines Meet Curves</h1>
+<p class="subtitle">Part I · Integers, Rationals &amp; Irrationals</p>
+<div class="page-nav">
+  <a class="active" href="#">Part I: Number Types</a>
+  <a href="lines-meet-curves-p2.html">Part II: Projective Geometry</a>
+</div>
+
+<!-- ===== PREAMBLE: NUMBER TYPES ===== -->
+<h2>Three Kinds of Number</h2>
+
+<p>Every number lives somewhere on a line, but not all numbers are built the same way.</p>
+
+<div class="number-line">
+  <div class="nl-item nl-integer"><span class="nl-label">Integers</span>..., &minus;2, &minus;1, 0, 1, 2, 3, ...</div>
+  <div class="nl-item nl-rational"><span class="nl-label">Rationals</span>3/4, &minus;7/5, 22/7, ...</div>
+  <div class="nl-item nl-irrational"><span class="nl-label">Irrationals</span>√2, φ, π, ...</div>
+</div>
+
+<p><span class="tag tag-integer">Integers</span> are the counting numbers (and their negatives). <span class="tag tag-rational">Rationals</span> are every fraction of two integers. <span class="tag tag-irrational">Irrationals</span> are everything else: numbers whose decimal expansion never terminates, never repeats. How can one tell which type a geometric construction produces?</p>
+
+<h2>The Quadratic and Its Discriminant</h2>
+
+<p>When a line meets a curve of degree two (a conic section), the intersection points satisfy a quadratic equation. The general standard form is:</p>
+
+<div class="math-block">ax² + bx + c = 0</div>
+
+<p>The solutions come from the quadratic formula:</p>
+
+<div class="math-block">x = (&minus;b ± √(<span class="hl-irrational">b² &minus; 4ac</span>)) / 2a</div>
+
+<p>The expression under the square root is the <strong>discriminant</strong>:</p>
+
+<div class="math-block">Δ = <span class="hl-irrational">b² &minus; 4ac</span></div>
+
+<div class="question-box">When is the discriminant a perfect square? What kind of number does the formula produce when it is, and when it is not?</div>
+
+<button class="reveal-btn" onclick="toggle('revDisc')">Reveal</button>
+<div id="revDisc" class="reveal-content">
+<p>If Δ is a perfect square (0, 1, 4, 9, 16, ...), the square root is an <span class="tag tag-integer">integer</span>, and the formula produces <span class="tag tag-rational">rational</span> roots. If Δ is positive but not a perfect square, √Δ is <span class="tag tag-irrational">irrational</span>, and so are the roots. The discriminant is the gatekeeper between the rational and irrational worlds.</p>
+</div>
+
+<!-- ===== PART 1: CIRCLE ===== -->
+<h2>The Unit Circle: Rational Intersections</h2>
+
+<p>The unit circle is x² + y² = 1. The point (&minus;1, 0) lies on it. A line of slope m through that point is:</p>
+
+<div class="math-block">y = m(x + 1)</div>
+
+<div class="question-box">One intersection is always (&minus;1, 0). Where is the other? What kind of number is it?</div>
+
+<button class="reveal-btn" onclick="toggle('revCirc')">Think first, then reveal</button>
+<div id="revCirc" class="reveal-content">
+<p>Substitute into x² + y² = 1:</p>
+<div class="math-block">x² + m²(x+1)² = 1<br>(1+m²)x² + 2m²x + (m²&minus;1) = 0</div>
+<p>This factors as (x + 1) times a linear remainder, because x = &minus;1 is guaranteed to be a root. The other root is:</p>
+<div class="math-block">x = <span class="hl-rational">(1 &minus; m²) / (1 + m²)</span> &emsp;&emsp; y = <span class="hl-rational">2m / (1 + m²)</span></div>
+<p>If m = p/q is <span class="tag tag-rational">rational</span>, then x and y are <span class="tag tag-rational">rational</span>. Clear denominators: every Pythagorean triple emerges. The known root kills the quadratic, preventing any square root from appearing. <span class="tag tag-rational">Rational</span> in, <span class="tag tag-rational">rational</span> out.</p>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">Explore: line meets circle</h3>
+  <div class="canvas-wrap">
+    <canvas id="circleCanvas" width="600" height="600"></canvas>
+  </div>
+  <div class="slider-row">
+    <label>slope m</label>
+    <input type="range" id="circleSlider" min="0.1" max="5" step="0.01" value="0.5" style="flex:1;min-width:150px;accent-color:var(--gold)">
+    <span class="slider-val" id="circleSliderVal">m = 1/2</span>
+  </div>
+  <div class="slider-row">
+    <label style="font-size:0.72rem;color:var(--text-dim)">snap to fractions</label>
+    <input type="checkbox" id="circleSnap" checked style="accent-color:var(--gold)">
+  </div>
+  <div class="result-box" id="circleResult"></div>
+</div>
+
+<!-- ===== PART 2: HYPERBOLA ===== -->
+<h2>The Rectangular Hyperbola: Irrational Intersections</h2>
+
+<p>Now replace the circle with the simplest rectangular hyperbola:</p>
+
+<div class="math-block">xy = 1</div>
+
+<p>And cut it with the family of lines y = x &minus; k, where k is a positive <span class="tag tag-integer">integer</span>.</p>
+
+<div class="question-box">Substitute y = x &minus; k into xy = 1. What quadratic appears? What does its discriminant look like?</div>
+
+<button class="reveal-btn" onclick="toggle('revHyp')">Think first, then reveal</button>
+<div id="revHyp" class="reveal-content">
+<div class="math-block">x(x &minus; k) = 1 &ensp;⟹&ensp; x² &minus; kx &minus; 1 = 0</div>
+<p>Here a = 1, b = &minus;k, c = &minus;1. The discriminant is:</p>
+<div class="math-block">Δ = k² &minus; 4(1)(&minus;1) = <span class="hl-irrational">k² + 4</span></div>
+<p>Is k² + 4 ever a perfect square for integer k? Try it: 1+4=5, 4+4=8, 9+4=13, 16+4=20, 25+4=29... never a perfect square. So √Δ is always <span class="tag tag-irrational">irrational</span>, and the metallic means are born.</p>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">Explore: line meets hyperbola</h3>
+  <div class="canvas-wrap">
+    <canvas id="hypCanvas" width="600" height="600"></canvas>
+  </div>
+
+  <!-- Discrete integer slider -->
+  <div class="slider-row">
+    <label>k =</label>
+    <div class="discrete-slider" id="hypDiscreteSlider">
+      <div class="discrete-track"></div>
+      <div class="discrete-fill" id="hypFill"></div>
+    </div>
+    <span class="slider-val" id="hypSliderVal" style="min-width:100px">k = 1 · Golden</span>
+  </div>
+
+  <div class="result-box" id="hypResult"></div>
+
+  <div class="conjugate-box" id="conjBox">
+    <h3>The Conjugate Pair</h3>
+    <div id="conjContent" style="font-family:'IBM Plex Mono',monospace;font-size:0.82rem;line-height:1.9"></div>
+  </div>
+</div>
+
+<!-- ===== COMPARISON ===== -->
+<h2>The Structural Difference</h2>
+
+<div class="side-by-side">
+  <div class="compare-card">
+    <h3 style="color:var(--rational)">Circle: x² + y² = 1</h3>
+    <p style="font-size:0.85rem">Line from a point <em>on</em> the curve</p>
+    <p style="font-size:0.85rem">One root known → quadratic collapses to linear</p>
+    <p style="font-size:0.85rem">Discriminant bypassed entirely</p>
+    <p style="font-size:0.85rem">Intersections: <span class="tag tag-rational">rational</span></p>
+    <p style="font-size:0.85rem">Produces: Pythagorean triples</p>
+    <p style="font-size:0.82rem;color:var(--text-dim)">3, 4, 5 · 5, 12, 13 · 8, 15, 17 · ...</p>
+  </div>
+  <div class="compare-card">
+    <h3 style="color:var(--irrational)">Hyperbola: xy = 1</h3>
+    <p style="font-size:0.85rem">Line does <em>not</em> start on the curve</p>
+    <p style="font-size:0.85rem">Full quadratic survives</p>
+    <p style="font-size:0.85rem">Δ = k² + 4 is never a perfect square</p>
+    <p style="font-size:0.85rem">Intersections: <span class="tag tag-irrational">irrational</span></p>
+    <p style="font-size:0.85rem">Produces: metallic means &amp; conjugates</p>
+    <p style="font-size:0.82rem;color:var(--text-dim)">φ · 1+√2 · (3+√13)/2 · ...</p>
+  </div>
+</div>
+
+<!-- ===== METALLIC TABLE ===== -->
+<h2>The Metallic Family</h2>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>k</th><th>Name</th><th>Quadratic</th><th>Δ</th><th>M<sub>k</sub></th><th>Conjugate</th><th>M · conj</th></tr>
+</thead>
+<tbody id="metalTable"></tbody>
+</table>
+</div>
+
+<p>Every metallic mean M<sub>k</sub> has a conjugate: the other root of the same quadratic. Their product is always &minus;1 (from Vieta's formulas: product of roots = c/a = &minus;1/1). The conjugate lives on the negative branch of the hyperbola, a mirror through the origin.</p>
+
+<div class="page-nav" style="margin-top:2.5rem">
+  <a href="lines-meet-curves-p2.html">Continue to Part II: Projective Geometry →</a>
+</div>
+
+<footer>Constructed by Silicon · Anthropic Claude · Architect Carbon · LeeMcCullochJames</footer>
+</div>
+
+<script>
+function toggle(id){ document.getElementById(id).classList.toggle('open'); }
+
+function gcd(a,b){ a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a; }
+function snapFrac(val){
+  const fs=[];
+  for(let d=1;d<=12;d++) for(let n=1;n<=d*5;n++) fs.push([n,d,n/d]);
+  fs.sort((a,b)=>Math.abs(a[2]-val)-Math.abs(b[2]-val));
+  return fs[0];
+}
+
+// ========== CIRCLE ==========
+const cC=document.getElementById('circleCanvas'), cX=cC.getContext('2d');
+const cSl=document.getElementById('circleSlider'), cSnap=document.getElementById('circleSnap');
+const cSV=document.getElementById('circleSliderVal'), cRes=document.getElementById('circleResult');
+
+function drawCircle(){
+  const W=600,H=600,cx=W/2,cy=H/2,sc=200;
+  cX.clearRect(0,0,W,H);
+  // grid
+  cX.strokeStyle='rgba(201,168,76,0.06)'; cX.lineWidth=1;
+  for(let i=-2;i<=2;i++){
+    cX.beginPath();cX.moveTo(cx+i*sc,0);cX.lineTo(cx+i*sc,H);cX.stroke();
+    cX.beginPath();cX.moveTo(0,cy+i*sc);cX.lineTo(W,cy+i*sc);cX.stroke();
+  }
+  // axes
+  cX.strokeStyle='rgba(201,168,76,0.2)';cX.lineWidth=1.5;
+  cX.beginPath();cX.moveTo(0,cy);cX.lineTo(W,cy);cX.stroke();
+  cX.beginPath();cX.moveTo(cx,0);cX.lineTo(cx,H);cX.stroke();
+  // axis labels
+  cX.fillStyle='rgba(201,168,76,0.3)';cX.font='11px "IBM Plex Mono"';
+  cX.fillText('1',cx+sc+4,cy+14);cX.fillText('−1',cx-sc-18,cy+14);
+  cX.fillText('1',cx+5,cy-sc-4);cX.fillText('−1',cx+5,cy+sc+14);
+
+  // circle
+  cX.strokeStyle='rgba(91,155,213,0.5)';cX.lineWidth=2.5;
+  cX.beginPath();cX.arc(cx,cy,sc,0,Math.PI*2);cX.stroke();
+  cX.fillStyle='rgba(91,155,213,0.15)';cX.fill();
+  // label
+  cX.fillStyle='rgba(91,155,213,0.4)';cX.font='italic 14px "Cormorant Garamond"';
+  cX.fillText('x² + y² = 1',cx+sc*0.55,cy-sc*0.75);
+
+  let rawM=parseFloat(cSl.value), m, mN, mD;
+  if(cSnap.checked){ let f=snapFrac(rawM); mN=f[0];mD=f[1];m=f[2]; cSV.textContent=mD===1?`m = ${mN}`:`m = ${mN}/${mD}`; }
+  else { m=rawM; let f=[Math.round(m*100),100]; let g=gcd(f[0],f[1]); mN=f[0]/g;mD=f[1]/g; cSV.textContent=`m ≈ ${m.toFixed(2)}`; }
+
+  // line
+  const lx1=-1.5,lx2=1.5;
+  cX.strokeStyle='rgba(201,168,76,0.6)';cX.lineWidth=2;cX.setLineDash([6,4]);
+  cX.beginPath();cX.moveTo(cx+lx1*sc,cy-m*(lx1+1)*sc);cX.lineTo(cx+lx2*sc,cy-m*(lx2+1)*sc);cX.stroke();
+  cX.setLineDash([]);
+  // line label
+  cX.fillStyle='rgba(201,168,76,0.4)';cX.font='italic 13px "Cormorant Garamond"';
+  cX.fillText(`y = ${mD===1?mN:mN+'/'+mD}(x + 1)`,cx+0.6*sc,cy-m*(0.6+1)*sc-10);
+
+  // fixed point
+  cX.fillStyle='rgba(201,168,76,0.9)';cX.beginPath();cX.arc(cx-sc,cy,6,0,Math.PI*2);cX.fill();
+  cX.fillStyle='rgba(201,168,76,0.7)';cX.font='500 11px "IBM Plex Mono"';cX.fillText('(−1, 0)',cx-sc-14,cy+20);
+
+  // intersection
+  const ix=(1-m*m)/(1+m*m), iy=2*m/(1+m*m);
+  cX.fillStyle='#5b9bd5';cX.beginPath();cX.arc(cx+ix*sc,cy-iy*sc,7,0,Math.PI*2);cX.fill();
+  cX.strokeStyle='rgba(91,155,213,0.35)';cX.lineWidth=2;cX.beginPath();cX.arc(cx+ix*sc,cy-iy*sc,13,0,Math.PI*2);cX.stroke();
+
+  cX.fillStyle='#5b9bd5';cX.font='500 11px "IBM Plex Mono"';
+  cX.fillText(`(${ix.toFixed(3)}, ${iy.toFixed(3)})`,cx+ix*sc+16,cy-iy*sc-8);
+
+  // triple
+  let p=mN,q=mD,g0=gcd(p,q);p/=g0;q/=g0;
+  let ta=Math.abs(q*q-p*p),tb=2*p*q,tc=p*p+q*q;
+  let gt=gcd(gcd(ta,tb),tc);ta/=gt;tb/=gt;tc/=gt;
+  const xN=mD*mD-mN*mN, xD=mD*mD+mN*mN, yN=2*mN*mD;
+  const g1=gcd(Math.abs(xN),xD),g2=gcd(Math.abs(yN),xD);
+
+  cRes.innerHTML=
+    `<span class="lbl">slope:</span> <span class="v-gold">m = ${mD===1?mN:mN+'/'+mD}</span><br>`+
+    `<span class="lbl">intersection:</span> <span class="v-rat">(${xN/g1}/${xD/g1}, ${yN/g2}/${xD/g2})</span> <span class="tag tag-rational">rational</span><br>`+
+    `<span class="lbl">triple:</span> <span class="v-rat">${ta}, ${tb}, ${tc}</span>`+
+    `<span style="color:var(--text-dim);font-size:0.72rem"> (${ta}² + ${tb}² = ${tc}² → ${ta*ta} + ${tb*tb} = ${tc*tc})</span>`;
+}
+cSl.addEventListener('input',drawCircle);
+cSnap.addEventListener('change',drawCircle);
+drawCircle();
+
+// ========== HYPERBOLA WITH DISCRETE SLIDER ==========
+const hC=document.getElementById('hypCanvas'), hX=hC.getContext('2d');
+const hSV=document.getElementById('hypSliderVal'), hRes=document.getElementById('hypResult');
+const conjContent=document.getElementById('conjContent');
+const hypSliderEl=document.getElementById('hypDiscreteSlider');
+const hypFill=document.getElementById('hypFill');
+
+const metalNames=['Golden φ','Silver δ_S','Bronze δ_B','Copper','Nickel','Tin'];
+const metalSymbols=['φ','δ_S','δ_B','M₄','M₅','M₆'];
+let currentK=1;
+
+// Build discrete stops
+function buildDiscreteSlider(){
+  const nStops=6;
+  for(let i=1;i<=nStops;i++){
+    const stop=document.createElement('div');
+    stop.className='discrete-stop'+(i===1?' active':'');
+    stop.dataset.k=i;
+    stop.textContent=i;
+    const pct=20+((i-1)/(nStops-1))*(600-40);
+    stop.style.left=pct/(600)*100+'%';
+    stop.addEventListener('click',()=>selectK(i));
+    hypSliderEl.appendChild(stop);
+  }
+  updateFill(1);
+}
+
+function selectK(k){
+  currentK=k;
+  document.querySelectorAll('.discrete-stop').forEach(s=>{
+    s.classList.toggle('active',parseInt(s.dataset.k)===k);
+  });
+  updateFill(k);
+  hSV.textContent=`k = ${k} · ${metalNames[k-1]}`;
+  drawHyperbola();
+}
+
+function updateFill(k){
+  const pct=((k-1)/5)*100;
+  const padL=20/600*100, padR=(600-20)/600*100;
+  hypFill.style.width=`${padL + pct*(padR-padL)/100 - padL}px`;
+  // Actually use percentage
+  const leftPx=20, rightPx=580;
+  const fillW=((k-1)/5)*(rightPx-leftPx);
+  hypFill.style.width=fillW+'px';
+}
+
+function drawHyperbola(){
+  const W=600,H=600,cx=W*0.35,cy=H/2,sc=55;
+  // shifted origin left so positive branch has room for k=5,6
+  hX.clearRect(0,0,W,H);
+
+  // grid
+  hX.strokeStyle='rgba(201,168,76,0.05)';hX.lineWidth=1;
+  for(let i=-5;i<=8;i++){
+    hX.beginPath();hX.moveTo(cx+i*sc,0);hX.lineTo(cx+i*sc,H);hX.stroke();
+    hX.beginPath();hX.moveTo(0,cy+i*sc);hX.lineTo(W,cy+i*sc);hX.stroke();
+  }
+
+  // axes
+  hX.strokeStyle='rgba(201,168,76,0.18)';hX.lineWidth=1.5;
+  hX.beginPath();hX.moveTo(0,cy);hX.lineTo(W,cy);hX.stroke();
+  hX.beginPath();hX.moveTo(cx,0);hX.lineTo(cx,H);hX.stroke();
+  // axis ticks
+  hX.fillStyle='rgba(201,168,76,0.25)';hX.font='10px "IBM Plex Mono"';
+  for(let i=-4;i<=8;i++){
+    if(i===0) continue;
+    hX.fillText(i,cx+i*sc-4,cy+14);
+  }
+
+  // hyperbola xy=1
+  hX.strokeStyle='rgba(224,120,80,0.5)';hX.lineWidth=2.5;
+  // positive branch
+  hX.beginPath();
+  for(let px=0.06;px<=10;px+=0.03){
+    let py=1/px, sx=cx+px*sc, sy=cy-py*sc;
+    if(sy<-10||sy>H+10) continue;
+    if(px<0.09) hX.moveTo(sx,sy); else hX.lineTo(sx,sy);
+  }
+  hX.stroke();
+  // negative branch
+  hX.beginPath();
+  for(let px=-0.06;px>=-10;px-=0.03){
+    let py=1/px, sx=cx+px*sc, sy=cy-py*sc;
+    if(sy<-10||sy>H+10) continue;
+    if(px>-0.09) hX.moveTo(sx,sy); else hX.lineTo(sx,sy);
+  }
+  hX.stroke();
+  hX.fillStyle='rgba(224,120,80,0.35)';hX.font='italic 14px "Cormorant Garamond"';
+  hX.fillText('xy = 1',cx+3*sc,cy-0.25*sc);
+
+  const k=currentK;
+
+  // Line y = x - k
+  hX.strokeStyle='rgba(201,168,76,0.6)';hX.lineWidth=2;hX.setLineDash([6,4]);
+  const lx1=-3,lx2=9;
+  hX.beginPath();hX.moveTo(cx+lx1*sc,cy-(lx1-k)*sc);hX.lineTo(cx+lx2*sc,cy-(lx2-k)*sc);hX.stroke();
+  hX.setLineDash([]);
+  hX.fillStyle='rgba(201,168,76,0.4)';hX.font='italic 13px "Cormorant Garamond"';
+  hX.fillText(`y = x − ${k}`,cx+5.5*sc,cy-(5.5-k)*sc-10);
+
+  // Intersections
+  const disc=k*k+4, sq=Math.sqrt(disc);
+  const x1=(k+sq)/2, x2=(k-sq)/2;
+  const y1=1/x1, y2=1/x2;
+
+  // Metallic mean point (positive branch)
+  hX.fillStyle='#e07850';hX.beginPath();hX.arc(cx+x1*sc,cy-y1*sc,8,0,Math.PI*2);hX.fill();
+  hX.strokeStyle='rgba(224,120,80,0.35)';hX.lineWidth=2.5;
+  hX.beginPath();hX.arc(cx+x1*sc,cy-y1*sc,14,0,Math.PI*2);hX.stroke();
+  // label
+  hX.fillStyle='#e07850';hX.font='600 12px "IBM Plex Mono"';
+  hX.fillText(`M${k<4?'':'₊'} = ${x1.toFixed(4)}`,cx+x1*sc+18,cy-y1*sc-6);
+  hX.font='500 10px "IBM Plex Mono"';
+  hX.fillText(metalNames[k-1],cx+x1*sc+18,cy-y1*sc+10);
+
+  // Conjugate point (negative branch)
+  hX.fillStyle='#b07de8';hX.beginPath();hX.arc(cx+x2*sc,cy-y2*sc,8,0,Math.PI*2);hX.fill();
+  hX.strokeStyle='rgba(176,125,232,0.35)';hX.lineWidth=2.5;
+  hX.beginPath();hX.arc(cx+x2*sc,cy-y2*sc,14,0,Math.PI*2);hX.stroke();
+  // label
+  hX.fillStyle='#b07de8';hX.font='600 12px "IBM Plex Mono"';
+  hX.fillText(`conj = ${x2.toFixed(4)}`,cx+x2*sc-100,cy-y2*sc+24);
+
+  // Dashed line connecting pair through origin showing product = -1
+  hX.strokeStyle='rgba(176,125,232,0.15)';hX.lineWidth=1;hX.setLineDash([3,5]);
+  hX.beginPath();hX.moveTo(cx+x1*sc,cy-y1*sc);hX.lineTo(cx+x2*sc,cy-y2*sc);hX.stroke();
+  hX.setLineDash([]);
+
+  // Result
+  hRes.innerHTML=
+    `<span class="lbl">quadratic:</span> <span class="v-gold">x² − ${k}x − 1 = 0</span><br>`+
+    `<span class="lbl">discriminant:</span> <span class="v-irr">Δ = ${k}² + 4 = ${disc}</span> → <span class="v-irr">√${disc} = ${sq.toFixed(6)}...</span> <span class="tag tag-irrational">irrational</span><br>`+
+    `<span class="lbl">positive root:</span> <span class="v-irr">${x1.toFixed(6)}...</span> <span style="color:var(--text-dim)">(${metalNames[k-1]})</span><br>`+
+    `<span class="lbl">negative root:</span> <span class="v-conj">${x2.toFixed(6)}...</span> <span class="tag tag-conjugate">conjugate</span><br>`+
+    `<span class="lbl">product:</span> <span class="v-gold">M × conj = ${(x1*x2).toFixed(6)}</span> <span style="color:var(--text-dim)">(always −1, by Vieta)</span>`;
+
+  // Conjugate box
+  const recip=1/x1;
+  conjContent.innerHTML=
+    `<span class="v-irr">M<sub>${k}</sub> = ${x1.toFixed(6)}...</span><br>`+
+    `<span class="v-conj">conjugate = ${x2.toFixed(6)}...</span><br>`+
+    `<span class="lbl">notice:</span> <span class="v-conj">&minus;1/M<sub>${k}</sub> = ${(-recip).toFixed(6)}...</span> = conjugate<br>`+
+    `<span class="lbl">so:</span> <span class="v-gold">M<sub>${k}</sub> &minus; 1/M<sub>${k}</sub> = ${(x1-recip).toFixed(6)}... = ${k}</span> <span class="tag tag-integer">integer!</span><br>`+
+    `<span style="font-size:0.75rem;color:var(--text-dim)">The metallic mean minus its reciprocal always returns the integer k. The conjugate is &minus;1/M, sitting on the negative branch of xy = 1.</span>`;
+}
+
+buildDiscreteSlider();
+drawHyperbola();
+
+// ========== METALLIC TABLE ==========
+(function(){
+  const tb=document.getElementById('metalTable');
+  const names=['Golden φ','Silver δ_S','Bronze δ_B','Copper','Nickel','Tin'];
+  for(let k=1;k<=6;k++){
+    const d=k*k+4, sq=Math.sqrt(d), m=(k+sq)/2, c=(k-sq)/2;
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      `<td style="color:var(--gold)">${k}</td>`+
+      `<td>${names[k-1]}</td>`+
+      `<td>x² − ${k}x − 1 = 0</td>`+
+      `<td style="color:var(--irrational)">${d} (not □)</td>`+
+      `<td class="v-irr">${m.toFixed(6)}...</td>`+
+      `<td class="v-conj">${c.toFixed(6)}...</td>`+
+      `<td class="v-gold">${(m*c).toFixed(1)}</td>`;
+    tb.appendChild(tr);
+  }
+})();
+</script>
+</body>
+</html>
