@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lines Meet Curves — Preamble: Roots as Intersections</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0f13;--bg-card:#16171d;--bg-deep:#0b0c10;
+  --gold:#c9a84c;--gold-dim:#8a7233;--gold-bright:#e8c95a;
+  --text:#d4d0c8;--text-dim:#8a877e;--text-bright:#f0ece0;
+  --rational:#5b9bd5;--rational-bg:rgba(91,155,213,0.12);
+  --irrational:#e07850;--irrational-bg:rgba(224,120,80,0.12);
+  --integer:#6abf8a;--integer-bg:rgba(106,191,138,0.12);
+  --conjugate:#b07de8;--conjugate-bg:rgba(176,125,232,0.12);
+  --projective:#e0c850;--projective-bg:rgba(224,200,80,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.7;}
+.container{max-width:1000px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.8rem,4.5vw,2.8rem);color:var(--gold);text-align:center;margin-bottom:0.2rem;}
+.subtitle{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--text-dim);text-align:center;margin-bottom:0.5rem;letter-spacing:0.06em;text-transform:uppercase;}
+.page-nav{text-align:center;margin-bottom:2.5rem;}
+.page-nav a{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--gold-dim);text-decoration:none;border:1px solid var(--gold-dim);padding:0.3rem 0.9rem;border-radius:4px;transition:all 0.25s;margin:0 0.2rem;display:inline-block;margin-top:0.4rem;}
+.page-nav a:hover{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.page-nav .active{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.1);}
+h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.5rem;color:var(--gold);margin:2.5rem 0 0.75rem;border-bottom:1px solid var(--gold-dim);padding-bottom:0.4rem;}
+h3{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:1rem;color:var(--text-bright);margin:1.4rem 0 0.4rem;}
+p{margin-bottom:0.9rem;font-size:0.92rem;}
+.question-box{background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.02));border-left:3px solid var(--gold);padding:0.9rem 1.15rem;margin:1.1rem 0;font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--gold-bright);border-radius:0 6px 6px 0;}
+.reveal-btn{display:inline-block;background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:0.3rem 0.9rem;border-radius:4px;cursor:pointer;margin:0.4rem 0 0.9rem;transition:all 0.25s;}
+.reveal-btn:hover{background:rgba(201,168,76,0.12);border-color:var(--gold);}
+.reveal-content{max-height:0;overflow:hidden;transition:max-height 0.5s ease,opacity 0.4s ease;opacity:0;}
+.reveal-content.open{max-height:5000px;opacity:1;}
+.math-block{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);padding:0.7rem 1.1rem;border-radius:6px;margin:0.9rem 0;text-align:center;color:var(--text-bright);overflow-x:auto;line-height:1.9;}
+.math-block .hl-r{color:var(--rational);} .math-block .hl-i{color:var(--irrational);} .math-block .hl-p{color:var(--projective);} .math-block .hl-c{color:var(--conjugate);}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:0.12rem 0.45rem;border-radius:3px;font-weight:500;}
+.tag-rational{background:var(--rational-bg);color:var(--rational);} .tag-irrational{background:var(--irrational-bg);color:var(--irrational);} .tag-integer{background:var(--integer-bg);color:var(--integer);} .tag-conjugate{background:var(--conjugate-bg);color:var(--conjugate);} .tag-projective{background:var(--projective-bg);color:var(--projective);}
+.panel{background:var(--bg-card);border:1px solid rgba(201,168,76,0.12);border-radius:10px;padding:1.5rem;margin:1.5rem 0;}
+.canvas-wrap{position:relative;width:100%;max-width:650px;margin:0 auto;} canvas{display:block;width:100%;border-radius:6px;background:var(--bg-deep);}
+.slider-row{display:flex;align-items:center;gap:1rem;margin:1rem 0 0.5rem;flex-wrap:wrap;}
+.slider-row label{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:var(--gold);min-width:70px;}
+.slider-row input[type=range]{flex:1;min-width:160px;accent-color:var(--gold);}
+.slider-val{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--text-bright);min-width:90px;text-align:right;}
+.result-box{background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.1);border-radius:6px;padding:0.75rem 1rem;margin-top:0.75rem;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.9;}
+.lbl{color:var(--text-dim);} .v-rat{color:var(--rational);font-weight:500;} .v-irr{color:var(--irrational);font-weight:500;} .v-int{color:var(--integer);font-weight:500;} .v-gold{color:var(--gold-bright);font-weight:500;} .v-conj{color:var(--conjugate);font-weight:500;} .v-proj{color:var(--projective);font-weight:500;}
+.side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0;} @media(max-width:700px){.side-by-side{grid-template-columns:1fr;}}
+.compare-card{background:var(--bg-card);border-radius:10px;padding:1.15rem;border:1px solid rgba(201,168,76,0.1);} .compare-card h3{margin-top:0;}
+.concept-box{border:1px solid rgba(224,200,80,0.25);background:var(--projective-bg);border-radius:8px;padding:1rem 1.25rem;margin:1.2rem 0;} .concept-box h3{margin-top:0;color:var(--projective);}
+.checklist{list-style:none;margin:0.7rem 0 0;} .checklist li{font-size:0.88rem;margin:0.45rem 0;padding-left:1.4rem;position:relative;} .checklist li:before{content:'◆';position:absolute;left:0;color:var(--gold-dim);font-size:0.72rem;top:0.1rem;}
+.table-wrap{overflow-x:auto;margin:1rem 0;} table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;} th{text-align:left;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding:0.5rem 0.6rem;font-weight:500;} td{padding:0.4rem 0.6rem;border-bottom:1px solid rgba(255,255,255,0.04);} tr:hover td{background:rgba(201,168,76,0.04);}
+footer{text-align:center;margin-top:4rem;padding-top:1.5rem;border-top:1px solid rgba(201,168,76,0.15);font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Lines Meet Curves</h1>
+<p class="subtitle">Preamble · Roots as Intersections</p>
+<div class="page-nav">
+  <a class="active" href="#">Preamble: Roots as Intersections</a>
+  <a href="https://leelemacjames.github.io/lines-meet-curves-p1.html">Part I: Number Types</a>
+  <a href="https://leelemacjames.github.io/lines-meet-curves-p2.html">Part II: Projective Geometry</a>
+</div>
+
+<h2>The Basic Question</h2>
+<p>A quadratic equation is often taught as a formula. Geometrically, it is simpler: a <span class="tag tag-projective">straight line</span> meets a <span class="tag tag-irrational">degree-two curve</span>. The two roots are the two intersection points seen from the x-axis.</p>
+<div class="question-box">Why should a straight line meeting a curve give an equation at all?</div>
+<button class="reveal-btn" onclick="toggle('rev0')">Reveal</button>
+<div id="rev0" class="reveal-content">
+<p>A curve imposes one rule. A line imposes another. A point of intersection must satisfy both at once. Substituting the line into the curve removes y and leaves a single equation in x. If the curve has degree two, that equation is quadratic.</p>
+</div>
+
+<h2>Vieta: Sum and Product as Geometry</h2>
+<p>Write a monic quadratic as</p>
+<div class="math-block">x² + Bx + C = 0</div>
+<p>If its roots are x₁ and x₂, then</p>
+<div class="math-block"><span class="hl-p">x₁ + x₂ = −B</span>, &emsp; <span class="hl-c">x₁x₂ = C</span></div>
+<div class="question-box">Can the equations x₁ + x₂ = s and x₁x₂ = p be drawn?</div>
+<button class="reveal-btn" onclick="toggle('revVieta')">Reveal</button>
+<div id="revVieta" class="reveal-content">
+<p>Yes. Use coordinates (u,v) for the two roots. The condition u+v=s is a straight line. The condition uv=p is a rectangular hyperbola. So Vieta says:</p>
+<div class="math-block">roots of x² − sx + p = 0 &emsp; ⇔ &emsp; line u+v=s meets hyperbola uv=p</div>
+<p>The two intersection coordinates are the two roots, just swapped: (x₁,x₂) and (x₂,x₁).</p>
+</div>
+
+<div class="panel">
+<h3 style="margin-top:0">Explore: Vieta as line–hyperbola intersection</h3>
+<div class="canvas-wrap"><canvas id="vietaCanvas" width="650" height="520"></canvas></div>
+<div class="slider-row"><label>sum s</label><input id="sumSlider" type="range" min="-6" max="6" step="0.1" value="5"><span class="slider-val" id="sumVal">s = 5.0</span></div>
+<div class="slider-row"><label>product p</label><input id="prodSlider" type="range" min="-8" max="8" step="0.1" value="6"><span class="slider-val" id="prodVal">p = 6.0</span></div>
+<div class="result-box" id="vietaResult"></div>
+</div>
+
+<h2>The Discriminant Is a Distance Test</h2>
+<p>For</p>
+<div class="math-block">ax² + bx + c = 0</div>
+<p>the two roots sit symmetrically around the midpoint</p>
+<div class="math-block"><span class="hl-p">−b/2a</span></div>
+<p>The half-distance between the roots is controlled by the square root of the discriminant:</p>
+<div class="math-block">x = <span class="hl-p">−b/2a</span> ± <span class="hl-i">√(b² − 4ac)/2a</span></div>
+<div class="question-box">So what does Δ = b² − 4ac measure?</div>
+<button class="reveal-btn" onclick="toggle('revDisc')">Reveal</button>
+<div id="revDisc" class="reveal-content">
+<p>It measures whether the two intersections are visible on the real plane, merged into a tangent point, or absent from the real plane.</p>
+<ul class="checklist">
+<li>Δ &gt; 0: two real intersections.</li>
+<li>Δ = 0: one repeated intersection: the line is tangent.</li>
+<li>Δ &lt; 0: no real intersection; the roots are complex.</li>
+<li>Δ a perfect square: rational roots, provided a,b,c are integers and the division works rationally.</li>
+</ul>
+</div>
+
+<div class="panel">
+<h3 style="margin-top:0">Explore: parabola roots and the discriminant</h3>
+<div class="canvas-wrap"><canvas id="quadCanvas" width="650" height="520"></canvas></div>
+<div class="slider-row"><label>a</label><input id="aSlider" type="range" min="-3" max="3" step="0.1" value="1"><span class="slider-val" id="aVal">a = 1.0</span></div>
+<div class="slider-row"><label>b</label><input id="bSlider" type="range" min="-8" max="8" step="0.1" value="-5"><span class="slider-val" id="bVal">b = -5.0</span></div>
+<div class="slider-row"><label>c</label><input id="cSlider" type="range" min="-8" max="8" step="0.1" value="6"><span class="slider-val" id="cVal">c = 6.0</span></div>
+<div class="result-box" id="quadResult"></div>
+</div>
+
+<h2>Circle: A Known Intersection Collapses the Quadratic</h2>
+<p>The unit circle meets the pencil of lines through (−1,0):</p>
+<div class="math-block">x² + y² = 1, &emsp; y = m(x+1)</div>
+<p>Because (−1,0) is already on the circle, one root is known before calculation begins. The quadratic must contain the factor (x+1). What remains is linear.</p>
+<div class="question-box">Why does this produce rational points when m is rational?</div>
+<button class="reveal-btn" onclick="toggle('revCircle')">Reveal</button>
+<div id="revCircle" class="reveal-content">
+<div class="math-block">x = (1−m²)/(1+m²), &emsp; y = 2m/(1+m²)</div>
+<p>Rational input m gives rational output x,y. Clear denominators and the homogeneous coordinates become Pythagorean triples.</p>
+</div>
+
+<div class="panel">
+<h3 style="margin-top:0">Explore: line through (−1,0) meets the circle</h3>
+<div class="canvas-wrap"><canvas id="circleCanvas" width="650" height="520"></canvas></div>
+<div class="slider-row"><label>slope m</label><input id="mSlider" type="range" min="0.05" max="3" step="0.01" value="0.5"><span class="slider-val" id="mVal">m = 0.50</span></div>
+<div class="result-box" id="circleResult"></div>
+</div>
+
+<h2>Hyperbola: Metallic Means Keep the Quadratic</h2>
+<p>For the rectangular hyperbola</p>
+<div class="math-block">xy = 1</div>
+<p>cut by the line</p>
+<div class="math-block">y = x − k</div>
+<p>substitution gives</p>
+<div class="math-block">x(x−k)=1 &emsp; ⟹ &emsp; <span class="hl-i">x² − kx − 1 = 0</span></div>
+<p>The roots are</p>
+<div class="math-block">x = <span class="hl-p">k/2</span> ± <span class="hl-i">√(k²+4)/2</span></div>
+<div class="question-box">Why does this usually give irrational roots?</div>
+<button class="reveal-btn" onclick="toggle('revMetal')">Reveal</button>
+<div id="revMetal" class="reveal-content">
+<p>For positive integer k, the discriminant is Δ = k²+4. It sits just above k² and below (k+1)² for k ≥ 2, so it cannot be a square. For k=1, Δ=5. Thus the roots are quadratic irrationals: the metallic mean and its conjugate.</p>
+</div>
+
+<div class="panel">
+<h3 style="margin-top:0">Explore: line y = x − k meets xy = 1</h3>
+<div class="canvas-wrap"><canvas id="hypCanvas" width="650" height="520"></canvas></div>
+<div class="slider-row"><label>k</label><input id="kSlider" type="range" min="1" max="8" step="1" value="1"><span class="slider-val" id="kVal">k = 1</span></div>
+<div class="result-box" id="hypResult"></div>
+</div>
+
+<h2>Examples: What the Graph Is Saying</h2>
+<div class="table-wrap"><table><thead><tr><th>Construction</th><th>Equation after substitution</th><th>Discriminant</th><th>Roots</th><th>Geometric meaning</th></tr></thead><tbody>
+<tr><td>Circle, m=1/2</td><td>known root x=−1; other x=3/5</td><td>square after factor</td><td>rational</td><td>Pythagorean point (3/5,4/5)</td></tr>
+<tr><td>Hyperbola, k=1</td><td>x²−x−1=0</td><td>5</td><td>φ, −1/φ</td><td>golden mean and conjugate</td></tr>
+<tr><td>Hyperbola, k=2</td><td>x²−2x−1=0</td><td>8</td><td>1±√2</td><td>silver mean and conjugate</td></tr>
+<tr><td>Vieta, s=5, p=6</td><td>x²−5x+6=0</td><td>1</td><td>2, 3</td><td>line u+v=5 meets uv=6</td></tr>
+</tbody></table></div>
+
+<div class="concept-box">
+<h3>What to carry into Part I</h3>
+<p>Finding roots is not merely algebraic manipulation. It is intersection geometry. Vieta turns a quadratic into a line and a hyperbola. The discriminant tells whether the intersections separate, merge, or disappear from the real plane. Perfect-square discriminants give rational arithmetic; non-square discriminants give quadratic irrational arithmetic.</p>
+</div>
+
+<div class="page-nav" style="margin-top:2.5rem">
+  <a href="https://leelemacjames.github.io/lines-meet-curves-p1.html">Continue to Part I: Number Types →</a>
+</div>
+<footer>Constructed by Silicon · Anthropic Claude · Architect Carbon · LeeMcCullochJames</footer>
+</div>
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('open');}
+function fmt(x){return Math.abs(x)<1e-9?'0.000':x.toFixed(3);} function sq(n){return n*n;}
+function drawAxes(ctx,W,H,cx,cy,sc,xmin,xmax,ymin,ymax){
+ ctx.clearRect(0,0,W,H);ctx.strokeStyle='rgba(201,168,76,0.055)';ctx.lineWidth=1;
+ for(let i=Math.ceil(xmin);i<=Math.floor(xmax);i++){ctx.beginPath();ctx.moveTo(cx+i*sc,0);ctx.lineTo(cx+i*sc,H);ctx.stroke();}
+ for(let j=Math.ceil(ymin);j<=Math.floor(ymax);j++){ctx.beginPath();ctx.moveTo(0,cy-j*sc);ctx.lineTo(W,cy-j*sc);ctx.stroke();}
+ ctx.strokeStyle='rgba(201,168,76,0.20)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+ ctx.fillStyle='rgba(201,168,76,0.25)';ctx.font='10px "IBM Plex Mono"';
+ for(let i=Math.ceil(xmin);i<=Math.floor(xmax);i++){if(i!==0)ctx.fillText(i,cx+i*sc-4,cy+14);} for(let j=Math.ceil(ymin);j<=Math.floor(ymax);j++){if(j!==0)ctx.fillText(j,cx+5,cy-j*sc+4);}
+}
+function dot(ctx,x,y,cx,cy,sc,color,r=6){ctx.fillStyle=color;ctx.beginPath();ctx.arc(cx+x*sc,cy-y*sc,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=color;ctx.globalAlpha=.35;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx+x*sc,cy-y*sc,r+7,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+
+const vC=document.getElementById('vietaCanvas'),vX=vC.getContext('2d'),sumS=document.getElementById('sumSlider'),prodS=document.getElementById('prodSlider');
+function drawVieta(){const W=650,H=520,cx=W/2,cy=H/2,sc=45;let s=parseFloat(sumS.value),p=parseFloat(prodS.value);document.getElementById('sumVal').textContent='s = '+s.toFixed(1);document.getElementById('prodVal').textContent='p = '+p.toFixed(1);drawAxes(vX,W,H,cx,cy,sc,-7,7,-6,6);
+ vX.strokeStyle='rgba(224,120,80,0.55)';vX.lineWidth=2.5;let first=true;vX.beginPath();for(let u=-7;u<=7;u+=.025){if(Math.abs(u)<.04){first=true;continue;}let vv=p/u;if(vv<-6.5||vv>6.5){first=true;continue;}let sx=cx+u*sc,sy=cy-vv*sc;if(first){vX.moveTo(sx,sy);first=false;}else vX.lineTo(sx,sy);}vX.stroke();
+ vX.strokeStyle='rgba(201,168,76,0.65)';vX.lineWidth=2;vX.setLineDash([6,4]);vX.beginPath();let u1=-7,u2=7;vX.moveTo(cx+u1*sc,cy-(s-u1)*sc);vX.lineTo(cx+u2*sc,cy-(s-u2)*sc);vX.stroke();vX.setLineDash([]);
+ let D=s*s-4*p,res=`<span class="lbl">quadratic:</span> <span class="v-gold">x² − (${fmt(s)})x + (${fmt(p)}) = 0</span><br><span class="lbl">discriminant:</span> <span class="${D>=0?'v-rat':'v-irr'}">Δ = s² − 4p = ${fmt(D)}</span><br>`;
+ if(D>=0){let r1=(s-Math.sqrt(D))/2,r2=(s+Math.sqrt(D))/2;dot(vX,r1,r2,cx,cy,sc,'#5b9bd5');dot(vX,r2,r1,cx,cy,sc,'#b07de8');res+=`<span class="lbl">intersections:</span> <span class="v-rat">(${fmt(r1)}, ${fmt(r2)})</span> and <span class="v-conj">(${fmt(r2)}, ${fmt(r1)})</span><br><span class="lbl">roots:</span> <span class="v-rat">${fmt(r1)}, ${fmt(r2)}</span>`;}else{res+=`<span class="lbl">intersections:</span> <span class="v-irr">none in the real plane</span><br><span class="lbl">roots:</span> complex conjugate pair`;}
+ document.getElementById('vietaResult').innerHTML=res;}
+sumS.addEventListener('input',drawVieta);prodS.addEventListener('input',drawVieta);drawVieta();
+
+const qC=document.getElementById('quadCanvas'),qX=qC.getContext('2d'),aS=document.getElementById('aSlider'),bS=document.getElementById('bSlider'),cS=document.getElementById('cSlider');
+function drawQuad(){const W=650,H=520,cx=W/2,cy=H/2,sc=45;let a=parseFloat(aS.value);if(Math.abs(a)<.1)a=a>=0?.1:-.1;let b=parseFloat(bS.value),c=parseFloat(cS.value);document.getElementById('aVal').textContent='a = '+a.toFixed(1);document.getElementById('bVal').textContent='b = '+b.toFixed(1);document.getElementById('cVal').textContent='c = '+c.toFixed(1);drawAxes(qX,W,H,cx,cy,sc,-7,7,-6,6);
+ qX.strokeStyle='rgba(91,155,213,0.58)';qX.lineWidth=2.6;qX.beginPath();let first=true;for(let x=-7;x<=7;x+=.025){let y=a*x*x+b*x+c;if(y<-6.5||y>6.5){first=true;continue;}let sx=cx+x*sc,sy=cy-y*sc;if(first){qX.moveTo(sx,sy);first=false;}else qX.lineTo(sx,sy);}qX.stroke();
+ let D=b*b-4*a*c,mid=-b/(2*a),half=D>=0?Math.sqrt(D)/(2*Math.abs(a)):NaN; qX.strokeStyle='rgba(201,168,76,0.4)';qX.setLineDash([3,5]);qX.beginPath();qX.moveTo(cx+mid*sc,0);qX.lineTo(cx+mid*sc,H);qX.stroke();qX.setLineDash([]);
+ let res=`<span class="lbl">quadratic:</span> <span class="v-gold">${fmt(a)}x² + ${fmt(b)}x + ${fmt(c)} = 0</span><br><span class="lbl">midpoint of roots:</span> <span class="v-proj">−b/2a = ${fmt(mid)}</span><br><span class="lbl">discriminant:</span> <span class="${D>=0?'v-rat':'v-irr'}">Δ = ${fmt(D)}</span><br>`;
+ if(D>0){let r1=(-b-Math.sqrt(D))/(2*a),r2=(-b+Math.sqrt(D))/(2*a);dot(qX,r1,0,cx,cy,sc,'#5b9bd5');dot(qX,r2,0,cx,cy,sc,'#b07de8');res+=`<span class="lbl">half-distance:</span> <span class="v-irr">√Δ/2a = ${fmt(Math.sqrt(D)/(2*a))}</span><br><span class="lbl">roots:</span> <span class="v-rat">${fmt(r1)}, ${fmt(r2)}</span>`;}else if(Math.abs(D)<1e-8){dot(qX,mid,0,cx,cy,sc,'#e8c95a');res+=`<span class="lbl">roots:</span> <span class="v-gold">one repeated root at ${fmt(mid)}</span>`;}else{res+=`<span class="lbl">roots:</span> <span class="v-irr">${fmt(mid)} ± ${fmt(Math.sqrt(-D)/(2*Math.abs(a)))}i</span>`;}
+ document.getElementById('quadResult').innerHTML=res;}
+aS.addEventListener('input',drawQuad);bS.addEventListener('input',drawQuad);cS.addEventListener('input',drawQuad);drawQuad();
+
+const cC=document.getElementById('circleCanvas'),cX=cC.getContext('2d'),mS=document.getElementById('mSlider');
+function drawCircle(){const W=650,H=520,cx=W/2,cy=H/2,sc=190;let m=parseFloat(mS.value);document.getElementById('mVal').textContent='m = '+m.toFixed(2);drawAxes(cX,W,H,cx,cy,sc,-1.6,1.6,-1.25,1.25);
+ cX.strokeStyle='rgba(91,155,213,0.55)';cX.lineWidth=3;cX.beginPath();cX.arc(cx,cy,sc,0,Math.PI*2);cX.stroke();cX.fillStyle='rgba(91,155,213,0.06)';cX.fill();
+ cX.strokeStyle='rgba(201,168,76,0.65)';cX.setLineDash([6,4]);cX.lineWidth=2;cX.beginPath();cX.moveTo(cx-1.4*sc,cy-m*(-1.4+1)*sc);cX.lineTo(cx+1.25*sc,cy-m*(1.25+1)*sc);cX.stroke();cX.setLineDash([]);
+ dot(cX,-1,0,cx,cy,sc,'#e8c95a');let x=(1-m*m)/(1+m*m),y=2*m/(1+m*m);dot(cX,x,y,cx,cy,sc,'#5b9bd5');
+ document.getElementById('circleResult').innerHTML=`<span class="lbl">known root:</span> <span class="v-gold">x = −1</span><br><span class="lbl">other intersection:</span> <span class="v-rat">x = (1−m²)/(1+m²) = ${fmt(x)}, y = 2m/(1+m²) = ${fmt(y)}</span><br><span class="lbl">lesson:</span> rational slope gives rational coordinates; the quadratic collapses because one root is already known.`;}
+mS.addEventListener('input',drawCircle);drawCircle();
+
+const hC=document.getElementById('hypCanvas'),hX=hC.getContext('2d'),kS=document.getElementById('kSlider');
+function drawHyp(){const W=650,H=520,cx=W*.28,cy=H/2,sc=45;let k=parseInt(kS.value);document.getElementById('kVal').textContent='k = '+k;drawAxes(hX,W,H,cx,cy,sc,-4,12,-6,6);
+ hX.strokeStyle='rgba(224,120,80,0.58)';hX.lineWidth=2.8;hX.beginPath();let first=true;for(let x=.08;x<=12;x+=.025){let y=1/x;if(y<-6.5||y>6.5){first=true;continue;}let sx=cx+x*sc,sy=cy-y*sc;if(first){hX.moveTo(sx,sy);first=false;}else hX.lineTo(sx,sy);}hX.stroke();hX.beginPath();first=true;for(let x=-.08;x>=-4;x-=.025){let y=1/x;if(y<-6.5||y>6.5){first=true;continue;}let sx=cx+x*sc,sy=cy-y*sc;if(first){hX.moveTo(sx,sy);first=false;}else hX.lineTo(sx,sy);}hX.stroke();
+ hX.strokeStyle='rgba(201,168,76,0.65)';hX.setLineDash([6,4]);hX.lineWidth=2;hX.beginPath();let x1=-4,x2=12;hX.moveTo(cx+x1*sc,cy-(x1-k)*sc);hX.lineTo(cx+x2*sc,cy-(x2-k)*sc);hX.stroke();hX.setLineDash([]);
+ let D=k*k+4,r1=(k-Math.sqrt(D))/2,r2=(k+Math.sqrt(D))/2;dot(hX,r1,1/r1,cx,cy,sc,'#b07de8');dot(hX,r2,1/r2,cx,cy,sc,'#e07850');
+ document.getElementById('hypResult').innerHTML=`<span class="lbl">substitution:</span> <span class="v-gold">x(x−${k})=1</span> → <span class="v-irr">x²−${k}x−1=0</span><br><span class="lbl">discriminant:</span> <span class="v-irr">Δ = ${k}²+4 = ${D}</span><br><span class="lbl">roots:</span> <span class="v-irr">(${k} − √${D})/2 = ${fmt(r1)}</span>, <span class="v-irr">(${k} + √${D})/2 = ${fmt(r2)}</span><br><span class="lbl">Vieta:</span> <span class="v-conj">sum = ${k}, product = −1</span>`;}
+kS.addEventListener('input',drawHyp);drawHyp();
+</script>
+</body>
+</html>
