@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lines Meet Curves — Part II: Projective Geometry</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f13;
+  --bg-card: #16171d;
+  --bg-deep: #0b0c10;
+  --gold: #c9a84c;
+  --gold-dim: #8a7233;
+  --gold-bright: #e8c95a;
+  --text: #d4d0c8;
+  --text-dim: #8a877e;
+  --text-bright: #f0ece0;
+  --rational: #5b9bd5;
+  --rational-bg: rgba(91,155,213,0.12);
+  --irrational: #e07850;
+  --irrational-bg: rgba(224,120,80,0.12);
+  --integer: #6abf8a;
+  --integer-bg: rgba(106,191,138,0.12);
+  --conjugate: #b07de8;
+  --conjugate-bg: rgba(176,125,232,0.12);
+  --projective: #e0c850;
+  --projective-bg: rgba(224,200,80,0.10);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-weight:400; line-height:1.7; }
+.container { max-width:1000px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+h1 { font-family:'Cormorant Garamond',serif; font-weight:700; font-size:clamp(1.8rem,4.5vw,2.8rem); color:var(--gold); text-align:center; margin-bottom:0.2rem; }
+.subtitle { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--text-dim); text-align:center; margin-bottom:0.5rem; letter-spacing:0.06em; text-transform:uppercase; }
+.page-nav { text-align:center; margin-bottom:2.5rem; }
+.page-nav a { font-family:'IBM Plex Mono',monospace; font-size:0.78rem; color:var(--gold-dim); text-decoration:none; border:1px solid var(--gold-dim); padding:0.3rem 0.9rem; border-radius:4px; transition:all 0.25s; margin:0 0.3rem; }
+.page-nav a:hover { color:var(--gold); border-color:var(--gold); background:rgba(201,168,76,0.08); }
+.page-nav .active { color:var(--gold); border-color:var(--gold); background:rgba(201,168,76,0.1); }
+
+h2 { font-family:'Cormorant Garamond',serif; font-weight:600; font-size:1.5rem; color:var(--gold); margin:2.5rem 0 0.75rem; border-bottom:1px solid var(--gold-dim); padding-bottom:0.4rem; }
+h3 { font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--text-bright); margin:1.4rem 0 0.4rem; }
+p { margin-bottom:0.9rem; font-size:0.92rem; }
+
+.question-box { background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.02)); border-left:3px solid var(--gold); padding:0.9rem 1.15rem; margin:1.1rem 0; font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-style:italic; color:var(--gold-bright); border-radius:0 6px 6px 0; }
+.reveal-btn { display:inline-block; background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'IBM Plex Mono',monospace; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:4px; cursor:pointer; margin:0.4rem 0 0.9rem; transition:all 0.25s; }
+.reveal-btn:hover { background:rgba(201,168,76,0.12); border-color:var(--gold); }
+.reveal-content { max-height:0; overflow:hidden; transition:max-height 0.5s ease, opacity 0.4s ease; opacity:0; }
+.reveal-content.open { max-height:4000px; opacity:1; }
+.math-block { font-family:'IBM Plex Mono',monospace; font-size:0.85rem; background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15); padding:0.7rem 1.1rem; border-radius:6px; margin:0.9rem 0; text-align:center; color:var(--text-bright); overflow-x:auto; line-height:1.9; }
+.math-block .hl-r { color:var(--rational); }
+.math-block .hl-i { color:var(--irrational); }
+.math-block .hl-p { color:var(--projective); }
+.tag { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.72rem; padding:0.12rem 0.45rem; border-radius:3px; font-weight:500; }
+.tag-rational { background:var(--rational-bg); color:var(--rational); }
+.tag-irrational { background:var(--irrational-bg); color:var(--irrational); }
+.tag-projective { background:var(--projective-bg); color:var(--projective); }
+
+.panel { background:var(--bg-card); border:1px solid rgba(201,168,76,0.12); border-radius:10px; padding:1.5rem; margin:1.5rem 0; }
+.canvas-wrap { position:relative; width:100%; max-width:600px; margin:0 auto; }
+canvas { display:block; width:100%; border-radius:6px; background:var(--bg-deep); }
+
+.slider-row { display:flex; align-items:center; gap:1rem; margin:1rem 0 0.5rem; flex-wrap:wrap; }
+.slider-row label { font-family:'IBM Plex Mono',monospace; font-size:0.82rem; color:var(--gold); min-width:50px; }
+.slider-val { font-family:'IBM Plex Mono',monospace; font-size:0.85rem; color:var(--text-bright); min-width:80px; text-align:right; }
+
+.result-box { background:rgba(0,0,0,0.3); border:1px solid rgba(201,168,76,0.1); border-radius:6px; padding:0.75rem 1rem; margin-top:0.75rem; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; line-height:1.9; }
+.lbl { color:var(--text-dim); }
+.v-rat { color:var(--rational); font-weight:500; }
+.v-irr { color:var(--irrational); font-weight:500; }
+.v-gold { color:var(--gold-bright); font-weight:500; }
+.v-conj { color:var(--conjugate); font-weight:500; }
+.v-proj { color:var(--projective); font-weight:500; }
+
+.concept-box { border:1px solid; border-radius:8px; padding:1rem 1.25rem; margin:1.2rem 0; }
+.concept-box.proj { border-color:rgba(224,200,80,0.25); background:var(--projective-bg); }
+.concept-box h3 { margin-top:0; }
+
+.side-by-side { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0; }
+@media (max-width:700px) { .side-by-side { grid-template-columns:1fr; } }
+.compare-card { background:var(--bg-card); border-radius:10px; padding:1.15rem; border:1px solid rgba(201,168,76,0.1); }
+.compare-card h3 { margin-top:0; }
+
+/* Discrete slider */
+.discrete-slider { display:flex; align-items:center; flex:1; min-width:200px; position:relative; height:40px; }
+.discrete-track { position:absolute; top:50%; left:20px; right:20px; height:3px; background:rgba(201,168,76,0.2); transform:translateY(-50%); border-radius:2px; }
+.discrete-fill { position:absolute; top:50%; left:20px; height:3px; background:var(--gold); transform:translateY(-50%); border-radius:2px; transition:width 0.15s; }
+.discrete-stop { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:var(--bg-card); border:2px solid var(--gold-dim); transform:translate(-50%,-50%); cursor:pointer; transition:all 0.15s; z-index:2; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; display:flex; align-items:center; justify-content:center; color:var(--text-dim); }
+.discrete-stop:hover { border-color:var(--gold); transform:translate(-50%,-50%) scale(1.15); }
+.discrete-stop.active { background:var(--gold); border-color:var(--gold-bright); color:var(--bg); font-weight:600; width:28px; height:28px; font-size:0.75rem; }
+
+footer { text-align:center; margin-top:4rem; padding-top:1.5rem; border-top:1px solid rgba(201,168,76,0.15); font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--text-dim); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Lines Meet Curves</h1>
+<p class="subtitle">Part II · Projective Geometry</p>
+<div class="page-nav">
+  <a href="https://leelemacjames.github.io/lines-meet-curves-p1.html">Part I: Number Types</a>
+  <a class="active" href="#">Part II: Projective Geometry</a>
+</div>
+
+<!-- ===== HOMOGENEOUS COORDINATES ===== -->
+<h2>Homogeneous Coordinates</h2>
+
+<p>Ordinary coordinates use two numbers (x, y) to fix a point. Projective geometry uses three: [X : Y : Z]. The rule is that scaling all three by the same factor gives the same point:</p>
+
+<div class="math-block">[X : Y : Z] = [2X : 2Y : 2Z] = [&minus;X : &minus;Y : &minus;Z]</div>
+
+<p>To recover ordinary coordinates, divide through by Z:</p>
+
+<div class="math-block">x = X/Z, &emsp; y = Y/Z &emsp; (provided Z ≠ 0)</div>
+
+<div class="question-box">What happens when Z = 0? Where does that "point" live?</div>
+
+<button class="reveal-btn" onclick="toggle('revZ')">Reveal</button>
+<div id="revZ" class="reveal-content">
+<p>When Z = 0, the ratios X/Z and Y/Z blow up. These are <strong>points at infinity</strong>. They represent directions, not locations. Every family of parallel lines meets at a shared point at infinity. In projective geometry there are no parallel lines: every pair meets somewhere, perhaps at infinity.</p>
+<p>The full projective plane = the ordinary plane + a "line at infinity" (all points [X : Y : 0]).</p>
+</div>
+
+<h2>The Circle in Projective Dress</h2>
+
+<p>The unit circle x² + y² = 1 becomes, after substituting x = X/Z and y = Y/Z and clearing denominators:</p>
+
+<div class="math-block"><span class="hl-p">X² + Y² = Z²</span></div>
+
+<div class="question-box">This looks familiar. Where else have those three letters appeared in that arrangement?</div>
+
+<button class="reveal-btn" onclick="toggle('revPyth')">Reveal</button>
+<div id="revPyth" class="reveal-content">
+<p>It is the Pythagorean equation itself: a² + b² = c². In homogeneous coordinates, the unit circle <em>is</em> the Pythagorean equation. Finding rational points on the circle is identical to finding integer solutions of a² + b² = c². The projective viewpoint reveals that Pythagorean triples are not a curiosity of number theory but the coordinate geometry of a conic in the projective plane.</p>
+</div>
+
+<div class="concept-box proj">
+<h3 style="color:var(--projective)">Stereographic Projection from (&minus;1, 0)</h3>
+<p style="font-size:0.88rem">The pencil of lines y = m(x + 1) through (&minus;1, 0) is a <span class="tag tag-projective">projective parameterisation</span> of the circle. In homogeneous coordinates, the fixed point is [&minus;1 : 0 : 1]. The line Y = m(X + Z) intersects X² + Y² = Z² at [&minus;1 : 0 : 1] and one other point. The slope m parameterises the entire circle (minus the base point) via a rational map. This is stereographic projection.</p>
+<p style="font-size:0.88rem">The key property: projecting from a <span class="tag tag-rational">rational point on the curve</span> always produces a rational parameterisation. This is a theorem of algebraic geometry, not an accident.</p>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">Projective view: pencil through [&minus;1 : 0 : 1]</h3>
+  <div class="canvas-wrap">
+    <canvas id="projCircleCanvas" width="600" height="600"></canvas>
+  </div>
+  <div class="slider-row">
+    <label>m</label>
+    <input type="range" id="projSlider" min="0.1" max="4" step="0.01" value="0.75" style="flex:1;min-width:150px;accent-color:var(--gold)">
+    <span class="slider-val" id="projSliderVal">m = 3/4</span>
+  </div>
+  <div class="result-box" id="projResult"></div>
+</div>
+
+<!-- ===== THE CONVOLUTED METALLIC CONSTRUCTION ===== -->
+<h2>The Pencil Construction for Metallic Means</h2>
+
+<p>Part I used the elegant formulation: cut xy = 1 with y = x &minus; k. But there is another route, one that mirrors the circle's projective pencil structure more closely.</p>
+
+<p>Consider the same pencil of lines y = m(x + 1) through (&minus;1, 0), but now intersecting a <em>different</em> hyperbola:</p>
+
+<div class="math-block"><span class="hl-i">xy &minus; kx &minus; y = 0</span></div>
+
+<div class="question-box">What curve is this? Rearrange to isolate y.</div>
+
+<button class="reveal-btn" onclick="toggle('revHyp2')">Reveal</button>
+<div id="revHyp2" class="reveal-content">
+<p>Factor y out of two terms: y(x &minus; 1) = kx, so:</p>
+<div class="math-block">y = kx / (x &minus; 1)</div>
+<p>This is a rectangular hyperbola with vertical asymptote x = 1 and horizontal asymptote y = k. Unlike xy = 1, this hyperbola depends on the parameter k, absorbing it into the curve rather than the line.</p>
+</div>
+
+<h3>The Elimination</h3>
+
+<p>Substitute y = m(x + 1) into xy &minus; kx &minus; y = 0:</p>
+
+<div class="math-block">
+m(x+1)·x &minus; kx &minus; m(x+1) = 0<br>
+mx² + mx &minus; kx &minus; mx &minus; m = 0<br>
+mx² &minus; kx &minus; m = 0<br>
+<span class="hl-i">x² &minus; (k/m)x &minus; 1 = 0</span>
+</div>
+
+<p>Setting k/m = n (an integer) recovers the metallic mean quadratic x² &minus; nx &minus; 1 = 0. But notice the redundancy: two parameters (k and m) do the work of one (n = k/m). The construction has a gauge freedom that the simpler xy = 1 version eliminates.</p>
+
+<div class="concept-box proj">
+<h3 style="color:var(--projective)">Projective Comparison</h3>
+<p style="font-size:0.88rem"><strong>Circle construction:</strong> The base point (&minus;1, 0) lies <em>on</em> the circle. One root of the intersection quadratic is always x = &minus;1, collapsing the quadratic to linear. The pencil gives a <span class="tag tag-rational">rational parameterisation</span>.</p>
+<p style="font-size:0.88rem"><strong>Hyperbola construction:</strong> The base point (&minus;1, 0) does <em>not</em> lie on xy &minus; kx &minus; y = 0 (substituting gives k ≠ 0). Both roots of the quadratic survive. The pencil produces an <span class="tag tag-irrational">irrational involution</span>: a Möbius map x ↦ &minus;1/x with fixed points at x = ±i (the circular points at infinity).</p>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">Explore: pencil y = m(x + 1) meets xy &minus; kx &minus; y = 0</h3>
+  <div class="canvas-wrap">
+    <canvas id="pencilHypCanvas" width="600" height="600"></canvas>
+  </div>
+  <div class="slider-row">
+    <label>k =</label>
+    <div class="discrete-slider" id="pencilKSlider">
+      <div class="discrete-track"></div>
+      <div class="discrete-fill" id="pencilKFill"></div>
+    </div>
+  </div>
+  <div class="slider-row">
+    <label>m</label>
+    <input type="range" id="pencilMSlider" min="0.1" max="6" step="0.01" value="1" style="flex:1;min-width:150px;accent-color:var(--gold)">
+    <span class="slider-val" id="pencilMVal">m = 1</span>
+  </div>
+  <div class="result-box" id="pencilResult"></div>
+</div>
+
+<!-- ===== HOMOGENEOUS FORM ===== -->
+<h2>Homogeneous Form of the Hyperbola</h2>
+
+<p>In projective coordinates [X : Y : Z], the hyperbola xy &minus; kx &minus; y = 0 becomes:</p>
+
+<div class="math-block"><span class="hl-p">XY &minus; kXZ &minus; YZ = 0</span></div>
+
+<p>The line y = m(x + 1) becomes Y = m(X + Z), or equivalently Y &minus; mX &minus; mZ = 0. The intersection of these two projective conics and lines is the natural habitat of the metallic mean construction.</p>
+
+<div class="question-box">Where does the hyperbola XY &minus; kXZ &minus; YZ = 0 meet the line at infinity (Z = 0)?</div>
+
+<button class="reveal-btn" onclick="toggle('revInf')">Reveal</button>
+<div id="revInf" class="reveal-content">
+<p>Set Z = 0: the equation becomes XY = 0. So the hyperbola meets infinity at [1 : 0 : 0] and [0 : 1 : 0], which are the "ends" of the x-axis and y-axis respectively. Every rectangular hyperbola with axes parallel to the coordinate axes passes through these same two points at infinity. This is why the asymptotes are always horizontal and vertical.</p>
+</div>
+
+<!-- ===== FINAL COMPARISON ===== -->
+<h2>Two Constructions, One Pencil</h2>
+
+<div class="side-by-side">
+  <div class="compare-card">
+    <h3 style="color:var(--rational)">Pythagorean (Circle)</h3>
+    <p style="font-size:0.85rem"><strong>Affine:</strong> x² + y² = 1</p>
+    <p style="font-size:0.85rem"><strong>Projective:</strong> X² + Y² = Z²</p>
+    <p style="font-size:0.85rem"><strong>Base point:</strong> on the curve</p>
+    <p style="font-size:0.85rem"><strong>Pencil:</strong> y = m(x+1)</p>
+    <p style="font-size:0.85rem"><strong>Result:</strong> linear residual</p>
+    <p style="font-size:0.85rem"><strong>Output:</strong> <span class="tag tag-rational">rational</span></p>
+    <p style="font-size:0.85rem;color:var(--text-dim)">Elegant: the right tool for the job</p>
+  </div>
+  <div class="compare-card">
+    <h3 style="color:var(--irrational)">Metallic (Hyperbola)</h3>
+    <p style="font-size:0.85rem"><strong>Simple:</strong> xy = 1, y = x &minus; k</p>
+    <p style="font-size:0.85rem"><strong>Pencil form:</strong> xy &minus; kx &minus; y = 0</p>
+    <p style="font-size:0.85rem"><strong>Base point:</strong> off the curve</p>
+    <p style="font-size:0.85rem"><strong>Pencil:</strong> y = m(x+1), n = k/m</p>
+    <p style="font-size:0.85rem"><strong>Result:</strong> genuine quadratic</p>
+    <p style="font-size:0.85rem"><strong>Output:</strong> <span class="tag tag-irrational">irrational</span></p>
+    <p style="font-size:0.85rem;color:var(--text-dim)">Convoluted: gauge redundancy in k/m</p>
+  </div>
+</div>
+
+<p>The pencil construction through (&minus;1, 0) is the shared projective scaffolding. The circle construction is elegant precisely because it exploits the base point lying on the curve. The metallic construction, in pencil form, carries an extra parameter that must be quotiented out. The simpler xy = 1 formulation is more honest: it uses one parameter (k) for one degree of freedom, and lets the geometry speak without projective overhead.</p>
+
+<p>Both constructions live in the projective plane. But the circle earns its projective treatment; the metallic means merely tolerate it.</p>
+
+<div class="page-nav" style="margin-top:2.5rem">
+  <a href="https://leelemacjames.github.io/lines-meet-curves-p1.html">← Back to Part I: Number Types</a>
+</div>
+
+<footer>Constructed by Silicon · Anthropic Claude · Architect Carbon · LeeMcCullochJames</footer>
+</div>
+
+<script>
+function toggle(id){ document.getElementById(id).classList.toggle('open'); }
+function gcd(a,b){ a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a; }
+function snapFrac(val){
+  const fs=[];
+  for(let d=1;d<=12;d++) for(let n=1;n<=d*5;n++) fs.push([n,d,n/d]);
+  fs.sort((a,b)=>Math.abs(a[2]-val)-Math.abs(b[2]-val));
+  return fs[0];
+}
+
+// ========== PROJECTIVE CIRCLE ==========
+const pC=document.getElementById('projCircleCanvas'),pX=pC.getContext('2d');
+const pSl=document.getElementById('projSlider'),pSV=document.getElementById('projSliderVal'),pRes=document.getElementById('projResult');
+
+function drawProjCircle(){
+  const W=600,H=600,cx=W/2,cy=H/2,sc=200;
+  pX.clearRect(0,0,W,H);
+  pX.strokeStyle='rgba(201,168,76,0.06)';pX.lineWidth=1;
+  for(let i=-2;i<=2;i++){
+    pX.beginPath();pX.moveTo(cx+i*sc,0);pX.lineTo(cx+i*sc,H);pX.stroke();
+    pX.beginPath();pX.moveTo(0,cy+i*sc);pX.lineTo(W,cy+i*sc);pX.stroke();
+  }
+  pX.strokeStyle='rgba(201,168,76,0.18)';pX.lineWidth=1.5;
+  pX.beginPath();pX.moveTo(0,cy);pX.lineTo(W,cy);pX.stroke();
+  pX.beginPath();pX.moveTo(cx,0);pX.lineTo(cx,H);pX.stroke();
+
+  pX.fillStyle='rgba(201,168,76,0.2)';pX.font='10px "IBM Plex Mono"';
+  pX.fillText('1',cx+sc+4,cy+14);pX.fillText('−1',cx-sc-18,cy+14);
+
+  // circle
+  pX.strokeStyle='rgba(91,155,213,0.45)';pX.lineWidth=2.5;
+  pX.beginPath();pX.arc(cx,cy,sc,0,Math.PI*2);pX.stroke();
+  pX.fillStyle='rgba(91,155,213,0.08)';pX.fill();
+  pX.fillStyle='rgba(91,155,213,0.3)';pX.font='italic 13px "Cormorant Garamond"';
+  pX.fillText('X² + Y² = Z²',cx+sc*0.4,cy-sc*0.8);
+
+  let f=snapFrac(parseFloat(pSl.value)); let mN=f[0],mD=f[1],m=f[2];
+  pSV.textContent=mD===1?`m = ${mN}`:`m = ${mN}/${mD}`;
+
+  // line
+  pX.strokeStyle='rgba(201,168,76,0.55)';pX.lineWidth=2;pX.setLineDash([6,4]);
+  pX.beginPath();pX.moveTo(cx-1.5*sc,cy-m*(-1.5+1)*sc);pX.lineTo(cx+1.5*sc,cy-m*(1.5+1)*sc);pX.stroke();
+  pX.setLineDash([]);
+
+  // base point
+  pX.fillStyle='rgba(201,168,76,0.9)';pX.beginPath();pX.arc(cx-sc,cy,6,0,Math.PI*2);pX.fill();
+  pX.fillStyle='rgba(201,168,76,0.6)';pX.font='500 10px "IBM Plex Mono"';
+  pX.fillText('[−1:0:1]',cx-sc-16,cy+20);
+
+  // intersection
+  const ix=(1-m*m)/(1+m*m), iy=2*m/(1+m*m);
+  pX.fillStyle='#5b9bd5';pX.beginPath();pX.arc(cx+ix*sc,cy-iy*sc,7,0,Math.PI*2);pX.fill();
+  pX.strokeStyle='rgba(91,155,213,0.3)';pX.lineWidth=2;
+  pX.beginPath();pX.arc(cx+ix*sc,cy-iy*sc,13,0,Math.PI*2);pX.stroke();
+
+  // Homogeneous coords of intersection
+  const den=mD*mD+mN*mN;
+  const Xh=mD*mD-mN*mN, Yh=2*mN*mD, Zh=den;
+  const g1=gcd(gcd(Math.abs(Xh),Math.abs(Yh)),Zh);
+
+  pX.fillStyle='#5b9bd5';pX.font='500 10px "IBM Plex Mono"';
+  pX.fillText(`[${Xh/g1}:${Yh/g1}:${Zh/g1}]`,cx+ix*sc+16,cy-iy*sc-8);
+
+  // triple
+  let p=mN,q=mD,g0=gcd(p,q);p/=g0;q/=g0;
+  let ta=Math.abs(q*q-p*p),tb=2*p*q,tc=p*p+q*q;
+  let gt=gcd(gcd(ta,tb),tc);ta/=gt;tb/=gt;tc/=gt;
+
+  pRes.innerHTML=
+    `<span class="lbl">slope:</span> <span class="v-gold">m = ${mD===1?mN:mN+'/'+mD}</span><br>`+
+    `<span class="lbl">affine point:</span> <span class="v-rat">(${ix.toFixed(4)}, ${iy.toFixed(4)})</span> <span class="tag tag-rational">rational</span><br>`+
+    `<span class="lbl">projective point:</span> <span class="v-proj">[${Xh/g1} : ${Yh/g1} : ${Zh/g1}]</span><br>`+
+    `<span class="lbl">Pythagorean triple:</span> <span class="v-rat">${ta}² + ${tb}² = ${tc}²</span>  →  <span style="color:var(--text-dim)">${ta*ta} + ${tb*tb} = ${tc*tc}</span>`;
+}
+pSl.addEventListener('input',drawProjCircle);
+drawProjCircle();
+
+// ========== PENCIL HYPERBOLA: y=m(x+1) meets xy-kx-y=0 ==========
+const phC=document.getElementById('pencilHypCanvas'),phX=phC.getContext('2d');
+const pencilMSl=document.getElementById('pencilMSlider'),pencilMV=document.getElementById('pencilMVal');
+const pencilRes=document.getElementById('pencilResult');
+const pencilKSlider=document.getElementById('pencilKSlider');
+const pencilKFill=document.getElementById('pencilKFill');
+
+const metalNames=['Golden','Silver','Bronze','Copper','Nickel','Tin'];
+let pencilK=1;
+
+function buildPencilSlider(){
+  for(let i=1;i<=6;i++){
+    const stop=document.createElement('div');
+    stop.className='discrete-stop'+(i===1?' active':'');
+    stop.dataset.k=i;stop.textContent=i;
+    stop.style.left=(20+((i-1)/5)*(600-40))/600*100+'%';
+    stop.addEventListener('click',()=>{
+      pencilK=i;
+      document.querySelectorAll('#pencilKSlider .discrete-stop').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.k)===i));
+      const fillW=((i-1)/5)*(580-20);
+      pencilKFill.style.width=fillW+'px';
+      drawPencilHyp();
+    });
+    pencilKSlider.appendChild(stop);
+  }
+}
+
+function drawPencilHyp(){
+  const W=600,H=600,cx=W*0.38,cy=H/2,sc=60;
+  phX.clearRect(0,0,W,H);
+
+  // grid
+  phX.strokeStyle='rgba(201,168,76,0.05)';phX.lineWidth=1;
+  for(let i=-5;i<=8;i++){
+    phX.beginPath();phX.moveTo(cx+i*sc,0);phX.lineTo(cx+i*sc,H);phX.stroke();
+    phX.beginPath();phX.moveTo(0,cy+i*sc);phX.lineTo(W,cy+i*sc);phX.stroke();
+  }
+  phX.strokeStyle='rgba(201,168,76,0.15)';phX.lineWidth=1.5;
+  phX.beginPath();phX.moveTo(0,cy);phX.lineTo(W,cy);phX.stroke();
+  phX.beginPath();phX.moveTo(cx,0);phX.lineTo(cx,H);phX.stroke();
+  // asymptote at x=1
+  phX.strokeStyle='rgba(224,120,80,0.15)';phX.lineWidth=1;phX.setLineDash([3,5]);
+  phX.beginPath();phX.moveTo(cx+1*sc,0);phX.lineTo(cx+1*sc,H);phX.stroke();
+  // asymptote at y=k
+  phX.beginPath();phX.moveTo(0,cy-pencilK*sc);phX.lineTo(W,cy-pencilK*sc);phX.stroke();
+  phX.setLineDash([]);
+
+  phX.fillStyle='rgba(201,168,76,0.2)';phX.font='10px "IBM Plex Mono"';
+  for(let i=-4;i<=8;i++){if(i===0)continue;phX.fillText(i,cx+i*sc-4,cy+14);}
+
+  const k=pencilK;
+  // Hyperbola y = kx/(x-1)
+  phX.strokeStyle='rgba(224,120,80,0.5)';phX.lineWidth=2.5;
+  // right branch (x>1)
+  phX.beginPath();let first=true;
+  for(let px=1.05;px<=10;px+=0.03){
+    let py=k*px/(px-1),sx=cx+px*sc,sy=cy-py*sc;
+    if(sy<-20||sy>H+20){first=true;continue;}
+    if(first){phX.moveTo(sx,sy);first=false;}else phX.lineTo(sx,sy);
+  }
+  phX.stroke();
+  // left branch (x<1)
+  phX.beginPath();first=true;
+  for(let px=0.95;px>=-6;px-=0.03){
+    let py=k*px/(px-1),sx=cx+px*sc,sy=cy-py*sc;
+    if(sy<-20||sy>H+20){first=true;continue;}
+    if(first){phX.moveTo(sx,sy);first=false;}else phX.lineTo(sx,sy);
+  }
+  phX.stroke();
+
+  phX.fillStyle='rgba(224,120,80,0.3)';phX.font='italic 12px "Cormorant Garamond"';
+  phX.fillText(`y = ${k}x/(x−1)`,cx+3.5*sc,cy-k*3.5/(3.5-1)*sc-6);
+
+  // Get m
+  let rawM=parseFloat(pencilMSl.value);
+  let f=snapFrac(rawM); let mN=f[0],mD=f[1],m=f[2];
+  pencilMV.textContent=mD===1?`m = ${mN}`:`m = ${mN}/${mD}`;
+
+  // Line y=m(x+1)
+  phX.strokeStyle='rgba(201,168,76,0.55)';phX.lineWidth=2;phX.setLineDash([6,4]);
+  const lx1=-2.5,lx2=8;
+  phX.beginPath();phX.moveTo(cx+lx1*sc,cy-m*(lx1+1)*sc);phX.lineTo(cx+lx2*sc,cy-m*(lx2+1)*sc);phX.stroke();
+  phX.setLineDash([]);
+
+  // base point (-1,0)
+  phX.fillStyle='rgba(201,168,76,0.9)';phX.beginPath();phX.arc(cx-sc,cy,5,0,Math.PI*2);phX.fill();
+  phX.fillStyle='rgba(201,168,76,0.6)';phX.font='500 10px "IBM Plex Mono"';
+  phX.fillText('(−1, 0)',cx-sc-14,cy+18);
+
+  // Solve: x² - (k/m)x - 1 = 0
+  const n=k/m;
+  const disc=n*n+4,sq=Math.sqrt(disc);
+  const x1=(n+sq)/2, x2=(n-sq)/2;
+  const y1=m*(x1+1), y2=m*(x2+1);
+
+  // point 1
+  phX.fillStyle='#e07850';phX.beginPath();phX.arc(cx+x1*sc,cy-y1*sc,7,0,Math.PI*2);phX.fill();
+  phX.strokeStyle='rgba(224,120,80,0.3)';phX.lineWidth=2;
+  phX.beginPath();phX.arc(cx+x1*sc,cy-y1*sc,13,0,Math.PI*2);phX.stroke();
+  // point 2
+  phX.fillStyle='#b07de8';phX.beginPath();phX.arc(cx+x2*sc,cy-y2*sc,7,0,Math.PI*2);phX.fill();
+  phX.strokeStyle='rgba(176,125,232,0.3)';phX.lineWidth=2;
+  phX.beginPath();phX.arc(cx+x2*sc,cy-y2*sc,13,0,Math.PI*2);phX.stroke();
+
+  // labels
+  phX.fillStyle='#e07850';phX.font='500 10px "IBM Plex Mono"';
+  phX.fillText(`(${x1.toFixed(3)}, ${y1.toFixed(3)})`,cx+x1*sc+14,cy-y1*sc-8);
+  phX.fillStyle='#b07de8';
+  phX.fillText(`(${x2.toFixed(3)}, ${y2.toFixed(3)})`,cx+x2*sc+14,cy-y2*sc+18);
+
+  // connecting line
+  phX.strokeStyle='rgba(176,125,232,0.12)';phX.lineWidth=1;phX.setLineDash([3,5]);
+  phX.beginPath();phX.moveTo(cx+x1*sc,cy-y1*sc);phX.lineTo(cx+x2*sc,cy-y2*sc);phX.stroke();
+  phX.setLineDash([]);
+
+  const nDisp=mD===1?`${k}/${mN}`:( mN===1?`${k*mD}`:`${k*mD}/${mN}`);
+  const nVal=(k/m);
+  const isMetallic=Math.abs(nVal-Math.round(nVal))<0.01 && Math.round(nVal)>=1 && Math.round(nVal)<=6;
+  const nInt=Math.round(nVal);
+
+  pencilRes.innerHTML=
+    `<span class="lbl">pencil:</span> <span class="v-gold">y = ${mD===1?mN:mN+'/'+mD}(x + 1)</span> &ensp; <span class="lbl">curve k:</span> <span class="v-gold">${k}</span><br>`+
+    `<span class="lbl">effective n = k/m:</span> <span class="v-irr">${nVal.toFixed(4)}</span>`+
+    (isMetallic?` → <span class="tag tag-irrational">${metalNames[nInt-1]} mean</span>`:'')+`<br>`+
+    `<span class="lbl">quadratic:</span> <span class="v-gold">x² − ${nVal.toFixed(3)}x − 1 = 0</span><br>`+
+    `<span class="lbl">roots:</span> <span class="v-irr">${x1.toFixed(5)}</span>, <span class="v-conj">${x2.toFixed(5)}</span><br>`+
+    `<span class="lbl">product:</span> <span class="v-gold">x₁·x₂ = ${(x1*x2).toFixed(4)}</span> <span style="color:var(--text-dim)">(always −1)</span><br>`+
+    `<span style="font-size:0.72rem;color:var(--text-dim)">Set m = k/${isMetallic?nInt:'n'} to hit the ${isMetallic?metalNames[nInt-1]:'n-th metallic'} mean exactly. The gauge redundancy k/m = n is visible: many (k,m) pairs give the same quadratic.</span>`;
+}
+
+buildPencilSlider();
+drawPencilHyp();
+pencilMSl.addEventListener('input',drawPencilHyp);
+</script>
+</body>
+</html>
