@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Algebra You Already Know — Structure, Linearisation, and Logs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0d0d0f;
+  --bg-secondary: #141418;
+  --bg-card: #1a1a1f;
+  --bg-card-hover: #1f1f26;
+  --bg-reveal: #12121a;
+  --gold: #c9a84c;
+  --gold-dim: #a0843a;
+  --gold-bright: #e8c45a;
+  --cyan: #4ecdc4;
+  --cyan-dim: #2a8a84;
+  --magenta: #c44a8a;
+  --magenta-dim: #8a3366;
+  --text-primary: #e8e6e1;
+  --text-secondary: #9a9890;
+  --text-muted: #6a6860;
+  --danger: #c44a4a;
+  --success: #5a9a5a;
+  --border: #2a2a30;
+  --border-gold: rgba(201,168,76,0.25);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-display);line-height:1.7;min-height:100vh;}
+
+/* ─── Nav ─── */
+nav{position:sticky;top:0;z-index:100;background:rgba(13,13,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0.6rem 1.2rem;display:flex;align-items:center;gap:0.8rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+nav a{font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);text-decoration:none;white-space:nowrap;letter-spacing:0.06em;text-transform:uppercase;padding:0.25rem 0.45rem;border-radius:3px;transition:color 0.3s,background 0.3s;}
+nav a:hover,nav a.active{color:var(--gold);background:rgba(201,168,76,0.08);}
+nav .nav-title{font-family:var(--font-display);font-size:0.95rem;color:var(--gold);font-weight:600;letter-spacing:0.02em;text-transform:none;margin-right:0.6rem;flex-shrink:0;}
+
+/* ─── Main ─── */
+main{max-width:940px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+/* ─── Hero ─── */
+.hero{text-align:center;padding:2.5rem 0 2rem;border-bottom:1px solid var(--border-gold);margin-bottom:3rem;}
+.hero h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);font-weight:700;color:var(--text-primary);line-height:1.15;margin-bottom:0.5rem;}
+.hero h1 span{color:var(--gold);}
+.hero .subtitle{font-style:italic;font-size:1.1rem;color:var(--text-secondary);max-width:620px;margin:0 auto 1rem;}
+.hero .provocation{font-family:var(--font-mono);font-size:0.8rem;color:var(--cyan);letter-spacing:0.04em;background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.15);padding:0.8rem 1.2rem;border-radius:4px;max-width:660px;margin:0 auto;line-height:1.6;}
+
+/* ─── Section ─── */
+section{margin-bottom:3.5rem;}
+section h2{font-size:1.7rem;font-weight:700;margin-bottom:0.3rem;padding-bottom:0.5rem;border-bottom:2px solid var(--border-gold);}
+section h2 .sn{font-family:var(--font-mono);font-size:0.72rem;color:var(--gold-dim);letter-spacing:0.1em;display:block;margin-bottom:0.15rem;}
+section h3{font-size:1.25rem;font-weight:600;color:var(--gold);margin:1.8rem 0 0.5rem;}
+section p{font-size:1.02rem;color:var(--text-secondary);margin-bottom:0.9rem;max-width:72ch;}
+section p strong{color:var(--text-primary);font-weight:600;}
+section p em{color:var(--gold-dim);font-style:italic;}
+section p code{font-family:var(--font-mono);font-size:0.88em;color:var(--cyan);background:rgba(78,205,196,0.06);padding:0.1em 0.35em;border-radius:3px;}
+
+/* ─── Equation block ─── */
+.eq-block{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--gold);padding:1rem 1.3rem;margin:1rem 0;border-radius:0 4px 4px 0;text-align:center;}
+.eq-block .eq{font-family:var(--font-mono);font-size:1.25rem;color:var(--gold-bright);letter-spacing:0.03em;}
+.eq-block .eq-sub{font-style:italic;font-size:0.88rem;color:var(--text-muted);margin-top:0.3rem;}
+.eq-block .eq-map{font-family:var(--font-mono);font-size:0.78rem;color:var(--cyan-dim);margin-top:0.5rem;line-height:1.7;text-align:left;max-width:500px;display:inline-block;}
+
+/* ─── Reveal panels ─── */
+.reveal{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin:1.2rem 0;overflow:hidden;}
+.reveal .r-prompt{padding:0.9rem 1.2rem;font-size:1.05rem;font-weight:600;color:var(--cyan);display:flex;align-items:flex-start;gap:0.6rem;}
+.reveal .r-prompt::before{content:'?';font-family:var(--font-mono);font-size:0.8rem;font-weight:600;color:var(--bg-primary);background:var(--cyan);width:1.3rem;height:1.3rem;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:0.15rem;}
+.reveal .r-hint{padding:0 1.2rem 0.6rem 3.1rem;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);font-style:italic;}
+.reveal .r-btn{display:block;width:100%;padding:0.6rem 1.2rem;background:rgba(201,168,76,0.06);border:none;border-top:1px solid var(--border);color:var(--gold);font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:left;transition:background 0.3s;}
+.reveal .r-btn:hover{background:rgba(201,168,76,0.12);}
+.reveal .r-btn::before{content:'▸ ';}
+.reveal.open .r-btn::before{content:'▾ ';}
+.reveal .r-answer{display:none;padding:1rem 1.2rem;background:var(--bg-reveal);border-top:1px solid var(--border-gold);font-size:0.98rem;color:var(--text-secondary);}
+.reveal.open .r-answer{display:block;}
+.reveal .r-answer p{margin-bottom:0.7rem;}
+
+/* ─── Structure match interactive ─── */
+.struct-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1.2rem 0;}
+@media(max-width:600px){.struct-grid{grid-template-columns:1fr;}}
+.struct-card{background:var(--bg-card);border:1px solid var(--border);border-radius:5px;padding:1rem 1.1rem;cursor:pointer;transition:border-color 0.3s,transform 0.15s;position:relative;}
+.struct-card:hover{border-color:var(--gold-dim);transform:translateY(-1px);}
+.struct-card .sc-eq{font-family:var(--font-mono);font-size:1.1rem;color:var(--gold-bright);margin-bottom:0.3rem;}
+.struct-card .sc-form{font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);margin-bottom:0.2rem;}
+.struct-card .sc-id{display:none;margin-top:0.5rem;padding-top:0.5rem;border-top:1px dashed var(--border);font-family:var(--font-mono);font-size:0.78rem;color:var(--cyan);line-height:1.6;}
+.struct-card.show .sc-id{display:block;}
+.struct-card .sc-tag{position:absolute;top:0.5rem;right:0.6rem;font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);opacity:0.4;}
+
+/* ─── Canvas graphs ─── */
+.graph-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1.3rem;margin:1.2rem 0;}
+.graph-wrap h4{font-family:var(--font-mono);font-size:0.78rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.8rem;}
+.graph-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;}
+.graph-row canvas{background:#0a0a10;border:1px solid var(--border);border-radius:4px;max-width:100%;}
+.graph-controls{flex:1;min-width:200px;}
+.graph-controls label{display:block;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.15rem;}
+.graph-controls input[type="range"]{width:100%;margin-bottom:0.6rem;accent-color:var(--gold);}
+.graph-controls select{width:100%;padding:0.4rem;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);border-radius:3px;font-family:var(--font-mono);font-size:0.78rem;margin-bottom:0.8rem;}
+.graph-readout{font-family:var(--font-mono);font-size:0.78rem;color:var(--text-secondary);line-height:1.8;}
+.graph-readout span{color:var(--gold-bright);}
+.graph-readout .gl{color:var(--text-muted);font-size:0.68rem;}
+
+/* ─── Insight / Confusion ─── */
+.insight{background:rgba(78,205,196,0.05);border:1px solid rgba(78,205,196,0.15);border-left:3px solid var(--cyan);border-radius:0 6px 6px 0;padding:0.9rem 1.2rem;margin:1.2rem 0;}
+.insight .it{font-family:var(--font-mono);font-size:0.7rem;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.3rem;}
+.confusion{background:rgba(196,74,74,0.06);border:1px solid rgba(196,74,74,0.2);border-left:3px solid var(--danger);border-radius:0 6px 6px 0;padding:0.9rem 1.2rem;margin:1.2rem 0;}
+.confusion .ct{font-family:var(--font-mono);font-size:0.7rem;color:var(--danger);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.3rem;}
+
+/* ─── Step-through table ─── */
+.step-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.92rem;}
+.step-table th{font-family:var(--font-mono);font-size:0.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;text-align:left;padding:0.5rem 0.7rem;border-bottom:2px solid var(--border-gold);}
+.step-table td{padding:0.6rem 0.7rem;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-secondary);}
+.step-table td:first-child{font-family:var(--font-mono);font-size:0.82rem;color:var(--text-primary);white-space:nowrap;}
+.step-table .arrow{color:var(--gold);font-size:1.1rem;}
+.step-table .hl{color:var(--cyan);font-family:var(--font-mono);font-size:0.85rem;}
+
+/* ─── Quiz ─── */
+.quiz-item{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1.2rem;margin:0.8rem 0;}
+.quiz-item .qq{font-size:1.05rem;font-weight:600;color:var(--text-primary);margin-bottom:0.7rem;}
+.quiz-item .qo{display:flex;flex-direction:column;gap:0.35rem;}
+.quiz-item .qb{display:block;padding:0.55rem 0.9rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:var(--font-display);font-size:0.92rem;color:var(--text-secondary);transition:all 0.25s;text-align:left;}
+.quiz-item .qb:hover{border-color:var(--gold-dim);color:var(--text-primary);background:rgba(201,168,76,0.04);}
+.quiz-item .qb.correct{border-color:var(--success);background:rgba(90,154,90,0.1);color:var(--success);}
+.quiz-item .qb.wrong{border-color:var(--danger);background:rgba(196,74,74,0.08);color:var(--danger);text-decoration:line-through;}
+.quiz-item .qb.off{pointer-events:none;opacity:0.65;}
+.quiz-item .qf{display:none;margin-top:0.7rem;padding:0.7rem;border-radius:4px;font-size:0.88rem;background:var(--bg-reveal);border:1px solid var(--border);color:var(--text-secondary);}
+.quiz-item .qf.show{display:block;}
+
+/* ─── Log table interactive ─── */
+.log-table-wrap{overflow-x:auto;margin:1rem 0;}
+.log-table{border-collapse:collapse;font-family:var(--font-mono);font-size:0.82rem;min-width:500px;}
+.log-table th{color:var(--gold);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;padding:0.5rem 0.8rem;border-bottom:2px solid var(--border-gold);text-align:center;}
+.log-table td{padding:0.5rem 0.8rem;border-bottom:1px solid var(--border);text-align:center;color:var(--text-secondary);}
+.log-table td.hl{color:var(--cyan);font-weight:500;}
+.log-table input[type="text"]{width:60px;padding:0.3rem;background:var(--bg-secondary);color:var(--gold-bright);border:1px solid var(--border);border-radius:3px;font-family:var(--font-mono);font-size:0.8rem;text-align:center;}
+.log-table input.correct-input{border-color:var(--success);background:rgba(90,154,90,0.1);}
+.log-table input.wrong-input{border-color:var(--danger);background:rgba(196,74,74,0.08);}
+.log-check-btn{font-family:var(--font-mono);font-size:0.75rem;padding:0.5rem 1.2rem;background:rgba(201,168,76,0.1);border:1px solid var(--gold-dim);color:var(--gold);border-radius:4px;cursor:pointer;text-transform:uppercase;letter-spacing:0.08em;margin-top:0.5rem;transition:background 0.3s;}
+.log-check-btn:hover{background:rgba(201,168,76,0.2);}
+
+/* ─── Footer ─── */
+footer{text-align:center;padding:2rem 1.5rem;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);letter-spacing:0.04em;line-height:1.8;}
+footer .g{color:var(--gold-dim);}
+
+@media(max-width:600px){
+  main{padding:1rem 1rem 3rem;}
+  .hero h1{font-size:1.7rem;}
+  .graph-row{flex-direction:column;}
+  .graph-row canvas{width:100%!important;height:auto!important;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">The Algebra You Already Know</span>
+  <a href="#s1">Structure</a>
+  <a href="#s2">Physics Letters</a>
+  <a href="#s3">Linearise</a>
+  <a href="#s4">Logs</a>
+  <a href="#s5">Log-Log</a>
+  <a href="#s6">Grapher</a>
+  <a href="#s7">Quiz</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>The Algebra <span>You Already Know</span></h1>
+  <p class="subtitle">How to recognise the structure in physics equations — and why linearisation is the most powerful trick in experimental science.</p>
+  <div class="provocation">
+    y = mx + c<br>
+    You've drawn this line a hundred times. Every physics equation you'll meet this year is <em>either</em> this — or can be <em>turned into</em> this. That's the whole trick.
+  </div>
+</div>
+
+<!-- ═══ §1  IDENTIFY THE STRUCTURE ═══ -->
+<section id="s1">
+<h2><span class="sn">SECTION 01</span>Identify the Structure</h2>
+
+<p>Every equation is a <strong>relationship</strong> between quantities. Before you do anything with it, ask: <em>what is the shape of this relationship?</em> There are only a handful of shapes you need to recognise.</p>
+
+<h3>The Three Shapes</h3>
+
+<div class="eq-block">
+  <div class="eq">y = mx + c</div>
+  <div class="eq-sub">Linear — straight line, constant rate of change</div>
+  <div class="eq-map">
+    m → gradient (how steep)<br>
+    c → y-intercept (where it crosses the axis)<br>
+    Shape: straight line
+  </div>
+</div>
+
+<div class="eq-block">
+  <div class="eq">y = kx²</div>
+  <div class="eq-sub">Quadratic — parabola, rate of change itself changes</div>
+  <div class="eq-map">
+    k → how tight or wide the curve<br>
+    c = 0 here (passes through origin)<br>
+    Shape: curve that steepens
+  </div>
+</div>
+
+<div class="eq-block">
+  <div class="eq">y = Ae<sup>kx</sup></div>
+  <div class="eq-sub">Exponential — growth or decay, rate proportional to current value</div>
+  <div class="eq-map">
+    A → starting value (when x = 0)<br>
+    k → growth rate (k &gt; 0 grows, k &lt; 0 decays)<br>
+    Shape: curve that accelerates or flattens
+  </div>
+</div>
+
+<p>Here's the claim: <strong>if you can tell which shape an equation has, you already understand its algebra.</strong> The letters change. The structure doesn't. Tap each card below to identify it.</p>
+
+<div class="struct-grid">
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">v = u + at</div>
+    <div class="sc-form">kinematics — velocity</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = mx + c<br>
+      y → v, m → a, x → t, c → u<br>
+      <em>Plot v against t → straight line, gradient = acceleration, intercept = initial velocity</em>
+    </div>
+  </div>
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">s = ½at²</div>
+    <div class="sc-form">kinematics — displacement (from rest)</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = kx²<br>
+      y → s, k → ½a, x → t<br>
+      <em>Plot s against t → parabola. Plot s against t² → straight line through origin!</em>
+    </div>
+  </div>
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">F = ma</div>
+    <div class="sc-form">Newton's second law</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = mx (linear through origin)<br>
+      y → F, m → mass, x → a<br>
+      <em>For constant mass: plot F against a → straight line, gradient = mass</em>
+    </div>
+  </div>
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">E = ½mv²</div>
+    <div class="sc-form">kinetic energy</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = kx²<br>
+      y → E, k → ½m, x → v<br>
+      <em>Plot E against v → curve. Plot E against v² → straight line, gradient = ½m</em>
+    </div>
+  </div>
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">P = ρgh</div>
+    <div class="sc-form">pressure at depth</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = mx (linear through origin)<br>
+      y → P, m → ρg, x → h<br>
+      <em>Plot P against h → straight line, gradient = ρg</em>
+    </div>
+  </div>
+  <div class="struct-card" onclick="this.classList.toggle('show')">
+    <span class="sc-tag">tap</span>
+    <div class="sc-eq">N = N₀e<sup>−λt</sup></div>
+    <div class="sc-form">radioactive decay</div>
+    <div class="sc-id">
+      <strong>Structure:</strong> y = Ae<sup>kx</sup> (with k negative)<br>
+      y → N, A → N₀, k → −λ, x → t<br>
+      <em>Plot N against t → exponential decay curve. Take logs to linearise...</em>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §2  PHYSICS LETTERS ═══ -->
+<section id="s2">
+<h2><span class="sn">SECTION 02</span>The Letters Are Just Labels</h2>
+
+<p>A common stumbling block: the equation <code>E = ½mv²</code> looks harder than <code>y = 3x²</code>. But algebraically they're identical. The difficulty is psychological — you recognise <em>x</em> and <em>y</em> as "maths" but <em>E</em>, <em>m</em>, <em>v</em> feel like "physics."</p>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">If I asked you to rearrange y = 3x² to find x, could you do it?</div>
+  <div class="r-hint">Try it in your head before revealing...</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p>x² = y/3, so x = √(y/3). Done.</p>
+    <p>Now rearrange E = ½mv² to find v:</p>
+    <p>v² = 2E/m, so v = √(2E/m). <strong>Identical operation.</strong></p>
+    <p>The algebra didn't change. Only the label on each box changed. This is what Wittgenstein meant by "meaning lives in use" — the symbol <em>v</em> is doing exactly the same mathematical work as <em>x</em>. The physics meaning (velocity) is a separate layer on top.</p>
+  </div>
+</div>
+
+<div class="insight">
+  <div class="it">The Trick</div>
+  <p>When you see a physics equation: <strong>first, ignore what the letters mean.</strong> Identify the structure (linear? quadratic? exponential?). Do the algebra. <em>Then</em> reattach the physical meaning.</p>
+</div>
+
+<h3>Practice: Structural Mapping</h3>
+<table class="step-table">
+<thead><tr><th>Physics Equation</th><th>Maths Skeleton</th><th>What to Plot for a Straight Line</th></tr></thead>
+<tbody>
+<tr><td>v = u + at</td><td>y = c + mx</td><td>v on y-axis, t on x-axis</td></tr>
+<tr><td>s = ½at²</td><td>y = kx²</td><td>s on y-axis, <strong>t²</strong> on x-axis</td></tr>
+<tr><td>E = ½mv²</td><td>y = kx²</td><td>E on y-axis, <strong>v²</strong> on x-axis</td></tr>
+<tr><td>F = kx (Hooke)</td><td>y = mx</td><td>F on y-axis, x on x-axis</td></tr>
+<tr><td>T² = (4π²/g)l</td><td>y = mx</td><td><strong>T²</strong> on y-axis, l on x-axis</td></tr>
+<tr><td>P = ρgh</td><td>y = mx</td><td>P on y-axis, h on x-axis</td></tr>
+</tbody>
+</table>
+
+<div class="confusion">
+  <div class="ct">Common Error</div>
+  <p>Students plot s against t for <code>s = ½at²</code> and then try to draw a "line of best fit" through a curve. The examiners' mark scheme says: <strong>plot s against t²</strong> to produce a straight line whose gradient gives ½a. This is linearisation — and it's the subject of the next section.</p>
+</div>
+</section>
+
+<!-- ═══ §3  LINEARISATION ═══ -->
+<section id="s3">
+<h2><span class="sn">SECTION 03</span>Linearisation — Straightening Curves</h2>
+
+<p><strong>Why do we want straight lines?</strong> Because a straight line is the only graph where you can reliably extract a gradient. With a curve, every point has a different gradient — you'd need calculus. With a straight line, you draw it, pick two points, and divide. That's why experimentalists linearise.</p>
+
+<h3>The Quadratic Case</h3>
+
+<p>Start with <code>y = kx²</code>. If you plot y against x, you get a parabola. Useless for gradient extraction. But watch what happens if you <em>define a new variable</em>:</p>
+
+<div class="eq-block">
+  <div class="eq">Let X = x² → then y = kX</div>
+  <div class="eq-sub">Now it's y = mx — a straight line through the origin!</div>
+</div>
+
+<p>This is the entire trick. You haven't changed the physics. You haven't approximated anything. You've just <strong>relabelled the horizontal axis</strong>. Plot y against x² instead of y against x, and the curve becomes a line.</p>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">Walk through it: how do you linearise E = ½mv²?</div>
+  <div class="r-hint">What plays the role of y? What plays the role of x²?</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p><strong>Step 1:</strong> Identify the structure. E = ½mv² has the form y = kx².</p>
+    <p><strong>Step 2:</strong> Assign roles. y → E, x → v, k → ½m.</p>
+    <p><strong>Step 3:</strong> Define new variable. Let V = v². Then E = ½m · V.</p>
+    <p><strong>Step 4:</strong> Plot E (y-axis) against v² (x-axis). Straight line through origin. Gradient = ½m.</p>
+    <p><strong>Step 5:</strong> Read off gradient, double it → mass.</p>
+  </div>
+</div>
+
+<h3>The Pendulum Example</h3>
+<p>The period of a simple pendulum is T = 2π√(l/g). Square both sides:</p>
+
+<div class="eq-block">
+  <div class="eq">T² = (4π²/g) · l</div>
+  <div class="eq-sub">This is y = mx — with y = T², x = l, m = 4π²/g</div>
+</div>
+
+<p>Plot T² against l. Straight line. Gradient = 4π²/g. Rearrange for g. This is how you measure gravitational acceleration with a piece of string and a stopwatch.</p>
+
+<div class="insight">
+  <div class="it">The Pattern</div>
+  <p>If you see <code>y = kx<sup>n</sup></code> for any power n, plot y against x<sup>n</sup> and you get a straight line. Quadratics are the most common case (n = 2), but the method is universal. What about when the power <em>itself</em> is unknown? That's where logs come in.</p>
+</div>
+</section>
+
+<!-- ═══ §4  LOGARITHMS ═══ -->
+<section id="s4">
+<h2><span class="sn">SECTION 04</span>Logarithms — The Exponent Extractor</h2>
+
+<p>A logarithm answers one question: <strong>what power do I raise the base to, in order to get this number?</strong></p>
+
+<div class="eq-block">
+  <div class="eq">if b<sup>n</sup> = x, then log<sub>b</sub>(x) = n</div>
+  <div class="eq-sub">The log extracts the exponent. That's all it does.</div>
+</div>
+
+<p>Why does physics care? Because many physical relationships are <strong>power laws</strong> or <strong>exponentials</strong> — and logs turn both into straight lines.</p>
+
+<h3>The Three Log Rules You Need</h3>
+
+<table class="step-table">
+<thead><tr><th>Rule</th><th>What It Says</th><th>Why It Matters</th></tr></thead>
+<tbody>
+<tr>
+  <td>log(AB)</td>
+  <td class="hl">log A + log B</td>
+  <td>Products become sums — pulls apart multiplied quantities</td>
+</tr>
+<tr>
+  <td>log(A/B)</td>
+  <td class="hl">log A − log B</td>
+  <td>Ratios become differences</td>
+</tr>
+<tr>
+  <td>log(A<sup>n</sup>)</td>
+  <td class="hl">n · log A</td>
+  <td>Powers become multipliers — <strong>this is the linearisation rule</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p>That third rule is the key. It takes an exponent (hidden up in the superscript, inaccessible) and <strong>brings it down</strong> as a multiplier. Once it's a multiplier, it's a gradient.</p>
+
+<h3>Linearising a Power Law</h3>
+
+<p>Suppose you have data that follows <code>y = ax<sup>n</sup></code> but you don't know n. Take logs of both sides:</p>
+
+<div class="eq-block">
+  <div class="eq">log y = n · log x + log a</div>
+  <div class="eq-sub">Compare with Y = mX + c</div>
+  <div class="eq-map">
+    Y → log y<br>
+    X → log x<br>
+    m → n (the unknown power!)<br>
+    c → log a (the log of the coefficient)
+  </div>
+</div>
+
+<p>Plot log y against log x. Straight line. <strong>Gradient = the power n.</strong> Intercept = log a, so a = 10<sup>intercept</sup>.</p>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">Work through it: you suspect T = kl<sup>n</sup> for a pendulum. How do you find n from data?</div>
+  <div class="r-hint">Take log of both sides, then identify gradient and intercept...</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p>log T = n · log l + log k</p>
+    <p>Plot log T (y-axis) against log l (x-axis). Straight line.</p>
+    <p>Gradient = n. You should get n ≈ 0.5 (because T ∝ √l, i.e. T ∝ l<sup>0.5</sup>).</p>
+    <p>Intercept = log k = log(2π/√g). From this you can extract g.</p>
+    <p><strong>You've determined the power law from data, without knowing it in advance.</strong></p>
+  </div>
+</div>
+
+<h3>Linearising an Exponential</h3>
+
+<p>Exponentials are different. The unknown is in the exponent itself, not the power of x. For <code>y = Ae<sup>kx</sup></code>, take the <em>natural</em> log (ln):</p>
+
+<div class="eq-block">
+  <div class="eq">ln y = kx + ln A</div>
+  <div class="eq-sub">Compare with Y = mX + c</div>
+  <div class="eq-map">
+    Y → ln y<br>
+    X → x (not log x — just x!)<br>
+    m → k (the rate constant)<br>
+    c → ln A
+  </div>
+</div>
+
+<p>Plot ln y against x. Straight line. Gradient = rate constant k. This is how you find half-lives, decay constants, and time constants from experimental data.</p>
+
+<div class="confusion">
+  <div class="ct">Critical Distinction</div>
+  <p><strong>Power law</strong> y = ax<sup>n</sup> → plot <strong>log y vs log x</strong> (both axes logged).<br>
+  <strong>Exponential</strong> y = Ae<sup>kx</sup> → plot <strong>ln y vs x</strong> (only y-axis logged).<br>
+  Getting these mixed up is one of the most common A-level errors. The test: is the variable in the <em>base</em> (power law) or in the <em>exponent</em> (exponential)?</p>
+</div>
+
+<h3>Fill in the Log Table</h3>
+<p>Complete the missing values. Use log base 10. Round to 2 d.p.</p>
+
+<div class="log-table-wrap">
+<table class="log-table" id="logTable">
+<thead>
+<tr><th>x</th><th>y = 3x²</th><th>log x</th><th>log y</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>3</td><td>0.00</td><td><input type="text" data-answer="0.48" placeholder="?"></td></tr>
+<tr><td>2</td><td>12</td><td><input type="text" data-answer="0.30" placeholder="?"></td><td><input type="text" data-answer="1.08" placeholder="?"></td></tr>
+<tr><td>5</td><td>75</td><td><input type="text" data-answer="0.70" placeholder="?"></td><td><input type="text" data-answer="1.88" placeholder="?"></td></tr>
+<tr><td>10</td><td>300</td><td>1.00</td><td><input type="text" data-answer="2.48" placeholder="?"></td></tr>
+<tr><td>20</td><td><input type="text" data-answer="1200" placeholder="?"></td><td><input type="text" data-answer="1.30" placeholder="?"></td><td><input type="text" data-answer="3.08" placeholder="?"></td></tr>
+</tbody>
+</table>
+<button class="log-check-btn" onclick="checkLogTable()">Check Answers</button>
+<div id="logFeedback" style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-secondary);margin-top:0.5rem;"></div>
+</div>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">If you plot log y against log x for y = 3x², what gradient do you expect?</div>
+  <div class="r-hint">Use the power rule: log(3x²) = log 3 + 2·log x...</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p>log y = log(3x²) = log 3 + 2 · log x</p>
+    <p>This is Y = 2X + 0.477</p>
+    <p><strong>Gradient = 2</strong> (the power). Intercept = log 3 ≈ 0.477.</p>
+    <p>The gradient of a log-log plot gives you the exponent directly. That's the whole point.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §5  LOG-LOG DEEP DIVE ═══ -->
+<section id="s5">
+<h2><span class="sn">SECTION 05</span>Log-Log and Semi-Log — Telling Them Apart</h2>
+
+<p>You have experimental data. It curves. Is it a power law or an exponential? Here's the diagnostic:</p>
+
+<table class="step-table">
+<thead><tr><th>Relationship</th><th>Plot That Gives a Straight Line</th><th>Gradient Gives You</th><th>Intercept Gives You</th></tr></thead>
+<tbody>
+<tr>
+  <td>y = ax<sup>n</sup></td>
+  <td class="hl">log y vs log x</td>
+  <td>n (the power)</td>
+  <td>log a</td>
+</tr>
+<tr>
+  <td>y = Ae<sup>kx</sup></td>
+  <td class="hl">ln y vs x</td>
+  <td>k (the rate)</td>
+  <td>ln A</td>
+</tr>
+<tr>
+  <td>y = Ae<sup>−x/τ</sup></td>
+  <td class="hl">ln y vs x</td>
+  <td>−1/τ (neg. reciprocal of time constant)</td>
+  <td>ln A</td>
+</tr>
+</tbody>
+</table>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">Radioactive decay: N = N₀e<sup>−λt</sup>. How do you find the decay constant λ from a graph?</div>
+  <div class="r-hint">Which type of plot? What's on each axis?</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p>Take ln of both sides: ln N = −λt + ln N₀</p>
+    <p>Plot <strong>ln N</strong> (y-axis) against <strong>t</strong> (x-axis). Straight line.</p>
+    <p>Gradient = −λ. Intercept = ln N₀.</p>
+    <p>Half-life: t<sub>½</sub> = ln 2 / λ ≈ 0.693 / λ.</p>
+    <p>This is a <strong>semi-log</strong> plot (only the y-axis is logged). If you tried log-log (logging both axes), you would <em>not</em> get a straight line — because the relationship is exponential, not a power law.</p>
+  </div>
+</div>
+
+<div class="reveal" onclick="toggleR(this)">
+  <div class="r-prompt">Kepler's Third Law: T² ∝ r³. How do you verify this from planetary data?</div>
+  <div class="r-hint">This is a power law: T = kr<sup>n</sup>. What do you plot?</div>
+  <button class="r-btn" onclick="event.stopPropagation();toggleR(this.parentElement)">Reveal</button>
+  <div class="r-answer">
+    <p>T² ∝ r³ means T ∝ r<sup>3/2</sup>, so n = 3/2.</p>
+    <p>Take logs: log T = (3/2) · log r + log k</p>
+    <p>Plot <strong>log T</strong> against <strong>log r</strong>. Straight line, gradient = 1.5.</p>
+    <p>Or equivalently: plot T² against r³. Straight line through origin. Both work — the log-log method is more powerful because it <em>finds</em> the exponent rather than assuming it.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §6  INTERACTIVE GRAPHER ═══ -->
+<section id="s6">
+<h2><span class="sn">SECTION 06</span>See It — Interactive Linearisation</h2>
+
+<p>Choose a relationship, adjust parameters, and watch the raw curve transform into a straight line when you switch plot mode.</p>
+
+<div class="graph-wrap">
+  <h4>Linearisation Grapher</h4>
+  <div class="graph-row">
+    <canvas id="graphCanvas" width="380" height="340"></canvas>
+    <div class="graph-controls">
+      <label for="relSelect">Relationship</label>
+      <select id="relSelect">
+        <option value="quad">y = kx² (Quadratic)</option>
+        <option value="power">y = ax^n (Power Law)</option>
+        <option value="exp">y = Ae^(kx) (Exponential)</option>
+        <option value="expdecay">y = Ae^(−kx) (Decay)</option>
+      </select>
+
+      <label for="paramA">Coefficient (a / A / k)</label>
+      <input type="range" id="paramA" min="0.5" max="10" step="0.1" value="3">
+
+      <label for="paramN">Power / Rate (n / k)</label>
+      <input type="range" id="paramN" min="0.3" max="4" step="0.1" value="2">
+
+      <div style="margin:0.6rem 0;">
+        <label style="cursor:pointer;">
+          <input type="checkbox" id="lineariseToggle"> 
+          <span style="color:var(--gold);font-size:0.8rem;">LINEARISE</span>
+        </label>
+      </div>
+
+      <div class="graph-readout" id="graphReadout"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §7  QUIZ ═══ -->
+<section id="s7">
+<h2><span class="sn">SECTION 07</span>Check Your Understanding</h2>
+
+<div class="quiz-item">
+  <div class="qq">1. You have data following y = 5x³. What do you plot to get a straight line?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">y against x</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">y against x³</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">x against y³</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">log y against x</button>
+  </div>
+  <div class="qf">y = 5x³ has the form y = kx<sup>n</sup>. Plot y against x³ → straight line through origin, gradient = 5. (Alternatively, log y vs log x gives gradient 3.)</div>
+</div>
+
+<div class="quiz-item">
+  <div class="qq">2. You plot log y against log x and get a straight line with gradient 0.5. The relationship is:</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = 0.5x</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">y = a√x (i.e. y ∝ x<sup>0.5</sup>)</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = ae<sup>0.5x</sup></button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = a/x²</button>
+  </div>
+  <div class="qf">On a log-log plot, the gradient equals the power. Gradient = 0.5 means y ∝ x<sup>0.5</sup> = √x. This is a power law, not exponential.</div>
+</div>
+
+<div class="quiz-item">
+  <div class="qq">3. For radioactive decay N = N₀e<sup>−λt</sup>, which plot gives a straight line?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">N against t</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">log N against log t</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">ln N against t</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">N² against t</button>
+  </div>
+  <div class="qf">Exponential relationships linearise on a <strong>semi-log</strong> plot: ln y vs x. Here, ln N = −λt + ln N₀. Gradient = −λ. A log-log plot would NOT give a straight line — that's for power laws.</div>
+</div>
+
+<div class="quiz-item">
+  <div class="qq">4. The gradient of a graph of E against v² (for E = ½mv²) gives you:</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">The velocity</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">The mass</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">Half the mass (½m)</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">The kinetic energy</button>
+  </div>
+  <div class="qf">E = ½m · v². Plotting E vs v² gives y = (½m)·X. The gradient is ½m, not m. You need to double the gradient to get the mass. This is a classic mark-scheme trap.</div>
+</div>
+
+<div class="quiz-item">
+  <div class="qq">5. What is the difference between plotting log y vs log x and ln y vs x?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">They're the same thing with different bases</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">log-log linearises power laws (y = ax<sup>n</sup>); semi-log linearises exponentials (y = Ae<sup>kx</sup>)</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">You should always use ln, never log</button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">log-log is for decay, semi-log is for growth</button>
+  </div>
+  <div class="qf">This is the single most important distinction in experimental data analysis. Power laws put the variable in the base (x<sup>n</sup>) — use log-log. Exponentials put the variable in the exponent (e<sup>kx</sup>) — use semi-log. Getting them confused is like using a screwdriver on a nail.</div>
+</div>
+
+<div class="quiz-item">
+  <div class="qq">6. You plot ln y against x and get a straight line with gradient −0.05 and y-intercept 4.6. What is the equation?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = 4.6x<sup>−0.05</sup></button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = −0.05x + 4.6</button>
+    <button class="qb" data-c="true" onclick="qCheck(this)">y = e<sup>4.6</sup> · e<sup>−0.05x</sup> ≈ 100e<sup>−0.05x</sup></button>
+    <button class="qb" data-c="false" onclick="qCheck(this)">y = 100x<sup>−0.05</sup></button>
+  </div>
+  <div class="qf">Semi-log plot → exponential. ln y = −0.05x + 4.6 means y = e<sup>4.6</sup> · e<sup>−0.05x</sup>. Since e<sup>4.6</sup> ≈ 100, we get y ≈ 100e<sup>−0.05x</sup>. This is exponential decay with rate 0.05 and initial value 100.</div>
+</div>
+
+</section>
+
+</main>
+
+<footer>
+  <span class="g">Constructed by Silicon · Anthropic Claude</span> — <span class="g">Architect Carbon · LeeMcCullochJames</span><br>
+  Companion to <em>The Language of Floating</em> · Department of Natural & Unnatural Sciences · Dwight School London
+</footer>
+
+<script>
+// ─── Reveals ───
+function toggleR(el){el.classList.toggle('open');}
+
+// ─── Quiz ───
+function qCheck(btn){
+  const item=btn.closest('.quiz-item');
+  const opts=item.querySelectorAll('.qb');
+  const fb=item.querySelector('.qf');
+  const ok=btn.getAttribute('data-c')==='true';
+  opts.forEach(o=>{o.classList.add('off');if(o.getAttribute('data-c')==='true')o.classList.add('correct');});
+  if(!ok)btn.classList.add('wrong');
+  fb.classList.add('show');
+}
+
+// ─── Log table checker ───
+function checkLogTable(){
+  const inputs=document.querySelectorAll('#logTable input');
+  let score=0,total=inputs.length;
+  inputs.forEach(inp=>{
+    const ans=parseFloat(inp.getAttribute('data-answer'));
+    const val=parseFloat(inp.value);
+    inp.classList.remove('correct-input','wrong-input');
+    if(!isNaN(val)&&Math.abs(val-ans)<0.06){
+      inp.classList.add('correct-input');score++;
+    }else if(inp.value.trim()!==''){
+      inp.classList.add('wrong-input');
+    }
+  });
+  document.getElementById('logFeedback').textContent=`${score}/${total} correct`;
+}
+
+// ─── Interactive Grapher ───
+(function(){
+  const canvas=document.getElementById('graphCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const relSel=document.getElementById('relSelect');
+  const paramA=document.getElementById('paramA');
+  const paramN=document.getElementById('paramN');
+  const linToggle=document.getElementById('lineariseToggle');
+  const readout=document.getElementById('graphReadout');
+
+  const pad={l:50,r:20,t:25,b:40};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+
+  function getPoints(){
+    const rel=relSel.value;
+    const a=parseFloat(paramA.value);
+    const n=parseFloat(paramN.value);
+    const lin=linToggle.checked;
+    const pts=[];
+    const N=60;
+
+    for(let i=0;i<N;i++){
+      const frac=i/(N-1);
+      let x=0.1+frac*10;
+      let y;
+
+      if(rel==='quad'){y=a*x*x;}
+      else if(rel==='power'){y=a*Math.pow(x,n);}
+      else if(rel==='exp'){y=a*Math.exp(n*x/5);} // scale k
+      else{y=a*Math.exp(-n*x/5);}
+
+      if(y<=0)continue;
+
+      let px,py;
+      if(!lin){px=x;py=y;}
+      else{
+        if(rel==='quad'){px=x*x;py=y;}
+        else if(rel==='power'){px=Math.log10(x);py=Math.log10(y);}
+        else{px=x;py=Math.log(y);}
+      }
+      pts.push({px,py,ox:x,oy:y});
+    }
+    return pts;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const pts=getPoints();
+    if(pts.length<2)return;
+    const rel=relSel.value;
+    const a=parseFloat(paramA.value);
+    const n=parseFloat(paramN.value);
+    const lin=linToggle.checked;
+
+    let xMin=Infinity,xMax=-Infinity,yMin=Infinity,yMax=-Infinity;
+    pts.forEach(p=>{
+      if(p.px<xMin)xMin=p.px;if(p.px>xMax)xMax=p.px;
+      if(p.py<yMin)yMin=p.py;if(p.py>yMax)yMax=p.py;
+    });
+    const xRange=xMax-xMin||1;
+    const yRange=yMax-yMin||1;
+    const xPad=xRange*0.05,yPad=yRange*0.08;
+    xMin-=xPad;xMax+=xPad;yMin-=yPad;yMax+=yPad;
+
+    function toScreen(px,py){
+      return[pad.l+((px-xMin)/(xMax-xMin))*pw, pad.t+ph-((py-yMin)/(yMax-yMin))*ph];
+    }
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(let i=0;i<=5;i++){
+      const gx=pad.l+(pw*i/5);
+      const gy=pad.t+(ph*i/5);
+      ctx.beginPath();ctx.moveTo(gx,pad.t);ctx.lineTo(gx,pad.t+ph);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+pw,gy);ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+ph);ctx.lineTo(pad.l+pw,pad.t+ph);ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle='rgba(201,168,76,0.6)';ctx.font='10px "JetBrains Mono"';ctx.textAlign='center';
+
+    let xLabel,yLabel;
+    if(!lin){xLabel='x';yLabel='y';}
+    else if(rel==='quad'){xLabel='x²';yLabel='y';}
+    else if(rel==='power'){xLabel='log x';yLabel='log y';}
+    else{xLabel='x';yLabel='ln y';}
+
+    ctx.fillText(xLabel,pad.l+pw/2,H-8);
+    ctx.save();ctx.translate(12,pad.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText(yLabel,0,0);ctx.restore();
+
+    // Tick labels
+    ctx.fillStyle='rgba(255,255,255,0.2)';ctx.font='9px "JetBrains Mono"';
+    for(let i=0;i<=4;i++){
+      const vx=xMin+(xMax-xMin)*i/4;
+      const vy=yMin+(yMax-yMin)*i/4;
+      const sx=pad.l+(pw*i/4);
+      const sy=pad.t+ph-(ph*i/4);
+      ctx.textAlign='center';ctx.fillText(vx.toFixed(1),sx,pad.t+ph+14);
+      ctx.textAlign='right';ctx.fillText(vy.toFixed(1),pad.l-5,sy+3);
+    }
+
+    // Data points and line
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const[sx,sy]=toScreen(p.px,p.py);
+      if(i===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+    });
+    ctx.strokeStyle=lin?'rgba(78,205,196,0.9)':'rgba(201,168,76,0.9)';
+    ctx.lineWidth=2;ctx.stroke();
+
+    // Dots
+    pts.forEach((p,i)=>{
+      if(i%3!==0)return;
+      const[sx,sy]=toScreen(p.px,p.py);
+      ctx.beginPath();ctx.arc(sx,sy,2.5,0,Math.PI*2);
+      ctx.fillStyle=lin?'rgba(78,205,196,0.7)':'rgba(201,168,76,0.7)';ctx.fill();
+    });
+
+    // Readout
+    let info='';
+    const aV=a.toFixed(1),nV=n.toFixed(1);
+    if(rel==='quad'){
+      info=`<span class="gl">EQUATION:</span> y = ${aV}x²\n`;
+      if(lin)info+=`<span class="gl">LINEARISED:</span> y vs x² → gradient = <span>${aV}</span>`;
+      else info+=`<span class="gl">PLOT:</span> y vs x (curve)`;
+    }else if(rel==='power'){
+      info=`<span class="gl">EQUATION:</span> y = ${aV}x^${nV}\n`;
+      if(lin)info+=`<span class="gl">LINEARISED:</span> log y vs log x\n<span class="gl">GRADIENT:</span> <span>${nV}</span> (the power)\n<span class="gl">INTERCEPT:</span> <span>${Math.log10(a).toFixed(2)}</span> = log(${aV})`;
+      else info+=`<span class="gl">PLOT:</span> y vs x (curve)`;
+    }else if(rel==='exp'){
+      const k=(n/5).toFixed(2);
+      info=`<span class="gl">EQUATION:</span> y = ${aV}e^(${k}x)\n`;
+      if(lin)info+=`<span class="gl">LINEARISED:</span> ln y vs x\n<span class="gl">GRADIENT:</span> <span>${k}</span> (rate)\n<span class="gl">INTERCEPT:</span> <span>${Math.log(a).toFixed(2)}</span> = ln(${aV})`;
+      else info+=`<span class="gl">PLOT:</span> y vs x (exponential curve)`;
+    }else{
+      const k=(n/5).toFixed(2);
+      info=`<span class="gl">EQUATION:</span> y = ${aV}e^(−${k}x)\n`;
+      if(lin)info+=`<span class="gl">LINEARISED:</span> ln y vs x\n<span class="gl">GRADIENT:</span> <span>−${k}</span>\n<span class="gl">INTERCEPT:</span> <span>${Math.log(a).toFixed(2)}</span> = ln(${aV})`;
+      else info+=`<span class="gl">PLOT:</span> y vs x (decay curve)`;
+    }
+    readout.innerHTML=info.replace(/\n/g,'<br>');
+
+    // Straight line indicator
+    if(lin){
+      ctx.fillStyle='rgba(78,205,196,0.15)';
+      ctx.font='11px "JetBrains Mono"';
+      ctx.textAlign='right';
+      ctx.fillText('LINEARISED ✓',W-pad.r-5,pad.t+15);
+    }
+  }
+
+  [relSel,paramA,paramN,linToggle].forEach(el=>el.addEventListener('input',draw));
+  relSel.addEventListener('change',draw);
+  draw();
+})();
+
+// ─── Nav scroll ───
+const secs=document.querySelectorAll('section[id]');
+const nls=document.querySelectorAll('nav a');
+window.addEventListener('scroll',()=>{
+  let cur='';secs.forEach(s=>{if(scrollY>=s.offsetTop-100)cur=s.id;});
+  nls.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
+});
+</script>
+
+</body>
+</html>

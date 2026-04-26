@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Water Is Linear and Air Is Exponential — Pressure, Depth, and the Assumption That Breaks</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0f;--bg2:#141418;--card:#1a1a1f;--reveal:#12121a;
+  --gold:#c9a84c;--gold-d:#a0843a;--gold-b:#e8c45a;
+  --cyan:#4ecdc4;--cyan-d:#2a8a84;
+  --water:#3a8fd4;--water-d:#1e5a8a;
+  --air:#d4a03a;--air-d:#8a6a1e;
+  --txt:#e8e6e1;--txt2:#9a9890;--txt3:#6a6860;
+  --danger:#c44a4a;--success:#5a9a5a;
+  --bdr:#2a2a30;--bdr-g:rgba(201,168,76,0.25);
+  --fd:'Cormorant Garamond',Georgia,serif;
+  --fm:'JetBrains Mono','Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{background:var(--bg);color:var(--txt);font-family:var(--fd);line-height:1.7;min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(13,13,15,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);padding:0.55rem 1rem;display:flex;align-items:center;gap:0.7rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+nav a{font-family:var(--fm);font-size:0.66rem;color:var(--txt3);text-decoration:none;white-space:nowrap;letter-spacing:0.06em;text-transform:uppercase;padding:0.22rem 0.4rem;border-radius:3px;transition:color .3s,background .3s;}
+nav a:hover,nav a.active{color:var(--gold);background:rgba(201,168,76,0.08);}
+nav .nt{font-family:var(--fd);font-size:0.9rem;color:var(--gold);font-weight:600;margin-right:0.5rem;flex-shrink:0;}
+
+main{max-width:940px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+.hero{text-align:center;padding:2.5rem 0 2rem;border-bottom:1px solid var(--bdr-g);margin-bottom:3rem;}
+.hero h1{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;line-height:1.15;margin-bottom:0.5rem;}
+.hero h1 .w{color:var(--water);}
+.hero h1 .a{color:var(--air);}
+.hero .sub{font-style:italic;font-size:1.05rem;color:var(--txt2);max-width:640px;margin:0 auto 1rem;}
+.hero .prov{font-family:var(--fm);font-size:0.78rem;color:var(--cyan);letter-spacing:0.03em;background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.15);padding:0.8rem 1.2rem;border-radius:4px;max-width:680px;margin:0 auto;line-height:1.65;}
+
+section{margin-bottom:3.5rem;}
+section h2{font-size:1.65rem;font-weight:700;margin-bottom:0.3rem;padding-bottom:0.45rem;border-bottom:2px solid var(--bdr-g);}
+section h2 .sn{font-family:var(--fm);font-size:0.7rem;color:var(--gold-d);letter-spacing:0.1em;display:block;margin-bottom:0.12rem;}
+section h3{font-size:1.2rem;font-weight:600;color:var(--gold);margin:1.6rem 0 0.5rem;}
+section p{font-size:1rem;color:var(--txt2);margin-bottom:0.85rem;max-width:72ch;}
+section p strong{color:var(--txt);font-weight:600;}
+section p em{color:var(--gold-d);font-style:italic;}
+section p code{font-family:var(--fm);font-size:0.86em;color:var(--cyan);background:rgba(78,205,196,0.06);padding:0.08em 0.3em;border-radius:3px;}
+
+.eq{background:var(--card);border:1px solid var(--bdr);border-left:3px solid var(--gold);padding:1rem 1.2rem;margin:1rem 0;border-radius:0 4px 4px 0;text-align:center;}
+.eq .ef{font-family:var(--fm);font-size:1.2rem;color:var(--gold-b);letter-spacing:0.03em;}
+.eq .es{font-style:italic;font-size:0.85rem;color:var(--txt3);margin-top:0.3rem;}
+.eq .em{font-family:var(--fm);font-size:0.75rem;color:var(--cyan-d);margin-top:0.4rem;line-height:1.7;text-align:left;max-width:520px;display:inline-block;}
+.eq.water-eq{border-left-color:var(--water);}
+.eq.water-eq .ef{color:var(--water);}
+.eq.air-eq{border-left-color:var(--air);}
+.eq.air-eq .ef{color:var(--air);}
+
+.rv{background:var(--card);border:1px solid var(--bdr);border-radius:6px;margin:1.1rem 0;overflow:hidden;}
+.rv .rp{padding:0.85rem 1.1rem;font-size:1.02rem;font-weight:600;color:var(--cyan);display:flex;align-items:flex-start;gap:0.55rem;}
+.rv .rp::before{content:'?';font-family:var(--fm);font-size:0.78rem;font-weight:600;color:var(--bg);background:var(--cyan);width:1.25rem;height:1.25rem;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:0.12rem;}
+.rv .rh{padding:0 1.1rem 0.5rem 2.9rem;font-family:var(--fm);font-size:0.72rem;color:var(--txt3);font-style:italic;}
+.rv .rb{display:block;width:100%;padding:0.55rem 1.1rem;background:rgba(201,168,76,0.06);border:none;border-top:1px solid var(--bdr);color:var(--gold);font-family:var(--fm);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:left;transition:background .3s;}
+.rv .rb:hover{background:rgba(201,168,76,0.12);}
+.rv .rb::before{content:'▸ ';}
+.rv.open .rb::before{content:'▾ ';}
+.rv .ra{display:none;padding:0.9rem 1.1rem;background:var(--reveal);border-top:1px solid var(--bdr-g);font-size:0.95rem;color:var(--txt2);}
+.rv.open .ra{display:block;}
+.rv .ra p{margin-bottom:0.6rem;}
+
+.insight{background:rgba(78,205,196,0.05);border:1px solid rgba(78,205,196,0.15);border-left:3px solid var(--cyan);border-radius:0 6px 6px 0;padding:0.85rem 1.1rem;margin:1.2rem 0;}
+.insight .it{font-family:var(--fm);font-size:0.68rem;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.25rem;}
+.confusion{background:rgba(196,74,74,0.06);border:1px solid rgba(196,74,74,0.2);border-left:3px solid var(--danger);border-radius:0 6px 6px 0;padding:0.85rem 1.1rem;margin:1.2rem 0;}
+.confusion .ct{font-family:var(--fm);font-size:0.68rem;color:var(--danger);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.25rem;}
+
+/* ─── Dual column ─── */
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+@media(max-width:650px){.dual{grid-template-columns:1fr;}}
+.dual-card{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:1.1rem;position:relative;overflow:hidden;}
+.dual-card.wc{border-top:3px solid var(--water);}
+.dual-card.ac{border-top:3px solid var(--air);}
+.dual-card .dc-title{font-family:var(--fm);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;}
+.dual-card.wc .dc-title{color:var(--water);}
+.dual-card.ac .dc-title{color:var(--air);}
+.dual-card p{font-size:0.92rem;color:var(--txt2);line-height:1.6;margin-bottom:0.5rem;}
+.dual-card .dc-eq{font-family:var(--fm);font-size:0.95rem;text-align:center;padding:0.6rem;background:rgba(255,255,255,0.02);border-radius:4px;margin:0.5rem 0;}
+.dual-card.wc .dc-eq{color:var(--water);}
+.dual-card.ac .dc-eq{color:var(--air);}
+
+/* ─── Step derivation ─── */
+.deriv{margin:1.2rem 0;}
+.deriv-step{display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.9rem;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+.deriv-step .ds-num{font-family:var(--fm);font-size:0.65rem;color:var(--gold-d);background:rgba(201,168,76,0.1);width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:0.1rem;}
+.deriv-step .ds-content{flex:1;}
+.deriv-step .ds-eq{font-family:var(--fm);font-size:1rem;color:var(--gold-b);margin-bottom:0.2rem;}
+.deriv-step .ds-note{font-size:0.88rem;color:var(--txt3);}
+
+/* ─── Canvas ─── */
+.sim-wrap{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:1.2rem;margin:1.2rem 0;}
+.sim-wrap h4{font-family:var(--fm);font-size:0.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.8rem;}
+.sim-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;}
+.sim-row canvas{background:#0a0a10;border:1px solid var(--bdr);border-radius:4px;max-width:100%;}
+.sim-ctrl{flex:1;min-width:200px;}
+.sim-ctrl label{display:block;font-family:var(--fm);font-size:0.7rem;color:var(--txt3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.12rem;}
+.sim-ctrl input[type="range"]{width:100%;margin-bottom:0.6rem;accent-color:var(--gold);}
+.sim-ctrl .sr{font-family:var(--fm);font-size:0.76rem;color:var(--txt2);line-height:1.8;}
+.sim-ctrl .sr span{color:var(--gold-b);}
+.sim-ctrl .sr .gl{color:var(--txt3);font-size:0.66rem;}
+.sim-ctrl .tog{display:flex;gap:0.8rem;margin:0.5rem 0 0.8rem;flex-wrap:wrap;}
+.sim-ctrl .tog label{cursor:pointer;font-family:var(--fm);font-size:0.72rem;color:var(--txt2);display:flex;align-items:center;gap:0.3rem;}
+.sim-ctrl .tog input{accent-color:var(--gold);}
+
+/* ─── Quiz ─── */
+.qi{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:1.1rem;margin:0.7rem 0;}
+.qi .qq{font-size:1.02rem;font-weight:600;color:var(--txt);margin-bottom:0.6rem;}
+.qi .qo{display:flex;flex-direction:column;gap:0.3rem;}
+.qi .qb{display:block;padding:0.5rem 0.8rem;background:rgba(255,255,255,0.02);border:1px solid var(--bdr);border-radius:4px;cursor:pointer;font-family:var(--fd);font-size:0.9rem;color:var(--txt2);transition:all .25s;text-align:left;}
+.qi .qb:hover{border-color:var(--gold-d);color:var(--txt);background:rgba(201,168,76,0.04);}
+.qi .qb.ok{border-color:var(--success);background:rgba(90,154,90,0.1);color:var(--success);}
+.qi .qb.no{border-color:var(--danger);background:rgba(196,74,74,0.08);color:var(--danger);text-decoration:line-through;}
+.qi .qb.off{pointer-events:none;opacity:0.65;}
+.qi .qf{display:none;margin-top:0.6rem;padding:0.6rem;border-radius:4px;font-size:0.85rem;background:var(--reveal);border:1px solid var(--bdr);color:var(--txt2);}
+.qi .qf.show{display:block;}
+
+footer{text-align:center;padding:2rem 1.5rem;border-top:1px solid var(--bdr);font-family:var(--fm);font-size:0.66rem;color:var(--txt3);letter-spacing:0.04em;line-height:1.8;}
+footer .g{color:var(--gold-d);}
+
+@media(max-width:600px){
+  main{padding:1rem 1rem 3rem;}
+  .hero h1{font-size:1.6rem;}
+  .sim-row{flex-direction:column;}
+  .sim-row canvas{width:100%!important;height:auto!important;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nt">Linear vs Exponential</span>
+  <a href="#recap">Recap</a>
+  <a href="#question">The Question</a>
+  <a href="#water">Water</a>
+  <a href="#air">Air</a>
+  <a href="#deriv">Derivation</a>
+  <a href="#sim">Simulator</a>
+  <a href="#log">Log Connection</a>
+  <a href="#quiz">Quiz</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>Why <span class="w">Water</span> Is Linear<br>and <span class="a">Air</span> Is Exponential</h1>
+  <p class="sub">The same equation — pressure from the weight of fluid above — gives two radically different shapes. The difference? One assumption about density.</p>
+  <div class="prov">
+    P = ρgh gives a straight line for water.<br>
+    P = P₀e<sup>−Mgh/RT</sup> gives an exponential for air.<br>
+    <em>These aren't different physics. They're the same physics with a different assumption about ρ.</em>
+  </div>
+</div>
+
+<!-- ═══ §1 RECAP ═══ -->
+<section id="recap">
+<h2><span class="sn">SECTION 01</span>What You Already Know</h2>
+
+<p>From the algebra learner, you know how to identify three shapes:</p>
+
+<div class="dual">
+  <div class="dual-card wc">
+    <div class="dc-title">Linear</div>
+    <div class="dc-eq">y = mx + c</div>
+    <p>Straight line. Constant gradient. When you see this in physics, the quantity on the y-axis grows at a <strong>constant rate</strong> per unit of x.</p>
+  </div>
+  <div class="dual-card ac">
+    <div class="dc-title">Exponential</div>
+    <div class="dc-eq">y = Ae<sup>kx</sup></div>
+    <p>Curve that accelerates (or decays). The quantity on the y-axis grows <strong>in proportion to its own current value</strong>. The rate of change <em>depends on the current amount</em>.</p>
+  </div>
+</div>
+
+<p>You also know the linearisation trick: if you have an exponential y = Ae<sup>kx</sup>, plot <strong>ln y against x</strong> to get a straight line with gradient k. This is how you distinguish a power law from an exponential experimentally.</p>
+
+<p>Now we meet both shapes in the same physical setting: <strong>pressure as a function of height</strong>. The question is why one fluid gives the first shape and another gives the second.</p>
+
+<div class="rv" onclick="tog(this)">
+  <div class="rp">Quick check: what does P = ρgh assume about ρ?</div>
+  <div class="rh">Think about what each symbol is. Is ρ a constant or a variable?</div>
+  <button class="rb" onclick="event.stopPropagation();tog(this.parentElement)">Reveal</button>
+  <div class="ra">
+    <p>P = ρgh treats ρ as a <strong>constant</strong>. It's pulled out of the equation as a fixed number — 1000 kg/m³ for water, say. The equation then says: pressure increases linearly with depth h, at a constant rate ρg.</p>
+    <p>But <strong>is</strong> density always constant? For water, approximately yes. For air? No — and that changes everything.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §2 THE QUESTION ═══ -->
+<section id="question">
+<h2><span class="sn">SECTION 02</span>The Question That Splits the Story</h2>
+
+<p>Both water and air are fluids. Both have weight. Both create pressure on things below them. The basic argument is identical in both cases:</p>
+
+<div class="eq">
+  <div class="ef">Pressure = weight of fluid above per unit area</div>
+  <div class="es">This is the one physical idea. Everything else follows from how density behaves.</div>
+</div>
+
+<p>So here is the question that divides the physics into two branches:</p>
+
+<div class="rv" onclick="tog(this)">
+  <div class="rp">When you go deeper (or higher), does the density of the fluid change?</div>
+  <div class="rh">Think about what happens to water at 100m depth vs air at 100m altitude...</div>
+  <button class="rb" onclick="event.stopPropagation();tog(this.parentElement)">Reveal</button>
+  <div class="ra">
+    <p><strong>Water:</strong> No, not significantly. Water at 100m depth has essentially the same density as water at the surface. Squeeze it and it barely compresses. This is what "incompressible" means: ρ doesn't depend on P.</p>
+    <p><strong>Air:</strong> Yes, dramatically. Air at sea level is much denser than air at 5000m. Why? Because the air below is being compressed by the weight of all the air above it. More pressure → molecules squeezed closer → higher density. This is what "compressible" means: ρ <em>depends on</em> P.</p>
+    <p>This single difference — whether ρ is constant or pressure-dependent — is what makes one linear and the other exponential.</p>
+  </div>
+</div>
+
+<div class="insight">
+  <div class="it">The Fork</div>
+  <p>If ρ is constant → P = ρgh → <strong>linear</strong>.<br>
+  If ρ depends on P → the equation folds back on itself → <strong>exponential</strong>.<br>
+  Same physics, different assumption, different shape. Cartwright would call P = ρgh a model that "lies beautifully" — it works for water, breaks for air.</p>
+</div>
+</section>
+
+<!-- ═══ §3 WATER ═══ -->
+<section id="water">
+<h2><span class="sn">SECTION 03</span>Water: The Incompressible Case</h2>
+
+<p>Water is nearly incompressible. At the bottom of the Mariana Trench (11 km, ~1100 atm), water density increases by only about 5%. For any depth you'll encounter in a school lab or exam, ρ<sub>water</sub> ≈ 1000 kg/m³ is essentially exact.</p>
+
+<h3>The Argument</h3>
+
+<p>Consider a column of water with cross-sectional area A, from the surface down to depth h.</p>
+
+<div class="deriv">
+  <div class="deriv-step">
+    <div class="ds-num">1</div>
+    <div class="ds-content">
+      <div class="ds-eq">Volume of column = A × h</div>
+      <div class="ds-note">A cylinder of water sitting above the point where we want to know the pressure.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">2</div>
+    <div class="ds-content">
+      <div class="ds-eq">Mass = ρ × V = ρ × A × h</div>
+      <div class="ds-note">Because ρ is <strong>constant</strong>, we can just multiply. This is the crucial step.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">3</div>
+    <div class="ds-content">
+      <div class="ds-eq">Weight = mg = ρAhg</div>
+      <div class="ds-note">The gravitational force from this column of water.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">4</div>
+    <div class="ds-content">
+      <div class="ds-eq">Pressure = Weight / Area = ρAhg / A = ρgh</div>
+      <div class="ds-note">The A cancels — pressure doesn't depend on the size of the column, only its height.</div>
+    </div>
+  </div>
+</div>
+
+<div class="eq water-eq">
+  <div class="ef">P = ρgh</div>
+  <div class="es">Linear in h. Structure: y = mx, with m = ρg ≈ 9800 Pa/m</div>
+  <div class="em">
+    Every extra metre of depth adds the same ~9800 Pa.<br>
+    At 10m: ~98,000 Pa ≈ 1 atm (atmospheric pressure).<br>
+    This is why divers feel 1 extra atmosphere per 10m.
+  </div>
+</div>
+
+<p>This is the equation from the <em>Language of Floating</em> explorer. It's linear because the thing that multiplies h — the density ρ — is a constant. The gradient ρg never changes. <strong>Every layer of water contributes the same amount of pressure, regardless of what's above it.</strong></p>
+</section>
+
+<!-- ═══ §4 AIR ═══ -->
+<section id="air">
+<h2><span class="sn">SECTION 04</span>Air: The Compressible Case — Where It Gets Interesting</h2>
+
+<p>Now try the same argument with air. You want to know: how does atmospheric pressure decrease as you go up?</p>
+
+<div class="rv" onclick="tog(this)">
+  <div class="rp">Can we use P = ρgh for the atmosphere?</div>
+  <div class="rh">What would go wrong if we tried?</div>
+  <button class="rb" onclick="event.stopPropagation();tog(this.parentElement)">Reveal</button>
+  <div class="ra">
+    <p>If we try P = ρgh with ρ = 1.225 kg/m³ (sea-level air density), we'd predict the atmosphere runs out at about P/(ρg) = 101325/(1.225 × 9.81) ≈ 8400m. Above that, no pressure at all — a hard ceiling.</p>
+    <p>But that's wrong. Pressure at 8400m is about 35 kPa, not zero. Aircraft fly at 12 km. Weather balloons reach 35 km. The atmosphere doesn't just stop — it fades out gradually.</p>
+    <p>The linear model fails because <strong>air density at 8400m is not 1.225 kg/m³</strong>. It's much less, because there's less air above compressing it. Density varies with height — so we can't pull ρ out as a constant.</p>
+  </div>
+</div>
+
+<h3>The Key Difference: ρ Depends on P</h3>
+
+<p>For an ideal gas at constant temperature:</p>
+
+<div class="eq air-eq">
+  <div class="ef">PV = nRT → ρ = PM / RT</div>
+  <div class="es">Density is proportional to pressure. More pressure → denser gas.</div>
+  <div class="em">
+    M = molar mass of air ≈ 0.029 kg/mol<br>
+    R = 8.314 J/(mol·K)<br>
+    T = temperature (assumed constant here)
+  </div>
+</div>
+
+<p>This is the crux. For water, ρ is independent of P. For air, <strong>ρ is proportional to P</strong>. When you try to compute "the weight of the column above," the density of every layer depends on the pressure at that layer — which depends on the weight of everything above <em>that</em> — which depends on the density up there — and so on. <strong>The equation refers to itself.</strong></p>
+
+<div class="insight">
+  <div class="it">Self-Reference → Exponential</div>
+  <p>Whenever a quantity's rate of change is proportional to its own current value, you get an exponential. This is the defining property: dP/dh ∝ P. It's the same mathematics as radioactive decay (dN/dt ∝ N), population growth, and capacitor discharge. The <em>shape</em> is the same because the <em>structure</em> is the same.</p>
+</div>
+</section>
+
+<!-- ═══ §5 DERIVATION ═══ -->
+<section id="deriv">
+<h2><span class="sn">SECTION 05</span>The Derivation — One Step at a Time</h2>
+
+<p>We're going to derive the barometric formula. Don't panic — it's the same logic as the water case, but we can't shortcut past the varying density. We take a thin slice and ask what happens across it.</p>
+
+<h3>Thin Slice Argument</h3>
+
+<p>Consider a thin horizontal layer of air at height h, with thickness dh (an infinitesimally small slice).</p>
+
+<div class="deriv">
+  <div class="deriv-step">
+    <div class="ds-num">1</div>
+    <div class="ds-content">
+      <div class="ds-eq">dP = −ρg · dh</div>
+      <div class="ds-note">The pressure drop across a thin slice equals the weight of that slice per unit area. The minus sign: going <em>up</em> (increasing h) means <em>less</em> pressure. This is exactly the water argument, but only for one thin layer where ρ is approximately constant.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">2</div>
+    <div class="ds-content">
+      <div class="ds-eq">ρ = PM / RT</div>
+      <div class="ds-note">Substitute the ideal gas law. Now ρ is expressed in terms of P — the quantity we're trying to find.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">3</div>
+    <div class="ds-content">
+      <div class="ds-eq">dP = −(PM/RT) · g · dh</div>
+      <div class="ds-note">Replace ρ with PM/RT. Now we have P on both sides. Self-reference.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">4</div>
+    <div class="ds-content">
+      <div class="ds-eq">dP/P = −(Mg/RT) · dh</div>
+      <div class="ds-note">Divide both sides by P. The left side is the <em>fractional</em> change in pressure. The right side is a constant times dh. This is a <strong>separable</strong> differential equation.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">5</div>
+    <div class="ds-content">
+      <div class="ds-eq">∫dP/P = −(Mg/RT) ∫dh</div>
+      <div class="ds-note">Integrate both sides. The left integral is a natural log.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">6</div>
+    <div class="ds-content">
+      <div class="ds-eq">ln P = −(Mg/RT) · h + constant</div>
+      <div class="ds-note">At h = 0 (sea level), P = P₀. So the constant = ln P₀.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">7</div>
+    <div class="ds-content">
+      <div class="ds-eq">ln(P/P₀) = −Mgh / RT</div>
+      <div class="ds-note">Combine the log terms. This is the semi-log linearisation you met in the algebra learner.</div>
+    </div>
+  </div>
+  <div class="deriv-step">
+    <div class="ds-num">8</div>
+    <div class="ds-content">
+      <div class="ds-eq" style="font-size:1.15rem;">P = P₀ · e<sup>−Mgh/RT</sup></div>
+      <div class="ds-note">Exponentiate both sides. <strong>The barometric formula.</strong> Pressure decays exponentially with altitude.</div>
+    </div>
+  </div>
+</div>
+
+<div class="eq air-eq">
+  <div class="ef">P = P₀ e<sup>−Mgh/RT</sup></div>
+  <div class="es">The barometric formula — exponential decay of pressure with altitude</div>
+  <div class="em">
+    P₀ = 101,325 Pa (sea-level pressure)<br>
+    M = 0.029 kg/mol, g = 9.81 m/s², R = 8.314 J/(mol·K)<br>
+    At T = 288 K: scale height H = RT/Mg ≈ 8,400 m<br>
+    Every 8.4 km, pressure falls by a factor of e ≈ 2.718
+  </div>
+</div>
+
+<div class="rv" onclick="tog(this)">
+  <div class="rp">Why didn't this happen for water?</div>
+  <div class="rh">Go back to step 2. What's different?</div>
+  <button class="rb" onclick="event.stopPropagation();tog(this.parentElement)">Reveal</button>
+  <div class="ra">
+    <p>At step 2, for water, ρ is constant. So the equation <code>dP = −ρg · dh</code> is just <code>dP = −(constant) · dh</code>. Integrate: P = constant × h + P₀. Straight line.</p>
+    <p>For air, ρ = PM/RT, so step 3 puts P into the right-hand side. The equation becomes <code>dP/dh = −(Mg/RT) · P</code> — the rate of change of P is proportional to P itself. This self-referential structure is what produces the exponential.</p>
+    <p><strong>Linear: rate of change is constant. Exponential: rate of change is proportional to current value.</strong></p>
+  </div>
+</div>
+
+<div class="confusion">
+  <div class="ct">Cartwright's Warning</div>
+  <p>The barometric formula assumes constant temperature (isothermal atmosphere). Real temperature drops roughly 6.5°C per km in the troposphere, which changes the exponent and makes the real pressure profile neither purely linear nor purely exponential. Both P = ρgh and P = P₀e<sup>−Mgh/RT</sup> are models that "lie beautifully" — each works within its domain and fails outside it.</p>
+</div>
+</section>
+
+<!-- ═══ §6 SIMULATOR ═══ -->
+<section id="sim">
+<h2><span class="sn">SECTION 06</span>See Both Side by Side</h2>
+
+<p>Water pressure increasing with depth (left, blue, linear) and atmospheric pressure decreasing with altitude (right, amber, exponential). Toggle the log scale to see the exponential straighten.</p>
+
+<div class="sim-wrap">
+  <h4>Pressure–Height Comparison</h4>
+  <div class="sim-row">
+    <canvas id="simCanvas" width="480" height="400"></canvas>
+    <div class="sim-ctrl">
+      <label for="tempSlider">Atmosphere Temperature (K)</label>
+      <input type="range" id="tempSlider" min="220" max="320" value="288" step="1">
+      
+      <label for="depthSlider">Max water depth (m)</label>
+      <input type="range" id="depthSlider" min="10" max="200" value="100" step="5">
+
+      <div class="tog">
+        <label><input type="checkbox" id="logToggle"> <span>Ln scale (atmosphere)</span></label>
+        <label><input type="checkbox" id="showLinear"> <span>Show linear model for air</span></label>
+      </div>
+
+      <div class="sr" id="simReadout"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ §7 LOG CONNECTION ═══ -->
+<section id="log">
+<h2><span class="sn">SECTION 07</span>The Log Connection</h2>
+
+<p>From the algebra learner, you know that exponentials linearise on semi-log plots. Watch how this applies here:</p>
+
+<div class="dual">
+  <div class="dual-card wc">
+    <div class="dc-title">Water (already linear)</div>
+    <div class="dc-eq">P = ρgh</div>
+    <p>Plot P vs h → straight line. Gradient = ρg ≈ 9800 Pa/m.</p>
+    <p>No log transformation needed — it's already y = mx.</p>
+  </div>
+  <div class="dual-card ac">
+    <div class="dc-title">Air (exponential → linearise)</div>
+    <div class="dc-eq">P = P₀e<sup>−Mgh/RT</sup></div>
+    <p>Plot P vs h → exponential decay curve.</p>
+    <p>Plot <strong>ln P vs h</strong> → straight line!<br>
+    Gradient = <strong>−Mg/RT</strong>.<br>
+    Intercept = <strong>ln P₀</strong>.</p>
+  </div>
+</div>
+
+<div class="rv" onclick="tog(this)">
+  <div class="rp">If you measured pressure at different altitudes and plotted ln P vs h, what could you extract?</div>
+  <div class="rh">Think about what the gradient gives you in terms of physical constants...</div>
+  <button class="rb" onclick="event.stopPropagation();tog(this.parentElement)">Reveal</button>
+  <div class="ra">
+    <p>Gradient = −Mg/RT. You know M (molar mass of air) and R (gas constant). So:</p>
+    <p><strong>g = −gradient × RT / M</strong></p>
+    <p>You've measured gravitational acceleration from atmospheric pressure data. Or, if you know g, you can find the atmospheric temperature T. A single straight-line gradient gives you a fundamental constant.</p>
+    <p>This is the power of linearisation: turning a curve into a line lets you extract hidden constants from data.</p>
+  </div>
+</div>
+
+<h3>The Scale Height</h3>
+
+<p>The exponent −Mgh/RT has a natural grouping: let <strong>H = RT/Mg</strong>. Then:</p>
+
+<div class="eq air-eq">
+  <div class="ef">P = P₀ e<sup>−h/H</sup></div>
+  <div class="es">H ≈ 8400m — the "scale height" of Earth's atmosphere</div>
+  <div class="em">
+    H is the altitude gain that reduces pressure by a factor of e.<br>
+    At h = H: P = P₀/e ≈ 37% of sea-level pressure.<br>
+    At h = 2H: P = P₀/e² ≈ 14%.<br>
+    At h = 5H ≈ 42 km: P ≈ 0.7% — effectively space.
+  </div>
+</div>
+
+<p>Compare this with the water case: water pressure increases by 1 atm per 10m, with no "scale depth." The linear model never fades — it keeps climbing at the same rate forever (until you run out of water). The exponential model fades asymptotically — pressure never quite reaches zero but gets arbitrarily close.</p>
+
+<div class="insight">
+  <div class="it">Structure Recap</div>
+  <p><strong>Constant density</strong> (incompressible) → rate of change of P is constant → integrate to get a line.<br>
+  <strong>Density ∝ P</strong> (compressible) → rate of change of P is proportional to P → integrate to get an exponential.<br>
+  The algebra is the same as the algebra learner's two shapes. The physics just tells you which shape applies and why.</p>
+</div>
+</section>
+
+<!-- ═══ §8 QUIZ ═══ -->
+<section id="quiz">
+<h2><span class="sn">SECTION 08</span>Check Your Understanding</h2>
+
+<div class="qi">
+  <div class="qq">1. Why is P = ρgh linear in h?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">Because g is constant.</button>
+    <button class="qb" data-c="true" onclick="qc(this)">Because ρ is constant (water is incompressible), so ρg is a fixed gradient.</button>
+    <button class="qb" data-c="false" onclick="qc(this)">Because pressure always increases linearly in all fluids.</button>
+  </div>
+  <div class="qf">The linearity comes from ρ being independent of depth. The gradient ρg is constant, so P increases at the same rate per metre. If ρ varied with depth, we'd get a curve.</div>
+</div>
+
+<div class="qi">
+  <div class="qq">2. What makes atmospheric pressure exponential rather than linear?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">Gravity weakens with altitude.</button>
+    <button class="qb" data-c="false" onclick="qc(this)">Temperature changes with altitude.</button>
+    <button class="qb" data-c="true" onclick="qc(this)">Air density depends on pressure (ρ = PM/RT), so the rate of pressure change is proportional to the pressure itself.</button>
+  </div>
+  <div class="qf">While gravity does weaken and temperature does change, the dominant effect is that air is compressible: ρ ∝ P. This makes dP/dh ∝ P — the signature of exponential behaviour. (The isothermal model assumes constant T and g for simplicity.)</div>
+</div>
+
+<div class="qi">
+  <div class="qq">3. You have atmospheric pressure data at various altitudes. What do you plot to get a straight line?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">P against h</button>
+    <button class="qb" data-c="false" onclick="qc(this)">log P against log h</button>
+    <button class="qb" data-c="true" onclick="qc(this)">ln P against h</button>
+    <button class="qb" data-c="false" onclick="qc(this)">P² against h</button>
+  </div>
+  <div class="qf">Exponential relationships linearise on semi-log plots: ln y vs x. Here, ln P = −(Mg/RT)h + ln P₀. Straight line, gradient = −Mg/RT. A log-log plot would be wrong — that's for power laws, not exponentials.</div>
+</div>
+
+<div class="qi">
+  <div class="qq">4. The "scale height" H = RT/Mg ≈ 8400m. This means:</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">The atmosphere stops at 8400m.</button>
+    <button class="qb" data-c="true" onclick="qc(this)">At 8400m, pressure has fallen to 1/e ≈ 37% of its sea-level value.</button>
+    <button class="qb" data-c="false" onclick="qc(this)">Pressure drops by 8400 Pa per metre.</button>
+  </div>
+  <div class="qf">The scale height is the e-folding distance: every H metres, pressure drops by a factor of e. The atmosphere never truly "ends" — it fades exponentially. This is fundamentally different from the linear water model, where there's a definite surface.</div>
+</div>
+
+<div class="qi">
+  <div class="qq">5. If the linear model P = ρgh were applied to the atmosphere using sea-level density, it predicts the atmosphere ends at about 8400m. What's wrong with this?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">The linear model is correct — air pressure does reach zero at 8400m.</button>
+    <button class="qb" data-c="true" onclick="qc(this)">It uses a constant ρ (sea-level density) that overpredicts the mass of upper layers, since air is less dense at altitude. The real pressure at 8400m is ~37 kPa, not zero.</button>
+    <button class="qb" data-c="false" onclick="qc(this)">The formula should use the density of air at the top, not the bottom.</button>
+  </div>
+  <div class="qf">The linear model overpredicts high-altitude mass by assuming all air is as dense as sea-level air. In reality, upper layers are much thinner, contribute less weight, and pressure tails off exponentially rather than hitting zero. This is a perfect example of Cartwright's point: the model works locally but fails when extended beyond its domain.</div>
+</div>
+
+<div class="qi">
+  <div class="qq">6. Which differential equation structure produces an exponential?</div>
+  <div class="qo">
+    <button class="qb" data-c="false" onclick="qc(this)">dy/dx = constant</button>
+    <button class="qb" data-c="true" onclick="qc(this)">dy/dx = k · y (rate of change proportional to current value)</button>
+    <button class="qb" data-c="false" onclick="qc(this)">dy/dx = k · x</button>
+    <button class="qb" data-c="false" onclick="qc(this)">dy/dx = k / y</button>
+  </div>
+  <div class="qf">dy/dx = constant → y = mx + c (linear). dy/dx = ky → y = Ae<sup>kx</sup> (exponential). dy/dx = kx → y = ½kx² (quadratic). The atmospheric case gives dP/dh = −(Mg/RT)·P, which is dy/dx = ky with k negative — exponential decay.</div>
+</div>
+
+</section>
+
+</main>
+
+<footer>
+  <span class="g">Constructed by Silicon · Anthropic Claude</span> — <span class="g">Architect Carbon · LeeMcCullochJames</span><br>
+  Companion to <em>The Language of Floating</em> & <em>The Algebra You Already Know</em> · Department of Natural & Unnatural Sciences · Dwight School London
+</footer>
+
+<script>
+function tog(el){el.classList.toggle('open');}
+function qc(b){
+  const qi=b.closest('.qi'),os=qi.querySelectorAll('.qb'),f=qi.querySelector('.qf');
+  os.forEach(o=>{o.classList.add('off');if(o.getAttribute('data-c')==='true')o.classList.add('ok');});
+  if(b.getAttribute('data-c')!=='true')b.classList.add('no');
+  f.classList.add('show');
+}
+
+// ─── Simulator ───
+(function(){
+  const C=document.getElementById('simCanvas'),ctx=C.getContext('2d');
+  const W=C.width,H=C.height;
+  const tempS=document.getElementById('tempSlider');
+  const depthS=document.getElementById('depthSlider');
+  const logT=document.getElementById('logToggle');
+  const showLin=document.getElementById('showLinear');
+  const readout=document.getElementById('simReadout');
+
+  const pad={l:55,r:15,t:25,b:45};
+  const midX=pad.l+((W-pad.l-pad.r)/2);
+  const leftW=midX-pad.l-10;
+  const rightW=W-pad.r-midX-10;
+  const pH=H-pad.t-pad.b;
+
+  const P0=101325;
+  const rhoW=1000;
+  const g=9.81;
+  const Mair=0.029;
+  const R=8.314;
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const T=parseFloat(tempS.value);
+    const maxDepth=parseFloat(depthS.value);
+    const useLog=logT.checked;
+    const showL=showLin.checked;
+    const scaleH=R*T/(Mair*g);
+
+    // ─── LEFT: Water (depth on y-axis going down, pressure on x-axis) ───
+    const maxPW=rhoW*g*maxDepth+P0;
+
+    // Background water gradient
+    const wGrad=ctx.createLinearGradient(0,pad.t,0,pad.t+pH);
+    wGrad.addColorStop(0,'rgba(30,90,140,0.08)');
+    wGrad.addColorStop(1,'rgba(30,90,140,0.25)');
+    ctx.fillStyle=wGrad;
+    ctx.fillRect(pad.l,pad.t,leftW,pH);
+
+    // Water axis
+    ctx.strokeStyle='rgba(58,143,212,0.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+pH);ctx.lineTo(pad.l+leftW,pad.t+pH);ctx.stroke();
+
+    // Labels
+    ctx.fillStyle='rgba(58,143,212,0.7)';ctx.font='10px "JetBrains Mono"';ctx.textAlign='center';
+    ctx.fillText('Pressure (kPa)',pad.l+leftW/2,H-6);
+    ctx.fillText('WATER — P = ρgh + P₀',pad.l+leftW/2,pad.t-8);
+    ctx.save();ctx.translate(pad.l-8,pad.t+pH/2);ctx.rotate(-Math.PI/2);
+    ctx.fillText('Depth (m)',0,0);ctx.restore();
+
+    // Water curve (straight line)
+    ctx.beginPath();
+    ctx.strokeStyle='rgba(58,143,212,0.9)';ctx.lineWidth=2.5;
+    const N=80;
+    for(let i=0;i<=N;i++){
+      const frac=i/N;
+      const depth=frac*maxDepth;
+      const P=P0+rhoW*g*depth;
+      const sx=pad.l+(P/maxPW)*leftW;
+      const sy=pad.t+frac*pH;
+      if(i===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+
+    // Water tick labels
+    ctx.fillStyle='rgba(58,143,212,0.4)';ctx.font='8px "JetBrains Mono"';
+    for(let i=0;i<=4;i++){
+      const d=(maxDepth*i/4);
+      const sy=pad.t+(i/4)*pH;
+      ctx.textAlign='right';ctx.fillText(d.toFixed(0)+'m',pad.l-12,sy+3);
+      const pv=(maxPW*i/4)/1000;
+      const sx=pad.l+(i/4)*leftW;
+      ctx.textAlign='center';ctx.fillText(pv.toFixed(0),sx,pad.t+pH+13);
+    }
+
+    // ─── RIGHT: Atmosphere (altitude on y-axis going up, pressure on x-axis) ───
+    const rLeft=midX+10;
+    const maxAlt=scaleH*4;
+
+    // Background air gradient
+    const aGrad=ctx.createLinearGradient(0,pad.t,0,pad.t+pH);
+    aGrad.addColorStop(0,'rgba(212,160,58,0.05)');
+    aGrad.addColorStop(1,'rgba(212,160,58,0.18)');
+    ctx.fillStyle=aGrad;
+    ctx.fillRect(rLeft,pad.t,rightW,pH);
+
+    // Air axes
+    ctx.strokeStyle='rgba(212,160,58,0.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(rLeft,pad.t);ctx.lineTo(rLeft,pad.t+pH);ctx.lineTo(rLeft+rightW,pad.t+pH);ctx.stroke();
+
+    ctx.fillStyle='rgba(212,160,58,0.7)';ctx.font='10px "JetBrains Mono"';ctx.textAlign='center';
+    const xLabel=useLog?'ln(P/P₀)':'Pressure (kPa)';
+    ctx.fillText(xLabel,rLeft+rightW/2,H-6);
+    ctx.fillText('AIR — P = P₀e^(−h/H)',rLeft+rightW/2,pad.t-8);
+    ctx.save();ctx.translate(rLeft-8,pad.t+pH/2);ctx.rotate(-Math.PI/2);
+    ctx.fillText('Altitude (km)',0,0);ctx.restore();
+
+    // Air exponential curve
+    ctx.beginPath();
+    ctx.strokeStyle='rgba(212,160,58,0.9)';ctx.lineWidth=2.5;
+    for(let i=0;i<=N;i++){
+      const frac=i/N;
+      const alt=frac*maxAlt;
+      const P=P0*Math.exp(-alt/scaleH);
+      let sx;
+      if(useLog){
+        const lnRatio=-alt/scaleH; // ranges from 0 to -4
+        sx=rLeft+((lnRatio+4.5)/4.5)*rightW; // map -4..0 to 0..rightW
+      }else{
+        sx=rLeft+(P/P0)*rightW;
+      }
+      const sy=pad.t+pH-frac*pH; // altitude goes up
+      if(i===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+
+    // Show linear model for air (wrong model)
+    if(showL){
+      ctx.beginPath();
+      ctx.strokeStyle='rgba(196,74,74,0.6)';ctx.lineWidth=1.5;
+      ctx.setLineDash([6,4]);
+      const rhoSea=P0*Mair/(R*T);
+      for(let i=0;i<=N;i++){
+        const frac=i/N;
+        const alt=frac*maxAlt;
+        const P_lin=Math.max(0,P0-rhoSea*g*alt);
+        let sx;
+        if(useLog){
+          if(P_lin<=0)break;
+          const lnR=Math.log(P_lin/P0);
+          sx=rLeft+((lnR+4.5)/4.5)*rightW;
+        }else{
+          sx=rLeft+(P_lin/P0)*rightW;
+        }
+        const sy=pad.t+pH-frac*pH;
+        if(i===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label
+      ctx.fillStyle='rgba(196,74,74,0.5)';ctx.font='8px "JetBrains Mono"';
+      ctx.textAlign='left';
+      ctx.fillText('linear model (wrong)',rLeft+5,pad.t+pH-pH*0.7);
+    }
+
+    // Air tick labels
+    ctx.fillStyle='rgba(212,160,58,0.4)';ctx.font='8px "JetBrains Mono"';
+    for(let i=0;i<=4;i++){
+      const alt=(maxAlt*i/4)/1000;
+      const sy=pad.t+pH-(i/4)*pH;
+      ctx.textAlign='right';ctx.fillText(alt.toFixed(1)+'km',rLeft-10,sy+3);
+    }
+    for(let i=0;i<=4;i++){
+      const sx=rLeft+(i/4)*rightW;
+      let lbl;
+      if(useLog){
+        lbl=(-4.5+i*4.5/4).toFixed(1);
+      }else{
+        lbl=((i/4)*P0/1000).toFixed(0);
+      }
+      ctx.textAlign='center';ctx.fillText(lbl,sx,pad.t+pH+13);
+    }
+
+    // Separator
+    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(midX,pad.t);ctx.lineTo(midX,pad.t+pH);ctx.stroke();
+
+    // Scale height marker
+    const shY=pad.t+pH-(1/4)*pH; // 1 scale height at 1/4 of max alt
+    ctx.strokeStyle='rgba(212,160,58,0.3)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(rLeft,shY);ctx.lineTo(rLeft+rightW,shY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(212,160,58,0.35)';ctx.font='8px "JetBrains Mono"';
+    ctx.textAlign='right';ctx.fillText('H='+(scaleH/1000).toFixed(1)+'km',rLeft+rightW-3,shY-4);
+
+    // Readout
+    const rhoSea2=P0*Mair/(R*T);
+    readout.innerHTML=`
+      <span class="gl">TEMPERATURE:</span> <span>${T}</span> K (${(T-273).toFixed(0)}°C)<br>
+      <span class="gl">SCALE HEIGHT:</span> <span>${(scaleH/1000).toFixed(2)}</span> km<br>
+      <span class="gl">SEA-LEVEL AIR DENSITY:</span> <span>${rhoSea2.toFixed(3)}</span> kg/m³<br>
+      <span class="gl">WATER GRADIENT:</span> <span>${(rhoW*g/1000).toFixed(1)}</span> kPa/m (constant)<br>
+      <span class="gl">AIR AT H:</span> <span>${(P0*Math.exp(-1)/1000).toFixed(1)}</span> kPa (37% of sea level)
+      ${showL?'<br><span style="color:var(--danger);font-size:0.7rem;">RED DASHED = linear model (hits zero at '+(P0/(rhoSea2*g)/1000).toFixed(1)+' km)</span>':''}
+      ${useLog?'<br><span style="color:var(--cyan);font-size:0.7rem;">LN SCALE: exponential → straight line ✓</span>':''}
+    `;
+  }
+
+  [tempS,depthS,logT,showLin].forEach(el=>el.addEventListener('input',draw));
+  draw();
+})();
+
+// Nav
+const secs=document.querySelectorAll('section[id]');
+const nls=document.querySelectorAll('nav a');
+window.addEventListener('scroll',()=>{
+  let c='';secs.forEach(s=>{if(scrollY>=s.offsetTop-100)c=s.id;});
+  nls.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+c));
+});
+</script>
+
+</body>
+</html>
