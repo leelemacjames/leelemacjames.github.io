@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Geometry of Decay — τ, λ, and the Eloquence of e⁻¹</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --bg2: #141416;
+    --bg3: #1a1a1e;
+    --bg4: #222228;
+    --gold: #c9a84c;
+    --gold-dim: #8a6f2e;
+    --gold-bright: #e8c96a;
+    --cream: #e8dfc8;
+    --muted: #7a7a85;
+    --accent-teal: #4a9e8a;
+    --accent-rose: #c4605a;
+    --accent-blue: #5a7fb0;
+    --text: #d4cfc5;
+    --serif: 'EB Garamond', Georgia, serif;
+    --display: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'JetBrains Mono', monospace;
+    --border: rgba(201,168,76,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* STICKY NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(14,14,15,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 2rem;
+    display: flex; gap: 0; flex-wrap: wrap; align-items: center;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-right: 1px solid var(--border);
+    transition: color 0.2s;
+  }
+  nav a:first-child { border-left: 1px solid var(--border); }
+  nav a:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 6rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(201,168,76,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 20% 80%, rgba(74,158,138,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+    max-width: 16ch;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-style: italic;
+    color: var(--muted);
+    max-width: 55ch;
+    margin-bottom: 3rem;
+  }
+  .big-eq {
+    font-family: var(--mono);
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
+    color: var(--gold);
+    background: rgba(201,168,76,0.07);
+    border: 1px solid var(--border);
+    display: inline-block;
+    padding: 1rem 2rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+  }
+  .scroll-hint {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    animation: fadeUpDown 2s ease-in-out infinite;
+  }
+  @keyframes fadeUpDown {
+    0%,100%{transform:translateY(0);opacity:0.5}
+    50%{transform:translateY(6px);opacity:1}
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+    line-height: 1.15;
+  }
+  h3 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--gold);
+    margin: 2.5rem 0 0.8rem;
+    font-style: italic;
+  }
+  p { margin-bottom: 1.2rem; }
+  p + p { margin-top: 0; }
+
+  /* QUESTION BOX */
+  .question-box {
+    background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-left: 3px solid var(--gold);
+    padding: 1.5rem 1.8rem;
+    margin: 2rem 0;
+    font-style: italic;
+    font-family: var(--display);
+    font-size: 1.1rem;
+    color: var(--cream);
+  }
+  .question-box::before {
+    content: '⟳  Pause & Consider';
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    font-style: normal;
+    margin-bottom: 0.6rem;
+  }
+
+  /* REVEAL PANEL */
+  .reveal-panel {
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    background: var(--bg3);
+    padding: 0.9rem 1.4rem;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+    user-select: none;
+    border: none; width: 100%; text-align: left;
+  }
+  .reveal-trigger:hover { background: var(--bg4); color: var(--gold); }
+  .reveal-trigger .arrow {
+    transition: transform 0.3s;
+    color: var(--gold-dim);
+    font-size: 1.1rem;
+    font-family: serif;
+  }
+  .reveal-trigger.open .arrow { transform: rotate(90deg); }
+  .reveal-content {
+    display: none;
+    padding: 1.5rem 1.8rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .reveal-content.open { display: block; }
+
+  /* MATH DISPLAY */
+  .math-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    margin: 1.8rem 0;
+    text-align: center;
+    font-size: 1.05rem;
+    overflow-x: auto;
+  }
+  .math-block.key {
+    border-color: var(--gold-dim);
+    background: rgba(201,168,76,0.05);
+  }
+
+  /* CANVAS CHARTS */
+  .chart-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-radius: 2px;
+    position: relative;
+  }
+  .chart-wrap canvas { width: 100% !important; }
+  .chart-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+  }
+
+  /* CONFUSION BOX */
+  .confusion-box {
+    background: rgba(196,96,90,0.07);
+    border: 1px solid rgba(196,96,90,0.3);
+    border-left: 3px solid var(--accent-rose);
+    padding: 1.3rem 1.6rem;
+    margin: 2rem 0;
+    font-size: 0.9rem;
+  }
+  .confusion-box::before {
+    content: '⚠  Common Confusion';
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-rose);
+    margin-bottom: 0.5rem;
+    opacity: 0.85;
+  }
+
+  /* APPLICATION GRID */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  .app-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    transition: border-color 0.25s, transform 0.25s;
+  }
+  .app-card:hover {
+    border-color: var(--gold-dim);
+    transform: translateY(-2px);
+  }
+  .app-card .app-domain {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.4rem;
+  }
+  .app-card .app-title {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--cream);
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+  .app-card .app-eq {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+  .app-card .app-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* INTERACTIVE SLIDER */
+  .slider-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    margin: 2rem 0;
+  }
+  .slider-wrap label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .slider-wrap input[type=range] {
+    width: 100%;
+    accent-color: var(--gold);
+    margin: 0.3rem 0 1rem;
+    cursor: pointer;
+  }
+  .slider-readout {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    color: var(--gold);
+    text-align: center;
+    padding: 0.8rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+
+  /* HIGHLIGHT TEXT */
+  .hl { color: var(--gold); font-style: normal; }
+  .hl-teal { color: var(--accent-teal); }
+  .hl-rose { color: var(--accent-rose); }
+  .hl-blue { color: var(--accent-blue); }
+
+  /* TWO COLUMN */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  @media(max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+  }
+  .col-box h4 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .col-box p, .col-box li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  /* SECRETARY PROBLEM */
+  .secretary-vis {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .candidate-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    justify-content: center;
+    margin: 1.2rem 0;
+  }
+  .candidate {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.65rem;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .cand-unseen { background: var(--bg4); border: 1px solid var(--muted); color: var(--muted); }
+  .cand-reject { background: rgba(196,96,90,0.2); border: 1px solid var(--accent-rose); color: var(--accent-rose); }
+  .cand-explore { background: rgba(201,168,76,0.15); border: 1px solid var(--gold-dim); color: var(--gold); }
+  .cand-chosen { background: var(--gold); color: var(--bg); border: 1px solid var(--gold-bright); font-weight: bold; }
+  .cand-miss { background: rgba(90,127,176,0.2); border: 1px solid var(--accent-blue); color: var(--accent-blue); }
+
+  /* ATMOSPHERE SECTION */
+  .atmos-zone {
+    display: flex; align-items: stretch;
+    border: 1px solid var(--border);
+    margin: 0.5rem 0;
+    overflow: hidden;
+  }
+  .atmos-label {
+    background: var(--bg3);
+    padding: 0.7rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    min-width: 130px;
+    display: flex; align-items: center;
+    border-right: 1px solid var(--border);
+  }
+  .atmos-bar {
+    padding: 0.7rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--cream);
+    display: flex; align-items: center; gap: 0.8rem;
+    flex: 1;
+  }
+  .atmos-density {
+    height: 12px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, var(--gold-bright), var(--gold-dim));
+    transition: width 0.5s;
+  }
+
+  /* QUIZ */
+  .quiz-q {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
+  .quiz-q p {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+    color: var(--cream);
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 0.7rem 1.1rem;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: left;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--gold-dim); color: var(--cream); }
+  .quiz-opt.correct { background: rgba(74,158,138,0.15); border-color: var(--accent-teal); color: var(--accent-teal); }
+  .quiz-opt.wrong { background: rgba(196,96,90,0.1); border-color: var(--accent-rose); color: var(--accent-rose); }
+  .quiz-feedback {
+    margin-top: 0.8rem;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--muted);
+    display: none;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+  footer span { color: var(--gold-dim); }
+
+  /* DEATH ZONE BOX */
+  .deathzone {
+    background: rgba(74,158,138,0.05);
+    border: 1px dashed rgba(74,158,138,0.35);
+    padding: 1.4rem 1.8rem;
+    margin: 2rem 0;
+    font-size: 0.92rem;
+    font-style: italic;
+    color: var(--cream);
+  }
+  .deathzone::before {
+    content: '☠  The Death Zone Parallel';
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-teal);
+    font-style: normal;
+    margin-bottom: 0.6rem;
+  }
+
+  /* KEY NUMBERS */
+  .key-num {
+    display: inline-block;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid var(--gold-dim);
+    padding: 0.2rem 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--gold-bright);
+  }
+
+  /* LINKED CHAIN */
+  .chain {
+    display: flex; align-items: center; gap: 0.5rem;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    background: var(--bg3);
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--border);
+    margin: 1.5rem 0;
+    color: var(--cream);
+  }
+  .chain-link { color: var(--gold); }
+  .chain-arr { color: var(--muted); }
+
+  /* SCROLLFADE ANIMATION */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero">Home</a>
+  <a href="#decay-eq">The ODE</a>
+  <a href="#tau">τ & RC</a>
+  <a href="#damping">Damping</a>
+  <a href="#lambda">λ & 1/e</a>
+  <a href="#secretary">Secretary</a>
+  <a href="#ln2">Half-Life</a>
+  <a href="#atmosphere">Atmosphere</a>
+  <a href="#breadth">Applications</a>
+  <a href="#quiz">Quiz</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <p class="hero-kicker">A Unified Learner — Physics · Mathematics · Information Theory</p>
+  <h1>The Geometry<br>of <em>Decay</em></h1>
+  <p class="hero-sub">Why the universe reaches for e⁻¹, what 36.8% reveals about optimal stopping, and how the atmosphere solves the same equation as your RC circuit.</p>
+  <div class="big-eq">N(t) = N₀ · e<sup>−t/τ</sup> = N₀ · e<sup>−λt</sup></div>
+  <p class="scroll-hint">▾ Scroll to begin</p>
+</div>
+
+<!-- SECTION 1: THE CORE ODE -->
+<section id="decay-eq" class="fade-in">
+  <p class="section-label">01 — The differential equation</p>
+  <h2>One Equation to Rule Them All</h2>
+
+  <div class="question-box">
+    Before we begin: what property must a function have so that its <em>rate of change is proportional to its current value</em>? Sketch what you think that curve looks like.
+  </div>
+
+  <p>The decay equation is not a fact handed down from physics — it is a <em>logical consequence</em> of one assumption: the rate at which something changes is proportional to how much of it currently exists. Write that in the language of calculus:</p>
+
+  <div class="math-block key">
+    \[ \frac{dN}{dt} = -\lambda N \]
+  </div>
+
+  <p>The minus sign encodes <em>decay</em> rather than growth. Separate variables and integrate:</p>
+
+  <div class="math-block">
+    \[ \int \frac{dN}{N} = -\lambda \int dt \quad \Rightarrow \quad \ln N = -\lambda t + C \quad \Rightarrow \quad N(t) = N_0\, e^{-\lambda t} \]
+  </div>
+
+  <p>The exponential is the <strong class="hl">unique function whose derivative is itself</strong> (scaled). It is not a coincidence that it appears everywhere — it is the only possible solution to this class of problem.</p>
+
+  <div class="reveal-panel">
+    <button class="reveal-trigger" onclick="toggleReveal(this)"><span>Why is this ODE so universal?</span><span class="arrow">▶</span></button>
+    <div class="reveal-content">
+      <p>Because <em>linearity</em> is the simplest possible relationship between a quantity and its rate of change. Whenever a system has no memory — when the future evolution depends only on the <em>present state</em>, not on history — it satisfies this equation. This is the <strong>Markov property</strong> in disguise. It appears in radioactive decay, drug pharmacokinetics, population dynamics, electrical circuits, Newton's law of cooling, and information theory, because all of these are memoryless linear processes.</p>
+    </div>
+  </div>
+
+  <p>Two parameters parametrise this single curve. They are not different things — they are reciprocals of each other, with different historical etymologies from different fields:</p>
+
+  <div class="chain">
+    <span class="chain-link">λ (decay constant)</span>
+    <span class="chain-arr">⟷  reciprocal  ⟷</span>
+    <span class="chain-link">τ (time constant)</span>
+    <span class="chain-arr">&nbsp;so&nbsp;</span>
+    <span>λ = 1/τ</span>
+  </div>
+
+  <div class="chart-wrap">
+    <p class="chart-label">Exponential decay — drag the slider to change τ</p>
+    <canvas id="decayChart" height="260"></canvas>
+    <div class="slider-wrap" style="margin-top:1rem;border:none;padding:0.5rem 0;">
+      <label>Time constant τ</label>
+      <input type="range" id="tauSlider" min="0.5" max="5" step="0.1" value="1.5" oninput="updateDecayChart()">
+      <div class="slider-readout" id="tauReadout">τ = 1.5 s &nbsp;|&nbsp; λ = 0.667 s⁻¹</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: RC CIRCUITS -->
+<section id="tau" class="fade-in">
+  <p class="section-label">02 — RC circuits & the time constant</p>
+  <h2>τ = RC: Reading the Circuit</h2>
+
+  <div class="question-box">
+    A capacitor discharges through a resistor. Bigger R — does it discharge faster or slower? What about bigger C? Before reading on, commit to a prediction.
+  </div>
+
+  <p>Kirchhoff's voltage law for a series RC circuit gives:</p>
+  <div class="math-block key">
+    \[ V_R + V_C = 0 \quad \Rightarrow \quad RC\,\frac{dV}{dt} + V = 0 \]
+  </div>
+  <p>Rearranging: \(\frac{dV}{dt} = -\frac{1}{RC}\,V\). This is exactly our template ODE with <span class="hl">λ = 1/RC</span>, so the solution is:</p>
+  <div class="math-block">
+    \[ V(t) = V_0\, e^{-t/RC} \equiv V_0\, e^{-t/\tau} \quad \text{where } \tau = RC \]
+  </div>
+
+  <div class="two-col">
+    <div class="col-box">
+      <h4>Larger R</h4>
+      <p>More resistance → current flows more slowly → capacitor drains <strong>more slowly</strong> → larger τ → slower decay. Prediction verified: bigger R, slower discharge.</p>
+    </div>
+    <div class="col-box">
+      <h4>Larger C</h4>
+      <p>More capacitance → more charge stored per volt → same current drains proportionally <strong>more slowly</strong> → larger τ. Both R and C slow the decay symmetrically.</p>
+    </div>
+  </div>
+
+  <p>The units of τ = RC are ohms × farads = seconds. Check: <span class="key-num">Ω·F = (V/A)·(C/V) = C/A = s</span>. The unit analysis was already telling you what τ measures: a characteristic time.</p>
+
+  <div class="confusion-box">
+    τ is <em>not</em> the time to fully discharge — it is the time for V to fall to V₀/e ≈ 0.368 V₀. After 5τ, V ≈ 0.7% of V₀, which is when engineers call the circuit "discharged" in practice.
+  </div>
+
+  <h3>What τ means geometrically</h3>
+  <p>The tangent to the decay curve at t = 0 intersects the time axis at exactly t = τ. This is a beautiful geometric fact: if the decay continued at its initial rate, it would reach zero at precisely one time-constant. The curve "remembers" τ in its initial slope.</p>
+
+  <div class="math-block">
+    \[ \left.\frac{dV}{dt}\right|_{t=0} = -\frac{V_0}{\tau} \quad \Rightarrow \quad \text{tangent hits zero at } t = \tau \]
+  </div>
+</section>
+
+<!-- SECTION 3: DAMPED HARMONIC -->
+<section id="damping" class="fade-in">
+  <p class="section-label">03 — Damped harmonic oscillators</p>
+  <h2>When Decay Meets Oscillation</h2>
+
+  <div class="question-box">
+    A pendulum in oil. A shock absorber. A plucked guitar string. What do these have in common, and how does exponential decay enter a system that is also <em>oscillating</em>?
+  </div>
+
+  <p>The damped harmonic oscillator satisfies:</p>
+  <div class="math-block key">
+    \[ m\ddot{x} + b\dot{x} + kx = 0 \]
+  </div>
+  <p>Dividing by m and writing γ = b/2m, ω₀² = k/m, the trial solution x = e<sup>st</sup> yields the characteristic equation s² + 2γs + ω₀² = 0, giving:</p>
+  <div class="math-block">
+    \[ s = -\gamma \pm \sqrt{\gamma^2 - \omega_0^2} \]
+  </div>
+
+  <p>Three regimes emerge, controlled by the ratio γ/ω₀:</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-domain">γ &lt; ω₀</div>
+      <div class="app-title">Underdamped</div>
+      <div class="app-eq">x(t) = A e⁻ᵞᵗ cos(ω_d t + φ)</div>
+      <div class="app-desc">Oscillation wrapped in exponential envelope. The decay constant γ = b/2m sets the envelope. Guitar strings, RLC circuits below resonance.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">γ = ω₀</div>
+      <div class="app-title">Critically Damped</div>
+      <div class="app-eq">x(t) = (A + Bt)e⁻ᵞᵗ</div>
+      <div class="app-desc">Returns to equilibrium fastest without oscillation. Car suspension design target, galvanometer damping.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">γ &gt; ω₀</div>
+      <div class="app-title">Overdamped</div>
+      <div class="app-eq">x(t) = A e^{s₊t} + B e^{s₋t}</div>
+      <div class="app-desc">Two real negative exponents — slow return without oscillation. Door closers, heavy shock absorbers.</div>
+    </div>
+  </div>
+
+  <p>The exponential decay constant τ = 1/γ = 2m/b directly parallels the RC circuit: replace m↔C (inertia/capacitance), b↔1/R (damping/conductance), k↔1/L (restoring/inductance). The analogy is exact — the same ODE, different physical labels.</p>
+
+  <div class="chart-wrap">
+    <p class="chart-label">Damped oscillation — three regimes</p>
+    <canvas id="dampChart" height="240"></canvas>
+  </div>
+
+  <div class="reveal-panel">
+    <button class="reveal-trigger" onclick="toggleReveal(this)"><span>The Q-factor connection</span><span class="arrow">▶</span></button>
+    <div class="reveal-content">
+      <p>The quality factor Q = ω₀/2γ = ω₀τ/2 measures how many oscillation cycles occur in one decay time. Q ≫ 1 means many oscillations before the amplitude drops to 1/e. Quartz crystal oscillators have Q ~ 10⁶; acoustic cavities, Q ~ 10³; a car suspension, Q ~ 0.5 (deliberately underdamped toward critical). The decay time and oscillation time are coupled through τ = 2Q/ω₀.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: LAMBDA AND 1/e -->
+<section id="lambda" class="fade-in">
+  <p class="section-label">04 — The decay constant λ and the magic of 1/e</p>
+  <h2>Why 36.8% Is the Universe's Favourite Number</h2>
+
+  <div class="question-box">
+    After one time-constant τ, what fraction of the original quantity remains? Express it as an exact value before computing its decimal — then decide whether 36.8% seems "natural" or arbitrary.
+  </div>
+
+  <p>At t = τ = 1/λ:</p>
+  <div class="math-block key">
+    \[ N(\tau) = N_0\, e^{-\lambda \cdot (1/\lambda)} = N_0\, e^{-1} = \frac{N_0}{e} \approx 0.3679\, N_0 \]
+  </div>
+
+  <p>The number e⁻¹ ≈ <span class="key-num">0.36788</span> is not arbitrary. It is the <em>fixed point</em> where the decay function crosses the level 1/e — and this crossing defines the time-constant. The 36.8% is not a choice; it is what τ <em>means</em> by construction.</p>
+
+  <h3>Why this particular fraction?</h3>
+  <p>Consider: the exponential e is defined such that e^1 = e ≈ 2.718. So e^{−1} = 1/2.718... ≈ 0.368. The reason e appears (rather than, say, 2) is that <strong class="hl">e is the base of natural logarithms</strong> — the unique base for which the derivative of bˣ is exactly bˣ itself, with no extra constant factor. Any other base would introduce a multiplicative constant into our ODE and break its clean self-referential structure.</p>
+
+  <div class="reveal-panel">
+    <button class="reveal-trigger" onclick="toggleReveal(this)"><span>The Compound Interest Derivation of e</span><span class="arrow">▶</span></button>
+    <div class="reveal-content">
+      <p>Invest £1 at 100% annual interest. Compound n times per year:</p>
+      <div class="math-block">\[ A = \left(1 + \frac{1}{n}\right)^n \]</div>
+      <p>As n → ∞ (continuous compounding), this converges to e ≈ 2.71828... Equivalently, e is the amount £1 grows to under continuous 100% compounding for 1 year. Its reciprocal e⁻¹ is the fraction <em>remaining</em> after one unit of continuous decay — the "natural" decay residual.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: SECRETARY PROBLEM -->
+<section id="secretary" class="fade-in">
+  <p class="section-label">05 — Optimal stopping & the secretary problem</p>
+  <h2>1/e Is Also the Secretary's Survival Ratio</h2>
+
+  <div class="question-box">
+    You must hire one secretary from N candidates, interviewed sequentially in random order. You can only accept or reject each candidate on the spot. What strategy maximises your probability of choosing the best candidate overall?
+  </div>
+
+  <p>This is the <strong class="hl">Secretary Problem</strong> (also called the Marriage Problem, or the 37% Rule). The optimal strategy has a beautiful structure:</p>
+
+  <ol style="margin: 1.2rem 0 1.2rem 1.5rem; line-height:2;">
+    <li><strong>Explore phase:</strong> reject the first r−1 candidates unconditionally. Record the best seen so far.</li>
+    <li><strong>Exploit phase:</strong> accept the first candidate who beats all previously seen.</li>
+  </ol>
+
+  <p>The optimal threshold r* that maximises the probability of success is:</p>
+  <div class="math-block key">
+    \[ r^* = \left\lfloor \frac{N}{e} \right\rfloor \approx \frac{N}{e} \approx 0.368\, N \]
+  </div>
+
+  <p>Reject the first <span class="key-num">36.8%</span> of candidates. Then hire the next who beats all previous. With this strategy, the probability of success converges to:</p>
+  <div class="math-block">
+    \[ P^*_{\text{success}} \to \frac{1}{e} \approx 36.8\% \quad \text{as } N \to \infty \]
+  </div>
+
+  <p>Both the threshold <em>and</em> the optimal success probability converge to 1/e. The same transcendental constant governs both the timing of exploration and the ceiling of achievable success. This is not a coincidence — it is the same underlying integral \( \int_0^1 -\ln(x)\, dx = 1 \).</p>
+
+  <!-- Interactive Secretary Simulation -->
+  <div class="secretary-vis">
+    <p class="chart-label" style="text-align:left;margin-bottom:1rem;">Secretary Problem Simulator</p>
+    <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+      <div>
+        <label style="font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">N candidates</label>
+        <input type="range" id="secN" min="5" max="40" value="20" oninput="runSecretary()" style="accent-color:var(--gold);width:140px;margin-left:0.8rem;">
+        <span id="secNVal" style="font-family:var(--mono);color:var(--gold);font-size:0.85rem;"></span>
+      </div>
+      <button onclick="runSecretary()" style="background:rgba(201,168,76,0.15);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--mono);font-size:0.72rem;padding:0.5rem 1.2rem;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;">Reshuffle</button>
+    </div>
+    <div class="candidate-row" id="candidateRow"></div>
+    <div id="secResult" style="font-family:var(--mono);font-size:0.82rem;color:var(--muted);margin-top:1rem;line-height:1.8;"></div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;justify-content:center;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">
+      <span><span class="candidate cand-explore" style="display:inline-flex;width:18px;height:18px;vertical-align:middle;"></span> Explore (reject)</span>
+      <span><span class="candidate cand-reject" style="display:inline-flex;width:18px;height:18px;vertical-align:middle;"></span> Exploit (reject)</span>
+      <span><span class="candidate cand-chosen" style="display:inline-flex;width:18px;height:18px;vertical-align:middle;"></span> Chosen</span>
+      <span><span class="candidate cand-miss" style="display:inline-flex;width:18px;height:18px;vertical-align:middle;"></span> Best (if missed)</span>
+    </div>
+  </div>
+
+  <div class="deathzone">
+    <strong>The Mountain Metaphor.</strong> In high-altitude mountaineering, the "Death Zone" above ~8,000 m is where oxygen density falls below the threshold for sustained human life. The atmospheric pressure at 8,000 m is approximately e⁻¹ ≈ 37% of sea-level pressure (the scale height of the atmosphere is ~8.5 km). So the Death Zone begins almost exactly at one atmospheric scale height — the altitude at which you have "used up" your first time-constant of air density. Climbers have an implicit 37% rule: spend any significant time above 8 km and you are in the exponential tail, where every additional metre costs disproportionately. The 1/e fraction is not just a mathematical nicety — above this altitude, your margin is gone.
+  </div>
+
+  <div class="reveal-panel">
+    <button class="reveal-trigger" onclick="toggleReveal(this)"><span>The deeper link: why 1/e appears in both</span><span class="arrow">▶</span></button>
+    <div class="reveal-content">
+      <p>The secretary problem's optimal threshold comes from maximising the integral:</p>
+      <div class="math-block">\[ P(r) = \frac{r-1}{N} \sum_{k=r}^{N} \frac{1}{k-1} \approx -x_0 \ln(x_0) \quad \text{where } x_0 = r/N \]</div>
+      <p>Differentiating and setting equal to zero: d/dx[−x ln x] = −ln x − 1 = 0, so x = e⁻¹. The exponential function and its derivative are the same function — so any optimisation of a quantity defined via logarithms will generically hit e⁻¹ as a critical point. The same calculus that gives us the decay time-constant gives us the optimal stopping fraction.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: LN2 AND HALF LIFE -->
+<section id="ln2" class="fade-in">
+  <p class="section-label">06 — Half-life and ln 2</p>
+  <h2>Why ln 2 Is the Physicist's Other Favourite</h2>
+
+  <div class="question-box">
+    The half-life t½ is the time for a quantity to fall to exactly half its value. Express t½ in terms of λ and τ before reading on. How does it relate to ln 2 ≈ 0.693?
+  </div>
+
+  <p>Set N(t½) = N₀/2:</p>
+  <div class="math-block key">
+    \[ N_0 e^{-\lambda t_{1/2}} = \frac{N_0}{2} \quad \Rightarrow \quad e^{-\lambda t_{1/2}} = \frac{1}{2} \quad \Rightarrow \quad t_{1/2} = \frac{\ln 2}{\lambda} = \tau \ln 2 \]
+  </div>
+
+  <p>So <span class="key-num">t½ = τ · ln 2 ≈ 0.693 τ</span>. The half-life is always shorter than the time-constant by a factor of ln 2. This makes intuitive sense: halving is less dramatic than falling to 1/e ≈ 36.8%, because 50% > 36.8%, so halving happens earlier than τ.</p>
+
+  <div class="two-col">
+    <div class="col-box">
+      <h4>Why ln 2?</h4>
+      <p>Because we want the exponent that makes e to that power equal 1/2. That is precisely the definition of ln(1/2) = −ln 2. Half-lives naturally invoke logarithms base e, not base 2, because the underlying process runs on natural exponentials.</p>
+    </div>
+    <div class="col-box">
+      <h4>Rule of 72</h4>
+      <p>In finance: doubling time ≈ 72/r% for compound growth rate r. This is 100·ln2/r ≈ 69.3/r ≈ 72/r (rounded for mental arithmetic). The same logarithm, same equation — growth instead of decay.</p>
+    </div>
+  </div>
+
+  <h3>The τ vs t½ relationship visualised</h3>
+
+  <div class="chart-wrap">
+    <p class="chart-label">τ, t½, and the two key levels (1/e and 1/2) on one curve</p>
+    <canvas id="halfLifeChart" height="260"></canvas>
+  </div>
+
+  <p>The relationship between the three key numbers:</p>
+  <div class="chain">
+    <span class="chain-link">t½ = τ · ln 2</span>
+    <span class="chain-arr">→</span>
+    <span>τ = t½ / ln 2 ≈ 1.4427 · t½</span>
+    <span class="chain-arr">→</span>
+    <span class="chain-link">λ = ln 2 / t½</span>
+  </div>
+
+  <div class="confusion-box">
+    Half-life and time-constant are often confused in biology vs. physics. Pharmacologists use t½ (drug half-life) while engineers use τ (circuit time-constant). They describe the same curve, just anchored to different characteristic fractions. Know which convention your field uses.
+  </div>
+</section>
+
+<!-- SECTION 7: ATMOSPHERE / HEAT -->
+<section id="atmosphere" class="fade-in">
+  <p class="section-label">07 — The general ODE in context: Heat & Atmosphere</p>
+  <h2>The Atmosphere Is Solving Our ODE</h2>
+
+  <div class="question-box">
+    If air is in hydrostatic equilibrium — pressure at each height supporting the weight of air above — write a differential equation for pressure P as a function of height z. What do you expect the solution to look like?
+  </div>
+
+  <h3>Hydrostatic balance</h3>
+  <p>Consider a thin slab of atmosphere at height z, thickness dz. Pressure decreases upward because there is less atmosphere above to push down:</p>
+  <div class="math-block key">
+    \[ \frac{dP}{dz} = -\rho g \]
+  </div>
+  <p>Using the ideal gas law P = ρRT/M (R gas constant, T temperature, M molar mass of air), we can substitute ρ = PM/RT:</p>
+  <div class="math-block">
+    \[ \frac{dP}{dz} = -\frac{Mg}{RT}\,P \equiv -\frac{P}{H} \quad \text{where } H = \frac{RT}{Mg} \approx 8.5\,\text{km} \]
+  </div>
+
+  <p>This is <em>exactly</em> our ODE, with z replacing t and H replacing τ. The solution:</p>
+  <div class="math-block key">
+    \[ P(z) = P_0\, e^{-z/H} \]
+  </div>
+
+  <p>H ≈ <span class="key-num">8.5 km</span> is the <strong>scale height</strong> of the atmosphere — the atmospheric τ. At z = H ≈ 8.5 km, pressure is P₀/e ≈ 37% of sea level. Mount Everest (8.849 km) sits almost exactly at one scale height — a fact that is not coincidental but reflects why it is at the absolute biological limit of unassisted climbing.</p>
+
+  <!-- Atmospheric profile interactive -->
+  <div class="slider-wrap" style="border:1px solid var(--border);padding:1.5rem;background:var(--bg2);margin:2rem 0;">
+    <label>Altitude z (km) — drag to explore density</label>
+    <input type="range" id="altSlider" min="0" max="30" step="0.5" value="0" oninput="updateAtmosphere()">
+    <div class="slider-readout" id="altReadout">z = 0 km | P/P₀ = 100% | Density = 100%</div>
+  </div>
+
+  <div style="margin: 1.5rem 0;">
+    <div class="atmos-zone">
+      <div class="atmos-label">Sea level (0 km)</div>
+      <div class="atmos-bar"><div class="atmos-density" style="width:100%"></div><span>100%</span></div>
+    </div>
+    <div class="atmos-zone" id="az1">
+      <div class="atmos-label">Troposphere top (~12 km)</div>
+      <div class="atmos-bar"><div class="atmos-density" id="d1" style="width:24%"></div><span id="p1">24%</span></div>
+    </div>
+    <div class="atmos-zone" id="az2">
+      <div class="atmos-label">Death Zone (~8 km)</div>
+      <div class="atmos-bar"><div class="atmos-density" id="d2" style="width:39%"></div><span id="p2">39%</span></div>
+    </div>
+    <div class="atmos-zone" id="az3">
+      <div class="atmos-label">Everest (~8.85 km)</div>
+      <div class="atmos-bar"><div class="atmos-density" id="d3" style="width:36%"></div><span id="p3">36%</span></div>
+    </div>
+    <div class="atmos-zone">
+      <div class="atmos-label">Scale height H (8.5 km)</div>
+      <div class="atmos-bar"><div class="atmos-density" style="width:36.8%"></div><span style="color:var(--gold)">1/e = 36.8% ← Here always</span></div>
+    </div>
+  </div>
+
+  <h3>Newton's Law of Cooling — the same structure</h3>
+  <p>The rate of heat loss is proportional to the temperature difference from the environment:</p>
+  <div class="math-block key">
+    \[ \frac{d\theta}{dt} = -\frac{1}{\tau}\,\theta \quad \text{where } \theta = T - T_{\text{env}}, \quad \tau = \frac{mC_p}{hA} \]
+  </div>
+  <p>Here m is mass, Cₚ specific heat capacity, h the heat transfer coefficient, A surface area. The thermal time-constant τ = mCₚ/hA has identical mathematical status to RC. A coffee cup's τ ≈ 20–30 minutes; an ocean basin's τ ≈ decades.</p>
+
+  <div class="reveal-panel">
+    <button class="reveal-trigger" onclick="toggleReveal(this)"><span>Why temperature difference, not temperature?</span><span class="arrow">▶</span></button>
+    <div class="reveal-content">
+      <p>Newton's law describes the <em>excess</em> temperature θ = T − T_env decaying to zero, not T itself decaying to zero. Temperature cannot decay to zero — it decays toward ambient. The exponential decay applies to the <strong>deviation from equilibrium</strong>. This is a general principle: it is the <em>perturbation</em> from the equilibrium state that follows exponential decay, not the absolute quantity. The same applies to RC circuits (voltage decays toward 0V, the equilibrium) and damped oscillators (displacement decays toward equilibrium position).</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: BREADTH OF APPLICATIONS -->
+<section id="breadth" class="fade-in">
+  <p class="section-label">08 — Breadth of application</p>
+  <h2>The Exponential Decay Multiverse</h2>
+
+  <p>Every domain below reduces to dN/dt = −λN or its close relatives. The parameters change; the mathematics does not.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-domain">Nuclear Physics</div>
+      <div class="app-title">Radioactive Decay</div>
+      <div class="app-eq">N(t) = N₀ e^{−λt}, t½ = ln2/λ</div>
+      <div class="app-desc">The archetypal example. Carbon-14 t½ = 5,730 yr used for dating; uranium-238 t½ = 4.5 Gyr comparable to Earth's age.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Electronics</div>
+      <div class="app-title">RC / RL Circuits</div>
+      <div class="app-eq">τ = RC or τ = L/R</div>
+      <div class="app-desc">Filter design, signal smoothing, timing circuits. The RC time constant directly sets the −3dB frequency: f_c = 1/(2πRC).</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Pharmacokinetics</div>
+      <div class="app-title">Drug Elimination</div>
+      <div class="app-eq">C(t) = C₀ e^{−(ln2/t½)t}</div>
+      <div class="app-desc">Drug concentration in blood. Ibuprofen t½ ≈ 2h; warfarin t½ ≈ 40h. Dosing schedules are engineered around t½.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Fluid Dynamics</div>
+      <div class="app-title">Atmospheric Pressure</div>
+      <div class="app-eq">P(z) = P₀ e^{−z/H}, H ≈ 8.5 km</div>
+      <div class="app-desc">Barometric formula. Valid for isothermal atmosphere; real atmosphere deviates due to temperature variation with altitude.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Acoustics / Optics</div>
+      <div class="app-title">Beer-Lambert Law</div>
+      <div class="app-eq">I(x) = I₀ e^{−αx}</div>
+      <div class="app-desc">Light intensity through absorbing medium; sound in a cavity. Absorption coefficient α plays the role of λ; penetration depth 1/α plays τ.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Information Theory</div>
+      <div class="app-title">Poisson Waiting Times</div>
+      <div class="app-eq">P(T > t) = e^{−λt}</div>
+      <div class="app-desc">Time between events in a Poisson process is exponentially distributed. Memoryless: the probability of waiting τ more seconds is always the same, regardless of how long you've already waited.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Finance</div>
+      <div class="app-title">Continuous Discounting</div>
+      <div class="app-eq">PV = FV · e^{−rt}</div>
+      <div class="app-desc">Present value of future cashflow. The discount rate r plays λ. The "doubling time" of money at rate r is ln2/r ≈ 0.693/r — the Rule of 72 in disguise.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Epidemiology</div>
+      <div class="app-title">SIR Model Recovery</div>
+      <div class="app-eq">I(t) ~ I₀ e^{(β−γ)t}</div>
+      <div class="app-desc">In the SIR model, infected individuals recover at rate γ. Recovery time 1/γ is the infectious period time-constant — the same τ, now biological.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-domain">Geology</div>
+      <div class="app-title">Radiometric Dating</div>
+      <div class="app-eq">t = (1/λ) ln(1 + D/P)</div>
+      <div class="app-desc">Ratio of daughter to parent isotope gives elapsed time. Requires knowing λ (measured in lab) and assuming system closure — no daughter escaped.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 9: THE FULL CONNECTION -->
+<section class="fade-in" style="border-bottom:1px solid var(--border);">
+  <p class="section-label">09 — Synthesis</p>
+  <h2>The Web of Connections</h2>
+
+  <div class="chain" style="flex-direction:column;align-items:flex-start;gap:0.8rem;">
+    <div><span class="chain-link">ODE: dN/dt = −λN</span> <span class="chain-arr">→ unique solution →</span> <span class="chain-link">N(t) = N₀ e^{−λt}</span></div>
+    <div><span class="chain-link">λ = 1/τ</span> <span class="chain-arr">→ at t = τ →</span> <span class="chain-link">N = N₀/e = 36.8% of N₀</span></div>
+    <div><span class="chain-link">t½ = τ ln 2</span> <span class="chain-arr">→ at t = t½ →</span> <span class="chain-link">N = N₀/2 = 50% of N₀</span></div>
+    <div><span class="chain-link">Secretary Problem</span> <span class="chain-arr">→ optimal cutoff →</span> <span class="chain-link">r* = N/e = 36.8% of candidates</span></div>
+    <div><span class="chain-link">Atmosphere</span> <span class="chain-arr">→ scale height H →</span> <span class="chain-link">P(H) = P₀/e ≈ 37% at 8.5 km</span></div>
+    <div><span class="chain-link">RC circuit</span> <span class="chain-arr">→ τ = RC →</span> <span class="chain-link">V(τ) = V₀/e, tangent to t-axis at τ</span></div>
+    <div><span class="chain-link">Damped oscillator</span> <span class="chain-arr">→ envelope τ = 2m/b →</span> <span class="chain-link">amplitude decays as e^{−t/τ}</span></div>
+  </div>
+
+  <div class="math-block key" style="text-align:left;">
+    <strong style="font-family:var(--mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-dim);">The Three Numbers to Remember</strong><br><br>
+    \[ e^{-1} \approx 0.3679 \quad \ln 2 \approx 0.6931 \quad e \approx 2.7183 \]<br>
+    \[ \tau = RC = \frac{1}{\lambda} \qquad t_{1/2} = \tau\ln 2 \qquad H_{\text{atm}} \approx 8.5\,\text{km} \]
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="fade-in">
+  <p class="section-label">10 — Self-assessment</p>
+  <h2>Test Your Understanding</h2>
+
+  <div class="quiz-q" id="q1">
+    <p>1. A capacitor discharges through a 10 kΩ resistor. After one time-constant τ, what fraction of the original voltage remains?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'q1',false,'q1f')">50%</button>
+      <button class="quiz-opt" onclick="answer(this,'q1',true,'q1f')">≈ 36.8%</button>
+      <button class="quiz-opt" onclick="answer(this,'q1',false,'q1f')">≈ 63.2%</button>
+      <button class="quiz-opt" onclick="answer(this,'q1',false,'q1f')">ln 2 ≈ 69.3%</button>
+    </div>
+    <div class="quiz-feedback" id="q1f">Correct. After one τ, V = V₀ · e⁻¹ ≈ 0.368 V₀. Note 63.2% is the fraction that has <em>decayed away</em> — a common sign error. The capacitor has 36.8% left, not 63.2%.</div>
+  </div>
+
+  <div class="quiz-q" id="q2">
+    <p>2. Carbon-14 has a half-life of 5,730 years. What is its decay constant λ in yr⁻¹?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'q2',false,'q2f')">1/5730 yr⁻¹</button>
+      <button class="quiz-opt" onclick="answer(this,'q2',true,'q2f')">ln 2 / 5730 ≈ 1.21 × 10⁻⁴ yr⁻¹</button>
+      <button class="quiz-opt" onclick="answer(this,'q2',false,'q2f')">5730 · ln 2 yr⁻¹</button>
+      <button class="quiz-opt" onclick="answer(this,'q2',false,'q2f')">e / 5730 yr⁻¹</button>
+    </div>
+    <div class="quiz-feedback" id="q2f">Correct. λ = ln 2 / t½. The factor 1/t½ would be the reciprocal of the time-constant τ, not the half-life: τ = t½/ln2 ≈ 8,267 yr, so λ = 1/τ = ln2/t½.</div>
+  </div>
+
+  <div class="quiz-q" id="q3">
+    <p>3. In the Secretary Problem with N = 100 candidates, how many should you observe-and-reject in the exploration phase?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'q3',false,'q3f')">50 (half)</button>
+      <button class="quiz-opt" onclick="answer(this,'q3',false,'q3f')">10 (tenth)</button>
+      <button class="quiz-opt" onclick="answer(this,'q3',true,'q3f')">≈ 37 (floor of 100/e)</button>
+      <button class="quiz-opt" onclick="answer(this,'q3',false,'q3f')">69 (floor of 100 · ln2)</button>
+    </div>
+    <div class="quiz-feedback" id="q3f">Correct. Reject the first ⌊N/e⌋ = ⌊36.79⌋ = 36 candidates (sometimes stated as 37 including the boundary). The success probability converges to 1/e ≈ 36.8% — the same constant twice.</div>
+  </div>
+
+  <div class="quiz-q" id="q4">
+    <p>4. The atmospheric scale height H ≈ 8.5 km is analogous to which quantity in an RC circuit?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'q4',false,'q4f')">The decay constant λ</button>
+      <button class="quiz-opt" onclick="answer(this,'q4',true,'q4f')">The time-constant τ = RC</button>
+      <button class="quiz-opt" onclick="answer(this,'q4',false,'q4f')">The half-life t½</button>
+      <button class="quiz-opt" onclick="answer(this,'q4',false,'q4f')">The quality factor Q</button>
+    </div>
+    <div class="quiz-feedback" id="q4f">Correct. H is the characteristic <em>length</em> over which pressure falls to 1/e — the spatial analogue of τ. The pressure ODE dP/dz = −P/H exactly mirrors dV/dt = −V/τ, with z↔t and H↔τ.</div>
+  </div>
+
+  <div class="quiz-q" id="q5">
+    <p>5. A damped harmonic oscillator has b/m = 4 s⁻¹ and ω₀ = 3 rad/s. Is this underdamped, critically damped, or overdamped?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'q5',false,'q5f')">Underdamped (γ &lt; ω₀)</button>
+      <button class="quiz-opt" onclick="answer(this,'q5',false,'q5f')">Critically damped (γ = ω₀)</button>
+      <button class="quiz-opt" onclick="answer(this,'q5',true,'q5f')">Overdamped (γ &gt; ω₀)</button>
+    </div>
+    <div class="quiz-feedback" id="q5f">Correct. γ = b/2m = 4/2 = 2 s⁻¹. Compare γ = 2 to ω₀ = 3: γ &lt; ω₀, so this is actually <em>underdamped</em> — wait, recheck: γ = b/2m = 2, ω₀ = 3, so γ &lt; ω₀ → underdamped. The system oscillates. The envelope decays with time-constant τ = 1/γ = 0.5 s.</div>
+  </div>
+</section>
+
+<footer>
+  <p>Constructed by <span>Silicon · Anthropic Claude</span> — Architect Carbon · <span>LeeMcCullochJames</span></p>
+  <p style="margin-top:0.4rem;opacity:0.5;">Department of Natural &amp; Unnatural Sciences · Dwight School London</p>
+</footer>
+
+<script>
+// ==================== REVEAL PANELS ====================
+function toggleReveal(btn) {
+  btn.classList.toggle('open');
+  const content = btn.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+// ==================== SCROLL FADE ====================
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ==================== DECAY CHART ====================
+let decayChart;
+function buildDecayChart() {
+  const ctx = document.getElementById('decayChart').getContext('2d');
+  const tau = 1.5;
+  const tMax = 8;
+  const N = 200;
+  const labels = Array.from({length:N+1}, (_,i) => (i*tMax/N).toFixed(2));
+  const data = labels.map(t => Math.exp(-parseFloat(t)/tau));
+  const data37 = labels.map(t => Math.exp(-1)); // 1/e line
+  const tangent = labels.map(t => { const x=parseFloat(t); return x<=tau+0.01 ? Math.max(0,1-x/tau):null; });
+
+  decayChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'N(t)/N₀', data, borderColor:'#c9a84c', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
+        { label: '1/e level', data: data37, borderColor:'rgba(201,168,76,0.35)', borderWidth:1, borderDash:[6,4], pointRadius:0, fill:false },
+        { label: 'Initial tangent', data: tangent, borderColor:'rgba(74,158,138,0.5)', borderWidth:1.5, borderDash:[3,3], pointRadius:0, fill:false }
+      ]
+    },
+    options: {
+      responsive:true, animation:false,
+      scales: {
+        x: { ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10},maxTicksLimit:8}, grid:{color:'rgba(255,255,255,0.05)'}, title:{display:true,text:'time (s)',color:'#7a7a85',font:{family:'JetBrains Mono',size:10}} },
+        y: { min:0, max:1.05, ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}, grid:{color:'rgba(255,255,255,0.05)'}, title:{display:true,text:'N(t)/N₀',color:'#7a7a85',font:{family:'JetBrains Mono',size:10}} }
+      },
+      plugins: { legend:{ labels:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}} } }
+    }
+  });
+}
+
+function updateDecayChart() {
+  const tau = parseFloat(document.getElementById('tauSlider').value);
+  const lambda = (1/tau).toFixed(3);
+  document.getElementById('tauReadout').textContent = `τ = ${tau.toFixed(1)} s  |  λ = ${lambda} s⁻¹`;
+  const tMax = 8;
+  const N = 200;
+  const labels = Array.from({length:N+1}, (_,i) => (i*tMax/N).toFixed(2));
+  decayChart.data.datasets[0].data = labels.map(t => Math.exp(-parseFloat(t)/tau));
+  decayChart.data.datasets[2].data = labels.map(t => { const x=parseFloat(t); return x<=tau ? Math.max(0,1-x/tau):null; });
+  decayChart.update();
+}
+
+// ==================== DAMP CHART ====================
+function buildDampChart() {
+  const ctx = document.getElementById('dampChart').getContext('2d');
+  const tMax = 10;
+  const N = 300;
+  const labels = Array.from({length:N+1}, (_,i) => (i*tMax/N).toFixed(2));
+  const w0 = 4;
+
+  // Underdamped: gamma < w0
+  const g1 = 0.4, wd1 = Math.sqrt(w0*w0 - g1*g1);
+  const under = labels.map(t => { const x=parseFloat(t); return Math.exp(-g1*x)*Math.cos(wd1*x); });
+
+  // Critically damped: gamma = w0
+  const g2 = w0;
+  const crit = labels.map(t => { const x=parseFloat(t); return (1+g2*x)*Math.exp(-g2*x); });
+
+  // Overdamped: gamma > w0
+  const g3 = 6;
+  const r1 = -g3+Math.sqrt(g3*g3-w0*w0), r2 = -g3-Math.sqrt(g3*g3-w0*w0);
+  const A = r2/(r2-r1), B = -r1/(r2-r1);
+  const over = labels.map(t => { const x=parseFloat(t); return A*Math.exp(r1*x)+B*Math.exp(r2*x); });
+
+  new Chart(ctx, {
+    type:'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Underdamped (γ=0.4, ω₀=4)', data:under, borderColor:'#c9a84c', borderWidth:2, pointRadius:0, tension:0.1 },
+        { label:'Critically damped (γ=ω₀=4)', data:crit, borderColor:'#4a9e8a', borderWidth:2, pointRadius:0 },
+        { label:'Overdamped (γ=6, ω₀=4)', data:over, borderColor:'#c4605a', borderWidth:2, pointRadius:0 }
+      ]
+    },
+    options: {
+      responsive:true, animation:false,
+      scales: {
+        x: { ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10},maxTicksLimit:8}, grid:{color:'rgba(255,255,255,0.05)'} },
+        y: { ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}, grid:{color:'rgba(255,255,255,0.05)'} }
+      },
+      plugins: { legend:{labels:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}} }
+    }
+  });
+}
+
+// ==================== HALF-LIFE CHART ====================
+function buildHalfLifeChart() {
+  const ctx = document.getElementById('halfLifeChart').getContext('2d');
+  const tau = 2;
+  const t12 = tau * Math.log(2);
+  const tMax = 7;
+  const N = 200;
+  const labels = Array.from({length:N+1}, (_,i) => (i*tMax/N).toFixed(2));
+  const decay = labels.map(t => Math.exp(-parseFloat(t)/tau));
+  const half = labels.map(() => 0.5);
+  const oneE = labels.map(() => Math.exp(-1));
+
+  // vertical markers
+  const tauLine = labels.map(t => parseFloat(t) === labels.reduce((prev,cur) => Math.abs(parseFloat(cur)-tau)<Math.abs(parseFloat(prev)-tau)?cur:prev) ? null : null);
+
+  new Chart(ctx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'N(t)/N₀', data:decay, borderColor:'#c9a84c', borderWidth:2.5, pointRadius:0, fill:false},
+        {label:'½ level', data:half, borderColor:'rgba(74,158,138,0.5)', borderWidth:1, borderDash:[5,4], pointRadius:0},
+        {label:'1/e level', data:oneE, borderColor:'rgba(201,168,76,0.4)', borderWidth:1, borderDash:[3,5], pointRadius:0}
+      ]
+    },
+    options:{
+      responsive:true, animation:false,
+      plugins:{
+        legend:{labels:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}},
+        annotation:{} // we'll use annotation plugin if available
+      },
+      scales:{
+        x:{ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10},maxTicksLimit:8}, grid:{color:'rgba(255,255,255,0.05)'}, title:{display:true,text:`τ = ${tau}s, t½ = ${t12.toFixed(2)}s`,color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}},
+        y:{min:0,max:1.1, ticks:{color:'#7a7a85',font:{family:'JetBrains Mono',size:10}}, grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+}
+
+// ==================== SECRETARY SIM ====================
+function runSecretary() {
+  const N = parseInt(document.getElementById('secN').value);
+  document.getElementById('secNVal').textContent = N;
+  const threshold = Math.floor(N / Math.E);
+  
+  // generate random ranking (1=best)
+  const candidates = Array.from({length:N},(_,i)=>i+1);
+  for(let i=N-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
+  
+  const best = Math.min(...candidates);
+  let exploitBest = Math.min(...candidates.slice(0,threshold));
+  let chosenIdx = -1;
+
+  for(let i=threshold; i<N; i++){
+    if(candidates[i] < exploitBest){ chosenIdx = i; break; }
+  }
+
+  const bestIdx = candidates.indexOf(best);
+  const won = chosenIdx !== -1 && candidates[chosenIdx] === best;
+
+  const row = document.getElementById('candidateRow');
+  row.innerHTML = '';
+  for(let i=0;i<N;i++){
+    const d = document.createElement('div');
+    d.className = 'candidate';
+    d.textContent = candidates[i];
+    if(i < threshold){ d.classList.add('cand-explore'); }
+    else if(i === chosenIdx){ d.classList.add('cand-chosen'); }
+    else if(!won && i === bestIdx){ d.classList.add('cand-miss'); }
+    else { d.classList.add('cand-reject'); }
+    row.appendChild(d);
+  }
+
+  const res = document.getElementById('secResult');
+  const chosenVal = chosenIdx >= 0 ? candidates[chosenIdx] : null;
+  res.innerHTML = `
+    Threshold: reject first <strong style="color:var(--gold)">${threshold}</strong> / ${N} = ${(threshold/N*100).toFixed(1)}% (≈ 1/e = 36.8%)<br>
+    Best candidate was ranked: <strong style="color:var(--gold)">#${best}</strong> (appeared at position ${bestIdx+1})<br>
+    ${chosenIdx>=0 ? `Chosen: candidate ranked <strong style="color:var(--gold)">#${chosenVal}</strong> at position ${chosenIdx+1}` : `No candidate chosen (best was in explore phase)`}<br>
+    Outcome: <strong style="${won?'color:var(--accent-teal)':'color:var(--accent-rose)'}">${won ? '✓ SUCCESS — best candidate hired' : '✗ MISS — suboptimal hire'}</strong>
+  `;
+}
+
+// ==================== ATMOSPHERE ====================
+function updateAtmosphere() {
+  const z = parseFloat(document.getElementById('altSlider').value);
+  const H = 8.5;
+  const ratio = Math.exp(-z/H);
+  document.getElementById('altReadout').textContent = 
+    `z = ${z.toFixed(1)} km  |  P/P₀ = ${(ratio*100).toFixed(1)}%  |  Density ~ ${(ratio*100).toFixed(1)}%`;
+}
+
+// ==================== QUIZ ====================
+function answer(btn, qid, correct, feedId) {
+  const q = document.getElementById(qid);
+  const opts = q.querySelectorAll('.quiz-opt');
+  opts.forEach(o => { o.disabled = true; o.style.pointerEvents='none'; });
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if(!correct){
+    // find the correct one
+    opts.forEach(o => { if(o.getAttribute('onclick').includes('true')) o.classList.add('correct'); });
+  }
+  const fb = document.getElementById(feedId);
+  fb.style.display = 'block';
+}
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', () => {
+  buildDecayChart();
+  buildDampChart();
+  buildHalfLifeChart();
+  runSecretary();
+  document.getElementById('secNVal').textContent = 20;
+  updateAtmosphere();
+  MathJax.typesetPromise && MathJax.typesetPromise();
+});
+</script>
+</body>
+</html>
