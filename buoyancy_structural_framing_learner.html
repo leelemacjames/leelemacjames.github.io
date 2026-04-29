@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Structural Framing Learner: Mass, Weight, Pressure, Density and Buoyancy</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#151b24;
+    --panel2:#1d2633;
+    --ink:#edf3ff;
+    --muted:#aeb9ca;
+    --line:#2f3b4f;
+    --accent:#8fb8ff;
+    --accent2:#ffd27a;
+    --good:#9be7b3;
+    --warn:#ffb38a;
+    --bad:#ff8fa3;
+    --shadow:0 18px 45px rgba(0,0,0,.35);
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:radial-gradient(circle at top left,#172033 0,#0d1117 38%,#090c11 100%);
+    color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.55;
+  }
+
+  header{
+    padding:34px 20px 20px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(143,184,255,.12),rgba(13,17,23,.0));
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:22px;}
+  h1,h2,h3{line-height:1.15;margin:0 0 12px;}
+  h1{font-size:clamp(2rem,5vw,4rem);letter-spacing:-.04em;}
+  h2{font-size:clamp(1.55rem,3vw,2.35rem);margin-top:24px;}
+  h3{font-size:1.15rem;color:var(--accent2);margin-top:14px;}
+  p{margin:0 0 12px;}
+  .lede{font-size:1.15rem;color:var(--muted);max-width:920px;}
+  .tagline{color:var(--accent2);text-transform:uppercase;letter-spacing:.13em;font-size:.78rem;font-weight:700;margin-bottom:10px;}
+
+  nav{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:rgba(13,17,23,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex;gap:8px;overflow:auto;padding:10px 22px;}
+  nav a{
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid var(--line);
+    padding:8px 11px;
+    border-radius:999px;
+    white-space:nowrap;
+    font-size:.86rem;
+  }
+  nav a:hover{color:var(--ink);border-color:var(--accent);}
+
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .card{
+    background:linear-gradient(180deg,var(--panel),#101620);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow:var(--shadow);
+  }
+  .span4{grid-column:span 4;}
+  .span5{grid-column:span 5;}
+  .span6{grid-column:span 6;}
+  .span7{grid-column:span 7;}
+  .span8{grid-column:span 8;}
+  .span12{grid-column:span 12;}
+  @media(max-width:850px){.span4,.span5,.span6,.span7,.span8{grid-column:span 12;} nav .wrap{padding:8px 12px;}}
+
+  .pill{
+    display:inline-block;
+    border:1px solid var(--line);
+    background:rgba(143,184,255,.08);
+    padding:4px 9px;
+    border-radius:999px;
+    color:var(--accent);
+    font-size:.78rem;
+    margin:2px 4px 6px 0;
+  }
+  .formula{
+    font-family:"JetBrains Mono",Consolas,monospace;
+    background:#090d13;
+    border:1px solid var(--line);
+    color:#eaf2ff;
+    padding:10px 12px;
+    border-radius:12px;
+    overflow:auto;
+    margin:10px 0;
+  }
+  .muted{color:var(--muted);}
+  .accent{color:var(--accent2);}
+  .good{color:var(--good);}
+  .warn{color:var(--warn);}
+
+  button,.choice{
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--panel2);
+    color:var(--ink);
+    padding:9px 12px;
+    border-radius:12px;
+    font-size:.95rem;
+    margin:4px 4px 4px 0;
+  }
+  button:hover,.choice:hover{border-color:var(--accent);}
+  .choice.correct{border-color:var(--good);background:rgba(155,231,179,.14);}
+  .choice.wrong{border-color:var(--bad);background:rgba(255,143,163,.13);}
+  .reveal{
+    display:none;
+    margin-top:10px;
+    padding:12px;
+    border-radius:14px;
+    border:1px dashed var(--line);
+    background:rgba(255,255,255,.035);
+  }
+  .reveal.show{display:block;}
+
+  .frameList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  @media(max-width:750px){.frameList{grid-template-columns:1fr;}}
+  .frame{
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+    border-radius:14px;
+    padding:12px;
+  }
+  .frame b{color:var(--accent2);}
+  .mini{font-size:.88rem;color:var(--muted);}
+
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media(max-width:700px){.compare{grid-template-columns:1fr;}}
+  .compare div{background:rgba(143,184,255,.06);border:1px solid var(--line);border-radius:14px;padding:12px;}
+
+  .tank{
+    position:relative;
+    height:330px;
+    border:2px solid #53627b;
+    border-top:0;
+    border-radius:0 0 20px 20px;
+    background:linear-gradient(180deg,rgba(72,139,219,.18),rgba(72,139,219,.42));
+    overflow:hidden;
+  }
+  .surface{position:absolute;left:0;right:0;top:38px;height:2px;background:#a7d4ff;box-shadow:0 0 18px #a7d4ff;}
+  .block{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:120px;
+    height:92px;
+    top:145px;
+    border-radius:14px;
+    background:linear-gradient(145deg,#e2a35c,#8d5524);
+    border:2px solid rgba(255,255,255,.45);
+  }
+  .arrow{
+    position:absolute;
+    left:50%;
+    width:4px;
+    background:var(--accent2);
+    transform:translateX(-50%);
+    border-radius:999px;
+  }
+  .arrow.up{height:88px;top:55px;}
+  .arrow.down{height:78px;top:238px;background:#ff8fa3;}
+  .arrow::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+  }
+  .arrow.up::after{top:-12px;border-bottom:14px solid var(--accent2);}
+  .arrow.down::after{bottom:-12px;border-top:14px solid #ff8fa3;}
+  .label{
+    position:absolute;
+    background:rgba(13,17,23,.82);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:10px;
+    padding:5px 8px;
+    font-size:.82rem;
+  }
+  .label.up{top:70px;left:calc(50% + 16px);}
+  .label.down{top:260px;left:calc(50% + 16px);}
+  .label.depth{right:10px;top:185px;}
+
+  .sliderRow{display:grid;grid-template-columns:130px 1fr 70px;gap:10px;align-items:center;margin:10px 0;}
+  input[type="range"]{width:100%;}
+  canvas{width:100%;height:260px;background:#091019;border:1px solid var(--line);border-radius:14px;}
+
+  .task{
+    border-left:4px solid var(--accent2);
+    padding:10px 12px;
+    background:rgba(255,210,122,.08);
+    border-radius:12px;
+    margin:10px 0;
+  }
+
+  footer{color:var(--muted);border-top:1px solid var(--line);padding:24px 0 42px;margin-top:30px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="tagline">A structural framing learner for physics language</div>
+    <h1>Mass, Weight, Pressure, Density and Buoyancy</h1>
+    <p class="lede">This learner uses twelve sentence structures to make students distinguish concepts, find common mechanisms, and avoid false equivalences. The target is not just vocabulary. The target is controlled meaning under comparison.</p>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#moves">12 Structures</a>
+    <a href="#massweight">Mass vs Weight</a>
+    <a href="#pressureDensity">Pressure vs Density</a>
+    <a href="#compress">Compression</a>
+    <a href="#buoyancy">Buoyancy</a>
+    <a href="#gradient">Pressure Gradient</a>
+    <a href="#synthesis">Synthesis</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="moves" class="grid">
+  <div class="card span12">
+    <h2>The 12 framing structures</h2>
+    <p class="muted">Each structure is a thinking move. Students use it to test whether they have merely remembered a phrase or can keep the concept stable when the wording changes.</p>
+    <div class="frameList">
+      <div class="frame"><b>1. Contrastive reframing</b><br><span class="mini">X is not merely A; it is B.</span></div>
+      <div class="frame"><b>2. Degree / approximation</b><br><span class="mini">Not exactly X; closer to Y under conditions Z.</span></div>
+      <div class="frame"><b>3. Analogy with constraint</b><br><span class="mini">Like X, but only in this respect.</span></div>
+      <div class="frame"><b>4. Mechanism vs description</b><br><span class="mini">It looks like X macroscopically; microscopically Y is happening.</span></div>
+      <div class="frame"><b>5. Competing models</b><br><span class="mini">Model A treats it as X; model B treats it as Y.</span></div>
+      <div class="frame"><b>6. Limiting case</b><br><span class="mini">In the limit where X vanishes, it becomes Y.</span></div>
+      <div class="frame"><b>7. Trade-off</b><br><span class="mini">You gain simplicity; you lose detail.</span></div>
+      <div class="frame"><b>8. Boundary of validity</b><br><span class="mini">Works when X; fails when Y.</span></div>
+      <div class="frame"><b>9. Reversal / inversion</b><br><span class="mini">Instead of thinking X, think Y.</span></div>
+      <div class="frame"><b>10. Scale shift</b><br><span class="mini">At the macro level X; at the micro level Y.</span></div>
+      <div class="frame"><b>11. Causal precision</b><br><span class="mini">Not because X wants Y, but because mechanism Z.</span></div>
+      <div class="frame"><b>12. Compression vs expansion</b><br><span class="mini">The equation compresses; the explanation expands.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="massweight" class="grid">
+  <div class="card span7">
+    <h2>1. Mass and weight</h2>
+    <div class="compare">
+      <div>
+        <h3>Mass</h3>
+        <p>Mass measures how much matter or inertia an object has.</p>
+        <p class="formula">m measured in kg</p>
+      </div>
+      <div>
+        <h3>Weight</h3>
+        <p>Weight is the gravitational force acting on that mass.</p>
+        <p class="formula">W = mg measured in N</p>
+      </div>
+    </div>
+    <div class="task"><b>Use structure 1:</b> Mass is not weight. Mass is the object’s inertia; weight is the gravitational force on it.</div>
+    <button onclick="toggle('mwReveal')">Reveal structural examples</button>
+    <div id="mwReveal" class="reveal">
+      <p><span class="pill">Contrastive</span> Mass is not how hard the Earth pulls; it is the property that makes acceleration harder.</p>
+      <p><span class="pill">Boundary</span> Weight changes between Earth and Moon; mass does not.</p>
+      <p><span class="pill">Scale shift</span> At the object level, mass is measured in kg. In Newton’s second law, it is resistance to acceleration.</p>
+      <p><span class="pill">Compression / expansion</span> <span class="formula">W = mg</span> compresses a story: a gravitational field exerts a force on mass.</p>
+    </div>
+  </div>
+
+  <div class="card span5">
+    <h2>Check</h2>
+    <p>Which statement is strongest?</p>
+    <button class="choice" onclick="mark(this,false)">Mass is the same as weight but in kilograms.</button>
+    <button class="choice" onclick="mark(this,false)">Weight is the amount of matter in an object.</button>
+    <button class="choice" onclick="mark(this,true)">Weight is a force; mass is the object property the force acts on.</button>
+    <button class="choice" onclick="mark(this,false)">Mass disappears in space because there is no gravity.</button>
+  </div>
+</section>
+
+<section id="pressureDensity" class="grid">
+  <div class="card span6">
+    <h2>2. Pressure and density</h2>
+    <p>Pressure and density are related, but they answer different questions.</p>
+    <div class="formula">pressure = force / area &nbsp;&nbsp; | &nbsp;&nbsp; density = mass / volume</div>
+    <div class="compare">
+      <div><h3>Pressure</h3><p>How concentrated the pushing force is over an area.</p></div>
+      <div><h3>Density</h3><p>How concentrated the mass is inside a volume.</p></div>
+    </div>
+    <div class="task"><b>Use structure 3:</b> Pressure is like density because both are “something per something”. But pressure is force per area, while density is mass per volume.</div>
+  </div>
+
+  <div class="card span6">
+    <h2>Depth gives pressure</h2>
+    <p>In a liquid at rest, pressure increases with depth because deeper layers support more liquid above them.</p>
+    <div class="formula">P = ρgh</div>
+    <button onclick="toggle('pdReveal')">Reveal the framing</button>
+    <div id="pdReveal" class="reveal">
+      <p><span class="pill">Mechanism vs description</span> It looks like pressure simply “gets bigger lower down”; actually, lower layers carry the weight of more fluid above.</p>
+      <p><span class="pill">Boundary</span> This form works for a liquid of nearly constant density. Air needs a more careful treatment because air is compressible.</p>
+      <p><span class="pill">Causal precision</span> Pressure is not higher at depth because water “pushes harder by choice”; it is higher because more weight is supported per unit area.</p>
+    </div>
+  </div>
+</section>
+
+<section id="compress" class="grid">
+  <div class="card span6">
+    <h2>3. Compressible and incompressible</h2>
+    <p>A substance is <span class="accent">compressible</span> if its volume changes appreciably when pressure changes. It is <span class="accent">incompressible</span> when density remains almost constant for the situation being modelled.</p>
+    <div class="task"><b>Use structure 2:</b> Water is not absolutely incompressible; it is close enough to incompressible for many school-level buoyancy problems.</div>
+    <div class="task"><b>Use structure 6:</b> In the limiting case where density change is negligible, the fluid behaves as incompressible.</div>
+  </div>
+
+  <div class="card span6">
+    <h2>Model trade-off</h2>
+    <p><span class="pill">Trade-off</span> Treating water as incompressible gains simple equations and clear diagrams. It loses tiny density changes under pressure.</p>
+    <p><span class="pill">Competing models</span> School hydrostatics treats water density as constant. More advanced fluid mechanics allows density to change under pressure, especially for gases.</p>
+    <div class="formula">incompressible model: ρ ≈ constant</div>
+  </div>
+</section>
+
+<section id="buoyancy" class="grid">
+  <div class="card span7">
+    <h2>4. Buoyancy: the common thread</h2>
+    <p>Buoyancy, upthrust, and weight of displaced liquid are not three unrelated ideas. They are three views of the same physical effect.</p>
+    <div class="tank">
+      <div class="surface"></div>
+      <div class="block"></div>
+      <div class="arrow up"></div>
+      <div class="arrow down"></div>
+      <div class="label up">upthrust</div>
+      <div class="label down">weight</div>
+      <div class="label depth">pressure increases with depth</div>
+    </div>
+  </div>
+  <div class="card span5">
+    <h2>Three descriptions</h2>
+    <p><span class="pill">Description 1</span> The fluid exerts an upward buoyant force.</p>
+    <p><span class="pill">Description 2</span> The upthrust equals the weight of the displaced fluid.</p>
+    <p><span class="pill">Description 3</span> The force arises because pressure is greater on the lower surface than on the upper surface.</p>
+    <div class="formula">Fᵦ = ρfluid g Vdisplaced</div>
+    <button onclick="toggle('bReveal')">Reveal the structural bridge</button>
+    <div id="bReveal" class="reveal">
+      <p><span class="pill">Reversal</span> Instead of asking “what pushes the object up?”, ask “what pressure difference acts across it?”</p>
+      <p><span class="pill">Compression / expansion</span> The equation compresses the result. The pressure-gradient explanation expands the cause.</p>
+      <p><span class="pill">Commonality</span> Weight, pressure, density and upthrust meet in one phrase: weight of fluid above per unit area.</p>
+    </div>
+  </div>
+</section>
+
+<section id="gradient" class="grid">
+  <div class="card span6">
+    <h2>5. Upthrust as pressure gradient</h2>
+    <p>Pressure is larger at the bottom of a submerged object than at the top. The side forces mostly cancel. The vertical forces do not.</p>
+    <div class="formula">bottom force − top force = upthrust</div>
+    <div class="formula">Fᵦ = (Pbottom − Ptop)A = ρgΔhA = ρgV</div>
+    <p class="muted">For a block of height Δh and face area A, the displaced volume is V = AΔh.</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Interactive hydrostatic sketch</h2>
+    <div class="sliderRow"><label>Fluid density</label><input id="rho" type="range" min="200" max="1400" value="1000" oninput="drawGraph()"><span id="rhoVal">1000</span></div>
+    <div class="sliderRow"><label>Object height</label><input id="height" type="range" min="0.2" max="2.0" step="0.1" value="1.0" oninput="drawGraph()"><span id="hVal">1.0 m</span></div>
+    <canvas id="graph" width="700" height="320"></canvas>
+    <p class="mini">The steeper the pressure-depth line, the larger the pressure difference across the object. Larger density gives larger gradient.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card span12">
+    <h2>6. Structured discovery prompts</h2>
+    <div class="frameList">
+      <div class="frame"><b>Mass vs weight</b><br>Mass is not ____; it is ____. Weight is ____.</div>
+      <div class="frame"><b>Pressure vs density</b><br>Pressure is like density in that ____; but it differs because ____.</div>
+      <div class="frame"><b>Compressible vs incompressible</b><br>Water is not perfectly ____; it is modelled as ____ when ____.</div>
+      <div class="frame"><b>Buoyancy vs upthrust</b><br>Buoyancy is not a new mysterious force; it is ____.</div>
+      <div class="frame"><b>Displaced liquid</b><br>The weight of displaced liquid is not a separate extra force; it is a way of calculating ____.</div>
+      <div class="frame"><b>Pressure gradient</b><br>Instead of thinking “the liquid lifts the object”, think ____.</div>
+    </div>
+  </div>
+</section>
+
+<section id="synthesis" class="grid">
+  <div class="card span8">
+    <h2>Final synthesis</h2>
+    <p>The central chain is:</p>
+    <div class="formula">mass → weight → pressure → pressure gradient → upthrust → buoyancy condition</div>
+    <p><span class="pill">Mass</span> gives gravitational weight.</p>
+    <p><span class="pill">Weight of fluid</span> creates pressure increasing with depth.</p>
+    <p><span class="pill">Pressure gradient</span> gives a larger upward force at the bottom than downward force at the top.</p>
+    <p><span class="pill">Upthrust</span> equals the weight of fluid displaced.</p>
+    <p><span class="pill">Floating</span> occurs when upthrust balances weight.</p>
+  </div>
+  <div class="card span4">
+    <h2>Exit check</h2>
+    <p>Complete this sentence:</p>
+    <div class="task">Upthrust is not caused by water “wanting” objects to float. It is caused by...</div>
+    <textarea id="exit" rows="6" style="width:100%;border-radius:12px;border:1px solid var(--line);background:#090d13;color:var(--ink);padding:10px;" placeholder="Write your answer here..."></textarea>
+    <button onclick="sampleAnswer()">Show model answer</button>
+    <div id="exitReveal" class="reveal">
+      <p><b>Model answer:</b> Upthrust is caused by a pressure gradient in the fluid. The lower surface of the object experiences greater pressure than the upper surface, producing a resultant upward force. For an incompressible fluid this equals the weight of the displaced liquid.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Designed for staged conceptual comparison: students learn the physics by repeatedly changing the frame while preserving the meaning.</p>
+  </div>
+</footer>
+
+</main>
+
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('show');}
+function mark(btn,correct){
+  const group=btn.parentElement.querySelectorAll('.choice');
+  group.forEach(b=>{b.classList.remove('correct','wrong');});
+  btn.classList.add(correct?'correct':'wrong');
+}
+function sampleAnswer(){document.getElementById('exitReveal').classList.add('show');}
+
+function drawGraph(){
+  const canvas=document.getElementById('graph');
+  const ctx=canvas.getContext('2d');
+  const rho=Number(document.getElementById('rho').value);
+  const h=Number(document.getElementById('height').value);
+  document.getElementById('rhoVal').textContent=rho;
+  document.getElementById('hVal').textContent=h.toFixed(1)+' m';
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#091019';ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const margin=50;
+  const maxDepth=4;
+  const g=9.81;
+  const maxP=1400*g*maxDepth;
+
+  ctx.strokeStyle='#2f3b4f';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    let y=margin+(canvas.height-2*margin)*i/4;
+    ctx.beginPath();ctx.moveTo(margin,y);ctx.lineTo(canvas.width-margin,y);ctx.stroke();
+  }
+  for(let i=0;i<=4;i++){
+    let x=margin+(canvas.width-2*margin)*i/4;
+    ctx.beginPath();ctx.moveTo(x,margin);ctx.lineTo(x,canvas.height-margin);ctx.stroke();
+  }
+
+  ctx.fillStyle='#aeb9ca';ctx.font='14px system-ui';
+  ctx.fillText('Pressure P = ρgh',margin,25);
+  ctx.fillText('depth',canvas.width-88,canvas.height-18);
+  ctx.save();ctx.translate(18,canvas.height/2+55);ctx.rotate(-Math.PI/2);ctx.fillText('pressure',0,0);ctx.restore();
+
+  ctx.strokeStyle='#ffd27a';ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<=100;i++){
+    const depth=maxDepth*i/100;
+    const P=rho*g*depth;
+    const x=margin+(canvas.width-2*margin)*depth/maxDepth;
+    const y=canvas.height-margin-(canvas.height-2*margin)*P/maxP;
+    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  const topDepth=1.4;
+  const bottomDepth=topDepth+h;
+  const xTop=margin+(canvas.width-2*margin)*topDepth/maxDepth;
+  const xBot=margin+(canvas.width-2*margin)*bottomDepth/maxDepth;
+  const pTop=rho*g*topDepth;
+  const pBot=rho*g*bottomDepth;
+  const yTop=canvas.height-margin-(canvas.height-2*margin)*pTop/maxP;
+  const yBot=canvas.height-margin-(canvas.height-2*margin)*pBot/maxP;
+
+  ctx.strokeStyle='#8fb8ff';ctx.setLineDash([6,6]);
+  ctx.beginPath();ctx.moveTo(xTop,yTop);ctx.lineTo(xTop,canvas.height-margin);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xBot,yBot);ctx.lineTo(xBot,canvas.height-margin);ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='rgba(143,184,255,.18)';
+  ctx.fillRect(xTop,margin,xBot-xTop,canvas.height-2*margin);
+
+  ctx.fillStyle='#edf3ff';
+  ctx.fillText('top',xTop-10,canvas.height-margin+22);
+  ctx.fillText('bottom',xBot-22,canvas.height-margin+22);
+  ctx.fillText('ΔP = ρgΔh ≈ '+Math.round((pBot-pTop))+' Pa',canvas.width-235,55);
+}
+
+drawGraph();
+</script>
+</body>
+</html>
