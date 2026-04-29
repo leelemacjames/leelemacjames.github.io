@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rectangle Numbers, Oblongs, Squares and Odd Numbers</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#151b24;
+    --panel2:#1c2430;
+    --ink:#eef3fb;
+    --muted:#aeb8c8;
+    --line:#2d3748;
+    --accent:#f5c542;
+    --accent2:#7dd3fc;
+    --good:#86efac;
+    --bad:#fca5a5;
+    --cell:#263244;
+    --cell2:#3b4a60;
+    --square:#5eead4;
+    --oblong:#fbbf24;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:radial-gradient(circle at top left,#182033 0,#0d1117 45%,#090c11 100%);
+    color:var(--ink);
+    font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height:1.55;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:22px;
+  }
+
+  header{
+    border:1px solid var(--line);
+    background:linear-gradient(135deg,rgba(245,197,66,.12),rgba(125,211,252,.08));
+    border-radius:24px;
+    padding:28px;
+    margin-bottom:22px;
+    box-shadow:0 16px 40px rgba(0,0,0,.25);
+  }
+
+  h1{
+    margin:0 0 10px;
+    font-size:clamp(1.8rem,4vw,3.2rem);
+    line-height:1.08;
+    letter-spacing:-.04em;
+  }
+
+  h2{
+    margin:0 0 12px;
+    font-size:1.45rem;
+    letter-spacing:-.02em;
+  }
+
+  h3{
+    margin:16px 0 8px;
+    font-size:1.05rem;
+    color:var(--accent2);
+  }
+
+  p{margin:8px 0;}
+
+  .lead{
+    max-width:850px;
+    color:var(--muted);
+    font-size:1.05rem;
+  }
+
+  .grid2{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:18px;
+  }
+
+  .card{
+    border:1px solid var(--line);
+    background:rgba(21,27,36,.94);
+    border-radius:22px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,.22);
+  }
+
+  .card.tight{padding:16px;}
+
+  .formula{
+    font-family:"JetBrains Mono", Consolas, monospace;
+    background:#0b0f15;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 14px;
+    color:#e9f6ff;
+    overflow:auto;
+    margin:10px 0;
+  }
+
+  .controls{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    margin:14px 0;
+  }
+
+  label{
+    display:block;
+    color:var(--muted);
+    font-size:.88rem;
+    margin-bottom:6px;
+  }
+
+  input[type="range"]{width:100%;}
+
+  select, button{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--panel2);
+    color:var(--ink);
+    padding:10px 12px;
+    border-radius:12px;
+    font-size:.95rem;
+  }
+
+  button{
+    cursor:pointer;
+    background:linear-gradient(135deg,#26334a,#1b2534);
+  }
+
+  button:hover{border-color:var(--accent);}
+
+  .statgrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:10px;
+    margin-top:12px;
+  }
+
+  .stat{
+    background:#0b0f15;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+  }
+
+  .stat b{
+    display:block;
+    color:var(--accent);
+    font-size:1.25rem;
+  }
+
+  .canvasbox{
+    background:#090c11;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:16px;
+    min-height:330px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:auto;
+  }
+
+  .cells{
+    display:grid;
+    gap:3px;
+    align-content:center;
+    justify-content:center;
+  }
+
+  .cell{
+    width:24px;
+    height:24px;
+    background:var(--cell);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:4px;
+  }
+
+  .cell.edge{background:#41536e;}
+  .cell.added{background:var(--accent);}
+  .cell.square{background:rgba(94,234,212,.72);}
+  .cell.oblong{background:rgba(251,191,36,.72);}
+
+  .note{
+    color:var(--muted);
+    border-left:3px solid var(--accent2);
+    padding-left:12px;
+    margin:12px 0;
+  }
+
+  .question{
+    border:1px dashed #516174;
+    border-radius:16px;
+    padding:14px;
+    background:rgba(125,211,252,.06);
+    margin:14px 0;
+  }
+
+  .question strong{color:var(--accent2);}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    overflow:hidden;
+    border-radius:14px;
+  }
+
+  th,td{
+    border-bottom:1px solid var(--line);
+    padding:9px 8px;
+    text-align:center;
+  }
+
+  th{color:var(--accent); background:#101620;}
+  tr:last-child td{border-bottom:0;}
+
+  .pillrow{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;}
+
+  .pill{
+    border:1px solid var(--line);
+    background:#101620;
+    border-radius:999px;
+    padding:6px 10px;
+    color:var(--muted);
+    font-size:.88rem;
+  }
+
+  .splitvis{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    align-items:start;
+  }
+
+  .miniTitle{
+    color:var(--muted);
+    text-align:center;
+    margin-bottom:8px;
+    font-size:.9rem;
+  }
+
+  .answer{
+    display:none;
+    padding:12px;
+    border-radius:14px;
+    background:rgba(134,239,172,.08);
+    border:1px solid rgba(134,239,172,.25);
+    color:#dfffe8;
+    margin-top:10px;
+  }
+
+  .answer.show{display:block;}
+
+  .footer{
+    color:var(--muted);
+    text-align:center;
+    padding:24px 0 10px;
+  }
+
+  @media(max-width:850px){
+    .grid2,.splitvis{grid-template-columns:1fr;}
+    .cell{width:18px;height:18px;border-radius:3px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Rectangle Numbers, Oblongs, Squares and Odd Numbers</h1>
+    <p class="lead">A visual learner for seeing composites as arrays, comparing perimeter and area, and discovering why consecutive square numbers differ by odd numbers.</p>
+    <div class="pillrow">
+      <span class="pill">Area = number of unit squares</span>
+      <span class="pill">Perimeter = distance around the outside</span>
+      <span class="pill">Composite = can be made as a non-trivial rectangle</span>
+      <span class="pill">Odd numbers = square growth layer</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>1. Preamble: area and perimeter</h2>
+    <div class="grid2">
+      <div>
+        <p>A rectangle with width <b>w</b> and height <b>h</b> contains <b>w × h</b> unit squares.</p>
+        <p>The perimeter counts the outside boundary: top + bottom + left + right.</p>
+        <div class="formula">Area = w × h<br>Perimeter = 2w + 2h = 2(w + h)</div>
+        <p>The important comparison is not just area or perimeter alone, but their ratio:</p>
+        <div class="formula">Perimeter : Area = P / A = 2(w + h) / wh</div>
+        <p class="note">Long thin rectangles have a lot of outside for the amount of inside. Squarer rectangles pack area more efficiently.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="wRange">Width: <span id="wVal">6</span></label>
+            <input id="wRange" type="range" min="1" max="16" value="6" />
+          </div>
+          <div>
+            <label for="hRange">Height: <span id="hVal">4</span></label>
+            <input id="hRange" type="range" min="1" max="12" value="4" />
+          </div>
+        </div>
+        <div class="canvasbox"><div id="rectGrid" class="cells"></div></div>
+        <div class="statgrid">
+          <div class="stat">Area <b id="areaStat">24</b></div>
+          <div class="stat">Perimeter <b id="perimStat">20</b></div>
+          <div class="stat">P/A <b id="ratioStat">0.833</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="question">
+      <strong>Think:</strong> Keep the area close to 24. Which shape gives the smallest perimeter: 1×24, 2×12, 3×8, or 4×6?
+      <button onclick="toggleAnswer('ans1')">Reveal answer</button>
+      <div id="ans1" class="answer">4×6. The closer a rectangle is to square, the less boundary it needs for the same area.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Composite numbers as rectangle numbers</h2>
+    <div class="grid2">
+      <div>
+        <p>A number is <b>composite</b> if it can be arranged as a rectangle in more than one row and more than one column.</p>
+        <div class="formula">n is composite if n = a × b with a &gt; 1 and b &gt; 1.</div>
+        <p>A prime number cannot make a proper rectangle. It only makes a line: 1 × p.</p>
+        <p class="note">So factorisation is geometry: finding the side lengths of possible rectangles.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="nSelect">Choose a number</label>
+            <select id="nSelect"></select>
+          </div>
+          <div>
+            <label for="factorSelect">Choose a factor pair</label>
+            <select id="factorSelect"></select>
+          </div>
+        </div>
+        <div class="canvasbox"><div id="factorGrid" class="cells"></div></div>
+        <div class="statgrid">
+          <div class="stat">Number <b id="nStat">36</b></div>
+          <div class="stat">Shape <b id="shapeStat">6×6</b></div>
+          <div class="stat">Type <b id="typeStat">square</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Oblong numbers: almost squares</h2>
+    <div class="grid2">
+      <div>
+        <p>An <b>oblong number</b> is made by multiplying two consecutive whole numbers.</p>
+        <div class="formula">Oblong number = n(n + 1)</div>
+        <p>Examples:</p>
+        <div class="formula">1×2 = 2, 2×3 = 6, 3×4 = 12, 4×5 = 20, 5×6 = 30</div>
+        <p>Oblongs are special because they sit exactly between square shapes:</p>
+        <div class="formula">n² &lt; n(n + 1) &lt; (n + 1)²</div>
+        <p class="note">They are rectangles, but only just not squares.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="oblongRange">n: <span id="oblongVal">5</span></label>
+            <input id="oblongRange" type="range" min="1" max="12" value="5" />
+          </div>
+        </div>
+        <div class="canvasbox"><div id="oblongGrid" class="cells"></div></div>
+        <div class="statgrid">
+          <div class="stat">Area <b id="obArea">30</b></div>
+          <div class="stat">Perimeter <b id="obPerim">22</b></div>
+          <div class="stat">P/A <b id="obRatio">0.733</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4. Squares: the most compact rectangles</h2>
+    <div class="grid2">
+      <div>
+        <p>A <b>square number</b> forms an n by n square.</p>
+        <div class="formula">Square number = n²</div>
+        <p>For a square:</p>
+        <div class="formula">Area = n²<br>Perimeter = 4n<br>P/A = 4n / n² = 4/n</div>
+        <p class="note">As the square gets larger, P/A falls. Bigger squares have less edge per unit of area.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="squareRange">n: <span id="squareVal">6</span></label>
+            <input id="squareRange" type="range" min="1" max="14" value="6" />
+          </div>
+        </div>
+        <div class="canvasbox"><div id="squareGrid" class="cells"></div></div>
+        <div class="statgrid">
+          <div class="stat">Area <b id="sqArea">36</b></div>
+          <div class="stat">Perimeter <b id="sqPerim">24</b></div>
+          <div class="stat">P/A <b id="sqRatio">0.667</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5. Compare long rectangles, oblongs and squares</h2>
+    <p>The same kind of number can have very different boundary cost depending on shape.</p>
+    <table id="compareTable">
+      <thead>
+        <tr><th>Shape</th><th>Area</th><th>Perimeter</th><th>P/A</th><th>Comment</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="question">
+      <strong>Pattern:</strong> What happens to P/A as the shape becomes less thin and more square?
+      <button onclick="toggleAnswer('ans2')">Reveal answer</button>
+      <div id="ans2" class="answer">P/A decreases. A squarer shape encloses more area with less boundary. This is why squares have a special compactness among rectangles.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>6. Difference between two squares</h2>
+    <div class="grid2">
+      <div>
+        <p>Now compare two square numbers. The difference between them is the area left after removing the smaller square from the larger square.</p>
+        <div class="formula">a² − b² = (a − b)(a + b)</div>
+        <p>This is not just algebra. It is a cut-and-rearrange rectangle result.</p>
+        <p class="note">The gap between two squares factorises into the difference of the side lengths and the sum of the side lengths.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="aRange">Large square side a: <span id="aVal">8</span></label>
+            <input id="aRange" type="range" min="2" max="14" value="8" />
+          </div>
+          <div>
+            <label for="bRange">Small square side b: <span id="bVal">5</span></label>
+            <input id="bRange" type="range" min="1" max="13" value="5" />
+          </div>
+        </div>
+        <div class="canvasbox"><div id="diffGrid" class="cells"></div></div>
+        <div class="formula" id="diffFormula">8² − 5² = 64 − 25 = 39 = (8 − 5)(8 + 5)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>7. Consecutive squares produce odd numbers</h2>
+    <div class="grid2">
+      <div>
+        <p>The most important special case is when the two squares are consecutive:</p>
+        <div class="formula">(n + 1)² − n²</div>
+        <p>Visually, to grow an n by n square into an (n + 1) by (n + 1) square, we add:</p>
+        <div class="formula">n cells along the right + n cells along the bottom + 1 corner cell</div>
+        <p>So the added layer has:</p>
+        <div class="formula">n + n + 1 = 2n + 1</div>
+        <p class="note">That is always odd. Consecutive square numbers differ by odd numbers.</p>
+      </div>
+      <div>
+        <div class="controls">
+          <div>
+            <label for="consecRange">n: <span id="consecVal">5</span></label>
+            <input id="consecRange" type="range" min="1" max="12" value="5" />
+          </div>
+        </div>
+        <div class="canvasbox"><div id="consecGrid" class="cells"></div></div>
+        <div class="formula" id="consecFormula">6² − 5² = 36 − 25 = 11 = 2×5 + 1</div>
+      </div>
+    </div>
+    <div class="question">
+      <strong>Key claim:</strong> Why are odd numbers the natural growth layers of squares?
+      <button onclick="toggleAnswer('ans3')">Reveal answer</button>
+      <div id="ans3" class="answer">Because each new square layer adds two equal arms and one corner: n + n + 1 = 2n + 1.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>8. Algebraic summary</h2>
+    <div class="splitvis">
+      <div>
+        <h3>Difference of two squares</h3>
+        <div class="formula">a² − b² = (a − b)(a + b)</div>
+        <p>Proof:</p>
+        <div class="formula">(a − b)(a + b)<br>= a² + ab − ab − b²<br>= a² − b²</div>
+      </div>
+      <div>
+        <h3>Consecutive squares</h3>
+        <div class="formula">(n + 1)² − n² = 2n + 1</div>
+        <p>Proof:</p>
+        <div class="formula">(n + 1)² − n²<br>= n² + 2n + 1 − n²<br>= 2n + 1</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>n</th><th>n²</th><th>(n+1)²</th><th>Difference</th><th>Odd number</th></tr></thead>
+      <tbody id="oddTable"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>9. Final connection</h2>
+    <p>Composite numbers are numbers with rectangular structure. Oblong numbers are the rectangles nearest to squares. Square numbers are the most symmetric rectangle numbers. Their growth is controlled by odd numbers.</p>
+    <div class="formula">1 + 3 + 5 + ... + (2n − 1) = n²</div>
+    <p class="note">A square is built by stacking odd layers. Odd numbers are not merely numbers that fail to divide by 2. They are the visible increments of square growth.</p>
+  </section>
+
+  <div class="footer">Designed as a visual classroom learner: geometry first, algebra second.</div>
+</div>
+
+<script>
+function $(id){return document.getElementById(id);}
+
+function makeGrid(el, w, h, options={}){
+  const maxCell = window.innerWidth < 850 ? 18 : 24;
+  const cellSize = Math.max(10, Math.min(maxCell, Math.floor(280 / Math.max(w,h))));
+  el.innerHTML = "";
+  el.style.gridTemplateColumns = `repeat(${w}, ${cellSize}px)`;
+  el.style.gridTemplateRows = `repeat(${h}, ${cellSize}px)`;
+  for(let r=0;r<h;r++){
+    for(let c=0;c<w;c++){
+      const div = document.createElement("div");
+      div.className = "cell";
+      div.style.width = cellSize + "px";
+      div.style.height = cellSize + "px";
+      if(options.edge && (r===0 || c===0 || r===h-1 || c===w-1)) div.classList.add("edge");
+      if(options.square) div.classList.add("square");
+      if(options.oblong) div.classList.add("oblong");
+      if(options.added && options.added(r,c)) div.classList.add("added");
+      if(options.blank && options.blank(r,c)) div.style.opacity = ".12";
+      el.appendChild(div);
+    }
+  }
+}
+
+function perimeter(w,h){return 2*(w+h);}
+function ratio(w,h){return (perimeter(w,h)/(w*h)).toFixed(3);}
+
+function updateRect(){
+  const w=+$('wRange').value, h=+$('hRange').value;
+  $('wVal').textContent=w; $('hVal').textContent=h;
+  makeGrid($('rectGrid'),w,h,{edge:true});
+  $('areaStat').textContent=w*h;
+  $('perimStat').textContent=perimeter(w,h);
+  $('ratioStat').textContent=ratio(w,h);
+}
+
+function factorPairs(n){
+  const pairs=[];
+  for(let a=1;a<=Math.sqrt(n);a++) if(n%a===0) pairs.push([a,n/a]);
+  return pairs;
+}
+
+function typeOfShape(w,h){
+  if(w===1 || h===1) return 'line / prime-like';
+  if(w===h) return 'square';
+  if(Math.abs(w-h)===1) return 'oblong';
+  return 'rectangle';
+}
+
+function initFactors(){
+  const sel=$('nSelect');
+  for(let n=2;n<=72;n++){
+    const opt=document.createElement('option');
+    opt.value=n; opt.textContent=n;
+    if(n===36) opt.selected=true;
+    sel.appendChild(opt);
+  }
+  updateFactorOptions();
+}
+
+function updateFactorOptions(){
+  const n=+$('nSelect').value;
+  const pairs=factorPairs(n);
+  const fs=$('factorSelect');
+  fs.innerHTML='';
+  pairs.forEach(([a,b])=>{
+    const opt=document.createElement('option');
+    opt.value=`${a},${b}`;
+    opt.textContent=`${a} × ${b}`;
+    if(a===Math.floor(Math.sqrt(n)) || b===Math.floor(Math.sqrt(n))) opt.selected=true;
+    fs.appendChild(opt);
+  });
+  updateFactorGrid();
+}
+
+function updateFactorGrid(){
+  const n=+$('nSelect').value;
+  const [h,w]=$('factorSelect').value.split(',').map(Number);
+  const type=typeOfShape(w,h);
+  makeGrid($('factorGrid'),w,h,{edge:true, square:w===h, oblong:Math.abs(w-h)===1});
+  $('nStat').textContent=n;
+  $('shapeStat').textContent=`${h}×${w}`;
+  $('typeStat').textContent=type;
+}
+
+function updateOblong(){
+  const n=+$('oblongRange').value;
+  $('oblongVal').textContent=n;
+  makeGrid($('oblongGrid'),n+1,n,{edge:true, oblong:true});
+  $('obArea').textContent=n*(n+1);
+  $('obPerim').textContent=perimeter(n,n+1);
+  $('obRatio').textContent=ratio(n,n+1);
+}
+
+function updateSquare(){
+  const n=+$('squareRange').value;
+  $('squareVal').textContent=n;
+  makeGrid($('squareGrid'),n,n,{edge:true, square:true});
+  $('sqArea').textContent=n*n;
+  $('sqPerim').textContent=4*n;
+  $('sqRatio').textContent=(4/n).toFixed(3);
+}
+
+function updateCompareTable(){
+  const rows = [
+    ['1×36',36,perimeter(1,36),ratio(1,36),'very long and thin'],
+    ['2×18',36,perimeter(2,18),ratio(2,18),'still boundary-heavy'],
+    ['3×12',36,perimeter(3,12),ratio(3,12),'less thin'],
+    ['4×9',36,perimeter(4,9),ratio(4,9),'nearer square'],
+    ['5×6',30,perimeter(5,6),ratio(5,6),'oblong: almost square'],
+    ['6×6',36,24,(24/36).toFixed(3),'square: most compact here']
+  ];
+  const tbody=$('compareTable').querySelector('tbody');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    r.forEach(x=>{const td=document.createElement('td'); td.textContent=x; tr.appendChild(td);});
+    tbody.appendChild(tr);
+  });
+}
+
+function updateDifference(){
+  let a=+$('aRange').value, b=+$('bRange').value;
+  if(b>=a){b=a-1; $('bRange').value=b;}
+  $('aVal').textContent=a; $('bVal').textContent=b;
+  makeGrid($('diffGrid'),a,a,{
+    square:true,
+    added:(r,c)=> r>=b || c>=b,
+    blank:(r,c)=> r<b && c<b
+  });
+  const diff=a*a-b*b;
+  $('diffFormula').textContent=`${a}² − ${b}² = ${a*a} − ${b*b} = ${diff} = (${a} − ${b})(${a} + ${b})`;
+}
+
+function updateConsecutive(){
+  const n=+$('consecRange').value;
+  $('consecVal').textContent=n;
+  makeGrid($('consecGrid'),n+1,n+1,{
+    square:true,
+    added:(r,c)=> r===n || c===n
+  });
+  const diff=(n+1)*(n+1)-n*n;
+  $('consecFormula').textContent=`${n+1}² − ${n}² = ${(n+1)*(n+1)} − ${n*n} = ${diff} = 2×${n} + 1`;
+}
+
+function updateOddTable(){
+  const tbody=$('oddTable');
+  tbody.innerHTML='';
+  for(let n=1;n<=10;n++){
+    const tr=document.createElement('tr');
+    [n,n*n,(n+1)*(n+1),(n+1)*(n+1)-n*n,2*n+1].forEach(x=>{
+      const td=document.createElement('td'); td.textContent=x; tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+}
+
+function toggleAnswer(id){$(id).classList.toggle('show');}
+
+['wRange','hRange'].forEach(id=>$(id).addEventListener('input',updateRect));
+$('nSelect').addEventListener('change',updateFactorOptions);
+$('factorSelect').addEventListener('change',updateFactorGrid);
+$('oblongRange').addEventListener('input',updateOblong);
+$('squareRange').addEventListener('input',updateSquare);
+$('aRange').addEventListener('input',updateDifference);
+$('bRange').addEventListener('input',updateDifference);
+$('consecRange').addEventListener('input',updateConsecutive);
+window.addEventListener('resize',()=>{updateRect(); updateFactorGrid(); updateOblong(); updateSquare(); updateDifference(); updateConsecutive();});
+
+initFactors();
+updateRect();
+updateOblong();
+updateSquare();
+updateCompareTable();
+updateDifference();
+updateConsecutive();
+updateOddTable();
+</script>
+</body>
+</html>
