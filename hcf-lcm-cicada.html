@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCF · LCM · The Cicada Beetle</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e0e0f;
+    --bg2:       #141416;
+    --bg3:       #1b1b1e;
+    --bg4:       #232328;
+    --gold:      #c9a84c;
+    --gold2:     #e8c97a;
+    --gold-dim:  #8a6f2e;
+    --text:      #e8e2d4;
+    --text-dim:  #9a9182;
+    --text-faint:#5a5650;
+    --border:    #2e2d2a;
+    --red:       #c0392b;
+    --green:     #5a9f6e;
+    --blue:      #4a7fa8;
+    --reveal-bg: #191917;
+    --radius:    4px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(14,14,15,0.96);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1rem 1.1rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  nav a:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
+  nav .nav-logo {
+    margin-right: auto;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    padding: 1rem 1.1rem 1rem 0;
+    border-bottom: none;
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 820px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 5rem; }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-family: 'EB Garamond', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    margin-top: 2.5rem;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    margin-top: 2rem;
+  }
+  p { margin-bottom: 1rem; color: var(--text); }
+  .lead { font-size: 1.15rem; color: var(--text-dim); font-style: italic; margin-bottom: 1.5rem; }
+  em { color: var(--gold2); font-style: italic; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+  .divider-gold {
+    border-top-color: var(--gold-dim);
+  }
+
+  /* ── HYPOTHESIS BOX ── */
+  .hypothesis {
+    background: var(--bg3);
+    border: 1px solid var(--gold-dim);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .hypothesis .hyp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .hypothesis p { color: var(--text); margin: 0; }
+
+  /* ── CONFUSION BOX ── */
+  .confusion {
+    background: #1a1210;
+    border: 1px solid #5a2d25;
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .confusion .conf-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 0.5rem;
+  }
+  .confusion p { color: var(--text); margin: 0; }
+
+  /* ── REVEAL ── */
+  .reveal-wrap { margin: 1.5rem 0; }
+  .reveal-btn {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .reveal-btn .arrow { transition: transform 0.25s; display: inline-block; }
+  .reveal-btn.open .arrow { transform: rotate(90deg); }
+  .reveal-content {
+    display: none;
+    background: var(--reveal-bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 1.25rem 1.5rem;
+    animation: slideDown 0.2s ease;
+  }
+  .reveal-content.visible { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MONO DISPLAY ── */
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--gold2);
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--bg4);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+    color: var(--gold2);
+  }
+
+  /* ── EUCLID STEPPER ── */
+  .euclid-stepper {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .euclid-inputs {
+    display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .input-group label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.3rem;
+  }
+  .input-group input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    color: var(--gold2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius);
+    width: 110px;
+    transition: border-color 0.2s;
+  }
+  .input-group input:focus { outline: none; border-color: var(--gold-dim); }
+  .run-btn {
+    background: var(--gold-dim);
+    border: none;
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: 700;
+  }
+  .run-btn:hover { background: var(--gold); }
+  .euclid-steps {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 2;
+  }
+  .step-row { display: flex; gap: 1rem; align-items: center; }
+  .step-row .s-expr { color: var(--text-dim); flex: 1; }
+  .step-row .s-rem { color: var(--gold2); width: 3rem; text-align: right; }
+  .step-row .s-arrow { color: var(--text-faint); }
+  .step-final { color: var(--green); margin-top: 0.5rem; font-weight: 700; }
+  .step-result { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .step-result span { color: var(--gold2); }
+
+  /* ── PRIME TREE ── */
+  .prime-display {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .prime-inputs { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+  .prime-output { font-size: 0.82rem; line-height: 1.8; }
+  .prime-factor { color: var(--gold2); }
+  .prime-venn {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+  }
+  .venn-left, .venn-right, .venn-centre {
+    background: var(--bg4);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    text-align: center;
+    min-height: 60px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .venn-left { border: 1px solid #3a4a5a; }
+  .venn-centre { border: 1px solid var(--gold-dim); }
+  .venn-right { border: 1px solid #3a4a5a; }
+  .venn-label { font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.3rem; }
+  .venn-nums { color: var(--gold2); }
+
+  /* ── HCF/LCM QUICK TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    margin: 1.25rem 0;
+  }
+  th {
+    text-align: left;
+    border-bottom: 1px solid var(--gold-dim);
+    padding: 0.5rem 0.75rem;
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  td.ans { color: var(--gold2); }
+  tr:hover td { background: var(--bg3); }
+
+  /* ── TIMELINE / CICADA ── */
+  .cicada-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+  .colony-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .colony-card {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .colony-card.winner { border-color: var(--gold); }
+  .colony-card .c-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.25rem;
+  }
+  .colony-card .c-cycle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--gold2);
+    line-height: 1;
+  }
+  .colony-card .c-years { font-size: 0.75rem; color: var(--text-dim); }
+  .colony-card .c-lcm {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--bg3);
+    border-radius: 2px;
+  }
+  .colony-card.winner .c-lcm { color: var(--gold); }
+  .colony-card.loser .c-lcm { color: var(--red); }
+
+  /* ── TIMELINE VISUAL ── */
+  .timeline-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  svg.timeline { min-width: 600px; }
+
+  /* ── KEYBOX ── */
+  .keybox {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  }
+  .keybox-item { display: flex; align-items: center; gap: 0.4rem; color: var(--text-dim); }
+  .swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ── QUIZ ── */
+  .quiz-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .quiz-q {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .quiz-opt:hover { border-color: var(--gold-dim); color: var(--text); }
+  .quiz-opt.correct { border-color: var(--green); color: var(--green); background: #0e1f14; }
+  .quiz-opt.wrong { border-color: var(--red); color: var(--red); background: #1a0e0e; }
+  .quiz-feedback {
+    margin-top: 0.75rem;
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    min-height: 1.5rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+  }
+
+  /* ── UTILITY ── */
+  .tag {
+    display: inline-block;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0.15rem 0.45rem;
+    margin-right: 0.3rem;
+  }
+  .highlight { color: var(--gold2); }
+  .dim { color: var(--text-dim); }
+
+  .formula-row {
+    display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin: 1.25rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+  }
+  .formula-row .fml { color: var(--gold2); }
+  .formula-row .fml-label { color: var(--text-dim); font-size: 0.7rem; display: block; margin-bottom: 0.2rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">HCF · LCM</span>
+  <a href="#factors">Factors</a>
+  <a href="#hcf">HCF</a>
+  <a href="#lcm">LCM</a>
+  <a href="#euclid">Euclid</a>
+  <a href="#primes">Prime Factorisation</a>
+  <a href="#venn">Venn Method</a>
+  <a href="#cicada">Cicada Beetle</a>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="section" id="top">
+    <div class="section-label">Number Theory · Arithmetic</div>
+    <h1>Highest Common Factor<br>& Lowest Common Multiple</h1>
+    <p class="lead">From the arithmetic of shared divisors to the evolutionary mathematics of periodical insects — and why primes are the best strategy for survival.</p>
+    <p>Two numbers share a hidden algebraic structure: their common factors, and the rhythm at which their multiples align. Mastering HCF and LCM means mastering that structure — and it turns out evolution figured it out long before we did.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 1: FACTORS -->
+  <section class="section" id="factors">
+    <div class="section-label">§ 1</div>
+    <h2>What is a Factor?</h2>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>List all the factors of 12. Then do the same for 18. Before scrolling — what do you expect them to <em>share</em>?</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal factors of 12 and 18</button>
+      <div class="reveal-content">
+        <p><strong>Factors of 12:</strong> <span class="mono">1, 2, 3, 4, 6, 12</span></p>
+        <p><strong>Factors of 18:</strong> <span class="mono">1, 2, 3, 6, 9, 18</span></p>
+        <p><strong>Common factors:</strong> <span class="mono">1, 2, 3, 6</span></p>
+        <p>The <em>highest</em> of those common factors is <span class="mono">6</span> — that's the HCF.</p>
+      </div>
+    </div>
+
+    <p>A factor of <em>n</em> is any integer that divides <em>n</em> exactly — zero remainder. In Python: <code>n % f == 0</code>. The <code>%</code> operator is the <em>modulo</em> — it returns the remainder after division.</p>
+
+    <div class="confusion">
+      <div class="conf-label">⚠ Common Error</div>
+      <p>Students often list multiples when asked for factors. Factors are <em>smaller than or equal to</em> the number; multiples grow <em>beyond</em> it. "6 is a factor of 12" ≠ "12 is a factor of 6."</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 2: HCF -->
+  <section class="section" id="hcf">
+    <div class="section-label">§ 2</div>
+    <h2>Highest Common Factor (HCF)</h2>
+
+    <p>The HCF (also called GCD — Greatest Common Divisor) is the largest number that divides into both integers exactly.</p>
+
+    <div class="formula-row">
+      <div>
+        <span class="fml-label">Definition</span>
+        <span class="fml">HCF(a, b) = largest d such that d | a and d | b</span>
+      </div>
+    </div>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>What is HCF(36, 42)? Try to reason from prime factors before checking.</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal worked example</button>
+      <div class="reveal-content">
+        <p><strong>36</strong> = 2² × 3² &nbsp;·&nbsp; <strong>42</strong> = 2 × 3 × 7</p>
+        <p>Common prime factors: 2¹ × 3¹ = <span class="mono highlight">6</span></p>
+        <p>HCF(36, 42) = <span class="mono highlight">6</span></p>
+      </div>
+    </div>
+
+    <h3>Practice Set</h3>
+    <table>
+      <tr><th>Pair</th><th>HCF</th><th>LCM</th></tr>
+      <tr><td>36 &amp; 42</td><td class="ans">6</td><td class="ans">252</td></tr>
+      <tr><td>225 &amp; 81</td><td class="ans">9</td><td class="ans">2025</td></tr>
+      <tr><td>452 &amp; 226</td><td class="ans">226</td><td class="ans">452</td></tr>
+      <tr><td>360 &amp; 100</td><td class="ans">20</td><td class="ans">1800</td></tr>
+      <tr><td>30, 42 &amp; 63</td><td class="ans">3</td><td class="ans">630</td></tr>
+    </table>
+
+    <div class="confusion">
+      <div class="conf-label">⚠ Common Error — Staircase question</div>
+      <p>When Candice (2-step), Gerald (3-step) and Johnny (4-step) start together, the next shared step is <em>LCM</em>(2,3,4) = <strong>12</strong>, not HCF. HCF answers "what divides evenly in?" — LCM answers "when do cycles realign?"</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 3: LCM -->
+  <section class="section" id="lcm">
+    <div class="section-label">§ 3</div>
+    <h2>Lowest Common Multiple (LCM)</h2>
+
+    <p>The LCM is the smallest positive integer that is a multiple of both numbers — the first point where both "timetables" coincide.</p>
+
+    <div class="formula-row">
+      <div>
+        <span class="fml-label">Key identity — connects HCF and LCM</span>
+        <span class="fml">LCM(a, b) = (a × b) / HCF(a, b)</span>
+      </div>
+    </div>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>Without computing, predict: will LCM(13, 17) be large or small relative to 13 × 17 = 221? Why might that matter for a cicada?</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal</button>
+      <div class="reveal-content">
+        <p>HCF(13, 17) = 1 (both are prime, so they share no factors). Therefore:</p>
+        <p class="mono">LCM(13, 17) = (13 × 17) / 1 = 221</p>
+        <p>The LCM equals the product — the cycles won't realign for <strong>221 years</strong>. If a predator comes every 2 or every 6 years, it hits a cicada with a prime cycle far, far less often than a cicada with a composite cycle.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 4: EUCLID -->
+  <section class="section" id="euclid">
+    <div class="section-label">§ 4</div>
+    <h2>Euclid's Algorithm</h2>
+
+    <p>The flowchart you saw asks: what is the integer part of a ÷ b? Use it to strip away the multiple of b, leaving a remainder. Repeat until the remainder is zero. The last non-zero divisor is the HCF.</p>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>Walk through HCF(133, 56) by hand. Write out each <code>mod</code> step. Only then check below.</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal worked trace — 133, 56</button>
+      <div class="reveal-content">
+        <div class="euclid-steps">
+          <div class="step-row"><span class="s-expr">133 mod 56</span><span class="s-arrow">=</span><span class="s-rem">21</span></div>
+          <div class="step-row"><span class="s-expr">56 mod 21</span><span class="s-arrow">=</span><span class="s-rem">14</span></div>
+          <div class="step-row"><span class="s-expr">21 mod 14</span><span class="s-arrow">=</span><span class="s-rem">7</span></div>
+          <div class="step-row"><span class="s-expr">14 mod 7</span><span class="s-arrow">=</span><span class="s-rem highlight">0 ✓</span></div>
+          <div class="step-final">HCF(133, 56) = 7</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Interactive — Run Euclid's Algorithm</h3>
+
+    <div class="euclid-stepper">
+      <div class="euclid-inputs">
+        <div class="input-group">
+          <label>a (larger)</label>
+          <input type="number" id="eu-a" value="240" min="1">
+        </div>
+        <div class="input-group">
+          <label>b (smaller)</label>
+          <input type="number" id="eu-b" value="90" min="1">
+        </div>
+        <button class="run-btn" onclick="runEuclid()">Run ▶</button>
+      </div>
+      <div id="euclid-output" class="euclid-steps"></div>
+    </div>
+
+    <p class="dim" style="font-size:0.9rem">In Python, this is just <code>math.gcd(a, b)</code> — but understanding the algorithm matters for CS theory.</p>
+
+    <h3>Quiz</h3>
+
+    <div class="quiz-block" id="q-euclid">
+      <div class="quiz-q">HCF(81, 25) — which answer does Euclid's algorithm give?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answer(this,'q-euclid',false,'81 mod 25 = 6; 25 mod 6 = 1; 6 mod 1 = 0. The HCF is 1. They share no common factor.')">5</button>
+        <button class="quiz-opt" onclick="answer(this,'q-euclid',true,'Correct. 81 = 3⁴ and 25 = 5². They share no common prime factor, so HCF = 1.')">1</button>
+        <button class="quiz-opt" onclick="answer(this,'q-euclid',false,'25 is a divisor of 25 but not of 81.')">25</button>
+        <button class="quiz-opt" onclick="answer(this,'q-euclid',false,'3 divides 81 but not 25.')">3</button>
+      </div>
+      <div class="quiz-feedback" id="fb-q-euclid"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 5: PRIME FACTORISATION -->
+  <section class="section" id="primes">
+    <div class="section-label">§ 5</div>
+    <h2>Prime Factorisation Method</h2>
+
+    <p>The Fundamental Theorem of Arithmetic states every integer greater than 1 has a <em>unique</em> prime factorisation. Once you have the prime factors of each number, reading off HCF and LCM is mechanical.</p>
+
+    <div class="formula-row">
+      <div>
+        <span class="fml-label">HCF — take minimum powers of shared primes</span>
+        <span class="fml">HCF = ∏ p^min(α,β)</span>
+      </div>
+      <div>
+        <span class="fml-label">LCM — take maximum powers of all primes</span>
+        <span class="fml">LCM = ∏ p^max(α,β)</span>
+      </div>
+    </div>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>1092 = 2² × 3 × 7 × 13. What do you expect HCF(1092, 84) to be? Factorise 84 first.</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal</button>
+      <div class="reveal-content">
+        <p>84 = 2² × 3 × 7</p>
+        <p>1092 = 2² × 3 × 7 × 13</p>
+        <p>HCF = 2² × 3 × 7 = <span class="mono highlight">84</span> (84 divides 1092 exactly — 1092 / 84 = 13)</p>
+        <p>LCM = 2² × 3 × 7 × 13 = <span class="mono highlight">1092</span></p>
+      </div>
+    </div>
+
+    <h3>Interactive Prime Factoriser</h3>
+    <div class="prime-display">
+      <div class="prime-inputs">
+        <div class="input-group">
+          <label>First number</label>
+          <input type="number" id="pf-a" value="360" min="2">
+        </div>
+        <div class="input-group">
+          <label>Second number</label>
+          <input type="number" id="pf-b" value="100" min="2">
+        </div>
+        <button class="run-btn" onclick="runPrimes()">Factorise ▶</button>
+      </div>
+      <div id="prime-output"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 6: VENN -->
+  <section class="section" id="venn">
+    <div class="section-label">§ 6</div>
+    <h2>The Venn Diagram Method</h2>
+
+    <p>Place prime factors in a Venn diagram: shared factors go in the intersection, unique factors in the outer regions.</p>
+
+    <ul style="margin: 1rem 0 1rem 1.5rem; color: var(--text-dim);">
+      <li><strong>HCF</strong> = product of factors in the <em>intersection only</em></li>
+      <li><strong>LCM</strong> = product of <em>all</em> factors across the whole diagram</li>
+    </ul>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Think First</div>
+      <p>For 30, 42 and 63 — before computing, which prime(s) do you expect to appear in all three?</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal — 30, 42, 63</button>
+      <div class="reveal-content">
+        <p>30 = 2 × 3 × 5 &nbsp;·&nbsp; 42 = 2 × 3 × 7 &nbsp;·&nbsp; 63 = 3² × 7</p>
+        <p>The only prime in <em>all three</em> is 3 → <span class="mono highlight">HCF = 3</span></p>
+        <p>LCM = 2 × 3² × 5 × 7 = <span class="mono highlight">630</span></p>
+      </div>
+    </div>
+
+    <div class="quiz-block" id="q-venn">
+      <div class="quiz-q">For the staircase problem: Candice (2 steps), Gerald (3 steps), Johnny (4 steps). Which step do they first share after the start?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answer(this,'q-venn',false,'That\'s HCF(2,3,4) = 1 — meaningful but answers a different question.')">Step 1</button>
+        <button class="quiz-opt" onclick="answer(this,'q-venn',false,'LCM(2,3,4) = 12. Check: 12/2=6 ✓, 12/3=4 ✓, 12/4=3 ✓')">Step 6</button>
+        <button class="quiz-opt" onclick="answer(this,'q-venn',true,'LCM(2,3,4) = 12. 4=2², so LCM = 2²×3 = 12. All three land on step 12.')">Step 12</button>
+        <button class="quiz-opt" onclick="answer(this,'q-venn',false,'2×3×4=24 would be the product, but we divide by HCF to get LCM.')">Step 24</button>
+      </div>
+      <div class="quiz-feedback" id="fb-q-venn"></div>
+    </div>
+  </section>
+
+  <hr class="divider divider-gold">
+
+  <!-- SECTION 7: CICADA BEETLE — APPLICATION -->
+  <section class="section" id="cicada">
+    <div class="section-label">§ 7 — Application</div>
+    <h2>The Cicada Beetle Problem</h2>
+
+    <p class="lead">Four colonies of Beetle — A, B, C, D — hibernate for 13, 15, 17 and 18 years respectively. Their predator surfaces every 6 years. Starting from a simultaneous emergence and massacre today, which colony survives furthest into the future?</p>
+
+    <div class="hypothesis">
+      <div class="hyp-label">⟡ Hypothesis</div>
+      <p>Before computing anything: which cycle length do you expect to give the longest reprieve? What property of a number gives it the best chance against a period-6 predator?</p>
+    </div>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Reveal the computation</button>
+      <div class="reveal-content">
+        <p>The next encounter between colony and predator is <span class="mono">LCM(cycle, 6)</span> years from now.</p>
+        <table>
+          <tr><th>Colony</th><th>Cycle</th><th>Predator</th><th>LCM — years until next encounter</th><th>HCF</th></tr>
+          <tr><td>A</td><td>13</td><td>6</td><td class="ans">78</td><td class="ans">1</td></tr>
+          <tr><td>B</td><td>15</td><td>6</td><td class="ans">30</td><td class="ans">3</td></tr>
+          <tr><td>C</td><td>17</td><td>6</td><td class="ans">102</td><td class="ans">1</td></tr>
+          <tr><td>D</td><td>18</td><td>6</td><td class="ans">18</td><td class="ans">6</td></tr>
+        </table>
+        <p><strong>Colony C (17 years)</strong> survives longest — 102 years before the next encounter. Colony D is hit every 18 years — the worst outcome, because 6 | 18.</p>
+      </div>
+    </div>
+
+    <h3>Colony Cards</h3>
+    <div class="colony-grid">
+      <div class="colony-card" id="card-a">
+        <div class="c-name">Colony A</div>
+        <div class="c-cycle">13</div>
+        <div class="c-years">year cycle</div>
+        <div class="c-lcm" id="lcm-a">LCM with 6: —</div>
+      </div>
+      <div class="colony-card" id="card-b">
+        <div class="c-name">Colony B</div>
+        <div class="c-cycle">15</div>
+        <div class="c-years">year cycle</div>
+        <div class="c-lcm" id="lcm-b">LCM with 6: —</div>
+      </div>
+      <div class="colony-card" id="card-c">
+        <div class="c-name">Colony C</div>
+        <div class="c-cycle">17</div>
+        <div class="c-years">year cycle</div>
+        <div class="c-lcm" id="lcm-c">LCM with 6: —</div>
+      </div>
+      <div class="colony-card" id="card-d">
+        <div class="c-name">Colony D</div>
+        <div class="c-cycle">18</div>
+        <div class="c-years">year cycle</div>
+        <div class="c-lcm" id="lcm-d">LCM with 6: —</div>
+      </div>
+    </div>
+    <button class="run-btn" onclick="revealColonies()" style="margin-bottom:1.5rem">Calculate LCMs ▶</button>
+
+    <h3>Timeline — 120 years</h3>
+    <div class="keybox">
+      <div class="keybox-item"><div class="swatch" style="background:#4a7fa8"></div> Colony emergence</div>
+      <div class="keybox-item"><div class="swatch" style="background:#c0392b"></div> Predator</div>
+      <div class="keybox-item"><div class="swatch" style="background:#c9a84c"></div> Collision — massacre</div>
+    </div>
+    <div class="timeline-wrap">
+      <svg class="timeline" id="cicada-timeline" viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- generated by JS -->
+      </svg>
+    </div>
+
+    <hr class="divider">
+
+    <h2>The Survivorship Bias Twist</h2>
+
+    <div class="cicada-section">
+      <p>The slide you saw identifies a three-layer story:</p>
+      <p><strong>Fast Thinking:</strong> Primes maximise LCM, so 13- and 17-year cycles avoid predators. Clean, satisfying, done.</p>
+      <p><strong>Survivorship Bias:</strong> We only <em>observe</em> the lineages that survived. The 12-year and 15-year cicadas were eaten into extinction. Our dataset is a graveyard with the corpses removed.</p>
+      <p><strong>The Heuristic Trap:</strong> The LCM argument is completely true — and stops short of the full truth. Like 2/7 as a decimal approximation: correct as far as it goes, but truncated.</p>
+
+      <div class="hypothesis">
+        <div class="hyp-label">⟡ Open Question</div>
+        <p>What would a fuller explanation require? Think about evolutionary dynamics, mutation rates, predator co-evolution. Can mathematics alone answer this, or does it need biology?</p>
+      </div>
+    </div>
+
+    <div class="quiz-block" id="q-cicada">
+      <div class="quiz-q">Colony D has cycle 18 and the predator has cycle 6. Why is D the most vulnerable?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answer(this,'q-cicada',false,'18 is a large number, but that\'s not what determines encounter frequency.')">18 is a large number so it surfaces less often</button>
+        <button class="quiz-opt" onclick="answer(this,'q-cicada',true,'Correct. HCF(18,6)=6, so LCM(18,6)=18×6/6=18. The predator catches D every single emergence.')">6 divides 18 exactly — HCF(18,6)=6 — so every emergence is a massacre</button>
+        <button class="quiz-opt" onclick="answer(this,'q-cicada',false,'The difference 18−6=12 is not directly relevant here.')">18 minus 6 equals 12, a composite number</button>
+        <button class="quiz-opt" onclick="answer(this,'q-cicada',false,'Both 13 and 17 are also odd. Parity is not the key property.')">18 is even, unlike 13 and 17</button>
+      </div>
+      <div class="quiz-feedback" id="fb-q-cicada"></div>
+    </div>
+
+    <div class="quiz-block" id="q-prime">
+      <div class="quiz-q">Why does a prime cycle p give LCM(p, 6) = 6p (assuming p ≠ 2, 3)?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answer(this,'q-prime',false,'LCM = product / HCF. If HCF = 1, then LCM = product. The reason HCF = 1 is what matters.')">Because p is large</button>
+        <button class="quiz-opt" onclick="answer(this,'q-prime',true,'Exactly. A prime p > 3 shares no factor with 6 = 2 × 3, so HCF(p,6)=1 and LCM = 6p.')">Because p shares no factor with 6 — HCF(p,6)=1 since p is prime and p≠2,3</button>
+        <button class="quiz-opt" onclick="answer(this,'q-prime',false,'Primality means divisible only by 1 and itself — this is closer, but the precise reason is HCF=1.')">Because prime numbers are always odd</button>
+        <button class="quiz-opt" onclick="answer(this,'q-prime',false,'The Fundamental Theorem is about uniqueness of factorisation, not directly about LCM maximisation.')">Because of the Fundamental Theorem of Arithmetic</button>
+      </div>
+      <div class="quiz-feedback" id="fb-q-prime"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- PYTHON BRIDGE -->
+  <section class="section" id="python">
+    <div class="section-label">§ 8 — Python</div>
+    <h2>The Algorithm in Python</h2>
+
+    <p>Python's <code>math</code> module gives you <code>gcd</code> directly. From Python 3.9, <code>math.lcm</code> is also built in. But you should be able to write both from scratch:</p>
+
+    <div class="reveal-wrap">
+      <button class="reveal-btn" onclick="toggleReveal(this)"><span class="arrow">▶</span> Show Python implementations</button>
+      <div class="reveal-content" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:1.8;color:var(--text-dim);">
+<pre style="background:var(--bg4);padding:1rem;border-radius:4px;overflow-x:auto;color:var(--gold2);">
+<span style="color:var(--text-dim)"># Euclid's algorithm — recursive</span>
+def hcf(a, b):
+    if b == 0:
+        return a
+    return hcf(b, a % b)
+
+<span style="color:var(--text-dim)"># LCM via the identity LCM = (a*b) / HCF</span>
+def lcm(a, b):
+    return (a * b) // hcf(a, b)
+
+<span style="color:var(--text-dim)"># Cicada beetle — which colony survives longest?</span>
+colonies = {'A': 13, 'B': 15, 'C': 17, 'D': 18}
+predator = 6
+
+for name, cycle in colonies.items():
+    encounter = lcm(cycle, predator)
+    print(f"Colony {name}: next encounter at year {encounter}")
+
+<span style="color:var(--text-dim)"># Output:
+# Colony A: next encounter at year 78
+# Colony B: next encounter at year 30
+# Colony C: next encounter at year 102
+# Colony D: next encounter at year 18</span>
+</pre>
+      </div>
+    </div>
+
+    <div class="confusion">
+      <div class="conf-label">⚠ IB CS note</div>
+      <p>The recursive form of Euclid's algorithm is a clean example of a <em>recursive algorithm with a base case</em> — a key IB CS HL concept. The call stack depth is O(log min(a,b)), which is very efficient.</p>
+    </div>
+  </section>
+
+</div><!-- end .page -->
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+<script>
+/* ── REVEAL TOGGLE ── */
+function toggleReveal(btn) {
+  const content = btn.nextElementSibling;
+  const isOpen = content.classList.contains('visible');
+  content.classList.toggle('visible', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* ── QUIZ ── */
+function answer(btn, id, correct, feedback) {
+  const block = document.getElementById(id);
+  if (block.dataset.answered) return;
+  block.dataset.answered = '1';
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) {
+    // highlight correct
+    const opts = block.querySelectorAll('.quiz-opt');
+    opts.forEach(o => {
+      if (o.onclick.toString().includes('true')) o.classList.add('correct');
+    });
+  }
+  document.getElementById('fb-' + id).textContent = feedback;
+}
+
+/* ── GCD / LCM ── */
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function lcm(a, b) { return (a * b) / gcd(a, b); }
+
+/* ── EUCLID STEPPER ── */
+function runEuclid() {
+  let a = parseInt(document.getElementById('eu-a').value);
+  let b = parseInt(document.getElementById('eu-b').value);
+  if (isNaN(a) || isNaN(b) || a < 1 || b < 1) return;
+  if (b > a) [a, b] = [b, a];
+
+  const out = document.getElementById('euclid-output');
+  let html = '';
+  let x = a, y = b;
+  let steps = 0;
+  while (y !== 0 && steps < 50) {
+    const r = x % y;
+    const done = r === 0;
+    html += `<div class="step-row">
+      <span class="s-expr">${x} mod ${y}</span>
+      <span class="s-arrow">=</span>
+      <span class="s-rem ${done ? 'highlight' : ''}">${r}${done ? ' ✓' : ''}</span>
+    </div>`;
+    x = y; y = r; steps++;
+  }
+  const h = gcd(a, b);
+  const l = lcm(a, b);
+  html += `<div class="step-final">HCF(${a}, ${b}) = ${h}</div>`;
+  html += `<div class="step-result">LCM(${a}, ${b}) = ${a} × ${b} / ${h} = <span>${l}</span></div>`;
+  out.innerHTML = html;
+}
+
+/* ── PRIME FACTORISER ── */
+function primeFactors(n) {
+  const factors = {};
+  let d = 2;
+  while (n > 1) {
+    while (n % d === 0) {
+      factors[d] = (factors[d] || 0) + 1;
+      n = Math.floor(n / d);
+    }
+    d++;
+  }
+  return factors;
+}
+
+function factorStr(f) {
+  return Object.entries(f).map(([p, e]) => e > 1 ? `${p}<sup>${e}</sup>` : p).join(' × ');
+}
+
+function runPrimes() {
+  const a = parseInt(document.getElementById('pf-a').value);
+  const b = parseInt(document.getElementById('pf-b').value);
+  if (isNaN(a) || isNaN(b)) return;
+
+  const fa = primeFactors(a);
+  const fb = primeFactors(b);
+  const allPrimes = new Set([...Object.keys(fa), ...Object.keys(fb)].map(Number));
+
+  let hcfParts = [], lcmParts = [];
+  let leftOnly = [], rightOnly = [], shared = [];
+
+  allPrimes.forEach(p => {
+    const ea = fa[p] || 0, eb = fb[p] || 0;
+    const mn = Math.min(ea, eb), mx = Math.max(ea, eb);
+    if (mn > 0) { hcfParts.push(mn > 1 ? `${p}<sup>${mn}</sup>` : `${p}`); }
+    lcmParts.push(mx > 1 ? `${p}<sup>${mx}</sup>` : `${p}`);
+    if (ea > 0 && eb === 0) leftOnly.push(ea > 1 ? `${p}${ea > 1 ? '^'+ea : ''}` : `${p}`);
+    else if (ea === 0 && eb > 0) rightOnly.push(eb > 1 ? `${p}^${eb}` : `${p}`);
+    else if (ea > 0 && eb > 0) shared.push(`${p}^min(${ea},${eb})=${p}^${mn}`);
+  });
+
+  const h = gcd(a, b);
+  const l = lcm(a, b);
+
+  document.getElementById('prime-output').innerHTML = `
+    <div class="prime-output">
+      <div><strong>${a}</strong> = <span class="prime-factor">${factorStr(fa)}</span></div>
+      <div><strong>${b}</strong> = <span class="prime-factor">${factorStr(fb)}</span></div>
+      <div style="margin-top:0.75rem">
+        <strong>HCF</strong> = ${hcfParts.length ? hcfParts.join(' × ') : '1'} = <span class="prime-factor">${h}</span>
+      </div>
+      <div>
+        <strong>LCM</strong> = ${lcmParts.join(' × ')} = <span class="prime-factor">${l}</span>
+      </div>
+    </div>
+    <div class="prime-venn">
+      <div class="venn-left">
+        <div class="venn-label">Only in ${a}</div>
+        <div class="venn-nums">${leftOnly.join(', ') || '—'}</div>
+      </div>
+      <div class="venn-centre">
+        <div class="venn-label">Shared</div>
+        <div class="venn-nums">${shared.length ? shared.join('<br>') : '1'}</div>
+      </div>
+      <div class="venn-right">
+        <div class="venn-label">Only in ${b}</div>
+        <div class="venn-nums">${rightOnly.join(', ') || '—'}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ── COLONY CARDS ── */
+function revealColonies() {
+  const cycles = {a:13, b:15, c:17, d:18};
+  const pred = 6;
+  let best = null, bestVal = 0;
+
+  for (const [k, c] of Object.entries(cycles)) {
+    const l = lcm(c, pred);
+    if (l > bestVal) { bestVal = l; best = k; }
+  }
+  for (const [k, c] of Object.entries(cycles)) {
+    const l = lcm(c, pred);
+    const el = document.getElementById('lcm-' + k);
+    const card = document.getElementById('card-' + k);
+    el.textContent = `LCM with 6: ${l} yrs`;
+    card.classList.remove('winner', 'loser');
+    card.classList.add(k === best ? 'winner' : 'loser');
+  }
+  drawTimeline();
+}
+
+/* ── TIMELINE SVG ── */
+function drawTimeline() {
+  const W = 700, H = 220;
+  const leftPad = 90, rightPad = 20;
+  const years = 120;
+  const pixPerYear = (W - leftPad - rightPad) / years;
+
+  const rows = [
+    { label: 'Colony A', cycle: 13, y: 40, color: '#4a7fa8' },
+    { label: 'Colony B', cycle: 15, y: 80, color: '#4a7fa8' },
+    { label: 'Colony C', cycle: 17, y: 120, color: '#4a7fa8' },
+    { label: 'Colony D', cycle: 18, y: 160, color: '#4a7fa8' },
+    { label: 'Predator', cycle: 6,  y: 200, color: '#c0392b' },
+  ];
+
+  let svg = '';
+
+  // Axis
+  svg += `<line x1="${leftPad}" y1="0" x2="${leftPad}" y2="${H}" stroke="#2e2d2a" stroke-width="1"/>`;
+
+  // Year tick marks
+  for (let y = 0; y <= years; y += 20) {
+    const x = leftPad + y * pixPerYear;
+    svg += `<line x1="${x}" y1="${H-8}" x2="${x}" y2="${H}" stroke="#5a5650" stroke-width="1"/>`;
+    svg += `<text x="${x}" y="${H+4}" fill="#5a5650" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle" dominant-baseline="hanging">${y}</text>`;
+  }
+
+  // Rows
+  rows.forEach(row => {
+    svg += `<text x="${leftPad - 6}" y="${row.y}" fill="#9a9182" font-family="EB Garamond,serif" font-size="11" text-anchor="end" dominant-baseline="middle">${row.label}</text>`;
+    svg += `<line x1="${leftPad}" y1="${row.y}" x2="${W - rightPad}" y2="${row.y}" stroke="#2e2d2a" stroke-width="0.5"/>`;
+
+    for (let t = 0; t <= years; t += row.cycle) {
+      const x = leftPad + t * pixPerYear;
+      svg += `<rect x="${x - 1.5}" y="${row.y - 14}" width="3" height="28" fill="${row.color}" rx="1" opacity="0.85"/>`;
+    }
+  });
+
+  // Collisions — gold
+  const beetleCycles = [13, 15, 17, 18];
+  const predCycle = 6;
+  beetleCycles.forEach((bc, i) => {
+    const rowY = rows[i].y;
+    for (let t = 0; t <= years; t += bc) {
+      if (t > 0 && t % predCycle === 0) {
+        const x = leftPad + t * pixPerYear;
+        svg += `<circle cx="${x}" cy="${rowY}" r="5" fill="#c9a84c" opacity="0.9"/>`;
+      }
+    }
+  });
+
+  document.getElementById('cicada-timeline').innerHTML = svg;
+}
+
+/* Init */
+window.addEventListener('load', () => {
+  runEuclid();
+  runPrimes();
+});
+</script>
+</body>
+</html>
