@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fractions as Tarts — Egyptian Decomposition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#0d0e11; --bg2:#111318; --bg3:#181c24; --bg4:#1e2330;
+  --gold:#c9a84c; --gold2:#e8c97a; --amber:#d4855a;
+  --cream:#f0e8d8; --muted:#7a7670; --dim:#3a3830; --text:#ddd6c8;
+  --border:#252830; --border2:#303540;
+  --red:#c05050; --blue:#4a8fcc; --green:#52a870;
+  --purple:#8a5cc0; --teal:#3a9898;
+  --r:6px;
+  /* Tart colours */
+  --t1:#c9a84c; --t2:#4a8fcc; --t3:#52a870; --t4:#c05050;
+  --t5:#8a5cc0; --t6:#d4855a; --t7:#3a9898;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;font-size:18px;line-height:1.75;min-height:100vh;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(13,14,17,0.97);border-bottom:1px solid var(--border2);display:flex;flex-wrap:wrap;padding:0 2rem;backdrop-filter:blur(8px);}
+nav .logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--gold);padding:.75rem 1.2rem .75rem 0;margin-right:auto;}
+nav a{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:.8rem .75rem;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;}
+nav a:hover{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:4.5rem 2rem 3rem;border-bottom:1px solid var(--border);background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(201,168,76,.06) 0%,transparent 70%);}
+.hero h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,5.5vw,3.5rem);letter-spacing:.02em;line-height:1.12;color:var(--cream);}
+.hero h1 em{color:var(--gold);font-style:italic;}
+.hero .sub{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.05em;margin:1.3rem auto 0;max-width:520px;line-height:1.7;}
+.tagline{display:inline-block;margin-top:1.3rem;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--gold);border-top:1px solid var(--border2);padding-top:.85rem;}
+
+/* ── SECTIONS ── */
+section{max-width:1020px;margin:0 auto;padding:3.5rem 2rem;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,4vw,2.2rem);color:var(--cream);margin-bottom:.5rem;}
+h2 .num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--gold);display:block;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.2rem;}
+h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--gold2);margin:2rem 0 .4rem;}
+p{margin-bottom:.9rem;}
+em{color:var(--gold);font-style:italic;}
+strong{color:var(--cream);}
+
+/* ── FRACTION TYPOGRAPHY ── */
+.f{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;vertical-align:middle;margin:0 .18em;font-family:'Cormorant Garamond',serif;}
+.f>span:first-child{border-bottom:1.3px solid currentColor;padding:.02em .18em .05em;min-width:1em;text-align:center;}
+.f>span:last-child{padding:.05em .18em .02em;min-width:1em;text-align:center;}
+.f-sm{font-size:.95rem;} .f-md{font-size:1.3rem;} .f{font-size:1.55rem;} .f-lg{font-size:1.9rem;} .f-xl{font-size:2.3rem;}
+.f-gold{color:var(--gold);} .f-green{color:var(--green);} .f-muted{color:var(--muted);} .f-red{color:var(--red);}
+
+/* ── BOXES ── */
+.q-box{background:var(--bg3);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:var(--r);padding:1.1rem 1.3rem;margin:1.4rem 0;}
+.q-box .lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem;}
+.i-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1.1rem 1.3rem;margin:1.4rem 0;}
+.i-box .lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem;}
+.g-box{background:rgba(82,168,112,.07);border:1px solid rgba(82,168,112,.35);border-left:4px solid var(--green);border-radius:var(--r);padding:1.1rem 1.3rem;margin:1.4rem 0;}
+.g-box .lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem;}
+.c-box{background:rgba(192,80,80,.07);border:1px solid rgba(192,80,80,.35);border-left:4px solid var(--red);border-radius:var(--r);padding:1.1rem 1.3rem;margin:1.4rem 0;}
+
+/* ── REVEAL ── */
+.rev-btn{background:var(--bg4);border:1px solid var(--border2);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem 1rem;cursor:pointer;border-radius:3px;transition:background .2s,border-color .2s;margin-top:.5rem;}
+.rev-btn:hover{border-color:var(--gold);background:var(--bg3);}
+.rev-panel{display:none;margin-top:.85rem;padding:.95rem 1.1rem;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);animation:fi .28s ease;}
+.rev-panel.open{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ── PULL QUOTE ── */
+.pull{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;color:var(--gold2);border-left:3px solid var(--gold);padding:.55rem 1.1rem;margin:1.8rem 0;line-height:1.45;}
+
+/* ══════════════════════════════════
+   TART GALLERY
+   ══════════════════════════════════ */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.4rem;margin:1.8rem 0;}
+.tart-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;display:flex;flex-direction:column;gap:1rem;transition:border-color .2s;}
+.tart-card:hover{border-color:var(--border2);}
+.tart-card-head{display:flex;align-items:center;gap:1rem;}
+.tart-wrap{position:relative;flex-shrink:0;}
+/* The "sum" strip showing the unit fractions stacked below the tart */
+.unit-strip{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.15rem;}
+.uf-chip{background:var(--bg4);border:1px solid var(--border2);border-radius:3px;padding:.18rem .55rem;font-family:'Cormorant Garamond',serif;font-size:1.05rem;display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;}
+.uf-chip span:first-child{border-bottom:1px solid currentColor;padding:0 .1em;font-size:.85em;}
+.uf-chip span:last-child{font-size:.85em;}
+.plus-sym{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);}
+.tart-info{flex:1;min-width:0;}
+.tart-frac-big{font-family:'Cormorant Garamond',serif;font-size:2.1rem;color:var(--gold);display:flex;align-items:center;gap:.15em;}
+.tart-frac-big .bar{width:100%;height:1.5px;background:currentColor;}
+.tart-frac-col{display:flex;flex-direction:column;align-items:center;}
+.tart-decimal{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.05em;margin-top:.2rem;}
+.tart-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+/* Unit fraction bar track */
+.uf-bar-track{height:6px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden;margin-top:.4rem;display:flex;gap:1px;}
+.uf-bar-seg{height:100%;border-radius:2px;}
+
+/* ══════════════════════════════════
+   CHALLENGE SECTION
+   ══════════════════════════════════ */
+.challenge-fracs{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:1.5rem 0;}
+.ch-card{background:var(--bg3);border:2px dashed var(--border2);border-radius:var(--r);padding:1.4rem;text-align:center;transition:border-color .3s;}
+.ch-card.active{border-color:var(--gold);border-style:solid;}
+.ch-card .ch-frac{font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:var(--cream);display:flex;flex-direction:column;align-items:center;line-height:1.05;margin:.5rem auto;}
+.ch-card .ch-frac .bar{width:100%;height:2px;background:currentColor;}
+.ch-card canvas{display:block;margin:.6rem auto 0;}
+.ch-card .ch-name{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.4rem;}
+
+/* ORDERING DRAG ZONE */
+.order-zone{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;margin:1.4rem 0;}
+.order-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.8rem;}
+.order-slots{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+.order-slot{flex:1;min-width:120px;min-height:70px;background:var(--bg4);border:1px dashed var(--border2);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:border-color .2s;}
+.order-slot.hovered{border-color:var(--gold);}
+.order-slot .slot-idx{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);position:absolute;top:.35rem;left:.5rem;}
+.order-slot .slot-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.order-arrow{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--dim);flex-shrink:0;}
+
+/* Draggable tiles */
+.draggable-pool{display:flex;gap:.8rem;flex-wrap:wrap;margin:1rem 0;}
+.drag-tile{background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:.6rem 1rem;cursor:grab;font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--cream);display:flex;flex-direction:column;align-items:center;line-height:1.1;transition:border-color .2s,background .2s;user-select:none;}
+.drag-tile:active{cursor:grabbing;}
+.drag-tile:hover{border-color:var(--gold2);}
+.drag-tile .bar{width:100%;height:1.2px;background:currentColor;margin:.08rem 0;}
+.drag-tile.dragging{opacity:.45;border-color:var(--gold);}
+.drag-tile.placed{opacity:.3;pointer-events:none;}
+
+/* CHECK BUTTON */
+.check-btn{background:rgba(201,168,76,.12);border:1px solid var(--gold);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;padding:.55rem 1.4rem;cursor:pointer;border-radius:3px;transition:background .2s;margin-top:.8rem;}
+.check-btn:hover{background:rgba(201,168,76,.22);}
+.check-btn:disabled{opacity:.35;cursor:default;}
+
+.verdict{font-family:'JetBrains Mono',monospace;font-size:.82rem;padding:.7rem 1rem;border-radius:var(--r);margin-top:.8rem;display:none;}
+.verdict.correct{background:rgba(82,168,112,.12);border:1px solid var(--green);color:var(--green);display:block;}
+.verdict.wrong{background:rgba(192,80,80,.1);border:1px solid var(--red);color:var(--red);display:block;}
+
+/* REASONING STEPS */
+.reason-steps{display:flex;flex-direction:column;gap:0;margin:1rem 0;}
+.rstep{display:flex;gap:.8rem;align-items:baseline;padding:.55rem 0;border-bottom:1px solid var(--border);}
+.rstep:last-child{border-bottom:none;}
+.rstep .rk{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;min-width:90px;flex-shrink:0;}
+.rstep .rv{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--cream);flex:1;}
+.rstep .rw{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);flex-basis:100%;margin-top:-.1rem;padding-left:98px;line-height:1.5;}
+
+/* HINT SEQUENCE */
+.hint-seq{display:flex;flex-direction:column;gap:.6rem;margin:1rem 0;}
+.hint-btn{background:var(--bg4);border:1px solid var(--border2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;padding:.42rem 1rem;cursor:pointer;border-radius:3px;text-align:left;transition:all .2s;}
+.hint-btn:hover{border-color:var(--gold);color:var(--gold);}
+.hint-text{display:none;padding:.7rem .9rem;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);font-size:.95rem;color:var(--text);line-height:1.65;}
+.hint-text.open{display:block;animation:fi .25s ease;}
+
+/* NUMBER LINE */
+.nline-wrap{position:relative;height:60px;margin:1.5rem 0;padding:0 .5rem;}
+.nline-axis{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border2);}
+.nline-tick{position:absolute;width:1px;background:var(--muted);top:30%;height:40%;}
+.nline-label{position:absolute;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);transform:translateX(-50%);top:70%;}
+.nline-marker{position:absolute;transform:translateX(-50%);top:20%;}
+.nline-marker .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--gold);background:var(--bg);margin:0 auto;}
+.nline-marker .mlbl{font-family:'Cormorant Garamond',serif;font-size:.85rem;color:var(--gold);text-align:center;margin-top:2px;white-space:nowrap;}
+
+/* GREEDY ALGO DISPLAY */
+.algo-steps{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.3rem;margin:.8rem 0;}
+.algo-row{display:flex;gap:.8rem;align-items:center;padding:.38rem 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.algo-row:last-child{border-bottom:none;}
+.algo-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;min-width:75px;}
+.algo-val{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--cream);}
+
+/* ══════════════════════════════════
+   EXPLORATION (all fracs explorer)
+   ══════════════════════════════════ */
+.explorer-grid{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0;}
+.ex-chip{background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:.3rem .75rem;font-family:'Cormorant Garamond',serif;font-size:1.15rem;cursor:pointer;transition:border-color .2s,background .2s;color:var(--text);}
+.ex-chip:hover{border-color:var(--gold2);}
+.ex-chip.sel{border-color:var(--gold);background:rgba(201,168,76,.1);color:var(--gold2);}
+.ex-display{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;margin:.8rem 0;min-height:6rem;}
+
+/* RULE */
+.rule{border:none;border-top:1px solid var(--border);margin:1.8rem 0;}
+
+/* FOOTER */
+footer{text-align:center;padding:2rem;font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.08em;border-top:1px solid var(--border);}
+
+@media(max-width:600px){
+  section{padding:2.5rem 1.1rem;}
+  .gallery{grid-template-columns:1fr;}
+  .challenge-fracs{grid-template-columns:1fr;}
+  .order-slots{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">Tarts &amp; Unit Fractions</span>
+  <a href="#gallery">§1 Gallery</a>
+  <a href="#challenge">§2 Challenge</a>
+  <a href="#reasoning">§3 Reasoning</a>
+  <a href="#explorer">§4 Explorer</a>
+</nav>
+
+<div class="hero">
+  <h1>Fractions as <em>tarts</em>,<br/>decomposed into unit slices</h1>
+  <p class="sub">Greedy Egyptian decompositions · Pie visualisations · A comparison challenge</p>
+  <div class="tagline">See the fraction · Split it · Compare without decimals</div>
+</div>
+
+<!-- ══════════════════════════════════
+     §1  GALLERY
+     ══════════════════════════════════ -->
+<section id="gallery">
+  <h2><span class="num">§ 01 — The Gallery</span>Six fractions as tarts</h2>
+
+  <p>Each tart below shows a fraction of a unit circle — the gold arc is your slice, the dark remainder is what's left. Below each tart you see its <em>Egyptian (greedy) decomposition</em> into distinct unit fractions, and an alternative decomposition where one exists.</p>
+
+  <div class="q-box">
+    <div class="lbl">⟡ Look first</div>
+    <p>Before reading the decompositions — can you estimate by eye which fraction is largest? Which two are closest in size? The tart areas give you the answer without any calculation.</p>
+  </div>
+
+  <div class="gallery" id="gallery-grid"></div>
+
+  <div class="pull">A larger denominator in a unit fraction always means a smaller piece. Reading a decomposition left-to-right, the first term dominates — it tells you roughly where the fraction sits.</div>
+</section>
+
+<!-- ══════════════════════════════════
+     §2  CHALLENGE
+     ══════════════════════════════════ -->
+<section id="challenge">
+  <h2><span class="num">§ 02 — The Challenge</span>Where do these three sit?</h2>
+
+  <p>Three new fractions join the party:
+    <span class="f f-md f-gold"><span>8</span><span>11</span></span>,&ensp;
+    <span class="f f-md f-gold"><span>8</span><span>12</span></span>,&ensp; and &ensp;
+    <span class="f f-md f-gold"><span>10</span><span>17</span></span>.
+    Your task: place them in order from <em>smallest</em> to <em>largest</em>.
+  </p>
+
+  <div class="q-box">
+    <div class="lbl">⟡ Predict — no calculator</div>
+    <p>Look at the tarts below. Can you tell by area alone which is the biggest? Notice that 8/12 can be simplified — does that help?</p>
+  </div>
+
+  <div class="challenge-fracs" id="ch-tarts"></div>
+
+  <h3>Drag to order: smallest → largest</h3>
+
+  <div class="draggable-pool" id="drag-pool">
+    <!-- tiles inserted by JS -->
+  </div>
+
+  <div class="order-zone">
+    <div class="order-label">Your ordering (drop here)</div>
+    <div class="order-slots" id="order-slots">
+      <div class="order-slot" id="slot-0" ondragover="onOver(event)" ondrop="onDrop(event,0)">
+        <span class="slot-idx">Smallest</span><span class="slot-label">drop here</span>
+      </div>
+      <div class="order-arrow">→</div>
+      <div class="order-slot" id="slot-1" ondragover="onOver(event)" ondrop="onDrop(event,1)">
+        <span class="slot-idx">Middle</span><span class="slot-label">drop here</span>
+      </div>
+      <div class="order-arrow">→</div>
+      <div class="order-slot" id="slot-2" ondragover="onOver(event)" ondrop="onDrop(event,2)">
+        <span class="slot-idx">Largest</span><span class="slot-label">drop here</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="check-btn" id="check-btn" onclick="checkOrder()" disabled>Check my ordering</button>
+  <div class="verdict" id="verdict"></div>
+</section>
+
+<!-- ══════════════════════════════════
+     §3  REASONING
+     ══════════════════════════════════ -->
+<section id="reasoning">
+  <h2><span class="num">§ 03 — The Reasoning</span>How to compare without decimals</h2>
+
+  <p>The Egyptian decomposition gives you a principled way to compare fractions. The first unit fraction in each expansion is the most important — it tells you which "shelf" the fraction lives on.</p>
+
+  <h3>Step 1 — Simplify first</h3>
+  <p>Always simplify before decomposing. <span class="f f-md"><span>8</span><span>12</span></span> = <span class="f f-md f-gold"><span>2</span><span>3</span></span>. This immediately places it: it is <em>exactly</em> two thirds.</p>
+
+  <h3>Step 2 — Greedy first term</h3>
+  <p>The greedy first term tells you the coarsest unit fraction that fits. Fractions with the same first term are close together; fractions with different first terms are well-separated.</p>
+
+  <div class="reason-steps" id="reason-steps"></div>
+
+  <h3>Step 3 — Unit fraction number line</h3>
+  <p>All three fractions shown against a 0 → 1 line. The first unit fraction in each expansion is marked. Fractions landing near the same unit fraction marker are close; those whose first term differs by one step are already well-separated.</p>
+
+  <div class="nline-wrap" id="nline"></div>
+
+  <h3>Hint sequence</h3>
+  <p>If you want to work it out yourself before seeing the full solution, open the hints one at a time.</p>
+
+  <div class="hint-seq" id="hint-seq"></div>
+
+  <hr class="rule"/>
+
+  <div class="g-box">
+    <div class="lbl">⟡ Full solution</div>
+    <button class="rev-btn" onclick="tog('full-sol')">Reveal complete reasoning</button>
+    <div class="rev-panel" id="full-sol">
+      <div id="full-sol-body"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     §4  EXPLORER
+     ══════════════════════════════════ -->
+<section id="explorer">
+  <h2><span class="num">§ 04 — Explorer</span>Decompose any fraction from the set</h2>
+
+  <p>Click any fraction to see its full greedy decomposition worked step by step, alongside its tart and the alternative decomposition where one exists.</p>
+
+  <div class="explorer-grid" id="ex-chips"></div>
+  <div class="ex-display" id="ex-display">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted);">Select a fraction above…</span>
+  </div>
+</section>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+// ── Utilities ──────────────────────────────────────────────
+function gcd(a,b){return b===0?Math.abs(a):gcd(b,a%b);}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+function red(p,q){const g=gcd(p,q);return[p/g,q/g];}
+function fs(p,q,cls=''){return `<span class="f${cls?' '+cls:''}" style="display:inline-flex;"><span>${p}</span><span>${q}</span></span>`;}
+function tog(id){document.getElementById(id).classList.toggle('open');}
+function dec(p,q){return(p/q).toFixed(6);}
+
+// ── Egyptian greedy ─────────────────────────────────────────
+function egyptGreedy(p,q,maxTerms=12){
+  const terms=[];let[rp,rq]=red(p,q);let g=0;
+  while(rp>0&&g++<maxTerms){
+    const u=Math.ceil(rq/rp);
+    terms.push(u);
+    const np=rp*u-rq,nq=rq*u;
+    if(np<=0)break;
+    [rp,rq]=red(np,nq);
+  }
+  return terms;
+}
+
+// ── Tart canvas drawing ──────────────────────────────────────
+// Draws a fraction as a filled-arc pie on a canvas element.
+// p/q: fraction; color: fill color; size: canvas px; 
+// segments: optional array of unit fractions to draw as distinct arcs
+function drawTart(canvas, p, q, color, size, segments){
+  canvas.width=size; canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,size,size);
+  const cx=size/2,cy=size/2,r=size/2-3;
+  const TAU=2*Math.PI, START=-Math.PI/2;
+
+  if(segments&&segments.length>0){
+    // Draw each unit fraction segment in progressively lighter shades
+    const baseR=parseInt(color.slice(1,3),16);
+    const baseG=parseInt(color.slice(3,5),16);
+    const baseB=parseInt(color.slice(5,7),16);
+    let cumulative=0;
+    segments.forEach((u,i)=>{
+      const frac=1/u;
+      const startAngle=START+cumulative*TAU;
+      const endAngle=START+(cumulative+frac)*TAU;
+      const t=i/(segments.length);
+      const alpha=0.85-t*0.35;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,startAngle,endAngle);
+      ctx.closePath();
+      ctx.fillStyle=`rgba(${baseR},${baseG},${baseB},${alpha})`;
+      ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=0.7;ctx.stroke();
+      cumulative+=frac;
+    });
+    // remainder arc
+    if(cumulative<1){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,START+cumulative*TAU,START+TAU);
+      ctx.closePath();
+      ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fill();
+    }
+  } else {
+    // Simple filled arc
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,START,START+(p/q)*TAU);
+    ctx.closePath();
+    ctx.fillStyle=color+'cc';ctx.fill();
+    // remainder
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,START+(p/q)*TAU,START+TAU);
+    ctx.closePath();
+    ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fill();
+  }
+  // border
+  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);
+  ctx.strokeStyle='#3a3a40';ctx.lineWidth=1.5;ctx.stroke();
+}
+
+// ── Fraction data ────────────────────────────────────────────
+const COLORS=['#c9a84c','#4a8fcc','#52a870','#c05050','#8a5cc0','#d4855a','#3a9898','#b87040'];
+
+const FRACTIONS=[
+  {p:3,q:7,  alt:[3,11,231]},   // 3/7 = 1/3 + 1/11 + 1/231
+  {p:5,q:9,  alt:[2,9]},        // 5/9 = 1/2 + 1/18... greedy gives 1/2+1/9
+  {p:7,q:11, alt:[2,4,308]},    // 7/11
+  {p:9,q:13, alt:[2,4,52]},     // 9/13
+  {p:11,q:13,alt:[1,13]},       // 11/13 = 1 - 2/13, but as sum: 1/2+1/3+1/13... let greedy handle
+  {p:13,q:15,alt:[1,5,15]},     // 13/15 = 1/2+1/3+1/5... no wait greedy
+];
+
+// Recompute alt as second-best known decompositions or just greedy for now
+FRACTIONS.forEach(fr=>{
+  fr.greedy=egyptGreedy(fr.p,fr.q);
+  // alt: try a couple of simple ones, else use greedy
+  // We'll compute a second decomposition by choosing a different first term where possible
+  fr.alt2=computeAlt(fr.p,fr.q,fr.greedy);
+});
+
+function computeAlt(p,q,greedy){
+  // Try the "next" first unit fraction (greedy_first+1) if it still fits
+  const g1=greedy[0];
+  if(g1>=q)return greedy; // can't improve
+  const nextU=g1+1;
+  // Check if 1/nextU < p/q  
+  if(nextU*p<=q) return greedy; // 1/nextU >= p/q, doesn't fit
+  // remainder: p/q - 1/nextU = (p*nextU - q)/(q*nextU)
+  const rp=p*nextU-q, rq=q*nextU;
+  if(rp<=0)return greedy;
+  const rest=egyptGreedy(rp,rq);
+  return [nextU,...rest];
+}
+
+// ── Build Gallery ────────────────────────────────────────────
+const galleryEl=document.getElementById('gallery-grid');
+FRACTIONS.forEach((fr,i)=>{
+  const color=COLORS[i%COLORS.length];
+  const [rp,rq]=red(fr.p,fr.q);
+  const pct=((fr.p/fr.q)*100).toFixed(1);
+
+  const card=document.createElement('div');
+  card.className='tart-card';
+
+  // Tart canvas
+  const cv=document.createElement('canvas');
+  const headDiv=document.createElement('div');
+  headDiv.className='tart-card-head';
+
+  const tartWrap=document.createElement('div');
+  tartWrap.className='tart-wrap';
+  tartWrap.appendChild(cv);
+
+  // Info
+  const info=document.createElement('div');
+  info.className='tart-info';
+  info.innerHTML=`
+    <div class="tart-label">Fraction</div>
+    <div style="display:flex;align-items:center;gap:.2rem;margin:.2rem 0;">
+      <div class="tart-frac-col" style="color:${color};">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:2rem;">${fr.p}</span>
+        <div style="width:2rem;height:1.5px;background:${color};margin:.05rem 0;"></div>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:2rem;">${fr.q}</span>
+      </div>
+      ${rp!==fr.p?`<span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);margin-left:.5rem;">= ${fs(rp,rq,' f-sm')}</span>`:''}
+    </div>
+    <div class="tart-decimal">${pct}% of the whole</div>
+  `;
+
+  headDiv.appendChild(tartWrap);
+  headDiv.appendChild(info);
+  card.appendChild(headDiv);
+
+  // Greedy decomp
+  const greedyDiv=document.createElement('div');
+  greedyDiv.innerHTML=`
+    <div class="tart-label" style="margin-bottom:.4rem;">Greedy decomposition</div>
+    <div class="unit-strip">
+      ${fr.greedy.map((u,j)=>`<span class="uf-chip" style="color:${COLORS[(i+j)%COLORS.length]};border-color:${COLORS[(i+j)%COLORS.length]}44;"><span>1</span><span>${u}</span></span>${j<fr.greedy.length-1?'<span class="plus-sym">+</span>':''}`).join('')}
+    </div>
+    <div class="uf-bar-track" style="margin-top:.5rem;">
+      ${fr.greedy.map((u,j)=>`<div class="uf-bar-seg" style="width:${100/u/(fr.p/fr.q)*100}%;background:${COLORS[(i+j)%COLORS.length]};opacity:0.7;"></div>`).join('')}
+    </div>
+  `;
+  card.appendChild(greedyDiv);
+
+  // Alt decomp if different
+  if(JSON.stringify(fr.alt2)!==JSON.stringify(fr.greedy)){
+    const altDiv=document.createElement('div');
+    altDiv.innerHTML=`
+      <div class="tart-label" style="margin-bottom:.4rem;color:var(--muted);">Alternative</div>
+      <div class="unit-strip">
+        ${fr.alt2.map((u,j)=>`<span class="uf-chip" style="color:var(--muted);"><span>1</span><span>${u}</span></span>${j<fr.alt2.length-1?'<span class="plus-sym">+</span>':''}`).join('')}
+      </div>
+    `;
+    card.appendChild(altDiv);
+  }
+
+  galleryEl.appendChild(card);
+
+  // Draw after DOM insertion
+  requestAnimationFrame(()=>{
+    drawTart(cv,fr.p,fr.q,color,110,fr.greedy);
+  });
+});
+
+// ── Challenge fractions ──────────────────────────────────────
+const CHALLENGES=[
+  {p:8,q:11,label:'8/11',color:'#c9a84c'},
+  {p:8,q:12,label:'8/12',color:'#4a8fcc'},
+  {p:10,q:17,label:'10/17',color:'#52a870'},
+];
+CHALLENGES.forEach(c=>{
+  c.greedy=egyptGreedy(c.p,c.q);
+  c.val=c.p/c.q;
+});
+// Correct order by value
+const CORRECT_ORDER=[2,0,1]; // 10/17 < 8/12(=2/3) < 8/11
+// 10/17≈0.588, 8/12=0.667, 8/11≈0.727
+
+const chTarts=document.getElementById('ch-tarts');
+CHALLENGES.forEach((c,i)=>{
+  const div=document.createElement('div');
+  div.className='ch-card';
+  div.innerHTML=`
+    <div class="ch-name">${c.label}</div>
+    <canvas id="ch-cv-${i}"></canvas>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:.3rem;">≈ ${(c.val).toFixed(4)}</div>
+  `;
+  chTarts.appendChild(div);
+  requestAnimationFrame(()=>{
+    const cv=document.getElementById(`ch-cv-${i}`);
+    drawTart(cv,c.p,c.q,c.color,120,c.greedy);
+  });
+});
+
+// ── Drag-and-drop ordering ───────────────────────────────────
+const pool=document.getElementById('drag-pool');
+let slotContents=[null,null,null];
+let draggingId=null;
+
+CHALLENGES.forEach((c,i)=>{
+  const tile=document.createElement('div');
+  tile.className='drag-tile';
+  tile.id='tile-'+i;
+  tile.draggable=true;
+  tile.dataset.idx=i;
+  tile.innerHTML=`<span style="font-size:1.5rem;">${c.p}</span><div class="bar"></div><span style="font-size:1.5rem;">${c.q}</span>`;
+  tile.addEventListener('dragstart',e=>{draggingId=i;tile.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+  tile.addEventListener('dragend',()=>tile.classList.remove('dragging'));
+  pool.appendChild(tile);
+});
+
+function onOver(e){e.preventDefault();e.currentTarget.classList.add('hovered');}
+document.querySelectorAll('.order-slot').forEach(sl=>sl.addEventListener('dragleave',()=>sl.classList.remove('hovered')));
+
+function onDrop(e,slotIdx){
+  e.preventDefault();
+  const slot=document.getElementById('slot-'+slotIdx);
+  slot.classList.remove('hovered');
+  if(draggingId===null)return;
+  const tile=document.getElementById('tile-'+draggingId);
+
+  // If slot already has something, return it to pool
+  const prev=slotContents[slotIdx];
+  if(prev!==null){
+    const prevTile=document.getElementById('tile-'+prev);
+    prevTile.classList.remove('placed');
+    pool.appendChild(prevTile);
+  }
+
+  // If this tile was already in a slot, clear that slot
+  slotContents.forEach((v,j)=>{
+    if(v===draggingId){
+      slotContents[j]=null;
+      const s=document.getElementById('slot-'+j);
+      s.innerHTML=`<span class="slot-idx">${j===0?'Smallest':j===2?'Largest':'Middle'}</span><span class="slot-label">drop here</span>`;
+    }
+  });
+
+  slotContents[slotIdx]=draggingId;
+  tile.classList.add('placed');
+  pool.appendChild(tile); // keep in DOM but hidden
+
+  // render in slot
+  const c=CHALLENGES[draggingId];
+  slot.innerHTML=`
+    <span class="slot-idx">${slotIdx===0?'Smallest':slotIdx===2?'Largest':'Middle'}</span>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:${c.color};display:flex;flex-direction:column;align-items:center;line-height:1.05;margin:.15rem 0;">
+      <span>${c.p}</span><div style="width:1.8rem;height:1.2px;background:currentColor;margin:.05rem 0;"></div><span>${c.q}</span>
+    </div>`;
+
+  draggingId=null;
+  updateCheckBtn();
+}
+
+function updateCheckBtn(){
+  const allFilled=slotContents.every(v=>v!==null);
+  document.getElementById('check-btn').disabled=!allFilled;
+}
+
+function checkOrder(){
+  const correct=JSON.stringify(slotContents)===JSON.stringify(CORRECT_ORDER);
+  const vEl=document.getElementById('verdict');
+  if(correct){
+    vEl.className='verdict correct';
+    vEl.textContent='✓ Correct! 10/17 < 8/12 < 8/11. Scroll to §3 to see the unit-fraction reasoning.';
+  } else {
+    vEl.className='verdict wrong';
+    vEl.textContent='Not quite. Check your ordering — can you simplify 8/12 first? That might help place it.';
+  }
+}
+
+// ── Reasoning section ─────────────────────────────────────────
+const reasonSteps=[
+  {k:'Simplify',v:`${fs(8,12,' f-md')} = ${fs(2,3,' f-md f-gold')}`,w:'gcd(8,12) = 4 — divide top and bottom. Now 8/12 is identically 2/3 ≈ 0.667.'},
+  {k:'Greedy 8/11',v:`${fs(8,11,' f-md f-gold')} = ${fs(1,2,' f-md')} + ${fs(5,22,' f-md')} = ${fs(1,2,' f-md')} + ${fs(1,5,' f-md')} + ${fs(1,110,' f-md')}`,w:'First term: 1/2. Second split 5/22 → 1/5 + 1/110. So 8/11 > 1/2 + 1/5 > 1/2 + 1/6 (since 1/5 > 1/6).'},
+  {k:'Greedy 2/3',v:`${fs(2,3,' f-md f-gold')} = ${fs(1,2,' f-md')} + ${fs(1,6,' f-md')}`,w:'First term: 1/2. Second term: 1/6 ≈ 0.167. So 2/3 ≈ 0.5 + 0.167 = 0.667.'},
+  {k:'Greedy 10/17',v:`${fs(10,17,' f-md f-gold')} = ${fs(1,2,' f-md')} + ${fs(3,34,' f-md')} = ${fs(1,2,' f-md')} + ${fs(1,12,' f-md')} + ${fs(1,204,' f-md')}`,w:'First term: 1/2. Second term: 1/12 ≈ 0.083. So 10/17 ≈ 0.5 + 0.083 = 0.583.'},
+  {k:'Compare seconds',v:`${fs(1,5,' f-md')} > ${fs(1,6,' f-md')} > ${fs(1,12,' f-md')}`,w:'All three start with 1/2. So we compare the second terms: 1/5 > 1/6 > 1/12 — bigger denominator = smaller slice. Therefore 8/11 > 2/3 > 10/17.'},
+  {k:'Final order',v:`${fs(10,17,' f-md f-gold')} < ${fs(8,12,' f-md f-gold')} < ${fs(8,11,' f-md f-gold')}`,w:'0.588 < 0.667 < 0.727. The unit-fraction expansions reveal this order without computing decimals — just by comparing denominators.'},
+];
+
+const rsEl=document.getElementById('reason-steps');
+reasonSteps.forEach(s=>{
+  rsEl.innerHTML+=`<div class="rstep"><span class="rk">${s.k}</span><span class="rv">${s.v}</span><span class="rw">${s.w}</span></div>`;
+});
+
+// ── Number line ───────────────────────────────────────────────
+(function buildNLine(){
+  const el=document.getElementById('nline');
+  el.innerHTML=`<div class="nline-axis"></div>`;
+  // Ticks at 0, 1/3, 1/2, 2/3, 1
+  const ticks=[{v:0,l:'0'},{v:1/3,l:'⅓'},{v:1/2,l:'½'},{v:2/3,l:'⅔'},{v:1,l:'1'}];
+  ticks.forEach(t=>{
+    el.innerHTML+=`<div class="nline-tick" style="left:${t.v*100}%;"></div>`;
+    el.innerHTML+=`<div class="nline-label" style="left:${t.v*100}%;">${t.l}</div>`;
+  });
+  CHALLENGES.forEach((c,i)=>{
+    const pct=(c.val*100).toFixed(1);
+    el.innerHTML+=`<div class="nline-marker" style="left:${pct}%;">
+      <div class="dot" style="border-color:${c.color};"></div>
+      <div class="mlbl" style="color:${c.color};font-size:.7rem;">${c.p}/${c.q}</div>
+    </div>`;
+  });
+})();
+
+// ── Hint sequence ─────────────────────────────────────────────
+const hints=[
+  {btn:'Hint 1 — simplify one of them',text:`Can 8/12 be simplified? Find gcd(8,12). What does the fraction become? This places it immediately in the ordering without any other work.`},
+  {btn:'Hint 2 — first unit fraction in each expansion',text:`All three fractions lie between ½ and 1. Their greedy first term is therefore 1/2 in each case. To separate them, look at the <em>second</em> unit fraction in each expansion.`},
+  {btn:'Hint 3 — compute the second term',text:`After subtracting ½: &ensp; 8/11 − ½ = 5/22, so next unit is 1/⌈22/5⌉ = 1/5. &ensp; 2/3 − ½ = 1/6, so next unit is 1/6. &ensp; 10/17 − ½ = 3/34, so next unit is 1/⌈34/3⌉ = 1/12.`},
+  {btn:'Hint 4 — compare the second terms',text:`Second terms: 1/5, 1/6, 1/12. Bigger denominator = smaller fraction. So 1/5 > 1/6 > 1/12. Adding each to the same ½, the ordering of the full fractions follows directly.`},
+];
+const hintEl=document.getElementById('hint-seq');
+hints.forEach((h,i)=>{
+  const div=document.createElement('div');
+  div.innerHTML=`<button class="hint-btn" onclick="openHint(${i})">${h.btn}</button><div class="hint-text" id="hint-${i}">${h.text}</div>`;
+  hintEl.appendChild(div);
+});
+function openHint(i){document.getElementById('hint-'+i).classList.toggle('open');}
+
+// ── Full solution ─────────────────────────────────────────────
+document.getElementById('full-sol-body').innerHTML=`
+<div class="algo-steps">
+  <div class="algo-row"><span class="algo-key">Simplify</span><span class="algo-val">${fs(8,12,' f-md')} = ${fs(2,3,' f-md f-gold')} &ensp;(gcd(8,12)=4)</span></div>
+  <div class="algo-row"><span class="algo-key">8/11 greedy</span><span class="algo-val">${fs(8,11,' f-md')} = ${fs(1,2,' f-sm')} + ${fs(1,5,' f-sm')} + ${fs(1,110,' f-sm')} &ensp;≈ 0.5 + 0.200 + 0.009 = 0.727</span></div>
+  <div class="algo-row"><span class="algo-key">2/3 greedy</span><span class="algo-val">${fs(2,3,' f-md')} = ${fs(1,2,' f-sm')} + ${fs(1,6,' f-sm')} &ensp;= 0.5 + 0.167 = 0.667</span></div>
+  <div class="algo-row"><span class="algo-key">10/17 greedy</span><span class="algo-val">${fs(10,17,' f-md')} = ${fs(1,2,' f-sm')} + ${fs(1,12,' f-sm')} + ${fs(1,204,' f-sm')} &ensp;≈ 0.5 + 0.083 + 0.005 = 0.588</span></div>
+  <div class="algo-row"><span class="algo-key">2nd terms</span><span class="algo-val">${fs(1,5,' f-sm f-gold')} &gt; ${fs(1,6,' f-sm f-gold')} &gt; ${fs(1,12,' f-sm f-gold')} &ensp;→&ensp; 8/11 &gt; 2/3 &gt; 10/17</span></div>
+  <div class="algo-row"><span class="algo-key">Order</span><span class="algo-val" style="color:var(--green);">${fs(10,17,' f-md')} &lt; ${fs(8,12,' f-md')} &lt; ${fs(8,11,' f-md')} &ensp;✓</span></div>
+</div>
+<p style="margin-top:.8rem;font-size:.95rem;color:var(--text-sec);">
+  The key insight: once you spot that all three share the same leading unit fraction (½), the comparison reduces entirely to ranking the second terms — a trivial comparison of unit fractions with different denominators (larger denominator = smaller fraction).
+  The Egyptian decomposition does the same work as computing a common denominator, but exposes the structure more transparently.
+</p>`;
+
+// ── Explorer ──────────────────────────────────────────────────
+const ALL_FRACS=[...FRACTIONS,...CHALLENGES.map(c=>({p:c.p,q:c.q,greedy:c.greedy,alt2:computeAlt(c.p,c.q,c.greedy)}))];
+const exChips=document.getElementById('ex-chips');
+const exDisplay=document.getElementById('ex-display');
+
+ALL_FRACS.forEach((fr,i)=>{
+  const chip=document.createElement('div');
+  chip.className='ex-chip';
+  chip.innerHTML=`<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;"><span style="border-bottom:1px solid currentColor;padding:0 .1em;">${fr.p}</span><span style="padding:0 .1em;">${fr.q}</span></span>`;
+  chip.onclick=()=>{
+    document.querySelectorAll('.ex-chip').forEach(c=>c.classList.remove('sel'));
+    chip.classList.add('sel');
+    renderExplorer(fr,COLORS[i%COLORS.length]);
+  };
+  exChips.appendChild(chip);
+});
+
+function renderExplorer(fr,color){
+  const [rp,rq]=red(fr.p,fr.q);
+  const cv=document.createElement('canvas');
+
+  const stepsHtml=buildGreedySteps(fr.p,fr.q);
+
+  exDisplay.innerHTML=`
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;">
+      <div style="text-align:center;flex-shrink:0;">
+        <div id="ex-cv-wrap"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);margin-top:.4rem;">${(fr.p/fr.q*100).toFixed(2)}% of the whole</div>
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:${color};display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;margin-bottom:.6rem;">
+          ${fr.p !== rp ? `${fs(fr.p,fr.q,' f-lg')} = ${fs(rp,rq,' f-lg')}` : fs(fr.p,fr.q,' f-lg')}
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">Greedy Egyptian decomposition</div>
+        <div class="unit-strip" style="margin-bottom:.8rem;">
+          ${fr.greedy.map((u,j)=>`<span class="uf-chip" style="color:${COLORS[(j)%COLORS.length]};"><span>1</span><span>${u}</span></span>${j<fr.greedy.length-1?'<span class="plus-sym">+</span>':''}`).join('')}
+        </div>
+        ${JSON.stringify(fr.alt2)!==JSON.stringify(fr.greedy)?`
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">Alternative decomposition</div>
+        <div class="unit-strip" style="margin-bottom:.8rem;">
+          ${fr.alt2.map((u,j)=>`<span class="uf-chip" style="color:var(--muted);"><span>1</span><span>${u}</span></span>${j<fr.alt2.length-1?'<span class="plus-sym">+</span>':''}`).join('')}
+        </div>`:''}
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;margin-top:.5rem;">Step-by-step</div>
+        ${stepsHtml}
+      </div>
+    </div>
+  `;
+
+  const wrap=document.getElementById('ex-cv-wrap');
+  wrap.appendChild(cv);
+  requestAnimationFrame(()=>drawTart(cv,fr.p,fr.q,color,150,fr.greedy));
+}
+
+function buildGreedySteps(p,q){
+  let[rp,rq]=red(p,q);let g=0;let html='<div class="algo-steps">';
+  while(rp>0&&g++<10){
+    const u=Math.ceil(rq/rp);
+    const np=rp*u-rq,nq=rq*u;
+    const[rrp,rrq]=red(np,nq);
+    html+=`<div class="algo-row">
+      <span class="algo-key">Step ${g}</span>
+      <span class="algo-val">${fs(rp,rq,' f-sm')} → largest unit fit: ${fs(1,u,' f-sm f-gold')} &ensp;(⌈${rq}/${rp}⌉ = ${u})${np>0?` &ensp; remainder: ${fs(rrp,rrq,' f-sm')}`:' &ensp; ✓ done'}</span>
+    </div>`;
+    if(np<=0)break;
+    [rp,rq]=red(np,nq);
+  }
+  html+='</div>';
+  return html;
+}
+</script>
+</body>
+</html>
