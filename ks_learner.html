@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Kolmogorov–Smirnov Test · A Learner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0d10;
+  --bg-soft: #14161b;
+  --bg-panel: #181a20;
+  --ink: #e6e2d6;
+  --ink-dim: #9a958a;
+  --ink-faint: #5e5a52;
+  --rule: #2a2c33;
+  --gold: #c8a96e;
+  --gold-bright: #dbb955;
+  --crimson: #a85a4a;
+  --teal: #6e9d9d;
+  --indigo: #6979a8;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.65;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+nav.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 3rem 1.5rem 2rem 2rem;
+  border-right: 1px solid var(--rule);
+  overflow-y: auto;
+  background: var(--bg);
+}
+nav .marque {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.02em;
+}
+nav .sub {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  margin-bottom: 2.5rem;
+}
+nav ol {
+  list-style: none;
+  counter-reset: step;
+}
+nav ol li {
+  counter-increment: step;
+  margin-bottom: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+nav ol li a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  display: block;
+  padding-left: 1.8rem;
+  position: relative;
+  border-left: 1px solid transparent;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+nav ol li a::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+nav ol li a:hover { color: var(--ink); }
+nav ol li a.active {
+  color: var(--gold);
+  border-left-color: var(--gold);
+  padding-left: 2rem;
+}
+nav ol li a.active::before { color: var(--gold); }
+
+main {
+  padding: 4rem 4rem 6rem 4rem;
+  max-width: 880px;
+}
+header.top {
+  margin-bottom: 4rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--rule);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 3.4rem;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+}
+h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+.lede {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  max-width: 36em;
+  font-weight: 400;
+}
+section {
+  margin-bottom: 4.5rem;
+  scroll-margin-top: 2rem;
+}
+section h2 {
+  font-family: var(--serif);
+  font-size: 2.1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  letter-spacing: -0.005em;
+  border-top: 1px solid var(--rule);
+  padding-top: 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+section h2 .num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--gold);
+  letter-spacing: 0.18em;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+section h3 {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-top: 2rem;
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+}
+p { margin-bottom: 1.1rem; max-width: 38em; }
+p.wide { max-width: 42em; }
+p strong { color: var(--ink); font-weight: 500; }
+em.term {
+  font-style: italic;
+  color: var(--gold);
+  font-family: var(--serif);
+  font-size: 1.05em;
+}
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  color: var(--gold-bright);
+  background: var(--bg-soft);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+}
+
+/* The lab panel */
+.lab {
+  background: var(--bg-panel);
+  border: 1px solid var(--rule);
+  padding: 2rem;
+  margin: 2rem 0;
+  position: relative;
+}
+.lab::before {
+  content: 'INTERACTIVE';
+  position: absolute;
+  top: -0.55rem;
+  left: 1.5rem;
+  background: var(--bg);
+  padding: 0 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+}
+.lab-title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+.lab-sub {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.2rem 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+}
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.control label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: flex;
+  justify-content: space-between;
+}
+.control label .val {
+  color: var(--gold);
+  font-weight: 500;
+}
+.control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--rule);
+  outline: none;
+  cursor: pointer;
+}
+.control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.control input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+button.action {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 0.55rem 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+button.action:hover {
+  background: var(--gold);
+  color: var(--bg);
+}
+.action-row {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+/* Plot */
+.plot-wrap {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.plot-wrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.plot-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  fill: var(--ink-dim);
+}
+.plot-tick { fill: var(--ink-faint); font-family: var(--mono); font-size: 0.6rem; }
+.axis-line { stroke: var(--rule); stroke-width: 1; }
+.cdf-A { stroke: var(--teal); stroke-width: 1.6; fill: none; }
+.cdf-B { stroke: var(--crimson); stroke-width: 1.6; fill: none; }
+.cdf-theory { stroke: var(--gold); stroke-width: 1.4; fill: none; stroke-dasharray: 4 3; }
+.D-bar { stroke: var(--gold-bright); stroke-width: 2; }
+.D-cap { stroke: var(--gold-bright); stroke-width: 2; }
+
+/* Verdict */
+.verdict {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.verdict .card {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  padding: 1.2rem 1.4rem;
+}
+.verdict .card .name {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.5rem;
+}
+.verdict .card .stat {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+.verdict .card .stat .label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+}
+.verdict .card .reading {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink-dim);
+  font-size: 0.95rem;
+  margin-top: 0.4rem;
+}
+.verdict .card.reject .reading { color: var(--gold-bright); }
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0.8rem 0 0 0;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+  flex-wrap: wrap;
+}
+.legend span::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+.legend .a::before { background: var(--teal); }
+.legend .b::before { background: var(--crimson); }
+.legend .t::before { background: var(--gold); }
+.legend .d::before { background: var(--gold-bright); }
+
+/* Reveal panels */
+.reveal {
+  border: 1px solid var(--rule);
+  margin: 1.5rem 0;
+  background: var(--bg-soft);
+}
+.reveal summary {
+  cursor: pointer;
+  padding: 1rem 1.4rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.reveal summary::-webkit-details-marker { display: none; }
+.reveal summary::after {
+  content: '+';
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  color: var(--gold);
+  transition: transform 0.2s;
+}
+.reveal[open] summary::after { content: '−'; }
+.reveal-body {
+  padding: 0 1.4rem 1.4rem 1.4rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.2rem;
+}
+.reveal-body p:last-child { margin-bottom: 0; }
+
+/* Confusion box */
+.confusion {
+  background: linear-gradient(180deg, rgba(168,90,74,0.08), transparent);
+  border-left: 2px solid var(--crimson);
+  padding: 1.2rem 1.4rem;
+  margin: 1.6rem 0;
+}
+.confusion .head {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  margin-bottom: 0.6rem;
+}
+.confusion p:last-child { margin-bottom: 0; }
+
+/* Question prompt */
+.prompt {
+  background: linear-gradient(180deg, rgba(200,169,110,0.06), transparent);
+  border-left: 2px solid var(--gold);
+  padding: 1.2rem 1.4rem;
+  margin: 1.6rem 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.prompt::before {
+  content: 'Q. ';
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  vertical-align: 0.4em;
+  margin-right: 0.4em;
+}
+
+/* Reference list */
+.refs {
+  list-style: none;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.5rem;
+}
+.refs li {
+  margin-bottom: 1.4rem;
+  padding-left: 2.2rem;
+  position: relative;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
+.refs li::before {
+  content: counter(ref, decimal-leading-zero);
+  counter-increment: ref;
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+.refs { counter-reset: ref; }
+.refs .auth { color: var(--ink); font-weight: 500; }
+.refs .ttl { font-family: var(--serif); font-style: italic; color: var(--ink); }
+.refs a { color: var(--gold); text-decoration: none; border-bottom: 1px dotted var(--gold); }
+.refs a:hover { color: var(--gold-bright); border-bottom-style: solid; }
+.refs .tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border: 1px solid var(--rule);
+  padding: 0.1rem 0.4rem;
+  margin-left: 0.5rem;
+  vertical-align: 0.1em;
+}
+
+footer.stamp {
+  margin-top: 6rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* Equations */
+.eq {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: var(--gold-bright);
+  background: var(--bg-soft);
+  border-left: 2px solid var(--gold);
+  border-right: 2px solid var(--gold);
+}
+.eq sub, .eq sup { font-size: 0.7em; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--rule); padding: 2rem; }
+  nav ol { display: flex; gap: 1rem; flex-wrap: wrap; }
+  main { padding: 2.5rem 1.5rem 4rem 1.5rem; }
+  h1 { font-size: 2.4rem; }
+  .verdict { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="marque">A Statistical Learner</div>
+  <div class="sub">KS · Astrophysical Edition</div>
+  <ol>
+    <li><a href="#intro">Why this test, why astronomy</a></li>
+    <li><a href="#cdf">The CDF, geometrically</a></li>
+    <li><a href="#statistic">The statistic D</a></li>
+    <li><a href="#lab">The two-sample lab</a></li>
+    <li><a href="#parametric">Versus the parametric world</a></li>
+    <li><a href="#caveats">The well-known caveats</a></li>
+    <li><a href="#problems">Two clusters, one question</a></li>
+    <li><a href="#refs">References &amp; further reading</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+<div class="eyebrow">Constructed for the curious — IB level &amp; up</div>
+<h1>The Kolmogorov–Smirnov test, <em>at the eyepiece</em></h1>
+<p class="lede">A non-parametric test in two acts: a maximum vertical gap between curves, and what that gap is allowed to mean. Worked through with two globular clusters in mind.</p>
+</header>
+
+<section id="intro">
+<h2><span class="num">§01</span> Why this test, why astronomy</h2>
+
+<p class="wide">When two physicists compare measurements they often start by comparing means. The mean is a strong summary, but it is a single number standing in for a whole distribution. A KS test refuses that compression: it compares the <em class="term">whole shape</em> of two samples against each other, asking whether they could plausibly have been drawn from the same parent population.</p>
+
+<p class="wide">That property is precious in astronomy. Stellar masses follow a power law (the IMF). Galaxy luminosities follow a Schechter function. Globular cluster luminosities are roughly Gaussian on a log scale. <strong>Almost nothing in the sky is naturally Gaussian on a linear scale</strong>, which means tests that assume Gaussianity are tests against a fiction. The KS test makes no such assumption — it is <em class="term">non-parametric</em> — and so it travels freely between subfields.</p>
+
+<div class="prompt">Before reading on: if two globular clusters have the same mean stellar magnitude but very different spreads, would a t-test notice?</div>
+
+<details class="reveal"><summary>Reveal · the answer</summary>
+<div class="reveal-body">
+<p>No, not directly. A standard t-test asks specifically whether two means differ. Two distributions with identical means but wildly different shapes will pass a t-test untroubled. The KS test, comparing CDFs, sees the difference instantly because the curves diverge in the wings even when they cross at the centre.</p>
+</div>
+</details>
+</section>
+
+<section id="cdf">
+<h2><span class="num">§02</span> The empirical CDF, geometrically</h2>
+
+<p class="wide">Take a sample of measurements — say, the <em>V</em>-band magnitudes of <em>N</em> stars in a cluster. Sort them small to large. The <em class="term">empirical cumulative distribution function</em> is the step function that climbs by 1/<em>N</em> at each measured value. By the time you reach the largest measurement, the function has reached 1.</p>
+
+<p class="wide">This object is the spine of the whole method. It is built directly from the data with no smoothing, no binning, no assumed model. Two samples produce two such staircases, and the KS test simply asks: <strong>at the point where these staircases disagree most, how far apart are they?</strong></p>
+</section>
+
+<section id="statistic">
+<h2><span class="num">§03</span> The statistic D</h2>
+
+<div class="eq">D = sup<sub>x</sub> | F<sub>A</sub>(x) − F<sub>B</sub>(x) |</div>
+
+<p class="wide">The supremum is just "the maximum, taken carefully". Among all real numbers <em>x</em>, find the one where the gap between the two CDFs is widest. That gap is <em>D</em>. Because both curves run from 0 to 1, <em>D</em> itself lives between 0 and 1: a value of 0 means the staircases coincide everywhere; a value near 1 means the samples occupy completely different parts of the line.</p>
+
+<p class="wide">A <em class="term">p-value</em> can be computed from <em>D</em> and the two sample sizes. It answers a single, precise question: <strong>if the two samples really did come from the same parent, how surprising would it be to see a gap this large?</strong> If the answer is "very", we doubt the same-parent hypothesis. The conventional cut is p &lt; 0.05; in astronomy we are usually more demanding.</p>
+
+<div class="confusion">
+<div class="head">Confusion box · what the p-value is not</div>
+<p>The p-value is <strong>not</strong> the probability that the null hypothesis is true. It is the probability of seeing data this extreme <em>given</em> the null. Examiners and reviewers both like to catch this distinction; it is worth memorising the precise wording.</p>
+</div>
+</section>
+
+<section id="lab">
+<h2><span class="num">§04</span> The two-sample lab</h2>
+
+<p class="wide">The setup below simulates two globular clusters' V-band magnitudes. You can shift the two populations apart in mean brightness, change their spreads, and resample. Watch what happens to <em>D</em>, to the p-value, and to the <strong>t-test verdict for comparison</strong>. The two are not always in agreement — that disagreement is the lesson.</p>
+
+<div class="lab">
+  <div class="lab-title">Comparing two simulated clusters</div>
+  <div class="lab-sub">V-band magnitude · Gaussian sources · KS vs t-test</div>
+  
+  <div class="controls">
+    <div class="control">
+      <label>Cluster A · n <span class="val" id="nA-val">200</span></label>
+      <input type="range" id="nA" min="20" max="500" step="10" value="200">
+    </div>
+    <div class="control">
+      <label>Cluster A · mean μ<sub>A</sub> <span class="val" id="muA-val">15.0</span></label>
+      <input type="range" id="muA" min="13" max="17" step="0.05" value="15.0">
+    </div>
+    <div class="control">
+      <label>Cluster A · σ<sub>A</sub> <span class="val" id="sA-val">1.0</span></label>
+      <input type="range" id="sA" min="0.3" max="2.5" step="0.05" value="1.0">
+    </div>
+    <div class="control">
+      <label>Cluster B · n <span class="val" id="nB-val">200</span></label>
+      <input type="range" id="nB" min="20" max="500" step="10" value="200">
+    </div>
+    <div class="control">
+      <label>Cluster B · mean μ<sub>B</sub> <span class="val" id="muB-val">15.3</span></label>
+      <input type="range" id="muB" min="13" max="17" step="0.05" value="15.3">
+    </div>
+    <div class="control">
+      <label>Cluster B · σ<sub>B</sub> <span class="val" id="sB-val">1.2</span></label>
+      <input type="range" id="sB" min="0.3" max="2.5" step="0.05" value="1.2">
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="action" id="resample">↻ Resample</button>
+    <button class="action" id="same-mean">Same mean, different σ</button>
+    <button class="action" id="same-sigma">Same σ, different mean</button>
+    <button class="action" id="identical">Identical populations</button>
+  </div>
+
+  <div class="plot-wrap">
+    <svg id="plot" viewBox="0 0 700 360" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+  <div class="legend">
+    <span class="a">Cluster A — empirical CDF</span>
+    <span class="b">Cluster B — empirical CDF</span>
+    <span class="d">D — the maximum gap</span>
+  </div>
+
+  <div class="verdict">
+    <div class="card" id="ks-card">
+      <div class="name">Kolmogorov–Smirnov</div>
+      <div class="stat">D = <span id="D-val">—</span> <span class="label">/ p = <span id="p-val">—</span></span></div>
+      <div class="reading" id="ks-reading">—</div>
+    </div>
+    <div class="card" id="t-card">
+      <div class="name">Welch's t-test</div>
+      <div class="stat">t = <span id="t-val">—</span> <span class="label">/ p = <span id="tp-val">—</span></span></div>
+      <div class="reading" id="t-reading">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="prompt">Set both means equal at 15.0 but make σ<sub>A</sub> = 0.5 and σ<sub>B</sub> = 2.0. Run the test. Which test correctly reports the populations as different — and which does not?</div>
+
+<details class="reveal"><summary>Reveal · what to expect</summary>
+<div class="reveal-body">
+<p>The t-test will typically return a large p-value: it cannot detect a difference because the means are equal by construction. The KS test will return a small p-value: the CDFs diverge in the tails even though they cross at the centre. This is the canonical example of why "compare the means" is not the same as "compare the populations".</p>
+</div>
+</details>
+</section>
+
+<section id="parametric">
+<h2><span class="num">§05</span> Versus the parametric world</h2>
+
+<p class="wide">Parametric tests — <em class="term">t</em>, <em class="term">z</em>, <em class="term">chi-squared</em>, <em class="term">F</em> — assume a particular distribution (usually Gaussian) and exploit that assumption to extract more information from each data point. When the assumption is correct, they are more <strong>powerful</strong>: they detect real differences with smaller samples.</p>
+
+<p class="wide">When the assumption is wrong, they are not just inefficient; they can be misleading, returning small p-values for the wrong reason. The KS test surrenders some power in exchange for the right to remain silent about the underlying distribution. In a field where you are often unsure of the parent distribution — every astrophysical sample is incomplete in some way — that trade is usually worth it.</p>
+
+<h3>A short comparison</h3>
+<p>For two cluster magnitude samples, in rough order of usefulness:</p>
+
+<details class="reveal"><summary>Welch's t-test</summary>
+<div class="reveal-body">
+<p>Compares means, allowing for unequal variances. Powerful if both samples are approximately Gaussian. Blind to differences in shape, skew, or tails. Useful only when you trust the Gaussian assumption.</p>
+</div>
+</details>
+
+<details class="reveal"><summary>Mann–Whitney U / Wilcoxon rank-sum</summary>
+<div class="reveal-body">
+<p>Non-parametric like KS, but tests whether one distribution is stochastically shifted with respect to the other. More powerful than KS for detecting <em>shifts</em>, less sensitive to differences in <em>shape</em>.</p>
+</div>
+</details>
+
+<details class="reveal"><summary>Anderson–Darling</summary>
+<div class="reveal-body">
+<p>A close relative of KS that weights deviations in the tails more heavily. For astronomical applications — where the tails often carry the rare, interesting populations — Feigelson &amp; Babu explicitly recommend AD over KS. See §06.</p>
+</div>
+</details>
+
+<details class="reveal"><summary>Chi-squared goodness-of-fit</summary>
+<div class="reveal-body">
+<p>Compares <em>binned</em> counts to a model. Sensitive to bin choice, which is a known weakness. Strong when you have a parametric model with definite predictions and many counts per bin.</p>
+</div>
+</details>
+</section>
+
+<section id="caveats">
+<h2><span class="num">§06</span> The well-known caveats</h2>
+
+<p class="wide">The KS test is so easy to apply that it has become, in Feigelson &amp; Babu's phrase, the most over-used statistical test in astronomy. The major caveats — worth knowing even before you run your first one:</p>
+
+<p><strong>1. The KS test is most sensitive at the median, weakest in the tails.</strong> A difference confined to the rarest 5% of objects may not register, even when it is the difference that matters scientifically.</p>
+
+<p><strong>2. The standard p-value is invalid if you estimate the parent distribution from the data.</strong> If you fit a Gaussian to your sample and then KS-test the sample against your fitted Gaussian, the tabulated p-values are wrong (the Lilliefors correction or a bootstrap is required).</p>
+
+<p><strong>3. The two-dimensional KS test is non-trivial.</strong> The version published by Peacock (1983) and refined by Fasano &amp; Franceschini is widely used in astronomy but is not strictly distribution-free; bootstrap calibration is recommended.</p>
+
+<p><strong>4. With very large samples, the KS test will reject almost any pair of populations.</strong> Real-world data are never <em>exactly</em> from the same parent. With <em>N</em> = 10⁶, trivial differences become statistically significant. Always look at <em>D</em> itself, not just the p-value.</p>
+
+<div class="confusion">
+<div class="head">Confusion box · what astronomers actually do now</div>
+<p>For univariate tests, many astronomers have shifted to the <strong>Anderson–Darling test</strong> as a default, with bootstrap calibration if the parent is fitted from the data. The KS test remains useful as a quick visual diagnostic — its statistic <em>D</em> has a transparent geometric meaning the AD statistic does not.</p>
+</div>
+</section>
+
+<section id="problems">
+<h2><span class="num">§07</span> Two clusters, one question</h2>
+
+<p class="wide">A worked situation, in the spirit of an IB Physics extended response. Two globular clusters in the Galactic halo, NGC X and NGC Y, have stellar V-band magnitudes measured from HST photometry. You suspect — from prior metallicity work — that they might belong to the same accreted dwarf galaxy and therefore share a stellar population.</p>
+
+<p><strong>The samples:</strong> NGC X has 320 stars with magnitudes ranging from 14.2 to 18.9. NGC Y has 280 stars with magnitudes ranging from 14.5 to 19.2. The means differ by 0.18 mag, the standard deviations by 0.05 mag.</p>
+
+<div class="prompt">Without running anything: what does the KS test answer that a comparison of means cannot? And what scientific conclusion would you draw if KS returned p = 0.42?</div>
+
+<details class="reveal"><summary>Reveal · the framing of the answer</summary>
+<div class="reveal-body">
+<p>A means-comparison answers only "are the typical brightnesses the same?". The KS test answers "are these two populations consistent with being drawn from the same parent at <em>any</em> magnitude?" — including the bright tail (which would be most informative for the giant branch) and the faint tail (which probes the lower main sequence).</p>
+<p>A KS p-value of 0.42 does <strong>not</strong> prove the populations are the same; it merely fails to reject the same-parent hypothesis. It is consistent with shared origin but does not establish it. The next move is to look at metallicity distributions, kinematics, and ages — which would either reinforce or break the inferred kinship. This is the typical workflow in halo-substructure papers.</p>
+</div>
+</details>
+
+<h3>What you might do in code</h3>
+<p>The Python is brief. Given two arrays <code>magsX</code> and <code>magsY</code>:</p>
+
+<div class="eq" style="font-family: var(--mono); font-style: normal; font-size: 0.85rem; text-align: left; padding: 1.2rem 1.5rem;">
+from scipy import stats<br>
+D, p = stats.ks_2samp(magsX, magsY)<br>
+A2, crit, sig = stats.anderson_ksamp([magsX, magsY])<br>
+print(f"KS: D={D:.3f}, p={p:.4f}")<br>
+print(f"Anderson–Darling: A²={A2:.3f}, p≈{sig:.4f}")
+</div>
+
+<p class="wide">Running both, and reporting both, is good practice. If they agree, your conclusion is robust. If they disagree, that disagreement is itself a finding — typically pointing to a tail-confined difference where AD wins.</p>
+</section>
+
+<section id="refs">
+<h2><span class="num">§08</span> References &amp; further reading</h2>
+
+<p class="wide">Selected entry points, ordered roughly from teaching-friendly to research-level. The asterisks mark where to start.</p>
+
+<ol class="refs">
+<li>★ <span class="auth">Feigelson &amp; Babu</span>. <span class="ttl">"Beware the Kolmogorov–Smirnov test!"</span> Astrostatistics and Astroinformatics Portal, Penn State. <span class="tag">essay</span><br>
+<a href="https://asaip.psu.edu/articles/beware-the-kolmogorov-smirnov-test/" target="_blank">asaip.psu.edu/articles/beware-the-kolmogorov-smirnov-test</a><br>
+<em>The standard short critique. A genuinely accessible read; covers the major caveats in plain English. Read this first.</em></li>
+
+<li>★ <span class="auth">Feigelson &amp; Babu</span> (2012). <span class="ttl">Modern Statistical Methods for Astronomy with R Applications.</span> Cambridge University Press. <span class="tag">textbook</span><br>
+<em>The standard reference text in astrostatistics. The KS material sits in the goodness-of-fit chapter; the chapter on non-parametric methods is a strong primer. Code in R but trivially translated.</em></li>
+
+<li><span class="auth">Babu &amp; Feigelson</span> (2006). <span class="ttl">"Astrostatistics: Goodness-of-Fit and All That!"</span> ASP Conference Series 351. <span class="tag">conference</span><br>
+<em>The technical companion to the "Beware" essay. Includes the bootstrap-correction prescription that has become standard in careful work.</em></li>
+
+<li>★ <span class="auth">Di Cecco et al.</span> (2010). <span class="ttl">"A detailed study of the main sequence of the globular cluster NGC 6397."</span> Astronomy &amp; Astrophysics 512, A48. <span class="tag">globular cluster</span><br>
+<a href="https://www.aanda.org/articles/aa/full_html/2010/03/aa12516-09/aa12516-09.html" target="_blank">aanda.org · 10.1051/0004-6361/200912516</a><br>
+<em>An exemplary use of the KS test on a globular cluster luminosity function. Synthetic populations versus observed; clean and accessible. Excellent worked example.</em></li>
+
+<li><span class="auth">Sanchez Almeida &amp; Asensio Ramos</span> (2010). <span class="ttl">"Properties of stellar generations in globular clusters and relations with global parameters."</span> Astronomy &amp; Astrophysics 519, A85. <span class="tag">globular cluster</span><br>
+<a href="https://www.aanda.org/articles/aa/full_html/2010/08/aa13451-09/aa13451-09.html" target="_blank">aanda.org · luminosity function comparisons</a><br>
+<em>Uses the KS test to compare luminosity functions of inner-halo, outer-halo, and dSph globular clusters. The kind of population-comparison reasoning that maps directly onto the §07 setup above.</em></li>
+
+<li><span class="auth">Sollima &amp; Nipoti</span> (2010). <span class="ttl">"Globular clusters in modified Newtonian dynamics: Palomar 14."</span> arXiv:0911.4485. <span class="tag">globular cluster</span><br>
+<a href="https://arxiv.org/abs/0911.4485" target="_blank">arxiv.org/abs/0911.4485</a><br>
+<em>A nice cautionary case: a KS test applied to only 17 stars in Palomar 14 cannot strongly falsify MOND, despite earlier claims. A teaching gift on sample-size limitations.</em></li>
+
+<li><span class="auth">Metchev &amp; Grindlay</span> (2002). <span class="ttl">"A two-dimensional Kolmogorov–Smirnov test for crowded field source detection: ROSAT sources in NGC 6397."</span> MNRAS 335, 73. <span class="tag">globular cluster · 2D KS</span><br>
+<a href="https://arxiv.org/abs/astro-ph/0204391" target="_blank">arxiv.org/abs/astro-ph/0204391</a><br>
+<em>How the 2D KS test gets used on real X-ray imaging of a globular cluster core. Shows the method beyond textbook examples; introduces the Peacock / Fasano-Franceschini machinery.</em></li>
+
+<li><span class="auth">Tosi et al.</span> (2022). <span class="ttl">"Robust statistical tools for identifying multiple stellar populations in globular clusters: a case study of NGC 2808."</span> arXiv:2110.08269. <span class="tag">globular cluster</span><br>
+<a href="https://arxiv.org/abs/2110.08269" target="_blank">arxiv.org/abs/2110.08269</a><br>
+<em>Modern application: clustering and KS tests applied to the multiple-population problem in NGC 2808. Shows where KS is one tool among several.</em></li>
+
+<li><span class="auth">Harrison, Sutton, Carvalho &amp; Hobson</span> (2015). <span class="ttl">"Validation of Bayesian posterior distributions using a multidimensional Kolmogorov–Smirnov test."</span> MNRAS 451, 2610. <span class="tag">advanced</span><br>
+<a href="https://arxiv.org/abs/1404.7735" target="_blank">arxiv.org/abs/1404.7735</a><br>
+<em>For the keen: extends KS to the multidimensional Bayesian-validation setting. Beyond IB, but a good signpost for where the method is taken in modern cosmology.</em></li>
+
+<li><span class="auth">Press, Teukolsky, Vetterling &amp; Flannery</span>. <span class="ttl">Numerical Recipes (any edition).</span> §14.3.3. <span class="tag">classic</span><br>
+<em>The classic numerical-implementation discussion of KS, including the small-sample p-value formula. Old-fashioned but lucid.</em></li>
+</ol>
+</section>
+
+<footer class="stamp">
+Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+</main>
+</div>
+
+<script>
+// ============================================================================
+// Statistics core
+// ============================================================================
+
+// Box–Muller normal sampler
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function sampleNormal(n, mu, sigma) {
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = mu + sigma * randn();
+  return out;
+}
+
+// Two-sample KS statistic and p-value
+// Reference: standard formula from Numerical Recipes / Press et al.
+function ks2samp(a, b) {
+  const A = [...a].sort((x, y) => x - y);
+  const B = [...b].sort((x, y) => x - y);
+  const nA = A.length, nB = B.length;
+  let i = 0, j = 0, fnA = 0, fnB = 0, D = 0;
+  while (i < nA && j < nB) {
+    const va = A[i], vb = B[j];
+    if (va <= vb) { fnA = (++i) / nA; }
+    if (vb <= va) { fnB = (++j) / nB; }
+    const d = Math.abs(fnA - fnB);
+    if (d > D) D = d;
+  }
+  // Asymptotic p-value (Kolmogorov distribution)
+  const en = Math.sqrt((nA * nB) / (nA + nB));
+  const lambda = (en + 0.12 + 0.11 / en) * D;
+  const p = qks(lambda);
+  return { D, p };
+}
+
+// Q_KS distribution function — series expansion (Numerical Recipes)
+function qks(lam) {
+  if (lam < 0.18) return 1.0;
+  const EPS1 = 1e-6, EPS2 = 1e-16;
+  let a2 = -2 * lam * lam;
+  let fac = 2, sum = 0, prev = 0;
+  for (let j = 1; j <= 100; j++) {
+    const term = fac * Math.exp(a2 * j * j);
+    sum += term;
+    if (Math.abs(term) <= EPS1 * Math.abs(prev) || Math.abs(term) <= EPS2 * sum) return sum;
+    fac = -fac;
+    prev = Math.abs(term);
+  }
+  return 1.0;
+}
+
+// Welch's t-test
+function tTest(a, b) {
+  const nA = a.length, nB = b.length;
+  const mA = a.reduce((s, x) => s + x, 0) / nA;
+  const mB = b.reduce((s, x) => s + x, 0) / nB;
+  const vA = a.reduce((s, x) => s + (x - mA) ** 2, 0) / (nA - 1);
+  const vB = b.reduce((s, x) => s + (x - mB) ** 2, 0) / (nB - 1);
+  const se = Math.sqrt(vA / nA + vB / nB);
+  const t = (mA - mB) / se;
+  // Welch–Satterthwaite degrees of freedom
+  const df = (vA / nA + vB / nB) ** 2 /
+    ((vA / nA) ** 2 / (nA - 1) + (vB / nB) ** 2 / (nB - 1));
+  // Two-tailed p via incomplete beta approximation
+  const p = 2 * (1 - studentCDF(Math.abs(t), df));
+  return { t, p };
+}
+
+// Student's t CDF via incomplete beta function (good enough for teaching)
+function studentCDF(t, df) {
+  const x = df / (df + t * t);
+  const ib = ibeta(df / 2, 0.5, x);
+  return 1 - 0.5 * ib;
+}
+// Regularised incomplete beta — Lentz's method
+function ibeta(a, b, x) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const lbeta = lgamma(a) + lgamma(b) - lgamma(a + b);
+  const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lbeta) / a;
+  return front * betacf(a, b, x);
+}
+function betacf(a, b, x) {
+  const MAX = 200, EPS = 3e-7, FPMIN = 1e-30;
+  let qab = a + b, qap = a + 1, qam = a - 1;
+  let c = 1, d = 1 - qab * x / qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN;
+  d = 1 / d;
+  let h = d;
+  for (let m = 1; m <= MAX; m++) {
+    const m2 = 2 * m;
+    let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; h *= d * c;
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d;
+    const del = d * c; h *= del;
+    if (Math.abs(del - 1) < EPS) break;
+  }
+  return h;
+}
+// log-gamma (Lanczos)
+function lgamma(z) {
+  const g = 7;
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+// ============================================================================
+// Plot rendering
+// ============================================================================
+
+const svg = document.getElementById('plot');
+const W = 700, H = 360;
+const PAD = { l: 50, r: 20, t: 20, b: 40 };
+
+function plotKS(A, B, D, dxLoc) {
+  svg.innerHTML = '';
+  const sortedA = [...A].sort((a, b) => a - b);
+  const sortedB = [...B].sort((a, b) => a - b);
+  const nA = sortedA.length, nB = sortedB.length;
+  const xMin = Math.min(sortedA[0], sortedB[0]);
+  const xMax = Math.max(sortedA[nA - 1], sortedB[nB - 1]);
+  const xPad = (xMax - xMin) * 0.05;
+  const xLo = xMin - xPad, xHi = xMax + xPad;
+
+  const xS = x => PAD.l + (x - xLo) / (xHi - xLo) * (W - PAD.l - PAD.r);
+  const yS = y => H - PAD.b - y * (H - PAD.t - PAD.b);
+
+  // Axes
+  const ax = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  // x-axis
+  const xLine = svgEl('line', { x1: PAD.l, y1: H - PAD.b, x2: W - PAD.r, y2: H - PAD.b, class: 'axis-line' });
+  ax.appendChild(xLine);
+  const yLine = svgEl('line', { x1: PAD.l, y1: PAD.t, x2: PAD.l, y2: H - PAD.b, class: 'axis-line' });
+  ax.appendChild(yLine);
+
+  // y-ticks (0, 0.5, 1)
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+    const y = yS(t);
+    const tick = svgEl('line', { x1: PAD.l - 4, y1: y, x2: PAD.l, y2: y, stroke: '#5e5a52' });
+    ax.appendChild(tick);
+    const lbl = svgEl('text', { x: PAD.l - 8, y: y + 3, 'text-anchor': 'end', class: 'plot-tick' });
+    lbl.textContent = t.toFixed(2);
+    ax.appendChild(lbl);
+  });
+  // x-ticks
+  const xTicks = 6;
+  for (let i = 0; i <= xTicks; i++) {
+    const xv = xLo + (xHi - xLo) * i / xTicks;
+    const x = xS(xv);
+    const tick = svgEl('line', { x1: x, y1: H - PAD.b, x2: x, y2: H - PAD.b + 4, stroke: '#5e5a52' });
+    ax.appendChild(tick);
+    const lbl = svgEl('text', { x: x, y: H - PAD.b + 16, 'text-anchor': 'middle', class: 'plot-tick' });
+    lbl.textContent = xv.toFixed(2);
+    ax.appendChild(lbl);
+  }
+  // Axis titles
+  const xLabel = svgEl('text', { x: (W + PAD.l) / 2, y: H - 8, 'text-anchor': 'middle', class: 'plot-label' });
+  xLabel.textContent = 'V-band magnitude';
+  ax.appendChild(xLabel);
+  const yLabel = svgEl('text', { x: 14, y: (H - PAD.b + PAD.t) / 2, 'text-anchor': 'middle', class: 'plot-label', transform: `rotate(-90 14 ${(H - PAD.b + PAD.t) / 2})` });
+  yLabel.textContent = 'Cumulative fraction F(x)';
+  ax.appendChild(yLabel);
+  svg.appendChild(ax);
+
+  // CDF for A
+  const pathA = buildStepPath(sortedA, xS, yS);
+  svg.appendChild(svgEl('path', { d: pathA, class: 'cdf-A' }));
+  // CDF for B
+  const pathB = buildStepPath(sortedB, xS, yS);
+  svg.appendChild(svgEl('path', { d: pathB, class: 'cdf-B' }));
+
+  // D bar
+  if (dxLoc !== null) {
+    const fa = ecdfAt(sortedA, dxLoc);
+    const fb = ecdfAt(sortedB, dxLoc);
+    const xPx = xS(dxLoc);
+    const yA = yS(fa), yB = yS(fb);
+    svg.appendChild(svgEl('line', { x1: xPx, y1: yA, x2: xPx, y2: yB, class: 'D-bar' }));
+    svg.appendChild(svgEl('line', { x1: xPx - 6, y1: yA, x2: xPx + 6, y2: yA, class: 'D-cap' }));
+    svg.appendChild(svgEl('line', { x1: xPx - 6, y1: yB, x2: xPx + 6, y2: yB, class: 'D-cap' }));
+    // D label
+    const lblY = (yA + yB) / 2;
+    const lbl = svgEl('text', { x: xPx + 10, y: lblY + 4, class: 'plot-label', fill: '#dbb955' });
+    lbl.textContent = `D = ${D.toFixed(3)}`;
+    svg.appendChild(lbl);
+  }
+}
+
+function buildStepPath(sorted, xS, yS) {
+  const n = sorted.length;
+  let d = `M ${xS(sorted[0])} ${yS(0)}`;
+  for (let i = 0; i < n; i++) {
+    const x = xS(sorted[i]);
+    const yPrev = i / n;
+    const yNew = (i + 1) / n;
+    d += ` L ${x} ${yS(yPrev)} L ${x} ${yS(yNew)}`;
+  }
+  d += ` L ${xS(sorted[n - 1] + 0.01)} ${yS(1)}`;
+  return d;
+}
+
+function ecdfAt(sortedArr, x) {
+  let count = 0;
+  for (const v of sortedArr) if (v <= x) count++;
+  return count / sortedArr.length;
+}
+
+function findKSLocation(a, b) {
+  const A = [...a].sort((x, y) => x - y);
+  const B = [...b].sort((x, y) => x - y);
+  const merged = [...new Set([...A, ...B])].sort((x, y) => x - y);
+  let bestX = null, bestD = 0;
+  for (const x of merged) {
+    const fa = ecdfAt(A, x);
+    const fb = ecdfAt(B, x);
+    const d = Math.abs(fa - fb);
+    if (d > bestD) { bestD = d; bestX = x; }
+  }
+  return bestX;
+}
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+// ============================================================================
+// Wiring
+// ============================================================================
+
+const ids = ['nA', 'muA', 'sA', 'nB', 'muB', 'sB'];
+ids.forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    document.getElementById(id + '-val').textContent = el.value;
+    runSim();
+  });
+});
+
+document.getElementById('resample').addEventListener('click', runSim);
+
+document.getElementById('same-mean').addEventListener('click', () => {
+  setVals({ muA: 15.0, muB: 15.0, sA: 0.5, sB: 1.6 });
+  runSim();
+});
+document.getElementById('same-sigma').addEventListener('click', () => {
+  setVals({ muA: 14.7, muB: 15.5, sA: 1.0, sB: 1.0 });
+  runSim();
+});
+document.getElementById('identical').addEventListener('click', () => {
+  setVals({ muA: 15.0, muB: 15.0, sA: 1.0, sB: 1.0 });
+  runSim();
+});
+
+function setVals(obj) {
+  for (const k in obj) {
+    const el = document.getElementById(k);
+    el.value = obj[k];
+    document.getElementById(k + '-val').textContent = obj[k];
+  }
+}
+
+function runSim() {
+  const nA = +document.getElementById('nA').value;
+  const muA = +document.getElementById('muA').value;
+  const sA = +document.getElementById('sA').value;
+  const nB = +document.getElementById('nB').value;
+  const muB = +document.getElementById('muB').value;
+  const sB = +document.getElementById('sB').value;
+
+  const A = sampleNormal(nA, muA, sA);
+  const B = sampleNormal(nB, muB, sB);
+
+  const { D, p } = ks2samp(A, B);
+  const { t, p: tp } = tTest(A, B);
+  const dxLoc = findKSLocation(A, B);
+
+  plotKS(A, B, D, dxLoc);
+
+  document.getElementById('D-val').textContent = D.toFixed(3);
+  document.getElementById('p-val').textContent = formatP(p);
+  document.getElementById('t-val').textContent = t.toFixed(3);
+  document.getElementById('tp-val').textContent = formatP(tp);
+
+  const ksCard = document.getElementById('ks-card');
+  const tCard = document.getElementById('t-card');
+  ksCard.classList.toggle('reject', p < 0.05);
+  tCard.classList.toggle('reject', tp < 0.05);
+
+  document.getElementById('ks-reading').textContent = readingKS(p);
+  document.getElementById('t-reading').textContent = readingT(tp);
+}
+
+function formatP(p) {
+  if (p < 1e-6) return '< 10⁻⁶';
+  if (p < 0.0001) return p.toExponential(2);
+  return p.toFixed(4);
+}
+
+function readingKS(p) {
+  if (p < 0.001) return 'Strong evidence the populations differ.';
+  if (p < 0.01) return 'Clear evidence of a difference.';
+  if (p < 0.05) return 'Conventional rejection of the same-parent hypothesis.';
+  if (p < 0.20) return 'Suggestive but not significant.';
+  return 'Consistent with a shared parent population.';
+}
+function readingT(p) {
+  if (p < 0.001) return 'The means differ strongly.';
+  if (p < 0.01) return 'Clear difference in means.';
+  if (p < 0.05) return 'Means differ at the 5% level.';
+  if (p < 0.20) return 'Means broadly similar.';
+  return 'No detectable difference in means.';
+}
+
+// Sidebar scroll-spy
+const sections = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('nav ol li a')];
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+
+// First run
+runSim();
+</script>
+
+</body>
+</html>
