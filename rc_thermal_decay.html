@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RC Thermal Decay · Temperature & Time Constant</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --bg2: #13141a;
+    --bg3: #1a1b22;
+    --border: #2a2b35;
+    --gold: #c8a96e;
+    --gold-bright: #dbb955;
+    --gold-dim: #8a7248;
+    --text: #d4cfc8;
+    --text-dim: #7a7570;
+    --text-faint: #3a3832;
+    --red: #c0524a;
+    --blue: #4a88c0;
+    --green: #5a9e6a;
+    --orange: #c07840;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(12,13,16,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    display: flex; gap: 0; overflow-x: auto;
+  }
+  nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    transition: color 0.2s, background 0.2s;
+  }
+  nav a:hover, nav a.active { color: var(--gold); background: rgba(200,169,110,0.06); }
+
+  /* ── LAYOUT ── */
+  main { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+
+  section { padding: 64px 0 0; }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin: 24px 0 10px;
+  }
+  p { margin-bottom: 14px; color: var(--text); }
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--gold-bright);
+  }
+
+  /* ── EQUATION BLOCK ── */
+  .eq {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--gold-bright);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── RULE / DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── HYPOTHESIS BOX ── */
+  .hypothesis {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .hypothesis-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 10px;
+  }
+  .hypothesis p { margin-bottom: 0; }
+
+  /* ── REVEAL ── */
+  .reveal-btn {
+    display: inline-block;
+    margin: 10px 0;
+    background: none;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { background: rgba(200,169,110,0.1); border-color: var(--gold); }
+  .reveal-content {
+    display: none;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    margin-top: 8px;
+  }
+  .reveal-content.open { display: block; }
+  .reveal-content p { margin-bottom: 8px; }
+  .reveal-content p:last-child { margin-bottom: 0; }
+
+  /* ── CONFUSION BOX ── */
+  .confusion {
+    background: rgba(192,82,74,0.07);
+    border: 1px solid rgba(192,82,74,0.3);
+    border-left: 3px solid var(--red);
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .confusion-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .confusion p { margin-bottom: 0; color: var(--text); }
+
+  /* ── CANVAS SECTION ── */
+  .sim-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin: 24px 0;
+  }
+  .sim-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .sim-controls { grid-template-columns: 1fr; } }
+
+  .ctrl-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .ctrl-group input[type=range] {
+    width: 100%;
+    accent-color: var(--gold);
+  }
+  .ctrl-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gold-bright);
+    margin-top: 4px;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 280px;
+    background: #080909;
+    border: 1px solid var(--border);
+  }
+
+  .tau-readout {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .tau-item { display: flex; flex-direction: column; gap: 2px; }
+  .tau-item span:first-child { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+  .tau-cold { color: var(--blue); }
+  .tau-hot  { color: var(--red); }
+
+  /* ── COMPONENT COMPARISON ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .comp-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+  .comp-card.best { border-top: 2px solid var(--green); }
+  .comp-card.worse { border-top: 2px solid var(--red); }
+  .comp-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .comp-card ul { padding-left: 18px; }
+  .comp-card li { margin-bottom: 6px; font-size: 14px; color: var(--text-dim); }
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    margin-bottom: 12px;
+  }
+  .badge.good { background: rgba(90,158,106,0.15); color: var(--green); border: 1px solid rgba(90,158,106,0.3); }
+  .badge.bad  { background: rgba(192,82,74,0.12); color: var(--red); border: 1px solid rgba(192,82,74,0.3); }
+
+  /* ── THERMISTOR SECTION ── */
+  .contrast-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  @media (max-width: 580px) { .contrast-box { grid-template-columns: 1fr; } }
+  .contrast-cell {
+    background: var(--bg2);
+    padding: 20px;
+  }
+  .contrast-cell h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .contrast-cell.metal h4 { color: var(--blue); }
+  .contrast-cell.ntc h4 { color: var(--red); }
+  .contrast-cell p { font-size: 14px; margin-bottom: 6px; }
+
+  /* ── CIRCUIT DIAGRAM ── */
+  .circuit-svg-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
+    padding: 24px 0;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  footer span { color: var(--gold-dim); }
+</style>
+</head>
+<body>
+
+<nav id="top-nav">
+  <a href="#governing" class="active">Governing Equation</a>
+  <a href="#temperature">Temperature Effects</a>
+  <a href="#simulation">Simulation</a>
+  <a href="#thermistor">Thermistor Extension</a>
+  <a href="#setup">Practical Setup</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section id="governing">
+    <h1>RC Thermal Decay</h1>
+    <p class="subtitle">Temperature · Resistance · Time Constant</p>
+
+    <p>The discharge of a capacitor through a resistor follows an exponential decay. The <em>time constant</em> &tau; = RC controls how quickly that decay occurs. Any thermal effect must act through R or C.</p>
+
+    <div class="eq">V(t) = V&#8320; · e<sup>−t/(RC)</sup> &nbsp;≡&nbsp; V&#8320; · e<sup>−t/τ</sup></div>
+
+    <div class="hypothesis">
+      <div class="hypothesis-label">Hypothesis · Before you continue</div>
+      <p>If you heat the resistor in an RC circuit, does the discharge curve become <strong>faster</strong> or <strong>slower</strong>? Commit to an answer, then work through the section below.</p>
+    </div>
+
+    <p>Rewrite as a pure exponential:</p>
+    <div class="eq">y = A · e<sup>−kt</sup> &nbsp;&nbsp; where &nbsp; k = 1/τ = 1/(RC)</div>
+    <p>Increasing &tau; <em>decreases</em> k, which <em>flattens</em> the curve. The key question is: does heating <em>increase</em> &tau; or <em>decrease</em> it?</p>
+  </section>
+
+  <hr>
+
+  <!-- TEMPERATURE EFFECTS -->
+  <section id="temperature">
+    <h2>What Changes with Temperature?</h2>
+
+    <h3>Resistance — the dominant effect</h3>
+    <p>For a typical metal resistor, resistance increases linearly with temperature:</p>
+    <div class="eq">R(T) = R&#8320;(1 + α·ΔT)</div>
+    <p>where α ≈ 0.003–0.005 K⁻¹ for common metals (copper, nichrome). Heating the resistor raises R, which raises τ = RC, which <em>slows the decay</em>.</p>
+
+    <div class="compare-grid">
+      <div class="comp-card best">
+        <div class="badge good">Heat this</div>
+        <h4>Resistor</h4>
+        <ul>
+          <li>α well-defined, positive, stable</li>
+          <li>Effect: R↑ → τ↑ → slower decay</li>
+          <li>Predictable, interpretable</li>
+          <li>Explained by lattice vibrations → scattering</li>
+        </ul>
+      </div>
+      <div class="comp-card worse">
+        <div class="badge bad">Avoid</div>
+        <h4>Capacitor</h4>
+        <ul>
+          <li>Ceramic: small, nonlinear, class-dependent</li>
+          <li>Electrolytic: large drift, unstable</li>
+          <li>Dielectric class matters (X7R vs Y5V)</li>
+          <li>Difficult to interpret at school level</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="confusion">
+      <div class="confusion-label">Common confusion</div>
+      <p>"Surely the capacitor temperature coefficient is measurable?" — In principle yes, but at school level the noise, drift, and class-dependence of real capacitors make it unreliable. The resistor gives a clean, reproducible signal.</p>
+    </div>
+
+    <button class="reveal-btn" onclick="toggleReveal(this)">Reveal: why does resistance increase?</button>
+    <div class="reveal-content">
+      <p>In a metal, electrons carry current through a lattice of positive ions. At higher temperatures, those ions vibrate more vigorously. This increases the rate at which conducting electrons scatter off the lattice — effectively making it harder for electrons to flow.</p>
+      <p>Result: higher temperature → more scattering → higher resistivity → higher resistance.</p>
+      <p>This is the Drude model mechanism, valid for most pure metals and alloy resistors.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SIMULATION -->
+  <section id="simulation">
+    <h2>Interactive Simulation</h2>
+    <p>Use the sliders to see how changing temperature (and hence R) shifts the decay curve. The <span style="color:var(--blue)">blue curve</span> is the cold reference; the <span style="color:var(--red)">red curve</span> is the heated circuit.</p>
+
+    <div class="sim-wrap">
+      <div class="sim-controls">
+        <div class="ctrl-group">
+          <label>R&#8320; — base resistance</label>
+          <input type="range" id="sl-R" min="1000" max="50000" step="500" value="10000">
+          <div class="ctrl-val" id="val-R">10 kΩ</div>
+        </div>
+        <div class="ctrl-group">
+          <label>C — capacitance</label>
+          <input type="range" id="sl-C" min="10" max="500" step="10" value="100">
+          <div class="ctrl-val" id="val-C">100 µF</div>
+        </div>
+        <div class="ctrl-group">
+          <label>ΔT — temperature rise (K)</label>
+          <input type="range" id="sl-dT" min="0" max="80" step="1" value="30">
+          <div class="ctrl-val" id="val-dT">30 K</div>
+        </div>
+        <div class="ctrl-group">
+          <label>α — temperature coefficient (×10⁻³ K⁻¹)</label>
+          <input type="range" id="sl-alpha" min="1" max="8" step="0.5" value="3.9">
+          <div class="ctrl-val" id="val-alpha">3.9 × 10⁻³ K⁻¹</div>
+        </div>
+      </div>
+
+      <canvas id="rc-canvas"></canvas>
+
+      <div class="tau-readout">
+        <div class="tau-item">
+          <span>τ cold</span>
+          <span class="tau-cold" id="tau-cold">—</span>
+        </div>
+        <div class="tau-item">
+          <span>τ hot</span>
+          <span class="tau-hot" id="tau-hot">—</span>
+        </div>
+        <div class="tau-item">
+          <span>Δτ / τ cold</span>
+          <span class="mono" id="tau-delta">—</span>
+        </div>
+        <div class="tau-item">
+          <span>R hot</span>
+          <span class="mono" id="r-hot">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hypothesis">
+      <div class="hypothesis-label">Reading the graph</div>
+      <p>At t = τ, the voltage has fallen to V&#8320; / e ≈ 36.8% of its initial value. Notice how the heated curve crosses this threshold later — the circuit takes longer to discharge when R is larger.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- THERMISTOR -->
+  <section id="thermistor">
+    <h2>Extension: the NTC Thermistor</h2>
+    <p>A Negative Temperature Coefficient (NTC) thermistor behaves <em>oppositely</em> to a metal resistor: heating <em>reduces</em> resistance. This gives a striking contrast for discussion.</p>
+
+    <div class="contrast-box">
+      <div class="contrast-cell metal">
+        <h4>Metal resistor</h4>
+        <p>Heating → R↑ → τ↑</p>
+        <p>Decay becomes <strong>slower</strong></p>
+        <p>Lattice vibration scattering</p>
+      </div>
+      <div class="contrast-cell ntc">
+        <h4>NTC thermistor</h4>
+        <p>Heating → R↓ → τ↓</p>
+        <p>Decay becomes <strong>faster</strong></p>
+        <p>Thermally activated charge carriers</p>
+      </div>
+    </div>
+
+    <p>The NTC thermistor follows approximately:</p>
+    <div class="eq">R(T) = R&#8320; · exp[B(1/T − 1/T&#8320;)]</div>
+    <p>where B ≈ 3000–5000 K is the material constant. The exponential sensitivity makes the effect dramatically visible with even modest heating — a good choice if you want a large, reversible effect.</p>
+
+    <button class="reveal-btn" onclick="toggleReveal(this)">Reveal: why does NTC resistance fall?</button>
+    <div class="reveal-content">
+      <p>In a semiconductor (which is what most NTC thermistors are), charge carriers (electrons and holes) are thermally promoted across a band gap. More thermal energy → more carriers promoted → higher conductivity → lower resistance.</p>
+      <p>This is the opposite of metals, where the number of carriers is fixed but scattering increases. Thermistors are dominated by carrier generation; metals by carrier scattering.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PRACTICAL SETUP -->
+  <section id="setup">
+    <h2>Practical Classroom Setup</h2>
+
+    <div class="circuit-svg-wrap">
+      <svg viewBox="0 0 520 160" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:'IBM Plex Mono',monospace;">
+        <!-- Supply -->
+        <rect x="20" y="50" width="36" height="60" rx="3" fill="none" stroke="#c8a96e" stroke-width="1.5"/>
+        <text x="38" y="85" text-anchor="middle" fill="#c8a96e" font-size="9">V₀</text>
+        <!-- top wire left -->
+        <line x1="56" y1="60" x2="120" y2="60" stroke="#5a9e6a" stroke-width="1.5"/>
+        <!-- switch -->
+        <circle cx="120" cy="60" r="3" fill="#5a9e6a"/>
+        <line x1="120" y1="60" x2="145" y2="48" stroke="#5a9e6a" stroke-width="1.5"/>
+        <circle cx="148" cy="60" r="3" fill="#5a9e6a"/>
+        <text x="133" y="44" text-anchor="middle" fill="#5a9e6a" font-size="9">SW</text>
+        <!-- wire to R -->
+        <line x1="148" y1="60" x2="200" y2="60" stroke="#d4cfc8" stroke-width="1.5"/>
+        <!-- Resistor -->
+        <rect x="200" y="48" width="80" height="24" rx="4" fill="none" stroke="#4a88c0" stroke-width="1.5"/>
+        <text x="240" y="64" text-anchor="middle" fill="#4a88c0" font-size="10">R (heat me)</text>
+        <!-- wire R to C -->
+        <line x1="280" y1="60" x2="340" y2="60" stroke="#d4cfc8" stroke-width="1.5"/>
+        <!-- Capacitor -->
+        <line x1="340" y1="42" x2="340" y2="78" stroke="#c07840" stroke-width="2"/>
+        <line x1="352" y1="42" x2="352" y2="78" stroke="#c07840" stroke-width="2"/>
+        <text x="346" y="95" text-anchor="middle" fill="#c07840" font-size="10">C</text>
+        <!-- wire C to voltmeter -->
+        <line x1="352" y1="60" x2="420" y2="60" stroke="#d4cfc8" stroke-width="1.5"/>
+        <!-- Voltmeter -->
+        <circle cx="450" cy="80" r="22" fill="none" stroke="#c8a96e" stroke-width="1.5"/>
+        <text x="450" y="84" text-anchor="middle" fill="#c8a96e" font-size="11">V</text>
+        <line x1="420" y1="60" x2="428" y2="60" stroke="#d4cfc8" stroke-width="1"/>
+        <line x1="428" y1="60" x2="428" y2="80" stroke="#d4cfc8" stroke-width="1"/>
+        <line x1="428" y1="80" x2="428" y2="80" stroke="#d4cfc8" stroke-width="1"/>
+        <!-- bottom wire -->
+        <line x1="20" y1="110" x2="472" y2="110" stroke="#d4cfc8" stroke-width="1.5"/>
+        <line x1="346" y1="110" x2="346" y2="78" stroke="#c07840" stroke-width="1.5"/>
+        <line x1="472" y1="110" x2="472" y2="80" stroke="#d4cfc8" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <h3>Components</h3>
+    <p>Fixed resistor 10–50 kΩ (or NTC thermistor for exaggerated effect) · Capacitor ~100 µF electrolytic · DC supply 6–9 V · Switch · Voltmeter / data logger / oscilloscope</p>
+
+    <h3>Heating methods</h3>
+    <p>Hairdryer at controlled distance &middot; Warm water bath (if resistor is insulated) &middot; Hand warmth (small effect, good for demo) &middot; NOT an open flame.</p>
+
+    <h3>What students should compare</h3>
+    <p>Record two discharge curves: once with the resistor at room temperature, once after heating. Plot V(t) for both. Fit to extract τ. Confirm τ<sub>hot</sub> &gt; τ<sub>cold</sub> for a metal resistor.</p>
+
+    <div class="confusion">
+      <div class="confusion-label">Examiner trap</div>
+      <p>"The capacitor discharges faster when hot." — Only if you have replaced R with an NTC thermistor. For a metal resistor the opposite is true. Know which component you heated and which model applies.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · <span>LeeMcCullochJames</span>
+</footer>
+
+<script>
+// ── NAV HIGHLIGHT ──
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`nav a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// ── REVEAL PANELS ──
+function toggleReveal(btn) {
+  const panel = btn.nextElementSibling;
+  panel.classList.toggle('open');
+  btn.textContent = panel.classList.contains('open')
+    ? btn.textContent.replace('Reveal:', 'Hide:')
+    : btn.textContent.replace('Hide:', 'Reveal:');
+}
+
+// ── SIMULATION ──
+const canvas = document.getElementById('rc-canvas');
+const ctx = canvas.getContext('2d');
+
+function fmt(v) {
+  if (v >= 1000) return (v/1000).toFixed(2) + ' s';
+  return v.toFixed(0) + ' ms';
+}
+
+function draw() {
+  const R0    = +document.getElementById('sl-R').value;
+  const C_uF  = +document.getElementById('sl-C').value;
+  const dT    = +document.getElementById('sl-dT').value;
+  const alpha = +document.getElementById('sl-alpha').value * 1e-3;
+
+  const C = C_uF * 1e-6;
+  const R_hot = R0 * (1 + alpha * dT);
+  const tau_cold = R0 * C;
+  const tau_hot  = R_hot * C;
+
+  document.getElementById('val-R').textContent = (R0/1000).toFixed(1) + ' kΩ';
+  document.getElementById('val-C').textContent = C_uF + ' µF';
+  document.getElementById('val-dT').textContent = dT + ' K';
+  document.getElementById('val-alpha').textContent = (alpha*1e3).toFixed(1) + ' × 10⁻³ K⁻¹';
+
+  document.getElementById('tau-cold').textContent = fmt(tau_cold * 1000);
+  document.getElementById('tau-hot').textContent  = fmt(tau_hot  * 1000);
+  document.getElementById('tau-delta').textContent = ((tau_hot - tau_cold)/tau_cold * 100).toFixed(1) + '%';
+  document.getElementById('r-hot').textContent = (R_hot/1000).toFixed(2) + ' kΩ';
+
+  // Canvas sizing
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const pad = { top: 20, right: 20, bottom: 36, left: 50 };
+  const pw = W - pad.left - pad.right;
+  const ph = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#1e2028';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + ph * i / 5;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + pw, y); ctx.stroke();
+  }
+  for (let i = 0; i <= 5; i++) {
+    const x = pad.left + pw * i / 5;
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ph); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#4a4a54';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const frac = 1 - i/5;
+    const y = pad.top + ph * i / 5;
+    ctx.fillText((frac * 100).toFixed(0) + '%', pad.left - 6, y + 4);
+  }
+
+  // x-axis: show up to 3x tau_hot
+  const tMax = tau_hot * 3.5;
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= 5; i++) {
+    const t = tMax * i / 5;
+    const x = pad.left + pw * i / 5;
+    ctx.fillText(fmt(t * 1000), x, pad.top + ph + 16);
+  }
+
+  // tau vertical lines
+  function drawTauLine(tau, col) {
+    const x = pad.left + pw * (tau / tMax);
+    if (x > pad.left && x < pad.left + pw) {
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = col + '55';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ph); ctx.stroke();
+      ctx.setLineDash([]);
+      // 1/e marker
+      const yMark = pad.top + ph * (1 - 1/Math.E);
+      ctx.fillStyle = col + '99';
+      ctx.font = '9px IBM Plex Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('τ', x + 3, yMark - 3);
+    }
+  }
+  drawTauLine(tau_cold, '#4a88c0');
+  drawTauLine(tau_hot,  '#c0524a');
+
+  // 1/e horizontal line
+  ctx.setLineDash([2, 5]);
+  ctx.strokeStyle = '#2a2b35';
+  ctx.lineWidth = 1;
+  const ye = pad.top + ph * (1 - 1/Math.E);
+  ctx.beginPath(); ctx.moveTo(pad.left, ye); ctx.lineTo(pad.left + pw, ye); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#3a3a44';
+  ctx.font = '9px IBM Plex Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('36.8%', pad.left + 4, ye - 3);
+
+  // Curves
+  function plotCurve(tau, col) {
+    ctx.beginPath();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2;
+    for (let px = 0; px <= pw; px++) {
+      const t = tMax * px / pw;
+      const v = Math.exp(-t / tau);
+      const x = pad.left + px;
+      const y = pad.top + ph * (1 - v);
+      px === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  plotCurve(tau_cold, '#4a88c0');
+  plotCurve(tau_hot,  '#c0524a');
+
+  // Legend
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'left';
+  [[tau_cold, '#4a88c0', 'Cold'], [tau_hot, '#c0524a', 'Hot']].forEach(([tau, col, label], i) => {
+    const lx = pad.left + 10;
+    const ly = pad.top + 14 + i * 16;
+    ctx.fillStyle = col;
+    ctx.fillRect(lx, ly - 7, 18, 2);
+    ctx.fillStyle = col + 'cc';
+    ctx.fillText(label, lx + 24, ly);
+  });
+}
+
+['sl-R','sl-C','sl-dT','sl-alpha'].forEach(id => {
+  document.getElementById(id).addEventListener('input', draw);
+});
+window.addEventListener('resize', draw);
+draw();
+</script>
+</body>
+</html>
