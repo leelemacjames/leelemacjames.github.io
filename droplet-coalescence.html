@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Droplet Coalescence · Seeded Accretion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d10;
+    --bg2: #111318;
+    --bg3: #161920;
+    --gold: #c8a96e;
+    --gold-bright: #dbb955;
+    --gold-dim: #8a7040;
+    --text: #cdd0d8;
+    --text-dim: #7a7f8e;
+    --accent: #4a9eff;
+    --border: #252830;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(12,13,16,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 52px;
+  }
+  .nav-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.8rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    padding: 3.5rem 2rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: #e8eaf0;
+    margin-bottom: 1rem;
+  }
+  h1 em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  /* LAYOUT */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* CANVAS PANEL */
+  .canvas-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .canvas-header {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .canvas-header-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .status-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(200,169,110,0.1);
+    color: var(--gold);
+    border: 1px solid rgba(200,169,110,0.2);
+    letter-spacing: 0.05em;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    cursor: crosshair;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .control-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.1rem;
+  }
+  .control-card h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .slider-row {
+    margin-bottom: 0.9rem;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+  }
+  .slider-label span:first-child {
+    font-size: 0.75rem;
+    color: var(--text);
+  }
+  .slider-label span:last-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--gold);
+  }
+  input[type=range] {
+    width: 100%;
+    appearance: none;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .btn-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+  }
+  .btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .btn.primary {
+    background: rgba(200,169,110,0.12);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+  .btn.primary:hover { background: rgba(200,169,110,0.22); }
+  .btn.danger { color: #e07070; border-color: #4a2020; }
+  .btn.danger:hover { background: rgba(224,112,112,0.1); border-color: #e07070; }
+
+  /* STATS */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .stat-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.5rem 0.7rem;
+  }
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--gold-bright);
+  }
+
+  /* PHYSICS PANEL */
+  .physics-panel {
+    grid-column: 1 / -1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.4rem;
+  }
+  .physics-panel h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .physics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .physics-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1rem;
+  }
+  .physics-card h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .physics-card p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .physics-card .formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    background: rgba(200,169,110,0.07);
+    border-radius: 2px;
+    border-left: 2px solid var(--gold-dim);
+  }
+
+  /* REVEAL */
+  .reveal-btn {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.6rem 1rem;
+    color: var(--gold-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .reveal-content {
+    display: none;
+    padding: 0.8rem 0 0.2rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .reveal-content.open { display: block; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  footer span { color: var(--gold-dim); }
+
+  @media (max-width: 680px) {
+    .main { grid-template-columns: 1fr; }
+    .physics-grid { grid-template-columns: 1fr; }
+    .controls { flex-direction: row; flex-wrap: wrap; }
+    .control-card { flex: 1; min-width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">Droplet Coalescence</span>
+  <ul class="nav-links">
+    <li><a href="#sim" class="active">Simulation</a></li>
+    <li><a href="#physics">Physics</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <p class="hero-label">Seeded Accretion · Condensation Physics</p>
+  <h1>Water Droplets<br>on <em>Cold Glass</em></h1>
+  <p class="hero-sub">
+    A falling droplet sweeps through pinned condensate, absorbing smaller droplets, growing heavier, accelerating. Surface tension holds small droplets fixed; gravity wins once a critical radius is reached. Click to seed a falling droplet.
+  </p>
+</header>
+
+<div class="main" id="sim">
+
+  <div class="canvas-panel">
+    <div class="canvas-header">
+      <span class="canvas-header-title">Glass Surface · 2D Projection</span>
+      <span class="status-pill" id="status-pill">idle</span>
+    </div>
+    <canvas id="canvas" width="580" height="520"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="control-card">
+      <h3>Simulation</h3>
+      <div class="btn-row">
+        <button class="btn primary" onclick="toggleRun()">▶ Run</button>
+        <button class="btn" onclick="resetSim()">Reset</button>
+      </div>
+      <br>
+      <div class="btn-row">
+        <button class="btn" onclick="seedDroplet()">Drop Seed</button>
+        <button class="btn danger" onclick="clearDroplets()">Clear All</button>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <h3>Parameters</h3>
+      <div class="slider-row">
+        <div class="slider-label"><span>Gravity</span><span id="grav-val">1.0</span></div>
+        <input type="range" id="grav" min="0.2" max="3.0" step="0.1" value="1.0" oninput="updateParam('grav')">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Surface tension</span><span id="surf-val">0.6</span></div>
+        <input type="range" id="surf" min="0.1" max="1.0" step="0.05" value="0.6" oninput="updateParam('surf')">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Condensate density</span><span id="dens-val">120</span></div>
+        <input type="range" id="dens" min="20" max="300" step="10" value="120" oninput="updateParam('dens')">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Seed radius</span><span id="seed-val">10</span></div>
+        <input type="range" id="seed" min="5" max="25" step="1" value="10" oninput="updateParam('seed')">
+      </div>
+    </div>
+
+    <div class="control-card">
+      <h3>Live Stats</h3>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-label">Fallers</div>
+          <div class="stat-value" id="stat-fallers">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Pinned</div>
+          <div class="stat-value" id="stat-pinned">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Merges</div>
+          <div class="stat-value" id="stat-merges">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Max r</div>
+          <div class="stat-value" id="stat-maxr">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <h3>Insight</h3>
+      <button class="reveal-btn" onclick="toggleReveal(this)">
+        <span>Why do large droplets win?</span><span>+</span>
+      </button>
+      <div class="reveal-content">
+        Gravity force scales as r³ (volume), surface tension pinning as r (contact line). So the ratio gravity/pinning grows as r². Above a critical radius the droplet unpins and slides, sweeping up smaller neighbours.
+      </div>
+      <br>
+      <button class="reveal-btn" onclick="toggleReveal(this)">
+        <span>What is the critical radius?</span><span>+</span>
+      </button>
+      <div class="reveal-content">
+        Roughly where mg sin&theta; &gt; 2&gamma;(cos&theta;<sub>R</sub> &minus; cos&theta;<sub>A</sub>)w, where &gamma; is surface tension, &theta;<sub>A</sub>, &theta;<sub>R</sub> are advancing/receding contact angles, and w is droplet width. In this model, r<sub>crit</sub> = surf &times; 15px.
+      </div>
+    </div>
+  </div>
+
+  <div class="physics-panel" id="physics">
+    <h2>The Competing Forces</h2>
+    <div class="physics-grid">
+      <div class="physics-card">
+        <h4>Gravity</h4>
+        <p>Acts on the droplet's volume. A larger droplet feels proportionally more gravitational pull, driving it downward against the glass surface.</p>
+        <div class="formula">F<sub>g</sub> = &rho;g · (4/3)&pi;r³ sin&theta;</div>
+      </div>
+      <div class="physics-card">
+        <h4>Surface Tension Pinning</h4>
+        <p>Microscopic defects and contact angle hysteresis pin small droplets. The resisting force scales with the contact line length, not volume.</p>
+        <div class="formula">F<sub>pin</sub> ~ 2&gamma;w(cos&theta;<sub>R</sub> &minus; cos&theta;<sub>A</sub>)</div>
+      </div>
+      <div class="physics-card">
+        <h4>Coalescence</h4>
+        <p>When a sliding droplet overlaps a pinned one, they merge. Volume (hence r³) is conserved. The merged droplet continues, now larger and faster.</p>
+        <div class="formula">r<sub>new</sub> = (r<sub>1</sub>³ + r<sub>2</sub>³)<sup>1/3</sup></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Constructed by Silicon · Anthropic Claude</span> &mdash; Architect Carbon · LeeMcCullochJames
+</footer>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Simulation state
+let running = false;
+let animId = null;
+let mergeCount = 0;
+
+let params = {
+  gravity: 1.0,
+  surface: 0.6,
+  density: 120,
+  seedRadius: 10
+};
+
+let pinnedDroplets = [];   // { x, y, r }
+let fallingDroplets = [];  // { x, y, r, vy, trail: [] }
+
+const W = canvas.width;
+const H = canvas.height;
+
+// Glass tint rendering
+function drawBackground() {
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  // Subtle glass shimmer
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, 'rgba(100,140,200,0.03)');
+  grad.addColorStop(0.5, 'rgba(160,190,230,0.06)');
+  grad.addColorStop(1, 'rgba(100,140,200,0.03)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function dropletGradient(x, y, r, alpha=1) {
+  const g = ctx.createRadialGradient(x - r*0.3, y - r*0.35, r*0.05, x, y, r);
+  g.addColorStop(0, `rgba(200,230,255,${0.9 * alpha})`);
+  g.addColorStop(0.3, `rgba(120,180,240,${0.75 * alpha})`);
+  g.addColorStop(0.75, `rgba(60,110,180,${0.55 * alpha})`);
+  g.addColorStop(1, `rgba(20,50,120,${0.3 * alpha})`);
+  return g;
+}
+
+function drawDroplet(x, y, r, isFalling=false) {
+  // Slight teardrop: taller than wide when falling
+  const ry = isFalling ? r * 1.15 : r;
+  const rx = isFalling ? r * 0.9 : r;
+
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+
+  ctx.fillStyle = dropletGradient(x, y, r);
+  ctx.fill();
+
+  // Highlight
+  ctx.beginPath();
+  ctx.ellipse(x - rx*0.28, y - ry*0.3, rx*0.25, ry*0.18, -0.3, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fill();
+
+  // Rim
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(100,160,240,0.25)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+}
+
+function drawTrail(trail) {
+  if (trail.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(trail[0].x, trail[0].y);
+  for (let i = 1; i < trail.length; i++) {
+    ctx.lineTo(trail[i].x, trail[i].y);
+  }
+  ctx.strokeStyle = 'rgba(100,160,240,0.12)';
+  ctx.lineWidth = trail[0].r * 1.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+function generatePinned(n) {
+  pinnedDroplets = [];
+  for (let i = 0; i < n; i++) {
+    const r = 2 + Math.random() * 7;
+    const x = r + Math.random() * (W - 2*r);
+    const y = r + Math.random() * (H - 2*r);
+    pinnedDroplets.push({ x, y, r });
+  }
+}
+
+// Critical radius: below this, surface tension wins
+function criticalRadius() {
+  return params.surface * 15;
+}
+
+function seedDroplet(x, y) {
+  if (x === undefined) {
+    x = 40 + Math.random() * (W - 80);
+    y = params.seedRadius + 5;
+  }
+  const r = params.seedRadius;
+  fallingDroplets.push({ x, y, r, vy: 0.5, trail: [{x, y, r}] });
+}
+
+function updateFallers() {
+  const rcrit = criticalRadius();
+
+  for (let i = fallingDroplets.length - 1; i >= 0; i--) {
+    const d = fallingDroplets[i];
+
+    // Gravity acceleration: larger droplets accelerate more (r^3 / r = r^2 net)
+    const grav = params.gravity * (d.r * d.r) / (rcrit * rcrit) * 0.18;
+    d.vy += grav;
+    d.vy = Math.min(d.vy, 8); // terminal velocity
+
+    d.y += d.vy;
+    d.x += (Math.random() - 0.5) * 0.4; // slight lateral wobble
+
+    // Record trail (throttled)
+    if (d.trail.length === 0 || Math.hypot(d.x - d.trail[d.trail.length-1].x, d.y - d.trail[d.trail.length-1].y) > 4) {
+      d.trail.push({x: d.x, y: d.y, r: d.r});
+      if (d.trail.length > 80) d.trail.shift();
+    }
+
+    // Collide with pinned droplets
+    for (let j = pinnedDroplets.length - 1; j >= 0; j--) {
+      const p = pinnedDroplets[j];
+      const dist = Math.hypot(d.x - p.x, d.y - p.y);
+      if (dist < d.r + p.r) {
+        // Conserve volume (r^3)
+        d.r = Math.cbrt(d.r**3 + p.r**3);
+        pinnedDroplets.splice(j, 1);
+        mergeCount++;
+      }
+    }
+
+    // Collide with other fallers
+    for (let k = fallingDroplets.length - 1; k >= 0; k--) {
+      if (k === i) continue;
+      const other = fallingDroplets[k];
+      const dist = Math.hypot(d.x - other.x, d.y - other.y);
+      if (dist < d.r + other.r) {
+        // Absorb smaller into larger
+        if (d.r >= other.r) {
+          d.r = Math.cbrt(d.r**3 + other.r**3);
+          fallingDroplets.splice(k, 1);
+          if (k < i) i--;
+          mergeCount++;
+        }
+      }
+    }
+
+    // Off-screen: drop to bottom, leave residual pinned droplet
+    if (d.y - d.r > H) {
+      pinnedDroplets.push({ x: d.x, y: H - d.r * 0.5, r: Math.min(d.r * 0.3, 8) });
+      fallingDroplets.splice(i, 1);
+    }
+  }
+
+  // Check if any pinned droplets can now fall (exceeded crit radius)
+  for (let j = pinnedDroplets.length - 1; j >= 0; j--) {
+    const p = pinnedDroplets[j];
+    if (p.r > rcrit) {
+      fallingDroplets.push({ x: p.x, y: p.y, r: p.r, vy: 0.3, trail: [{x: p.x, y: p.y, r: p.r}] });
+      pinnedDroplets.splice(j, 1);
+    }
+  }
+}
+
+function draw() {
+  drawBackground();
+
+  // Trails first
+  for (const d of fallingDroplets) drawTrail(d.trail);
+
+  // Pinned droplets
+  for (const p of pinnedDroplets) drawDroplet(p.x, p.y, p.r, false);
+
+  // Falling droplets
+  for (const d of fallingDroplets) drawDroplet(d.x, d.y, d.r, true);
+
+  // Critical radius indicator
+  const rcrit = criticalRadius();
+  ctx.save();
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.fillStyle = 'rgba(200,169,110,0.35)';
+  ctx.fillText(`r_crit = ${rcrit.toFixed(1)}px`, 8, H - 8);
+  ctx.restore();
+}
+
+function updateStats() {
+  document.getElementById('stat-fallers').textContent = fallingDroplets.length;
+  document.getElementById('stat-pinned').textContent = pinnedDroplets.length;
+  document.getElementById('stat-merges').textContent = mergeCount;
+  const maxr = fallingDroplets.length > 0
+    ? Math.max(...fallingDroplets.map(d => d.r)).toFixed(1)
+    : (pinnedDroplets.length > 0 ? Math.max(...pinnedDroplets.map(d => d.r)).toFixed(1) : 0);
+  document.getElementById('stat-maxr').textContent = maxr;
+}
+
+function loop() {
+  if (running) updateFallers();
+  draw();
+  updateStats();
+  animId = requestAnimationFrame(loop);
+}
+
+function toggleRun() {
+  running = !running;
+  document.querySelector('.btn.primary').textContent = running ? '⏸ Pause' : '▶ Run';
+  document.getElementById('status-pill').textContent = running ? 'running' : 'paused';
+  if (!animId) loop();
+}
+
+function resetSim() {
+  running = false;
+  fallingDroplets = [];
+  mergeCount = 0;
+  document.querySelector('.btn.primary').textContent = '▶ Run';
+  document.getElementById('status-pill').textContent = 'idle';
+  generatePinned(params.density);
+  draw();
+  updateStats();
+}
+
+function clearDroplets() {
+  fallingDroplets = [];
+  mergeCount = 0;
+  updateStats();
+}
+
+function updateParam(id) {
+  const val = parseFloat(document.getElementById(id).value);
+  document.getElementById(id + '-val').textContent = val;
+  if (id === 'grav') params.gravity = val;
+  if (id === 'surf') params.surface = val;
+  if (id === 'dens') { params.density = val; generatePinned(val); }
+  if (id === 'seed') params.seedRadius = val;
+}
+
+function toggleReveal(btn) {
+  const content = btn.nextElementSibling;
+  const arrow = btn.querySelector('span:last-child');
+  content.classList.toggle('open');
+  arrow.textContent = content.classList.contains('open') ? '−' : '+';
+}
+
+// Click to seed a droplet at cursor position
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+  seedDroplet(x, y);
+  if (!animId) loop();
+  document.getElementById('status-pill').textContent = 'seeded';
+});
+
+// Nav intersection observer
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+
+// Init
+generatePinned(params.density);
+loop();
+</script>
+</body>
+</html>
