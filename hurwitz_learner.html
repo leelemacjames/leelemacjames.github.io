@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Eisenstein to Hurwitz · A Number-System Learner · McMurmerings</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg:        #0c0d10;
+    --bg-2:      #14161b;
+    --bg-3:      #1a1d24;
+    --ink:       #e8e3d6;
+    --ink-2:     #b8b1a0;
+    --ink-3:     #6e695d;
+    --gold:      #c9a557;
+    --gold-2:    #8b7340;
+    --rose:      #b87878;
+    --rule:      #2a2d35;
+    --grid:      rgba(201,165,87,0.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.65;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+
+  /* sticky nav */
+  nav.toc{
+    position: sticky; top:0; z-index:100;
+    background: rgba(12,13,16,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  nav.toc .inner{
+    max-width: 1100px; margin:0 auto; padding: 0 32px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+    align-items: baseline;
+  }
+  nav.toc .brand{
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+  }
+  nav.toc a{
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav.toc a:hover{ color: var(--gold); }
+
+  main{
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+
+  /* hero */
+  header.hero{
+    margin-bottom: 88px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  header.hero::after{
+    content:''; position:absolute; bottom:-1px; left:0;
+    width: 80px; height: 1px;
+    background: var(--gold);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+  }
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 64px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: 22px;
+    color: var(--ink);
+  }
+  h1 em{
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .subtitle{
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    font-style: italic;
+    max-width: 640px;
+    margin-bottom: 32px;
+  }
+  .byline{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  /* sections */
+  section{ margin: 88px 0; }
+  section > .num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--gold-2);
+    margin-bottom: 14px;
+    display: block;
+  }
+  h2{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1.15;
+    margin-bottom: 32px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  h3{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 24px;
+    margin: 36px 0 18px;
+    color: var(--gold);
+  }
+  p{ margin: 0 0 18px; }
+  p + p{ text-indent: 1.6em; }
+
+  em{ color: var(--ink); font-style: italic; }
+  strong{ color: var(--gold); font-weight: 600; }
+
+  /* prompts the reader */
+  .prompt{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink);
+    border-left: 2px solid var(--gold);
+    padding: 4px 0 4px 24px;
+    margin: 32px 0;
+    max-width: 660px;
+  }
+
+  /* mono code-like */
+  code{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.86em;
+    color: var(--gold);
+    background: var(--bg-2);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  /* card / panel */
+  .panel{
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 32px;
+    margin: 36px 0;
+    position: relative;
+  }
+  .panel::before{
+    content: attr(data-label);
+    position: absolute;
+    top: -10px; left: 24px;
+    background: var(--bg);
+    padding: 0 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* table */
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    margin: 28px 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14.5px;
+  }
+  th{
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gold-2);
+    font-weight: 500;
+  }
+  td{
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-2);
+    vertical-align: top;
+  }
+  td.hl{ color: var(--ink); }
+  tr:hover td{ background: rgba(201,165,87,0.03); }
+
+  /* the interactive board */
+  .board-wrap{
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 28px;
+    margin: 32px 0;
+  }
+  .board-title{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .board-sub{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-2);
+    margin-bottom: 22px;
+  }
+  .board-svg{
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--bg-3);
+    border: 1px solid var(--rule);
+  }
+  .board-controls{
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 18px;
+    align-items: center;
+  }
+  .board-controls label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-right: 8px;
+  }
+  .btn{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover{ border-color: var(--gold); color: var(--gold); }
+  .btn.active{
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold);
+  }
+  .readout{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--gold);
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--bg-3);
+    border-left: 2px solid var(--gold);
+    min-height: 44px;
+  }
+  .readout .small{
+    color: var(--ink-3);
+    font-size: 11px;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* breaking-chain interactive */
+  .chain-stages{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .stage{
+    background: var(--bg-3);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .stage:hover{ border-color: var(--gold-2); }
+  .stage.active{ border-color: var(--gold); background: rgba(201,165,87,0.07); }
+  .stage-name{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .stage-desc{
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  /* aside / margin note */
+  aside.note{
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--bg-2);
+    border-left: 2px solid var(--rose);
+    font-size: 17px;
+    color: var(--ink-2);
+  }
+  aside.note .label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rose);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* equation block */
+  .eq{
+    margin: 28px 0;
+    padding: 24px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--gold-2);
+    border-bottom: 1px solid var(--gold-2);
+    font-size: 18px;
+    overflow-x: auto;
+  }
+
+  /* footer */
+  footer{
+    max-width: 880px;
+    margin: 80px auto 60px;
+    padding: 28px 32px;
+    border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-align: center;
+  }
+  footer .silicon{ color: var(--gold); }
+  footer .carbon{ color: var(--ink-2); }
+
+  /* small */
+  @media (max-width: 720px){
+    body{ font-size: 17px; }
+    h1{ font-size: 44px; }
+    h2{ font-size: 30px; }
+    main{ padding: 56px 22px 80px; }
+    .panel{ padding: 22px 18px; }
+    .chain-stages{ grid-template-columns: 1fr 1fr; }
+    nav.toc .inner{ gap: 16px; padding: 0 22px; }
+  }
+
+  /* selection */
+  ::selection{ background: var(--gold); color: var(--bg); }
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <div class="inner">
+    <span class="brand">McMurmerings</span>
+    <a href="#start">Eisenstein</a>
+    <a href="#gap">Obstruction</a>
+    <a href="#what">Requirements</a>
+    <a href="#hurwitz">Hurwitz</a>
+    <a href="#invariant">Invariant</a>
+    <a href="#twoT">$2T$</a>
+    <a href="#breaking">Stabilisers</a>
+    <a href="#table">Summary</a>
+  </div>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">A Self-Contained Learner · Orders in Division Algebras</div>
+  <h1>From Eisenstein <em>to</em> Hurwitz</h1>
+  <p class="subtitle">
+    A guided extension. Starting from the unit group of $\mathbb{Z}[\omega]$ and asking
+    what happens when we want richer representation theory, the path leads through Hamilton's
+    quaternions to the unique maximal $\mathbb{Z}$-order with $24$ units — and to the
+    binary tetrahedral group that sits inside it.
+  </p>
+  <div class="byline">L. McCulloch-James · Working Note · v1</div>
+</header>
+
+<!-- ============================================================ -->
+<section id="start">
+<span class="num">§ 1</span>
+<h2>Starting point: the unit group of $\mathbb{Z}[\omega]$</h2>
+
+<p>
+The Eisenstein integers $\mathbb{Z}[\omega]$, with $\omega = e^{2\pi i/3}$ a primitive cube
+root of unity, form a Euclidean domain inside $\mathbb{C}$. Their group of units is
+</p>
+
+<div class="eq">
+$$
+\mathbb{Z}[\omega]^\times \;=\; \{\pm 1,\, \pm\omega,\, \pm\omega^2\}
+\;\cong\; \mathbb{Z}_6 \;=\; \mathbb{Z}_2 \times \mathbb{Z}_3.
+$$
+</div>
+
+<p>
+The two factors are independent: the $\mathbb{Z}_2$ is generated by $-1$ (sign flip),
+the $\mathbb{Z}_3$ by $\omega$ (rotation by $2\pi/3$). Multiplication by $\omega$ partitions
+the six units into three orbits of size two:
+$\{1, -1\}$, $\{\omega, -\omega\}$, $\{\omega^2, -\omega^2\}$. Equivalently, the quotient
+$\mathbb{Z}[\omega]^\times / \{\pm 1\}$ is a cyclic group of order three.
+</p>
+
+<p>
+This is the structure to keep in view: an abelian group with three classes that come for free
+from the arithmetic of a particular imaginary quadratic ring, before any further input.
+The interactive figure below lets you click each unit and see which $\mathbb{Z}_3$ class it
+belongs to.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Interactive · The Eisenstein hexagon</div>
+  <div class="board-sub">
+    The six units sit at the vertices of a regular hexagon in $\mathbb{C}$. Click any unit
+    to see its class in $\mathbb{Z}[\omega]^\times / \{\pm 1\} \cong \mathbb{Z}_3$.
+  </div>
+  <svg class="board-svg" viewBox="0 0 560 320" id="eisenstein-svg">
+    <!-- circle -->
+    <circle cx="280" cy="160" r="120" fill="none" stroke="#2a2d35" stroke-width="1"/>
+    <!-- axes -->
+    <line x1="40" y1="160" x2="520" y2="160" stroke="#2a2d35" stroke-width="0.5" stroke-dasharray="2,4"/>
+    <line x1="280" y1="20" x2="280" y2="300" stroke="#2a2d35" stroke-width="0.5" stroke-dasharray="2,4"/>
+    <!-- unit points: at angles 0, 60, 120, 180, 240, 300 -->
+    <!-- 1 at 0 deg -->
+    <g class="unit" data-name="1" data-cls="0" data-label="1">
+      <circle cx="400" cy="160" r="10" fill="#c9a557"/>
+      <text x="416" y="166" fill="#e8e3d6" font-family="IBM Plex Mono" font-size="14">1</text>
+    </g>
+    <!-- omega at 120 deg -->
+    <g class="unit" data-name="ω" data-cls="1" data-label="ω">
+      <circle cx="220" cy="56" r="10" fill="#c9a557"/>
+      <text x="200" y="48" fill="#e8e3d6" font-family="IBM Plex Mono" font-size="14">ω</text>
+    </g>
+    <!-- omega^2 at 240 deg -->
+    <g class="unit" data-name="ω²" data-cls="2" data-label="ω²">
+      <circle cx="220" cy="264" r="10" fill="#c9a557"/>
+      <text x="195" y="284" fill="#e8e3d6" font-family="IBM Plex Mono" font-size="14">ω²</text>
+    </g>
+    <!-- -1 -->
+    <g class="unit" data-name="-1" data-cls="0" data-label="−1">
+      <circle cx="160" cy="160" r="10" fill="#8b7340"/>
+      <text x="130" y="166" fill="#b8b1a0" font-family="IBM Plex Mono" font-size="14">−1</text>
+    </g>
+    <!-- -omega -->
+    <g class="unit" data-name="-ω" data-cls="1" data-label="−ω">
+      <circle cx="340" cy="264" r="10" fill="#8b7340"/>
+      <text x="356" y="284" fill="#b8b1a0" font-family="IBM Plex Mono" font-size="14">−ω</text>
+    </g>
+    <!-- -omega^2 -->
+    <g class="unit" data-name="-ω²" data-cls="2" data-label="−ω²">
+      <circle cx="340" cy="56" r="10" fill="#8b7340"/>
+      <text x="356" y="48" fill="#b8b1a0" font-family="IBM Plex Mono" font-size="14">−ω²</text>
+    </g>
+    <!-- center -->
+    <circle cx="280" cy="160" r="2" fill="#6e695d"/>
+    <!-- arc showing rotation -->
+    <path id="rot-arc" d="" fill="none" stroke="#c9a557" stroke-width="1.2" opacity="0"/>
+  </svg>
+  <div class="readout" id="eisenstein-readout">
+    Click any unit to inspect it.
+    <span class="small">Multiplication by $\omega$ cycles the three classes
+    $\{1,-1\} \to \{\omega,-\omega\} \to \{\omega^2,-\omega^2\}$.</span>
+  </div>
+</div>
+
+<p>
+A natural next question, once one has the Eisenstein $\mathbb{Z}_3$ in hand: can larger and
+more interesting groups be obtained from the units of similarly natural number systems? The
+answer constrains us in surprising ways, and this is the substance of §2 onward.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="gap">
+<span class="num">§ 2</span>
+<h2>The obstruction: abelian unit groups have only 1-d irreps</h2>
+
+<p>
+$\mathbb{Z}[\omega]^\times \cong \mathbb{Z}_6$ is abelian. By a basic result in
+representation theory, every irreducible complex representation of an abelian group is
+$1$-dimensional — they are characters $\mathbb{Z}_6 \to \mathbb{C}^\times$, and there are
+exactly six of them, one for each group element when one identifies $\mathbb{Z}_6$ with its
+own dual.
+</p>
+
+<p>
+This is a hard ceiling. No matter how cleverly one assembles the units of any
+sub<em>ring</em> of $\mathbb{C}$, the unit group is contained in $\mathbb{C}^\times$ and is
+therefore abelian. So we cannot produce a $2$-dimensional or $3$-dimensional irreducible
+representation — let alone a non-trivial collection of them — from any subring of
+$\mathbb{C}$. The Eisenstein hexagon is, in this sense, the end of the line.
+</p>
+
+<p class="prompt">
+To get higher-dimensional irreducibles, we have to leave commutativity behind. The next
+natural number system must be a non-commutative algebra over $\mathbb{Q}$ in which
+$\mathbb{Z}[\omega]$ embeds.
+</p>
+
+<aside class="note">
+  <span class="label">Aside · why one might care to extend</span>
+  Several independent threads from physics and from arithmetic geometry converge on the
+  same question. In the chiral $\mathrm{GL}(2,\mathbb{C})$ formalism for gravity, the
+  abelian summand of $\mathfrak{gl}(2,\mathbb{C})$ is geometrically inert and its arithmetic
+  is free to be chosen; the natural reading is Eisenstein, and the natural question is
+  whether the choice extends. Independently, the classification of finite subgroups of
+  $\mathrm{SU}(2)$ (the McKay correspondence) shows that the binary tetrahedral group $2T$ —
+  which we are about to encounter — corresponds to the $E_6$ Dynkin diagram. Both contexts
+  point to the same mathematical object. The remainder of this learner stays inside the
+  arithmetic and lets the rest follow.
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="what">
+<span class="num">§ 3</span>
+<h2>What the next number system must satisfy</h2>
+
+<p>
+Before constructing it, we list the constraints. The new number system $\mathbb{X}$ must:
+</p>
+
+<div class="panel" data-label="Requirements">
+  <p style="margin-bottom:14px">
+    <strong>R1.</strong> Contain $\mathbb{Z}[\omega]$ — or at least a subring isomorphic to it.
+    The Eisenstein $\mathbb{Z}_3$ is the structure we already have; an extension that
+    discards it is not an extension. Equivalently: the new arithmetic must contain a primitive
+    cube root of unity, i.e.\ an element $\alpha$ with $\alpha^3 = 1$ and $\alpha \neq 1$.
+  </p>
+  <p style="margin-bottom:14px">
+    <strong>R2.</strong> Be non-commutative. By §2, otherwise no irreducibles of dimension $> 1$.
+  </p>
+  <p style="margin-bottom:14px">
+    <strong>R3.</strong> Have a unit group with rich enough representation theory. We will
+    aim, concretely, for a unit group $G$ admitting at least three non-isomorphic 1-d irreps,
+    a 2-d irrep, and a 3-d irrep. By Burnside's relation $\sum d_i^2 = |G|$, this forces
+    $|G| \geq 1+1+1+4+9 = 16$, and in practice (since irrep dimensions divide $|G|$) the
+    smallest natural option turns out to be $|G| = 24$.
+  </p>
+  <p style="margin-bottom:14px">
+    <strong>R4.</strong> Be an <em>order</em> (see definition below) in some natural division
+    algebra over $\mathbb{Q}$. We want a parent ring whose arithmetic is well-defined; we do
+    not want to assemble $\mathbb{X}$ by hand from a list of generators with no host structure.
+  </p>
+  <p>
+    <strong>R5.</strong> Be a <em>maximal</em> order. If a non-maximal order satisfies all the
+    requirements, the larger order containing it does too. There is no principled way to stop
+    short of the maximum, so we want the canonical object.
+  </p>
+</div>
+
+<aside class="note">
+  <span class="label">Aside · two meanings of "order"</span>
+  We are about to use the word <em>order</em> in two completely different technical senses, and
+  it is worth nailing both down before the next paragraph.
+  <p style="margin-top:12px;margin-bottom:10px">
+    <strong style="color:var(--gold)">Order of a group</strong> (and of an element):
+    the number of elements. $|2T| = 24$. The element $\rho$ has order $6$ because
+    $\rho^6 = 1$ and no smaller power equals $1$. This is the sense used in R3.
+  </p>
+  <p style="margin-bottom:0">
+    <strong style="color:var(--gold)">Order in an algebra</strong> (the sense used in R4, R5, and
+    everywhere $\mathbb{H}_{\mathrm{H}}$ is called "the Hurwitz order"):
+    a subring $\mathcal{O} \subset A$ of a finite-dimensional $\mathbb{Q}$-algebra $A$ which is
+    a finitely-generated $\mathbb{Z}$-module spanning $A$ over $\mathbb{Q}$. Concretely:
+    $\mathcal{O}$ is closed under addition and multiplication, contains $1$, sits inside $A$ as
+    a lattice (a $\mathbb{Z}$-span of an $A$-basis), and every element of $\mathcal{O}$ satisfies
+    a monic polynomial with integer coefficients.
+  </p>
+  <p style="margin-top:10px;margin-bottom:0">
+    The integer-analogue is the cleanest example. $\mathbb{Z}$ is an order in $\mathbb{Q}$:
+    a subring, $\mathbb{Z}$-spanning, every element a root of $x - n$. The Eisenstein integers
+    $\mathbb{Z}[\omega]$ are an order in $\mathbb{Q}(\omega)$. A <em>maximal</em> order is one
+    not properly contained in any larger order; for $\mathbb{Z}[\omega]$ it is the ring of
+    integers of the field, and it is maximal. The Lipschitz integers $L$ are an order in
+    $\mathbb{Q} \otimes \mathbb{H}$ but are <em>not</em> maximal — they sit properly inside
+    $\mathbb{H}_{\mathrm{H}}$, which is.
+  </p>
+</aside>
+
+<p>
+The smallest division algebra over $\mathbb{Q}$ that strictly contains $\mathbb{C}$ and is
+non-commutative is the Hamilton quaternion algebra
+$\mathbb{H} = \mathbb{R}\langle 1, i, j, k \rangle$ with relations
+$i^2 = j^2 = k^2 = ijk = -1$. There is essentially nothing smaller. R1–R5 collectively
+push us toward a maximal order in $\mathbb{Q} \otimes \mathbb{H}$. The naive guess is the
+<em>Lipschitz order</em> $L = \mathbb{Z}\langle 1,i,j,k\rangle$. The next subsection rules
+it out — not because it fails to be an order (it is one), but because it fails to be maximal
+and fails to contain the Eisenstein cube root.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="hurwitz">
+<span class="num">§ 4</span>
+<h2>Why Lipschitz fails, why Hurwitz works</h2>
+
+<p>
+The Lipschitz order $L = \mathbb{Z}\langle 1,i,j,k\rangle$ has eight units:
+$\{\pm 1, \pm i, \pm j, \pm k\}$, forming the quaternion group $Q_8$. This satisfies R2
+(non-commutative) and R4 (an order). It fails the others.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Requirement</th><th>Lipschitz $L$ ($Q_8$, order 8)</th><th>Hurwitz $\mathbb{H}_{\mathrm{H}}$ ($2T$, order 24)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="hl">R1 contains $\mathbb{Z}[\omega]$</td><td>No — Eisenstein needs a cube root, $L$ has none</td><td>Yes — $\rho = \tfrac{1}{2}(1+i+j+k)$ has $\rho^3 = -1$</td></tr>
+    <tr><td class="hl">R3 enough irreps</td><td>5 irreps of dim $(1,1,1,1,2)$ — only one 2d, no 3d</td><td>7 irreps of dim $(1,1,1,2,2,2,3)$ — exactly what we need</td></tr>
+    <tr><td class="hl">R5 maximal order</td><td>No — $L \subsetneq \mathbb{H}_{\mathrm{H}}$</td><td>Yes — unique maximal order up to conjugacy</td></tr>
+  </tbody>
+</table>
+
+<p>
+The fix is to adjoin one half-integer point. Define the <strong>Hurwitz order</strong>
+</p>
+
+<div class="eq">
+$$
+\mathbb{H}_{\mathrm{H}} \;=\; L + \mathbb{Z}\rho,
+\qquad
+\rho \;=\; \tfrac{1}{2}(1 + i + j + k).
+$$
+</div>
+
+<p>
+The element $\rho$ has norm $\rho \bar{\rho} = \tfrac{1}{4}(1+1+1+1) = 1$, so it is a unit.
+Direct calculation: $\rho^2 = \tfrac{1}{2}(-1 + i + j + k)$, and $\rho^3 = -1$. So $\rho$ has
+order $6$ in the unit group, and $\rho^2$ generates a $\mathbb{Z}_3$ — precisely the
+Eisenstein cube root, now living as $\rho^2$ inside a non-commutative parent
+(R1 satisfied).
+</p>
+
+<div class="panel" data-label="Verification · ρ³ = −1">
+  <p style="margin-bottom:10px;font-size:17px">
+    Squaring first, using $i^2 = j^2 = k^2 = -1$ and $ij = k$, $jk = i$, $ki = j$, $ji = -k$ etc.:
+  </p>
+  <div class="eq" style="margin:10px 0;background:var(--bg-3)">
+  $$
+  (1+i+j+k)^2 \;=\; -2 + 2i + 2j + 2k,
+  \qquad
+  \rho^2 \;=\; \tfrac{1}{2}(-1 + i + j + k).
+  $$
+  </div>
+  <p style="margin-bottom:10px;font-size:17px">
+    Then $\rho^3 = \rho \cdot \rho^2$. Multiplying $(1+i+j+k)(-1+i+j+k)$ and collecting terms,
+    every imaginary contribution cancels and the real parts sum to $-4$:
+  </p>
+  <div class="eq" style="margin:10px 0;background:var(--bg-3)">
+  $$
+  \rho^3 \;=\; \tfrac{1}{4} \cdot (-4) \;=\; -1.
+  $$
+  </div>
+  <p style="font-size:17px;margin-bottom:0">
+    Hence $\rho^6 = 1$. The element $\rho$ has order 6, and $\rho^2$ has order 3 — exactly the
+    Eisenstein cube root, now living inside a non-commutative arithmetic.
+  </p>
+</div>
+
+<p>
+The full unit group of $\mathbb{H}_{\mathrm{H}}$ has order 24. Eight of the units are the
+Lipschitz units; the other sixteen are
+$\tfrac{1}{2}(\pm 1 \pm i \pm j \pm k)$. This 24-element group is the
+<strong>binary tetrahedral group</strong> $2T$, isomorphic to $\mathrm{SL}(2, \mathbb{F}_3)$,
+fitting in the non-split extension
+</p>
+
+<div class="eq">
+$$
+1 \to \mathbb{Z}_2 \to 2T \to A_4 \to 1,
+$$
+</div>
+
+<p>
+where $A_4$ is the rotation group of the regular tetrahedron and the central $\mathbb{Z}_2$ is
+$\{\pm 1\}$ — the universal charge conjugation.
+</p>
+
+<aside class="note">
+  <span class="label">Forced, not chosen</span>
+  Voight's <em>Quaternion Algebras</em> (Springer GTM 288, §11) establishes that
+  $\mathbb{H}_{\mathrm{H}}$ is the unique maximal order in $\mathbb{Q}\otimes\mathbb{H}$ up to
+  conjugacy. We do not <em>choose</em> $\mathbb{H}_{\mathrm{H}}$ from a menu; once we accept
+  R1–R5, it is the only option.
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="invariant">
+<span class="num">§ 5</span>
+<h2>Why this refinement: a quadratic invariant the units preserve</h2>
+
+<p>
+Before enumerating the units of $\mathbb{H}_{\mathrm{H}}$ and their representations, it is
+worth pausing to say what kind of mathematical object the Hurwitz order actually <em>is</em>,
+in language a physicist already lives in. The picture is short and clean.
+</p>
+
+<p>
+The quaternion algebra $\mathbb{H}$, viewed as a real vector space, is just $\mathbb{R}^4$
+with coordinates $(a, b, c, d)$ corresponding to $a + bi + cj + dk$. It carries a natural
+quadratic form — the norm
+</p>
+
+<div class="eq">
+$$
+N(q) \;=\; q\bar{q} \;=\; a^2 + b^2 + c^2 + d^2,
+$$
+</div>
+
+<p>
+which is positive-definite. The unit quaternions — elements with $N(q) = 1$ — form the group
+$\mathrm{Sp}(1) \cong \mathrm{SU}(2)$, and they act on $\mathbb{H}$ by conjugation
+$q \mapsto u q u^{-1}$. This action preserves $N$ (norm is multiplicative,
+$N(uqu^{-1}) = N(q)$) and fixes the real axis pointwise, so on $\mathrm{Im}(\mathbb{H}) =
+\mathbb{R}^3$ it acts as the double cover $\mathrm{SU}(2) \twoheadrightarrow \mathrm{SO}(3)$.
+</p>
+
+<aside class="note">
+  <span class="label">Foothold · the analogy worth keeping in view</span>
+  <p style="margin-top:12px;margin-bottom:10px">
+    A physicist will recognise the structure. On the relativistic side, Minkowski space carries
+    the quadratic invariant $P^\mu P_\mu$, preserved by the Lorentz group $\mathrm{SO}(1,3)$
+    (or its cover $\mathrm{SL}(2,\mathbb{C})$). Irreducible representations of the Poincaré group
+    are organised by the value of this Casimir: mass shells are level sets of $P^\mu P_\mu$.
+  </p>
+  <p style="margin-bottom:10px">
+    On the quaternionic side, $\mathbb{R}^4 = \mathbb{H}$ carries the quadratic invariant $N(q)$,
+    preserved by $\mathrm{SU}(2)$ acting by conjugation. The "level sets" $N(q) = 1$ are the
+    unit sphere $S^3$, and the finite subgroups of $\mathrm{SU}(2)$ — among them $2T$ — sit on
+    this sphere as discrete configurations of points that the symmetry preserves.
+  </p>
+  <p style="margin-bottom:0">
+    <strong>Quaternion norm $N(q) \;\longleftrightarrow\;$ Casimir $P^\mu P_\mu$.</strong>
+    Both are quadratic invariants. Both organise the structure of the space and its
+    representations. The Hurwitz order is to $N$ what a well-adapted representation basis is
+    to a Casimir: it exposes the invariant cleanly and aligns the discrete structure with the
+    symmetry that preserves it.
+  </p>
+</aside>
+
+<h3>What the Hurwitz refinement actually does</h3>
+
+<p>
+Now the question of why we needed to go beyond Lipschitz becomes clearer. The Lipschitz units
+$\{\pm 1, \pm i, \pm j, \pm k\}$ are eight points on $S^3$, and they are preserved by
+conjugation, but they form only the $D_4$ root system in $\mathbb{R}^4$ — a comparatively
+small finite configuration. The 24 Hurwitz units are the vertices of the regular 24-cell, the
+short roots of the $F_4$ root system. They are the largest finite set of points on $S^3$ that
+forms a regular polytope, and they are the discrete subgroup of $\mathrm{SU}(2)$ that is
+maximal among those whose action on $\mathrm{Im}(\mathbb{H})$ projects to a tetrahedral
+rotation group.
+</p>
+
+<p>
+The transition
+</p>
+
+<div class="eq">
+$$
+L \;=\; \mathbb{Z}\langle 1,i,j,k\rangle
+\;\longrightarrow\;
+\mathbb{H}_{\mathrm{H}} \;=\; L + \mathbb{Z}\rho
+$$
+</div>
+
+<p>
+does not change the underlying invariant: it is still $N(q) = a^2 + b^2 + c^2 + d^2$. What
+changes is which lattice points <em>land on the unit sphere</em> $S^3 = \{q : N(q) = 1\}$.
+The Lipschitz lattice has $8$ such points: $\pm 1, \pm i, \pm j, \pm k$, the integer vectors
+of squared norm $1$. The Hurwitz lattice has $24$ such points: the $8$ Lipschitz units, plus
+the $16$ half-integer vectors $\tfrac{1}{2}(\pm 1 \pm i \pm j \pm k)$, each of squared norm
+$\tfrac{1}{4}(1+1+1+1) = 1$. Adjoining $\rho$ adds $16$ new norm-$1$ elements to the lattice
+without changing the ambient quadratic form.
+</p>
+
+<p>
+These norm-$1$ elements are the units of the order. They act on the lattice by
+left-multiplication, and that action is exactly the part of the continuous $\mathrm{SU}(2)$
+norm-preserving symmetry that <em>also</em> preserves the discrete lattice. So the unit group
+of the order is the discrete intersection
+</p>
+
+<div class="eq">
+$$
+G \;=\; \{u \in \mathrm{SU}(2) : u \cdot \mathcal{O} = \mathcal{O}\}
+\;=\;
+\{u \in \mathcal{O} : N(u) = 1\}.
+$$
+</div>
+
+<p>
+For Lipschitz $\mathcal{O} = L$, this is $Q_8$ of order $8$. For Hurwitz
+$\mathcal{O} = \mathbb{H}_{\mathrm{H}}$, this is $2T$ of order $24$. The Hurwitz refinement
+makes more of $\mathrm{SU}(2)$ visible to the arithmetic.
+</p>
+
+<h3>What the lattices look like</h3>
+
+<p>
+The two lattices live in $\mathbb{R}^4$, which we cannot directly see. But the structural
+distinction can be exhibited cleanly by slicing along the real-imaginary plane and along
+the imaginary 3-space, and looking at the points on the unit sphere in each slice. The
+interactive below shows, side by side, the unit-sphere points of $L$ and of
+$\mathbb{H}_{\mathrm{H}}$, with their orbits under multiplication by $\rho$.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Interactive · Lipschitz vs Hurwitz on the unit sphere</div>
+  <div class="board-sub">
+    Two faithful 2D slices through $\mathbb{R}^4 = \mathbb{H}$. Left panel: the
+    $(\mathrm{Re}, \mathrm{Im}_i)$ plane spanned by $\{1, i\}$. Right panel: the
+    $(\mathrm{Im}_j, \mathrm{Im}_k)$ plane spanned by $\{j, k\}$. The two planes are
+    orthogonal and together span all of $\mathbb{R}^4$. Each Lipschitz unit appears in
+    exactly one panel; each half-integer Hurwitz unit appears in both, at $\pm \tfrac{1}{2}$
+    in each coordinate.
+  </div>
+  <svg class="board-svg" viewBox="0 0 820 380" id="lattice-cmp-svg">
+    <!-- ===================== Left panel ===================== -->
+    <text x="200" y="28" text-anchor="middle" fill="#c9a557"
+          font-family="IBM Plex Mono" font-size="11"
+          letter-spacing="2" style="text-transform:uppercase">
+      Slice spanned by 1, i
+    </text>
+    <text x="200" y="46" text-anchor="middle" fill="#6e695d"
+          font-family="IBM Plex Mono" font-size="9">
+      coordinates (Re, Im_i)
+    </text>
+    <!-- unit circle (radius 100) -->
+    <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2d35" stroke-width="0.8"/>
+    <!-- inner circle at radius 1/√2 ≈ 0.707, where half-integer units project -->
+    <circle cx="200" cy="200" r="70.7" fill="none" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="1,3"/>
+    <!-- axes -->
+    <line x1="80"  y1="200" x2="320" y2="200" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="2,3"/>
+    <line x1="200" y1="80"  x2="200" y2="320" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="2,3"/>
+    <text x="325" y="204" fill="#6e695d" font-family="IBM Plex Mono" font-size="10">Re</text>
+    <text x="200" y="74"  fill="#6e695d" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">Im_i</text>
+    <g id="left-points"></g>
+
+    <!-- Vertical separator -->
+    <line x1="410" y1="60" x2="410" y2="340" stroke="#2a2d35" stroke-width="0.5"/>
+
+    <!-- ===================== Right panel ===================== -->
+    <text x="620" y="28" text-anchor="middle" fill="#c9a557"
+          font-family="IBM Plex Mono" font-size="11"
+          letter-spacing="2" style="text-transform:uppercase">
+      Slice spanned by j, k
+    </text>
+    <text x="620" y="46" text-anchor="middle" fill="#6e695d"
+          font-family="IBM Plex Mono" font-size="9">
+      coordinates (Im_j, Im_k)
+    </text>
+    <circle cx="620" cy="200" r="100" fill="none" stroke="#2a2d35" stroke-width="0.8"/>
+    <circle cx="620" cy="200" r="70.7" fill="none" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="1,3"/>
+    <line x1="500" y1="200" x2="740" y2="200" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="2,3"/>
+    <line x1="620" y1="80"  x2="620" y2="320" stroke="#2a2d35" stroke-width="0.4" stroke-dasharray="2,3"/>
+    <text x="745" y="204" fill="#6e695d" font-family="IBM Plex Mono" font-size="10">Im_j</text>
+    <text x="620" y="74"  fill="#6e695d" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">Im_k</text>
+    <g id="right-points"></g>
+
+  </svg>
+  <div class="board-controls">
+    <label>Show:</label>
+    <button class="btn active" data-lat="hurwitz">Hurwitz (24 points)</button>
+    <button class="btn" data-lat="lipschitz">Lipschitz only (8 points)</button>
+    <span style="display:inline-block;width:14px"></span>
+    <label>Action:</label>
+    <button class="btn active" data-action="reset">Reset</button>
+    <button class="btn" data-action="rho">Apply $\rho$ (left-mult)</button>
+  </div>
+  <div class="readout" id="lattice-cmp-readout">
+    Solid circle: unit norm $N = 1$ (radius $1$). Dashed inner circle: radius
+    $\tfrac{1}{\sqrt{2}} \approx 0.707$ — the projected length of half-integer units in
+    each plane (since the projected coordinates are $\pm \tfrac{1}{2}$ each, giving length
+    $\sqrt{\tfrac{1}{4} + \tfrac{1}{4}} = \tfrac{1}{\sqrt{2}}$).
+    <span class="small">The $8$ Lipschitz units sit on the solid circles, four in each panel. Each of the $16$ half-integer units sits at $(\pm\tfrac{1}{2}, \pm\tfrac{1}{2})$ in both panels — but with multiplicities, since fixing $(q_0, q_1)$ leaves $(q_2, q_3)$ free up to sign.</span>
+  </div>
+</div>
+
+<p>
+This is the structural answer to "why Hurwitz, not Lipschitz". Both are $\mathbb{Z}$-orders
+in $\mathbb{Q}\otimes\mathbb{H}$. Both inherit the same norm $N$. But $\mathbb{H}_{\mathrm{H}}$
+contains $24$ unit-norm lattice points where $L$ contains only $8$, and the additional
+$16$ are exactly what is needed to close the discrete arithmetic under the action of $\rho$.
+From this viewpoint, the maximality theorem (Voight §11) is no longer an opaque fact:
+it is the statement that no further unit-norm lattice points can be added by enlarging the
+order, and the alignment between unit-set and lattice has reached its limit.
+</p>
+
+<h3>One consequence: the units form a root system</h3>
+
+<p>
+A small bonus, useful later. The 24 Hurwitz units, viewed as vectors in $\mathbb{R}^4$, are
+the short roots of the $F_4$ root system. The full $F_4$ root system has $48$ vectors —
+the $24$ units plus their dual lattice $24$-cell, which consists of vectors of squared norm $2$.
+The Weyl group $W(F_4)$ has order $1152$ and acts on this configuration; restricted to the
+$24$ short roots alone, it factors through the symmetry group of the 24-cell. We will not need
+this in what follows, but it is the bridge between the arithmetic story (Hurwitz order) and
+the Lie-theoretic story ($F_4$ as an exceptional Lie group), and it is the place where the
+recent $24$-cell programmes connect.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="twoT">
+<span class="num">§ 6</span>
+<h2>The 24 units and what they encode</h2>
+
+<p>
+Below: the 24 units of $\mathbb{H}_{\mathrm{H}}$, projected onto a 2D layout for visibility.
+The 8 Lipschitz units sit at the cardinal points of an inner square; the 16 half-integer
+units sit at the corners of two outer squares (one for each sign convention). Click the
+<em>highlight</em> buttons to see the embedded subgroups.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Interactive · the binary tetrahedral group $2T$</div>
+  <div class="board-sub">
+    Highlight notable subgroups: the centre $\{\pm 1\}$, the Eisenstein
+    $\langle \rho \rangle \cong \mathbb{Z}_6$, its index-$2$ subgroup
+    $\langle \rho^2 \rangle \cong \mathbb{Z}_3$, and the quaternion subgroup $Q_8$.
+  </div>
+  <svg class="board-svg" viewBox="0 0 700 380" id="twoT-svg">
+    <!-- inner ring: 8 Lipschitz units -->
+    <!-- outer ring: 16 Hurwitz-proper -->
+    <!-- We'll lay out 24 around concentric circles -->
+    <!-- Center -->
+    <circle cx="350" cy="190" r="2" fill="#6e695d"/>
+    <!-- Background rings -->
+    <circle cx="350" cy="190" r="100" fill="none" stroke="#2a2d35" stroke-width="0.7"/>
+    <circle cx="350" cy="190" r="160" fill="none" stroke="#2a2d35" stroke-width="0.7" stroke-dasharray="2,3"/>
+    <!-- Unit points are populated by JS -->
+    <g id="twoT-units"></g>
+  </svg>
+  <div class="board-controls">
+    <label>Highlight:</label>
+    <button class="btn" data-set="all">All 24</button>
+    <button class="btn" data-set="Q8">$Q_8$ (Lipschitz)</button>
+    <button class="btn" data-set="Z3">$\langle \rho^2 \rangle \cong \mathbb{Z}_3$</button>
+    <button class="btn" data-set="Z6">$\langle \rho \rangle \cong \mathbb{Z}_6$ (Eisenstein)</button>
+    <button class="btn" data-set="centre">$Z(2T) = \{\pm 1\}$</button>
+  </div>
+  <div class="readout" id="twoT-readout">
+    Each unit has norm 1. The 8 Lipschitz units form $Q_8 = \{\pm 1, \pm i, \pm j, \pm k\}$.
+    The 16 outer units are $\tfrac{1}{2}(\pm 1 \pm i \pm j \pm k)$.
+    <span class="small">$\rho = \tfrac{1}{2}(1+i+j+k)$ has order $6$, so $\langle\rho\rangle$ is the embedded Eisenstein $\mathbb{Z}_6$; $\rho^2$ has order $3$ and generates the unique $\mathbb{Z}_3$ subgroup of $\langle\rho\rangle$.</span>
+  </div>
+</div>
+
+<h3>The representation count</h3>
+
+<p>
+The character table of $2T$ has seven conjugacy classes. The dimensions of the seven complex
+irreducible representations are
+</p>
+
+<div class="eq">
+$$
+(d_1, d_2, d_3, d_4, d_5, d_6, d_7) \;=\; (1,1,1,2,2,2,3),
+\qquad \sum d_i^2 \;=\; 1+1+1+4+4+4+9 \;=\; 24.
+$$
+</div>
+
+<p>
+The right-hand side equals $|2T|$, as Burnside's relation requires. There is no leftover
+representation.
+</p>
+
+<p>
+Tabulating the seven irreducibles together with their characters under the central subgroup
+$\langle \rho^2 \rangle \cong \mathbb{Z}_3$:
+</p>
+
+<table>
+  <thead>
+    <tr><th>Irrep</th><th>Dim</th><th>Restriction to $\langle\rho^2\rangle \cong \mathbb{Z}_3$</th><th>Construction</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="hl">$\mathbf{1}_0$</td><td>1</td><td>trivial: character $1$</td><td>trivial rep</td></tr>
+    <tr><td class="hl">$\mathbf{1}_\omega$</td><td>1</td><td>character $\omega$</td><td>factors through $2T \twoheadrightarrow 2T/Q_8 \cong \mathbb{Z}_3$</td></tr>
+    <tr><td class="hl">$\mathbf{1}_{\omega^2}$</td><td>1</td><td>character $\omega^2$</td><td>factors through $2T/Q_8$, conjugate of $\mathbf{1}_\omega$</td></tr>
+    <tr><td class="hl">$\mathbf{2}_a$</td><td>2</td><td>$1 \oplus 1$</td><td>defining $\mathrm{SU}(2)$ representation of $2T \subset \mathrm{SU}(2)$</td></tr>
+    <tr><td class="hl">$\mathbf{2}_b$</td><td>2</td><td>$\omega \oplus \omega^2$</td><td>$\mathbf{2}_a \otimes \mathbf{1}_\omega$</td></tr>
+    <tr><td class="hl">$\mathbf{2}_c$</td><td>2</td><td>$\omega^2 \oplus \omega$</td><td>$\mathbf{2}_a \otimes \mathbf{1}_{\omega^2}$ (conjugate of $\mathbf{2}_b$)</td></tr>
+    <tr><td class="hl">$\mathbf{3}$</td><td>3</td><td>$1 \oplus \omega \oplus \omega^2$</td><td>conjugation action on $\mathrm{Im}(\mathbb{H}) = \mathrm{span}(i,j,k)$, lifted from $A_4$</td></tr>
+  </tbody>
+</table>
+
+<p>
+The three-dimensional irrep deserves a word: $2T$ acts on the imaginary quaternions by
+conjugation $v \mapsto u v u^{-1}$. The kernel of this action is the centre $\{\pm 1\}$, so
+the representation factors through $2T/\{\pm 1\} \cong A_4$ and gives the standard
+$3$-dimensional rotation representation of the tetrahedral group. The element $\rho \in 2T$
+acts on $(i, j, k)$ by cyclically permuting them: $i \mapsto j \mapsto k \mapsto i$.
+</p>
+
+<aside class="note">
+  <span class="label">Aside · physics correspondence (optional)</span>
+  Readers tracking the application to the Standard Model fermion sector will find the
+  identification straightforward: the three 1-d irreps are the three lepton generations
+  (distinguished by $\omega$-phase), the three 2-d irreps are doublet sectors, and
+  $\mathbf{3}$ contains both the gauge-boson adjoint and the colour seed (since the
+  $\mathbb{Z}_3$ subgroup that cycles generations is the same $\mathbb{Z}_3$ that cycles
+  $i, j, k$). The representation theory does the work; the physics is a re-labelling.
+  The remainder of this learner will not lean on the correspondence — it stays inside the
+  arithmetic.
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="breaking">
+<span class="num">§ 7</span>
+<h2>Stabiliser chains: subgroups fixing a complex sub-line</h2>
+
+<p>
+Inside $\mathbb{H}$, the real subspace $\mathbb{R}\cdot 1$ together with any chosen unit
+imaginary $u$ (with $u^2 = -1$) spans a copy of $\mathbb{C}$:
+</p>
+
+<div class="eq">
+$$
+\mathbb{C}_u \;=\; \mathbb{R}\cdot 1 \,+\, \mathbb{R}\cdot u
+\;\subset\; \mathbb{H},
+\qquad u^2 = -1.
+$$
+</div>
+
+<p>
+This is a 2-dimensional real subspace, and a copy of the complex numbers as a subring. The
+question we ask: which elements of $2T$ preserve $\mathbb{C}_u$ under the conjugation action
+$v \mapsto g v g^{-1}$? Different precise readings of "preserve" give different answers, and
+following the chain of these answers reveals a sequence of nested subgroups of $2T$ — a
+breaking chain forced purely by linear algebra.
+</p>
+
+<p>
+Below: four stages, each one a smaller subgroup obtained by tightening what "preserve"
+means. Click through.
+</p>
+
+<div class="chain-stages" id="chain-stages">
+  <div class="stage active" data-stage="0">
+    <div class="stage-name">$2T$</div>
+    <div class="stage-desc">Order 24. No constraint yet — the full unit group acts on $\mathbb{H}$ by conjugation.</div>
+  </div>
+  <div class="stage" data-stage="1">
+    <div class="stage-name">$Q_8$</div>
+    <div class="stage-desc">Order 8. Setwise stabiliser of $\mathbb{C}_u$ — elements $g$ with $g\mathbb{C}_u g^{-1} = \mathbb{C}_u$ as a set.</div>
+  </div>
+  <div class="stage" data-stage="2">
+    <div class="stage-name">$\mathbb{Z}_4$</div>
+    <div class="stage-desc">Order 4. Pointwise stabiliser — fix $u$ itself, not just the line spanned by it.</div>
+  </div>
+  <div class="stage" data-stage="3">
+    <div class="stage-name">$\mathbb{Z}_2$</div>
+    <div class="stage-desc">Order 2. The centre $\{\pm 1\}$ — fixes everything in $\mathbb{H}$ pointwise.</div>
+  </div>
+</div>
+
+<div class="readout" id="chain-readout">
+  Stage $2T$: 24 elements, full conjugation action.
+  <span class="small">The chain is determined by the normal-subgroup lattice of $2T$ together with the linear-algebraic data of which sub-line is fixed.</span>
+</div>
+
+<h3>The two distinct stabiliser computations</h3>
+
+<p>
+A point worth being careful about: there are two reasonable things to mean by "the stabiliser
+of $\mathbb{C}_u$ in $2T$", and they give genuinely different answers. Take $u = i$ for
+concreteness, so $\mathbb{C}_u = \mathbb{C}_i = \mathbb{R}\cdot 1 + \mathbb{R}\cdot i$.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Type of stabiliser</th><th>Definition</th><th>Result</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hl">Setwise</td>
+      <td>$g \in 2T$ such that $g \mathbb{C}_i g^{-1} \subseteq \mathbb{C}_i$ as a set (orientation may flip)</td>
+      <td>$Q_8 = \{\pm 1, \pm i, \pm j, \pm k\}$, order 8</td>
+    </tr>
+    <tr>
+      <td class="hl">Pointwise</td>
+      <td>$g \in 2T$ such that $g v g^{-1} = v$ for every $v \in \mathbb{C}_i$</td>
+      <td>$\langle i \rangle = \{\pm 1, \pm i\} \cong \mathbb{Z}_4$, order 4</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+Direct check on the pointwise stabiliser: $g v g^{-1} = v$ for all $v \in \mathbb{C}_i$ is
+equivalent to $g$ commuting with $i$. Inside $2T$, the centraliser of $i$ is exactly
+$\{\pm 1, \pm i\}$ — a cyclic group of order $4$. The setwise stabiliser additionally
+includes elements that send $i$ to $-i$; conjugation by $j$ does this ($j i j^{-1} = -i$),
+and the four elements $\{\pm j, \pm k\}$ all act this way, doubling the count to $8$.
+</p>
+
+<aside class="note">
+  <span class="label">Aside · where this matters in physics</span>
+  In the chiral $\mathrm{GL}(2,\mathbb{C})$ formalism for gravity, the soldering bivector
+  $\Sigma^{AB}$ is the metric-defining object; on shell, $\Sigma$ selects an almost-complex
+  structure on the internal space, which is exactly the choice of a $\mathbb{C}_u$ inside
+  $\mathbb{H}$. The breaking chain above then becomes the residual-symmetry chain after
+  the metric has acquired its on-shell value, with the setwise version being the relevant
+  one (charge conjugation flips $u$ but preserves $\mathbb{C}_u$ as a set). This learner
+  does not develop the application; it is mentioned only to point at where the structure
+  matters outside arithmetic.
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="table">
+<span class="num">§ 8</span>
+<h2>Summary: three orders, side by side</h2>
+
+<p>
+The three $\mathbb{Z}$-orders in $\mathbb{Q} \otimes \mathbb{H}$ that have come up in this
+learner. The first is in $\mathbb{Q}(\omega) \subset \mathbb{Q} \otimes \mathbb{H}$
+(commutative); the next two genuinely live in the quaternion algebra.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>$\mathbb{Z}$-order</th>
+      <th>Unit group $G$</th>
+      <th>$|G|$</th>
+      <th>Irrep dims</th>
+      <th>Maximal?</th>
+      <th>Contains $\mathbb{Z}[\omega]$?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hl">$\mathbb{Z}[\omega]$ (Eisenstein)</td>
+      <td>$\mathbb{Z}_6$</td><td>$6$</td><td>$(1,1,1,1,1,1)$</td>
+      <td>yes (in $\mathbb{Q}(\omega)$)</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="hl">$L$ (Lipschitz)</td>
+      <td>$Q_8$</td><td>$8$</td><td>$(1,1,1,1,2)$</td>
+      <td>no</td>
+      <td>no — $L$ has no cube root of unity</td>
+    </tr>
+    <tr>
+      <td class="hl">$\mathbb{H}_{\mathrm{H}}$ (Hurwitz)</td>
+      <td>$2T$</td><td>$24$</td><td>$(1,1,1,2,2,2,3)$</td>
+      <td>yes (unique up to conjugacy)</td>
+      <td>yes — via $\rho^2 \mapsto \omega$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+The Hurwitz order is forced. Once we decide we want a $\mathbb{Z}$-order in
+$\mathbb{Q}\otimes\mathbb{H}$ that is maximal and contains an embedded copy of
+$\mathbb{Z}[\omega]$, Voight's classification (Quaternion Algebras, §11) leaves no other
+candidate up to conjugacy. The 24-element unit group $2T$, its representation theory
+$(1,1,1,2,2,2,3)$, and its subgroup lattice $\mathbb{Z}_2 \triangleleft \mathbb{Z}_4
+\triangleleft Q_8 \triangleleft 2T$ are then consequences, not choices.
+</p>
+
+<h3>What this learner has and has not done</h3>
+
+<p>
+We have done the following: established that abelian unit groups cannot produce
+higher-dimensional irreducibles (§2); identified the requirements R1–R5 that any extension
+must meet (§3); ruled out the Lipschitz order on the grounds of non-maximality and
+absence of a cube root (§4); constructed the Hurwitz order by adjoining
+$\rho = \tfrac{1}{2}(1+i+j+k)$ and verified $\rho^3 = -1$ (§4); identified the
+quadratic-invariant viewpoint that explains why this refinement is the right one (§5);
+enumerated the $24$ units and the $7$ irreducibles of $2T$ (§6); and traced the chain of
+stabiliser subgroups of $2T$ fixing a complex sub-line of $\mathbb{H}$ to varying degrees
+(§7).
+</p>
+
+<p>
+We have not done the following: derived characters or character tables; computed
+Clebsch–Gordan coefficients of $2T$; described the McKay correspondence between $2T$ and the
+$E_6$ Dynkin diagram; discussed the embedding of $\mathbb{H}_{\mathrm{H}}$'s vertices into
+the $24$-cell or the $F_4$ root system; or said anything about whether the discrete
+$\mathbb{Z}_3 \subset 2T$ extends to a continuous $\mathrm{SU}(3)$ via $D_4$ triality.
+Each of these is a natural next step and accessible to a reader who has followed this far.
+</p>
+
+<aside class="note">
+  <span class="label">Aside · the application that motivated this</span>
+  The arc traced here was originally arrived at from a question in chiral $\mathrm{GL}(2,\mathbb{C})$
+  gravity: the abelian summand of $\mathfrak{gl}(2,\mathbb{C})$ admits an arithmetic refinement,
+  and pushing it as far as a maximal order takes one straight to $\mathbb{H}_{\mathrm{H}}$ and
+  $2T$. The 24 elements, the irreps of dimensions $(1,1,1,2,2,2,3)$, and the breaking chain
+  $2T \to Q_8 \to \mathbb{Z}_4 \to \mathbb{Z}_2$ then map cleanly onto features of the Standard
+  Model fermion sector — three generations, electroweak doublets, an adjoint, and charge
+  conjugation. Whether the map is structurally significant or coincidental is a question this
+  learner does not settle. What it does settle is that the arithmetic is forced.
+</aside>
+
+<p style="margin-top:48px;color:var(--ink-3);font-style:italic;font-size:16px">
+The integers are the work of God; everything else is the work of man. — Kronecker.
+</p>
+
+</section>
+
+</main>
+
+<footer>
+  Constructed by <span class="silicon">Silicon · Anthropic Claude</span> &nbsp;—&nbsp; Architect <span class="carbon">Carbon · LeeMcCullochJames</span>
+</footer>
+
+<script>
+// =================================================================
+// Eisenstein hexagon interaction
+// =================================================================
+(function(){
+  const svg = document.getElementById('eisenstein-svg');
+  const readout = document.getElementById('eisenstein-readout');
+  const arc = document.getElementById('rot-arc');
+  if (!svg) return;
+
+  const cls_label = ['class $[1] = \\{1, -1\\}$','class $[\\omega] = \\{\\omega, -\\omega\\}$','class $[\\omega^2] = \\{\\omega^2, -\\omega^2\\}$'];
+
+  svg.querySelectorAll('.unit').forEach(g => {
+    g.style.cursor = 'pointer';
+    g.addEventListener('click', () => {
+      const name = g.getAttribute('data-name');
+      const c = parseInt(g.getAttribute('data-cls'));
+      const lab = g.getAttribute('data-label');
+      readout.innerHTML = `Selected: <strong>${lab}</strong> &nbsp;·&nbsp; ${cls_label[c]}.
+        <span class="small">Multiplying by $\\omega$ rotates this point by $120°$, sending the unit to its image one class to the right (cyclically).</span>`;
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+
+      // visual highlight
+      svg.querySelectorAll('.unit circle').forEach(c => {
+        c.setAttribute('r', 10);
+        c.setAttribute('stroke','none');
+      });
+      g.querySelector('circle').setAttribute('r', 13);
+      g.querySelector('circle').setAttribute('stroke','#e8e3d6');
+      g.querySelector('circle').setAttribute('stroke-width','1.5');
+    });
+  });
+})();
+
+// =================================================================
+// 2T unit-group layout & subgroup highlight
+// =================================================================
+(function(){
+  const svg = document.getElementById('twoT-svg');
+  if (!svg) return;
+  const group = document.getElementById('twoT-units');
+  const readout = document.getElementById('twoT-readout');
+
+  const cx = 350, cy = 190;
+  const rIn = 100, rOut = 160;
+
+  // The 8 Lipschitz units, evenly spaced around inner ring
+  const lipschitz = [
+    {n:'1',  s:'+1', sub:['Q8','centre','Z6']},
+    {n:'i',  s:'+i', sub:['Q8']},
+    {n:'-1', s:'-1', sub:['Q8','centre','Z6']},
+    {n:'-i', s:'-i', sub:['Q8']},
+    {n:'j',  s:'+j', sub:['Q8']},
+    {n:'k',  s:'+k', sub:['Q8']},
+    {n:'-j', s:'-j', sub:['Q8']},
+    {n:'-k', s:'-k', sub:['Q8']},
+  ];
+  // Place 8 Lipschitz at inner ring, angles 0,45,90,...
+  // Re-order to have them visually balanced
+  const lipOrder = [
+    {n:'1', a:0},
+    {n:'ρ', a:45, isLip:false}, // placeholder
+    {n:'i', a:90},
+    {n:'ρ²', a:135, isLip:false},
+    {n:'-1', a:180},
+    {n:'-ρ', a:225, isLip:false},
+    {n:'-i', a:270},
+    {n:'-ρ²', a:315, isLip:false},
+  ];
+
+  // 8 inner Lipschitz units
+  const innerUnits = [
+    {n:'1',  ang:0,   sub:['Q8','centre','Z6','Z3']},
+    {n:'i',  ang:45,  sub:['Q8']},
+    {n:'j',  ang:90,  sub:['Q8']},
+    {n:'k',  ang:135, sub:['Q8']},
+    {n:'-1', ang:180, sub:['Q8','centre','Z6']},
+    {n:'-i', ang:225, sub:['Q8']},
+    {n:'-j', ang:270, sub:['Q8']},
+    {n:'-k', ang:315, sub:['Q8']},
+  ];
+
+  // 16 outer Hurwitz-proper units
+  // ½(ε0 + ε1 i + ε2 j + ε3 k), ε ∈ {±1}, 16 sign patterns
+  // We label them ρ, ρ', etc., but for layout just spread them around
+  // Mark which carry the Z3 / Z6 subgroup membership.
+  // ρ = ½(1+i+j+k) generates Z6.
+  // The Z3 subgroup is generated by ρ², which equals ½(-1+i+j+k).
+  // Centre Z2 is just ±1.
+  // Z6 = {1, ρ, ρ², -1, -ρ, -ρ²} = {1, ρ, ρ², -1, ρ⁴, ρ⁵}.
+  const outerLabels = [
+    {n:'ρ',    sgn:'½(+1+i+j+k)', sub:['Z6']},
+    {n:'h₂',   sgn:'½(+1+i+j-k)', sub:[]},
+    {n:'h₃',   sgn:'½(+1+i-j+k)', sub:[]},
+    {n:'h₄',   sgn:'½(+1+i-j-k)', sub:[]},
+    {n:'h₅',   sgn:'½(+1-i+j+k)', sub:[]},
+    {n:'h₆',   sgn:'½(+1-i+j-k)', sub:[]},
+    {n:'h₇',   sgn:'½(+1-i-j+k)', sub:[]},
+    {n:'ρ⁵',   sgn:'½(+1-i-j-k)', sub:['Z6']},
+    {n:'-ρ',   sgn:'½(-1-i-j-k) = ρ⁴', sub:['Z6','Z3']},
+    {n:'h₁₀',  sgn:'½(-1-i-j+k)', sub:[]},
+    {n:'h₁₁',  sgn:'½(-1-i+j-k)', sub:[]},
+    {n:'h₁₂',  sgn:'½(-1-i+j+k)', sub:[]},
+    {n:'h₁₃',  sgn:'½(-1+i-j-k)', sub:[]},
+    {n:'h₁₄',  sgn:'½(-1+i-j+k)', sub:[]},
+    {n:'h₁₅',  sgn:'½(-1+i+j-k)', sub:[]},
+    {n:'ρ²',   sgn:'½(-1+i+j+k)', sub:['Z6','Z3']},
+  ];
+
+  // Render
+  const points = [];
+
+  innerUnits.forEach((u, idx) => {
+    const rad = u.ang * Math.PI / 180;
+    const x = cx + rIn * Math.cos(rad);
+    const y = cy + rIn * Math.sin(rad);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', x);
+    c.setAttribute('cy', y);
+    c.setAttribute('r', 6);
+    c.setAttribute('fill', '#c9a557');
+    c.setAttribute('class','tt-pt');
+    c.setAttribute('data-sub', u.sub.join(','));
+    c.setAttribute('data-name', u.n);
+    c.setAttribute('data-ring','inner');
+    group.appendChild(c);
+
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const tx = cx + (rIn-22) * Math.cos(rad);
+    const ty = cy + (rIn-22) * Math.sin(rad) + 3;
+    t.setAttribute('x', tx);
+    t.setAttribute('y', ty);
+    t.setAttribute('fill', '#b8b1a0');
+    t.setAttribute('font-family','IBM Plex Mono');
+    t.setAttribute('font-size','10');
+    t.setAttribute('text-anchor','middle');
+    t.textContent = u.n;
+    group.appendChild(t);
+    points.push({el:c, sub:u.sub, name:u.n, ring:'inner'});
+  });
+
+  outerLabels.forEach((u, idx) => {
+    const ang = (idx / 16) * 360;
+    const rad = ang * Math.PI / 180;
+    const x = cx + rOut * Math.cos(rad);
+    const y = cy + rOut * Math.sin(rad);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', x);
+    c.setAttribute('cy', y);
+    c.setAttribute('r', 5);
+    c.setAttribute('fill', '#8b7340');
+    c.setAttribute('class','tt-pt');
+    c.setAttribute('data-sub', u.sub.join(','));
+    c.setAttribute('data-name', u.n);
+    c.setAttribute('data-sgn', u.sgn);
+    c.setAttribute('data-ring','outer');
+    group.appendChild(c);
+
+    if (u.sub.includes('Z3') || u.sub.includes('Z6') || u.n === 'ρ' || u.n === 'ρ²' || u.n === '-ρ' || u.n === 'ρ⁵') {
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      const tx = cx + (rOut+18) * Math.cos(rad);
+      const ty = cy + (rOut+18) * Math.sin(rad) + 4;
+      t.setAttribute('x', tx);
+      t.setAttribute('y', ty);
+      t.setAttribute('fill', '#c9a557');
+      t.setAttribute('font-family','IBM Plex Mono');
+      t.setAttribute('font-size','10');
+      t.setAttribute('text-anchor','middle');
+      t.textContent = u.n;
+      group.appendChild(t);
+    }
+    points.push({el:c, sub:u.sub, name:u.n, sgn:u.sgn, ring:'outer'});
+  });
+
+  // Buttons (scope to this 2T board only)
+  const wrap2T = svg.closest('.board-wrap');
+  const btns = wrap2T.querySelectorAll('.board-controls .btn');
+  const subgroupInfo = {
+    'all':    { count: 24, msg: 'All 24 Hurwitz units. The 8 inner are Lipschitz $Q_8$; the 16 outer are half-integer.' },
+    'Q8':     { count: 8,  msg: '$Q_8 = \\{\\pm 1, \\pm i, \\pm j, \\pm k\\}$. The Lipschitz subgroup. Index $3$ normal subgroup of $2T$, with quotient $2T/Q_8 \\cong \\mathbb{Z}_3$.' },
+    'Z3':     { count: 3,  msg: '$\\langle \\rho^2 \\rangle = \\{1,\\, \\rho^2,\\, \\rho^4\\} = \\{1,\\, \\rho^2,\\, -\\rho\\}$. The unique $\\mathbb{Z}_3$ subgroup of the embedded Eisenstein $\\mathbb{Z}_6$.' },
+    'Z6':     { count: 6,  msg: '$\\langle \\rho \\rangle = \\{\\pm 1, \\pm\\rho, \\pm\\rho^2\\}$ — the embedded Eisenstein subgroup. Setwise it is the same six points one would draw on the Eisenstein hexagon, now sitting inside the larger 24-element ambient.' },
+    'centre': { count: 2,  msg: '$Z(2T) = \\{\\pm 1\\}$. The centre. Quotient $2T/Z(2T) \\cong A_4$, the alternating group on four letters.' },
+  };
+
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const set = b.getAttribute('data-set');
+    points.forEach(p => {
+      let visible;
+      if (set === 'all') {
+        visible = true;
+      } else {
+        visible = p.sub.includes(set);
+      }
+      p.el.setAttribute('opacity', visible ? '1' : '0.18');
+      p.el.setAttribute('r', visible ? (p.ring === 'inner' ? 7 : 6) : (p.ring === 'inner' ? 6 : 5));
+      if (visible) {
+        p.el.setAttribute('stroke', '#e8e3d6');
+        p.el.setAttribute('stroke-width', '1');
+      } else {
+        p.el.setAttribute('stroke','none');
+      }
+    });
+    const info = subgroupInfo[set];
+    readout.innerHTML = `<strong>${info.count}</strong> elements highlighted. ${info.msg}`;
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+  }));
+
+  // Hover
+  points.forEach(p => {
+    p.el.style.cursor = 'pointer';
+    p.el.addEventListener('mouseenter', () => {
+      const subInfo = p.sub.length ? `subgroups: ${p.sub.join(', ')}` : 'no special subgroup';
+      const sgn = p.sgn ? ` &nbsp; ${p.sgn}` : '';
+      readout.innerHTML = `<strong>${p.name}</strong>${sgn} &nbsp;·&nbsp; ${subInfo}`;
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+    });
+  });
+})();
+
+// =================================================================
+// Lipschitz vs Hurwitz lattice comparison (§5)
+// =================================================================
+(function(){
+  const svg = document.getElementById('lattice-cmp-svg');
+  if (!svg) return;
+  const leftG  = document.getElementById('left-points');
+  const rightG = document.getElementById('right-points');
+  const readout = document.getElementById('lattice-cmp-readout');
+  const wrap = svg.closest('.board-wrap');
+  const btns = wrap.querySelectorAll('.board-controls .btn');
+
+  // Centres and scale (matching the SVG: unit circle radius = 100 px)
+  const LX = 200, LY = 200;   // left panel centre (Re, Im_i)
+  const RX = 620, RY = 200;   // right panel centre (Im_j, Im_k)
+  const R = 100;              // pixels per unit length
+
+  // The 24 Hurwitz units, as 4-tuples (a, b, c, d) representing a + bi + cj + dk.
+  // Norm a^2+b^2+c^2+d^2 = 1 for all.
+  const lipschitz = [
+    {q:[1,0,0,0],  name:'1'},
+    {q:[-1,0,0,0], name:'−1'},
+    {q:[0,1,0,0],  name:'i'},
+    {q:[0,-1,0,0], name:'−i'},
+    {q:[0,0,1,0],  name:'j'},
+    {q:[0,0,-1,0], name:'−j'},
+    {q:[0,0,0,1],  name:'k'},
+    {q:[0,0,0,-1], name:'−k'},
+  ];
+
+  // 16 half-integer units (½)(±1, ±1, ±1, ±1)
+  const halfUnits = [];
+  for (let s0 of [-1,1]) for (let s1 of [-1,1])
+    for (let s2 of [-1,1]) for (let s3 of [-1,1]) {
+      halfUnits.push({q:[s0/2, s1/2, s2/2, s3/2], name:''});
+    }
+  // Mark ρ and a few notable members
+  const rhoIdx = halfUnits.findIndex(u =>
+    u.q[0] === 0.5 && u.q[1] === 0.5 && u.q[2] === 0.5 && u.q[3] === 0.5);
+  if (rhoIdx >= 0) halfUnits[rhoIdx].name = 'ρ';
+  const negRhoIdx = halfUnits.findIndex(u =>
+    u.q[0] === -0.5 && u.q[1] === -0.5 && u.q[2] === -0.5 && u.q[3] === -0.5);
+  if (negRhoIdx >= 0) halfUnits[negRhoIdx].name = '−ρ';
+
+  let mode = 'hurwitz';     // or 'lipschitz'
+  let action = 'identity';  // or 'rho'
+
+  // Quaternion multiplication: q1 * q2 (Hamilton convention)
+  function qmul(a, b) {
+    return [
+      a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3],
+      a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2],
+      a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1],
+      a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]
+    ];
+  }
+  const RHO = [0.5, 0.5, 0.5, 0.5];
+
+  // Apply current action to a quaternion
+  function applyAction(q) {
+    if (action === 'rho') return qmul(RHO, q);
+    return q;
+  }
+
+  function clearPoints(g) { while (g.firstChild) g.removeChild(g.firstChild); }
+  function makePt(cx, cy, x, y, opts) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx + x*R);
+    c.setAttribute('cy', cy - y*R);  // SVG y is inverted
+    c.setAttribute('r', opts.r || 5);
+    c.setAttribute('fill', opts.fill);
+    if (opts.stroke) {
+      c.setAttribute('stroke', opts.stroke);
+      c.setAttribute('stroke-width', opts.strokeWidth || 1);
+    }
+    return c;
+  }
+  function makeLabel(cx, cy, x, y, text, opts) {
+    if (!text) return null;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const off = opts.off || [10, 4];
+    t.setAttribute('x', cx + x*R + off[0]);
+    t.setAttribute('y', cy - y*R + off[1]);
+    t.setAttribute('fill', opts.fill || '#e8e3d6');
+    t.setAttribute('font-family', 'IBM Plex Mono');
+    t.setAttribute('font-size', '10');
+    t.textContent = text;
+    return t;
+  }
+
+  function render() {
+    clearPoints(leftG);
+    clearPoints(rightG);
+
+    const units = mode === 'hurwitz'
+      ? lipschitz.concat(halfUnits)
+      : lipschitz;
+
+    units.forEach(u => {
+      const q = applyAction(u.q);
+      // Original type (Lipschitz vs half-integer)
+      const wasHalf = u.q.every(x => Math.abs(Math.abs(x) - 0.5) < 1e-6);
+      // After action: is the *result* a Lipschitz integer-coord vector?
+      const nowInteger = q.every(x => Math.abs(x - Math.round(x)) < 1e-6);
+      // If we're in Lipschitz mode and the result is NOT integer, the point has escaped L
+      const escaped = (mode === 'lipschitz') && !nowInteger;
+
+      const fill = wasHalf ? '#8b7340' : '#c9a557';
+      const baseR = wasHalf ? 4 : 6;
+      const r = escaped ? baseR + 2 : baseR;
+      const stroke = escaped ? '#d97a7a' : (wasHalf ? null : '#1a1d24');
+      const strokeWidth = escaped ? 2.5 : 0.5;
+
+      // Left panel: project to (Re, Im_i) = (q[0], q[1])
+      if (Math.abs(q[0]) > 1e-6 || Math.abs(q[1]) > 1e-6) {
+        const c = makePt(LX, LY, q[0], q[1], {fill, r, stroke, strokeWidth});
+        leftG.appendChild(c);
+        if (u.name && action === 'identity') {
+          const t = makeLabel(LX, LY, q[0], q[1], u.name, {fill:'#e8e3d6', off:[r+5, 3]});
+          if (t) leftG.appendChild(t);
+        }
+      }
+
+      // Right panel: project to (Im_j, Im_k) = (q[2], q[3])
+      if (Math.abs(q[2]) > 1e-6 || Math.abs(q[3]) > 1e-6) {
+        const c = makePt(RX, RY, q[2], q[3], {fill, r, stroke, strokeWidth});
+        rightG.appendChild(c);
+        if (u.name && action === 'identity') {
+          const t = makeLabel(RX, RY, q[2], q[3], u.name, {fill:'#e8e3d6', off:[r+5, 3]});
+          if (t) rightG.appendChild(t);
+        }
+      }
+    });
+  }
+
+  function updateReadout() {
+    let detail = '';
+    let header = '';
+    if (mode === 'lipschitz' && action === 'identity') {
+      header = 'Showing the <strong>8 Lipschitz units</strong>.';
+      detail = `Each integer-coordinate unit-norm vector appears in <em>one</em> panel only: $\\pm 1, \\pm i$ in the left slice (which uses coordinates $1$ and $i$), $\\pm j, \\pm k$ in the right (using $j$ and $k$).`;
+    } else if (mode === 'lipschitz' && action === 'rho') {
+      header = 'Showing the <strong>Lipschitz units after left-multiplication by $\\rho$</strong>.';
+      detail = `<strong style="color:var(--rose)">Notice the rose outlines.</strong> Every resulting point has coordinates $\\pm \\tfrac{1}{2}$ — i.e. it has <em>escaped</em> the Lipschitz lattice $L$. So $\\rho \\cdot L \\not\\subseteq L$: multiplying by $\\rho$ takes you out of the lattice. The Lipschitz order is not closed under the action of $\\rho$. This is the precise sense in which $L$ fails to "see" the symmetry $2T$.`;
+    } else if (mode === 'hurwitz' && action === 'identity') {
+      header = 'Showing all <strong>24 Hurwitz units</strong>.';
+      detail = `$8$ integer-coordinate units (gold) plus $16$ half-integer units (bronze). The half-integer units have all four coordinates $\\pm \\tfrac{1}{2}$, so they appear simultaneously in both slices, on the dashed inner circles.`;
+    } else if (mode === 'hurwitz' && action === 'rho') {
+      header = 'Showing <strong>$\\rho \\cdot \\mathbb{H}_{\\mathrm{H}}$</strong>.';
+      detail = `Every gold integer-coordinate point has moved to a half-integer position; every bronze half-integer point has moved to either a half-integer or an integer-coordinate position. <em>No</em> point has rose outlines: $\\rho \\cdot \\mathbb{H}_{\\mathrm{H}} \\subseteq \\mathbb{H}_{\\mathrm{H}}$. The Hurwitz lattice is closed under multiplication by $\\rho$, because $\\rho$ <em>is</em> a Hurwitz unit. This is the alignment that $L$ lacked.`;
+    }
+    readout.innerHTML = `${header}<span class="small">${detail}</span>`;
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+  }
+
+  btns.forEach(b => b.addEventListener('click', () => {
+    if (b.hasAttribute('data-lat')) {
+      btns.forEach(x => { if (x.hasAttribute('data-lat')) x.classList.remove('active'); });
+      b.classList.add('active');
+      mode = b.getAttribute('data-lat');
+    } else if (b.hasAttribute('data-action')) {
+      btns.forEach(x => { if (x.hasAttribute('data-action')) x.classList.remove('active'); });
+      b.classList.add('active');
+      action = b.getAttribute('data-action');
+      if (action === 'reset') action = 'identity';
+    }
+    render();
+    updateReadout();
+  }));
+
+  // Initial render
+  render();
+  updateReadout();
+})();
+
+// =================================================================
+// Breaking-chain stages
+// =================================================================
+(function(){
+  const stages = document.querySelectorAll('.stage');
+  const readout = document.getElementById('chain-readout');
+
+  const messages = [
+    `Stage <strong>$2T$</strong>: $24$ elements. The full Hurwitz unit group acts on $\\mathbb{H}$ by conjugation, with no constraint imposed.
+     <span class="small">No sub-line of $\\mathbb{H}$ has been singled out yet.</span>`,
+    `Stage <strong>$Q_8$</strong>: $8$ elements. Setwise stabiliser of $\\mathbb{C}_i = \\mathbb{R}\\cdot 1 + \\mathbb{R}\\cdot i$ — elements $g$ with $g\\,\\mathbb{C}_i\\, g^{-1} = \\mathbb{C}_i$, allowing $i \\mapsto -i$.
+     <span class="small">Quotient $2T / Q_8 \\cong \\mathbb{Z}_3$. The three cosets correspond to the three orbits of $\\langle\\rho^2\\rangle$ on the half-integer units.</span>`,
+    `Stage <strong>$\\mathbb{Z}_4$</strong>: $4$ elements. Pointwise stabiliser of $i$ — the centraliser $C_{2T}(i) = \\{\\pm 1, \\pm i\\}$.
+     <span class="small">Quotient $Q_8 / \\mathbb{Z}_4 \\cong \\mathbb{Z}_2$. The non-trivial coset is generated by $j$, which sends $i \\mapsto -i$ but preserves $\\mathbb{C}_i$ as a set.</span>`,
+    `Stage <strong>$\\mathbb{Z}_2 = \\{\\pm 1\\}$</strong>: $2$ elements. The centre of $2T$. The only elements that fix every $v \\in \\mathbb{H}$ pointwise under conjugation.
+     <span class="small">Quotient $\\mathbb{Z}_4 / \\mathbb{Z}_2 \\cong \\mathbb{Z}_2$. End of the descent.</span>`,
+  ];
+
+  stages.forEach(s => {
+    s.addEventListener('click', () => {
+      stages.forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      const idx = parseInt(s.getAttribute('data-stage'));
+      readout.innerHTML = messages[idx];
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
