@@ -934,7 +934,7 @@ $\mathbb{H}_{\mathrm{H}}$, with their orbits under multiplication by $\rho$.
     $\tfrac{1}{\sqrt{2}} \approx 0.707$ — the projected length of half-integer units in
     each plane (since the projected coordinates are $\pm \tfrac{1}{2}$ each, giving length
     $\sqrt{\tfrac{1}{4} + \tfrac{1}{4}} = \tfrac{1}{\sqrt{2}}$).
-    <span class="small">The $8$ Lipschitz units sit on the solid circles, four in each panel. Each of the $16$ half-integer units sits at $(\pm\tfrac{1}{2}, \pm\tfrac{1}{2})$ in both panels — but with multiplicities, since fixing $(q_0, q_1)$ leaves $(q_2, q_3)$ free up to sign.</span>
+    <span class="small">The $8$ Lipschitz units sit on the solid circles, four in each panel. Each cluster of four bronze dots near a corner represents four distinct half-integer units that share the same projection but differ in the coordinates of the orthogonal slice — the small fan inside the cluster encodes the signs of those hidden coordinates.</span>
   </div>
 </div>
 
@@ -1593,37 +1593,58 @@ The integers are the work of God; everything else is the work of man. — Kronec
       ? lipschitz.concat(halfUnits)
       : lipschitz;
 
+    // Fan-out radius for stacked half-integer points (in plot coordinates)
+    const FAN = 0.10;
+
     units.forEach(u => {
       const q = applyAction(u.q);
       // Original type (Lipschitz vs half-integer)
       const wasHalf = u.q.every(x => Math.abs(Math.abs(x) - 0.5) < 1e-6);
+      // Current position type (after action)
+      const isHalfNow = q.every(x => Math.abs(Math.abs(x) - 0.5) < 1e-6);
       // After action: is the *result* a Lipschitz integer-coord vector?
       const nowInteger = q.every(x => Math.abs(x - Math.round(x)) < 1e-6);
       // If we're in Lipschitz mode and the result is NOT integer, the point has escaped L
       const escaped = (mode === 'lipschitz') && !nowInteger;
 
       const fill = wasHalf ? '#8b7340' : '#c9a557';
-      const baseR = wasHalf ? 4 : 6;
+      // Size by current position type (so currently-integer points are visibly larger)
+      const baseR = isHalfNow ? 3 : 6;
       const r = escaped ? baseR + 2 : baseR;
       const stroke = escaped ? '#d97a7a' : (wasHalf ? null : '#1a1d24');
       const strokeWidth = escaped ? 2.5 : 0.5;
 
       // Left panel: project to (Re, Im_i) = (q[0], q[1])
+      // Fan-out using the orthogonal coords (q[2], q[3]) so the 4 points
+      // sharing a (q[0], q[1]) position cluster at distinct angles
       if (Math.abs(q[0]) > 1e-6 || Math.abs(q[1]) > 1e-6) {
-        const c = makePt(LX, LY, q[0], q[1], {fill, r, stroke, strokeWidth});
+        let dx = 0, dy = 0;
+        if (isHalfNow) {
+          dx = FAN * Math.sign(q[2]);
+          dy = FAN * Math.sign(q[3]);
+        }
+        const c = makePt(LX, LY, q[0] + dx, q[1] + dy, {fill, r, stroke, strokeWidth});
         leftG.appendChild(c);
         if (u.name && action === 'identity') {
-          const t = makeLabel(LX, LY, q[0], q[1], u.name, {fill:'#e8e3d6', off:[r+5, 3]});
+          const t = makeLabel(LX, LY, q[0] + dx, q[1] + dy, u.name,
+            {fill:'#e8e3d6', off:[r+5, 3]});
           if (t) leftG.appendChild(t);
         }
       }
 
       // Right panel: project to (Im_j, Im_k) = (q[2], q[3])
+      // Fan-out using the orthogonal coords (q[0], q[1])
       if (Math.abs(q[2]) > 1e-6 || Math.abs(q[3]) > 1e-6) {
-        const c = makePt(RX, RY, q[2], q[3], {fill, r, stroke, strokeWidth});
+        let dx = 0, dy = 0;
+        if (isHalfNow) {
+          dx = FAN * Math.sign(q[0]);
+          dy = FAN * Math.sign(q[1]);
+        }
+        const c = makePt(RX, RY, q[2] + dx, q[3] + dy, {fill, r, stroke, strokeWidth});
         rightG.appendChild(c);
         if (u.name && action === 'identity') {
-          const t = makeLabel(RX, RY, q[2], q[3], u.name, {fill:'#e8e3d6', off:[r+5, 3]});
+          const t = makeLabel(RX, RY, q[2] + dx, q[3] + dy, u.name,
+            {fill:'#e8e3d6', off:[r+5, 3]});
           if (t) rightG.appendChild(t);
         }
       }
@@ -1641,7 +1662,7 @@ The integers are the work of God; everything else is the work of man. — Kronec
       detail = `<strong style="color:var(--rose)">Notice the rose outlines.</strong> Every resulting point has coordinates $\\pm \\tfrac{1}{2}$ — i.e. it has <em>escaped</em> the Lipschitz lattice $L$. So $\\rho \\cdot L \\not\\subseteq L$: multiplying by $\\rho$ takes you out of the lattice. The Lipschitz order is not closed under the action of $\\rho$. This is the precise sense in which $L$ fails to "see" the symmetry $2T$.`;
     } else if (mode === 'hurwitz' && action === 'identity') {
       header = 'Showing all <strong>24 Hurwitz units</strong>.';
-      detail = `$8$ integer-coordinate units (gold) plus $16$ half-integer units (bronze). The half-integer units have all four coordinates $\\pm \\tfrac{1}{2}$, so they appear simultaneously in both slices, on the dashed inner circles.`;
+      detail = `$8$ integer-coordinate units (gold) plus $16$ half-integer units (bronze). The half-integer units share projected positions in groups of $4$ (same $(q_0, q_1)$, four sign patterns of $(q_2, q_3)$), so they appear as small clusters around the inner-circle corners — each cluster is $4$ distinct units stacked. The fan pattern inside each cluster encodes the coordinates not shown in the current panel.`;
     } else if (mode === 'hurwitz' && action === 'rho') {
       header = 'Showing <strong>$\\rho \\cdot \\mathbb{H}_{\\mathrm{H}}$</strong>.';
       detail = `Every gold integer-coordinate point has moved to a half-integer position; every bronze half-integer point has moved to either a half-integer or an integer-coordinate position. <em>No</em> point has rose outlines: $\\rho \\cdot \\mathbb{H}_{\\mathrm{H}} \\subseteq \\mathbb{H}_{\\mathrm{H}}$. The Hurwitz lattice is closed under multiplication by $\\rho$, because $\\rho$ <em>is</em> a Hurwitz unit. This is the alignment that $L$ lacked.`;
@@ -1702,3 +1723,4 @@ The integers are the work of God; everything else is the work of man. — Kronec
 
 </body>
 </html>
+
