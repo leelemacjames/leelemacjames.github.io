@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peas or Paper? · Power Laws & The Fractal Signature of Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --gold: #c9a84c;
+    --gold-dim: #7a6230;
+    --green: #5faf7a;
+    --blue: #5b9bd5;
+    --red: #c05050;
+    --text: #e8e3d8;
+    --text-dim: #8a857a;
+    --border: #2a2a2e;
+    --font-serif: 'Cormorant Garamond', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── STICKY NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(14,14,15,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+  }
+  nav .brand { color: var(--gold); font-weight: 500; }
+  nav .steps { display: flex; gap: 1.5rem; margin-left: auto; }
+  nav .step-dot {
+    cursor: pointer; color: var(--text-dim); transition: color 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  nav .step-dot:hover, nav .step-dot.active { color: var(--gold); }
+  nav .step-dot .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-dim); transition: background 0.2s;
+  }
+  nav .step-dot.active .dot { background: var(--gold); }
+
+  /* ── SECTIONS ── */
+  section {
+    min-height: 100vh; padding: 5rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .container { max-width: 860px; width: 100%; }
+
+  .section-tag {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.15em; color: var(--gold-dim);
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--font-serif); font-weight: 300;
+    font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1.1;
+    color: var(--text); margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-family: var(--font-serif); font-weight: 400;
+    font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.2;
+    color: var(--text); margin-bottom: 1rem;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.4rem; font-weight: 400;
+    color: var(--gold); margin: 2rem 0 0.75rem;
+  }
+
+  p { color: var(--text-dim); margin-bottom: 1rem; line-height: 1.8; }
+  p strong { color: var(--text); font-weight: 500; }
+  em { color: var(--gold); font-style: italic; }
+
+  /* ── QUESTION BLOCKS ── */
+  .question-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold-dim);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-radius: 2px;
+  }
+  .question-block .q {
+    font-family: var(--font-serif); font-size: 1.15rem; font-style: italic;
+    color: var(--text); margin-bottom: 1.2rem;
+  }
+  .choices { display: flex; flex-direction: column; gap: 0.5rem; }
+  .choice-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 0.8rem 1.2rem;
+    text-align: left; cursor: pointer; border-radius: 2px;
+    font-family: var(--font-sans); font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .choice-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+  .choice-btn.correct { background: rgba(95,175,122,0.12); border-color: var(--green); color: var(--green); }
+  .choice-btn.wrong { background: rgba(192,80,80,0.12); border-color: var(--red); color: var(--red); }
+  .choice-btn.revealed { background: rgba(95,175,122,0.08); border-color: var(--green); color: var(--green); }
+  .feedback {
+    margin-top: 1rem; padding: 1rem;
+    background: var(--surface2); border-radius: 2px;
+    display: none; font-size: 0.9rem; line-height: 1.7;
+  }
+  .feedback.show { display: block; }
+  .feedback.good { border-left: 3px solid var(--green); color: var(--text); }
+  .feedback.bad { border-left: 3px solid var(--red); color: var(--text); }
+
+  /* ── FORMULA DISPLAY ── */
+  .formula {
+    font-family: var(--font-mono); font-size: 1.1rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 1rem 1.5rem; border-radius: 2px;
+    margin: 1rem 0; color: var(--gold);
+    display: inline-block;
+  }
+  .formula sup { font-size: 0.7em; }
+
+  /* ── CANVAS CHARTS ── */
+  .chart-wrapper {
+    position: relative;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  canvas { display: block; }
+  .chart-label {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--text-dim); text-align: center; margin-top: 0.5rem;
+  }
+
+  /* ── SLIDER CONTROLS ── */
+  .slider-row {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 1rem 0;
+  }
+  .slider-row label {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--text-dim); min-width: 60px;
+  }
+  input[type=range] {
+    flex: 1; accent-color: var(--gold);
+    cursor: pointer;
+  }
+  .slider-val {
+    font-family: var(--font-mono); font-size: 0.9rem;
+    color: var(--gold); min-width: 40px; text-align: right;
+  }
+
+  /* ── REVEAL BUTTON ── */
+  .reveal-btn {
+    background: transparent; border: 1px solid var(--gold-dim);
+    color: var(--gold); padding: 0.6rem 1.4rem;
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.1em;
+    cursor: pointer; border-radius: 2px; transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+  .reveal-btn:hover { background: var(--gold-dim); color: var(--bg); }
+
+  /* ── DATA TABLE ── */
+  table {
+    width: 100%; border-collapse: collapse; margin: 1rem 0;
+    font-family: var(--font-mono); font-size: 0.82rem;
+  }
+  th {
+    background: var(--surface2); color: var(--gold);
+    padding: 0.6rem 0.8rem; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.5rem 0.8rem; color: var(--text-dim);
+    border-bottom: 1px solid rgba(42,42,46,0.5);
+  }
+  td.highlight { color: var(--text); }
+
+  /* ── UNIVERSE SCALE VISUAL ── */
+  .scale-strip {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; padding: 1rem 0;
+    scrollbar-color: var(--gold-dim) var(--surface);
+  }
+  .scale-item {
+    flex-shrink: 0; display: flex; flex-direction: column;
+    align-items: center; gap: 0.3rem; padding: 0 0.8rem;
+    border-right: 1px solid var(--border);
+  }
+  .scale-item:last-child { border-right: none; }
+  .scale-icon { font-size: 1.4rem; }
+  .scale-name { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); }
+  .scale-exp { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold); }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1.5rem 0; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.5rem; border-radius: 2px;
+  }
+  .card h4 {
+    font-family: var(--font-serif); font-size: 1.1rem; color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── FRACTAL DIMENSION DEMO ── */
+  #fractalCanvas { cursor: crosshair; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 2px;
+    background: var(--gold); transition: width 0.3s; z-index: 200;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.06em;
+  }
+  footer span { color: var(--gold-dim); }
+
+  /* ── HIGHLIGHT BOX ── */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(201,168,76,0.05), transparent);
+    border: 1px solid var(--gold-dim); padding: 1.5rem; margin: 2rem 0;
+    border-radius: 2px;
+  }
+  .insight-box p { color: var(--text); margin: 0; }
+
+  hr.divider {
+    border: none; border-top: 1px solid var(--border); margin: 2rem 0;
+  }
+
+  .tag {
+    display: inline-block; background: rgba(201,168,76,0.1);
+    border: 1px solid var(--gold-dim); color: var(--gold);
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.2rem 0.5rem; border-radius: 2px; margin: 0.2rem;
+  }
+
+  /* animate sections in */
+  section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+  section.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <span class="brand">McMurmerings · Power Laws</span>
+  <div class="steps">
+    <div class="step-dot active" onclick="scrollTo('s0')" id="dot0"><div class="dot"></div>Scale</div>
+    <div class="step-dot" onclick="scrollTo('s1')" id="dot1"><div class="dot"></div>Power Laws</div>
+    <div class="step-dot" onclick="scrollTo('s2')" id="dot2"><div class="dot"></div>Peas</div>
+    <div class="step-dot" onclick="scrollTo('s3')" id="dot3"><div class="dot"></div>Paper</div>
+    <div class="step-dot" onclick="scrollTo('s4')" id="dot4"><div class="dot"></div>Life</div>
+    <div class="step-dot" onclick="scrollTo('s5')" id="dot5"><div class="dot"></div>Reflect</div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 0 · SCALE -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s0">
+<div class="container">
+  <div class="section-tag">§ 0 · Setting the Stage</div>
+  <h1>Peas or Paper?<br><em>The fractal signature of life</em></h1>
+  <p>You are a gathering of roughly 10<sup>27</sup> atoms — two orders of magnitude more than a blueberry muffin, yet orders of magnitude fewer than an asteroid. Before we ask <em>why</em>, we need to feel the sheer audacity of cosmic scale.</p>
+
+  <div class="scale-strip">
+    <div class="scale-item">
+      <div class="scale-icon">⚛️</div>
+      <div class="scale-name">Atom</div>
+      <div class="scale-exp">10<sup>−23</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🧬</div>
+      <div class="scale-name">DNA</div>
+      <div class="scale-exp">10<sup>−20</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🦠</div>
+      <div class="scale-name">Bacterium</div>
+      <div class="scale-exp">10<sup>−12</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🐜</div>
+      <div class="scale-name">Insect</div>
+      <div class="scale-exp">10<sup>−2</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🧁</div>
+      <div class="scale-name">Muffin</div>
+      <div class="scale-exp">10<sup>5</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🐕</div>
+      <div class="scale-name">Chihuahua</div>
+      <div class="scale-exp">10<sup>6</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🧍</div>
+      <div class="scale-name">Human</div>
+      <div class="scale-exp">10<sup>7</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🌳</div>
+      <div class="scale-name">Tree</div>
+      <div class="scale-exp">10<sup>9</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">☄️</div>
+      <div class="scale-name">Asteroid</div>
+      <div class="scale-exp">10<sup>18</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">⭐</div>
+      <div class="scale-name">Star</div>
+      <div class="scale-exp">10<sup>33</sup> g</div>
+    </div>
+    <div class="scale-item">
+      <div class="scale-icon">🌌</div>
+      <div class="scale-name">Galaxy</div>
+      <div class="scale-exp">10<sup>44</sup> g</div>
+    </div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">The scale above is <strong>not</strong> arithmetic — each step multiplies by the same factor. What kind of sequence is this?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="check(this,'wrong')">Arithmetic — each step adds a fixed amount</button>
+      <button class="choice-btn" onclick="check(this,'correct')">Geometric — each step multiplies by a fixed ratio</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">Linear — the gaps look the same because the axis is special</button>
+    </div>
+    <div class="feedback good" id="fb0c">Exactly. The axis uses a <strong>logarithmic scale</strong> — each tick multiplies the quantity by 10. That's why the gap between a muffin and a human looks the same as the gap between a human and the observable universe: both span ~7 orders of magnitude. The universe speaks in multiplication, not addition.</div>
+    <div class="feedback bad" id="fb0w">Not quite. Look again: consecutive values differ by a <em>factor</em> of 10, not a fixed difference. That makes it geometric, which is why we need a log scale to display it sensibly.</div>
+  </div>
+
+  <div class="insight-box">
+    <p>🐕 → 🌍 mind-bender: if each of the 10<sup>27</sup> atoms in a chihuahua were swapped for an Earth-mass object, the result would have the mass of the observable universe. The chihuahua contains a cosmos.</p>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 1 · POWER LAWS -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s1">
+<div class="container">
+  <div class="section-tag">§ 1 · The Language of Physics</div>
+  <h2>Power Law Relations</h2>
+  <p>Physics classifies natural laws by their <em>power</em>. A power law has the form:</p>
+  <div class="formula">y = k · x<sup>n</sup></div>
+  <p>where <em>k</em> is a constant and <em>n</em> is the exponent (usually rational). The magic trick: plot log(y) vs log(x) and a power law becomes a <strong>straight line</strong> with slope <em>n</em>.</p>
+
+  <div class="formula" style="font-size:0.9rem; color: var(--text-dim);">
+    log(y) = log(k) + n·log(x) &nbsp;↔&nbsp; Y = c + n·X
+  </div>
+
+  <h3>Explore the zoo of powers</h3>
+  <div class="slider-row">
+    <label>n =</label>
+    <input type="range" id="powerSlider" min="-3" max="4" step="0.25" value="1" oninput="updatePowerPlot()">
+    <span class="slider-val" id="powerVal">1.00</span>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="chart-wrapper">
+        <canvas id="rawCanvas" width="340" height="260"></canvas>
+        <div class="chart-label">Raw: y = x<sup>n</sup></div>
+      </div>
+    </div>
+    <div>
+      <div class="chart-wrapper">
+        <canvas id="logCanvas" width="340" height="260"></canvas>
+        <div class="chart-label">Log–log: slope = n</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">Drag the slider to <strong>n = 3</strong>. What does the log–log plot show?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="check(this,'wrong')">A curve, because cubing is non-linear</button>
+      <button class="choice-btn" onclick="check(this,'correct')">A straight line with slope 3</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">A horizontal line — the exponent cancels</button>
+    </div>
+    <div class="feedback good">Good. Taking logs linearises the power law: log(kx³) = log(k) + 3·log(x). The slope on a log–log plot <em>is</em> the exponent. This is how physicists identify power laws from data — they plot log vs log and measure the gradient.</div>
+    <div class="feedback bad">Try dragging to n=3 and look at the right-hand plot. A power law always becomes a straight line on log–log axes. The slope equals n exactly.</div>
+  </div>
+
+  <hr class="divider">
+  <h3>Known power laws in physics</h3>
+  <table>
+    <tr><th>Law</th><th>Relation</th><th>Power n</th></tr>
+    <tr><td>Hooke's spring</td><td>T = −kx</td><td class="highlight">1</td></tr>
+    <tr><td>Newton's gravity</td><td>F = GMm/r²</td><td class="highlight">−2</td></tr>
+    <tr><td>Kepler's 3rd law</td><td>T ∝ r<sup>3/2</sup></td><td class="highlight">3/2</td></tr>
+    <tr><td>Stefan-Boltzmann</td><td>P ∝ T⁴</td><td class="highlight">4</td></tr>
+    <tr><td>Kleiber's law (metabolic rate)</td><td>R ∝ W<sup>3/4</sup></td><td class="highlight">3/4</td></tr>
+    <tr><td>Crumpled paper</td><td>M ∝ D<sup>5/2</sup></td><td class="highlight">5/2</td></tr>
+  </table>
+  <p>Notice how physics loves rational fractions — 3/2, 3/4, 5/2. These are not accidents. They encode the geometry of the universe.</p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 2 · BAGGED PEAS (n ≈ 3) -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s2">
+<div class="container">
+  <div class="section-tag">§ 2 · Close-Packed Matter</div>
+  <h2>The Bagged Pea Law: <em>M = k D³</em></h2>
+  <p>Weigh different amounts of dried peas, wrap each in clingfilm into an approximately spherical blob, and measure the diameter. The data is in the table below — from the actual experiment.</p>
+
+  <table>
+    <tr><th>Mass m / g</th><th>Diameter d / cm</th><th>log(m)</th><th>log(d)</th></tr>
+    <tr><td>1.2</td><td>1.1</td><td class="highlight">0.079</td><td class="highlight">0.041</td></tr>
+    <tr><td>9.5</td><td>2.1</td><td class="highlight">0.978</td><td class="highlight">0.322</td></tr>
+    <tr><td>25.6</td><td>2.9</td><td class="highlight">1.408</td><td class="highlight">0.462</td></tr>
+    <tr><td>91.1</td><td>4.5</td><td class="highlight">1.960</td><td class="highlight">0.653</td></tr>
+  </table>
+
+  <div class="chart-wrapper">
+    <canvas id="peasCanvas" width="760" height="320"></canvas>
+    <div class="chart-label" id="peasLabel">Log–log plot of pea data. What is the slope?</div>
+  </div>
+
+  <div class="slider-row">
+    <label>Slope n</label>
+    <input type="range" id="peasSlider" min="1" max="5" step="0.05" value="2" oninput="updatePeas()">
+    <span class="slider-val" id="peasVal">2.00</span>
+  </div>
+  <button class="reveal-btn" onclick="revealPeas()">Reveal best fit slope →</button>
+
+  <div class="question-block" style="margin-top:2rem;">
+    <div class="q">Why should we expect a slope of exactly 3 for tightly-packed spherical objects?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="check(this,'wrong')">Because peas have three layers</button>
+      <button class="choice-btn" onclick="check(this,'correct')">Because volume ∝ r³, and density is approximately constant</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">Because 3 is the most common power in physics</button>
+    </div>
+    <div class="feedback good">Correct. V<sub>sphere</sub> = (4/3)πr³ ∝ D³. Since the peas are densely and uniformly packed (uniform spacing between peas, like atoms in a solid), the bulk density ρ = M/V is approximately constant. So M = ρV ∝ D³. This is the <em>pea law</em> — and the same logic applies to rocks, planets, and neutron stars.</div>
+    <div class="feedback bad">Think about the volume formula: V = (4/3)πr³. Volume scales as the <em>cube</em> of linear size. If density is constant (same packing everywhere), then M ∝ V ∝ D³. The slope 3 comes from 3D geometry.</div>
+  </div>
+
+  <div class="insight-box">
+    <p>📌 <strong>The Big Picture:</strong> Atoms themselves pack like peas. That's why planets, asteroids, molecules, and humans all lie along a slope-3 line on a mass–size diagram of the universe. They are all made of closely-packed atoms with roughly atomic density (~10³ kg/m³). The slope 3 is the fingerprint of solid, dense matter.</p>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 3 · CRUMPLED PAPER (n ≈ 2.5) -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s3">
+<div class="container">
+  <div class="section-tag">§ 3 · Fractals & Hierarchy</div>
+  <h2>The Crumpled Paper Law: <em>M = k D<sup>5/2</sup></em></h2>
+  <p>Now crumple sheets of paper into spherical balls. Crumpling introduces <strong>spaces of a hierarchy of sizes</strong> — a few large voids, many small ones. The ball is a <em>fractal</em>.</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>🫛 Bagged Peas</h4>
+      <p>Uniform spacing between units. All gaps are the <em>same size</em>. Like atoms in a crystal, or peas in a bag.</p>
+      <div class="formula" style="font-size:0.9rem;">M ∝ D<sup>3</sup></div>
+      <p style="margin:0;">Integer dimension → slope = <strong>3</strong></p>
+    </div>
+    <div class="card">
+      <h4>📄 Crumpled Paper</h4>
+      <p>Spaces at <em>many scales</em> — few large voids, many small. A hierarchy of emptiness. The ball is a fractal object.</p>
+      <div class="formula" style="font-size:0.9rem;">M ∝ D<sup>5/2</sup></div>
+      <p style="margin:0;">Fractal dimension → slope = <strong>2.5</strong></p>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Mass m / g</th><th>Diameter d / cm</th><th>log(m)</th><th>log(d)</th></tr>
+    <tr><td>1</td><td>1.5</td><td class="highlight">0.000</td><td class="highlight">0.176</td></tr>
+    <tr><td>4</td><td>2.4</td><td class="highlight">0.602</td><td class="highlight">0.380</td></tr>
+    <tr><td>16</td><td>4.6</td><td class="highlight">1.204</td><td class="highlight">0.663</td></tr>
+    <tr><td>64</td><td>7.3</td><td class="highlight">1.806</td><td class="highlight">0.863</td></tr>
+    <tr><td>256</td><td>15.5</td><td class="highlight">2.408</td><td class="highlight">1.190</td></tr>
+  </table>
+
+  <div class="chart-wrapper">
+    <canvas id="paperCanvas" width="760" height="320"></canvas>
+    <div class="chart-label" id="paperLabel">Log–log plot of crumpled paper data. Fit the slope.</div>
+  </div>
+
+  <div class="slider-row">
+    <label>Slope n</label>
+    <input type="range" id="paperSlider" min="1" max="4" step="0.05" value="2" oninput="updatePaper()">
+    <span class="slider-val" id="paperVal">2.00</span>
+  </div>
+  <button class="reveal-btn" onclick="revealPaper()">Reveal best fit →</button>
+
+  <div class="question-block" style="margin-top:2rem;">
+    <div class="q">The slope is ~2.38 in the fit (≈ 5/2 = 2.5 theoretically). Why is the slope <em>less than 3</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="check(this,'wrong')">Paper is lighter than peas</button>
+      <button class="choice-btn" onclick="check(this,'correct')">The crumpled ball contains voids — its effective density decreases as it grows</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">The logarithm distorts the slope downward</button>
+    </div>
+    <div class="feedback good">Precisely. As the ball gets bigger, a larger fraction of its volume is air (trapped in the hierarchical folds). The effective bulk density is <em>not constant</em> — it falls as D grows. That's the fractal signature: ρ_eff ∝ D<sup>−1/2</sup>, so M = ρ·D³ ∝ D<sup>2.5</sup>. The exponent encodes the fractal dimension.</div>
+    <div class="feedback bad">Think about what changes as you add more paper sheets to the ball. The outer layers trap more air. The density is not uniform — it gets effectively lower as the ball grows. That's why mass scales as D<sup>2.5</sup> rather than D³.</div>
+  </div>
+
+  <h3>What is a fractal dimension?</h3>
+  <p>For a solid 3D sphere: mass ∝ D³ → dimension = <strong>3</strong><br>
+  For a flat 2D sheet: mass ∝ D² → dimension = <strong>2</strong><br>
+  For crumpled paper: mass ∝ D<sup>2.5</sup> → dimension = <strong>2.5</strong></p>
+  <p>The crumpled ball lives <em>between</em> 2D and 3D. It's more than a sheet but less than a solid. This is a <strong>fractal dimension</strong> — and it arises naturally when you have structure at every scale.</p>
+
+  <div class="chart-wrapper">
+    <canvas id="compCanvas" width="760" height="300"></canvas>
+    <div class="chart-label">Comparison: pea law (slope 3, blue) vs paper law (slope 2.5, gold) on log–log axes</div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 4 · LIFE -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s4">
+<div class="container">
+  <div class="section-tag">§ 4 · The Signature of Life</div>
+  <h2>Is Life More Like Paper Than Peas?</h2>
+  <p>On the cosmic mass–size diagram, <strong>dead inert things</strong> (planets, asteroids, stars) follow slope 3 — like bagged peas. But what about <strong>living things</strong>?</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>💀 Dead–Inert (slope ≈ 3)</h4>
+      <p>Clusters of galaxies, stars, planets, moons, asteroids, comets — all close-packed matter, all same atomic density.</p>
+      <div class="tag">M ∝ D³</div>
+    </div>
+    <div class="card">
+      <h4>🌿 Living–Purposeful (slope &gt; 3?)</h4>
+      <p>Trees, humans, insects, bacteria — life builds <em>hierarchical internal structure</em>: cells → tissues → organs → organisms.</p>
+      <div class="tag">M ∝ D<sup>?</sup></div>
+    </div>
+  </div>
+
+  <p>Life organises itself into purposeful organs with structure at every scale — like crumpled paper. Lungs branch at 23 levels. Neural dendrites ramify fractally. Vasculature supplies every cell via hierarchical tubes.</p>
+
+  <h3>Kleiber's Law: metabolic rate scales as M<sup>3/4</sup></h3>
+  <p>Max Kleiber found in 1932 that the basal metabolic rate of mammals follows:</p>
+  <div class="formula">BMR = k · M<sup>3/4</sup></div>
+  <p>This holds across 8 orders of magnitude — from a mouse to a blue whale. The slope on a log–log plot is <strong>3/4</strong>, not 1 (as you'd expect for simple scaling). Why?</p>
+
+  <div class="chart-wrapper">
+    <canvas id="kleiberCanvas" width="760" height="300"></canvas>
+    <div class="chart-label">Kleiber's Law: log(BMR) vs log(Mass). Slope = 3/4 across all mammals.</div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">If metabolic rate scales as M<sup>3/4</sup> and lifespan ∝ M/BMR, what does lifespan scale as?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="check(this,'wrong')">M (bigger = longer lived, linear)</button>
+      <button class="choice-btn" onclick="check(this,'correct')">M<sup>1/4</sup> (bigger animals live longer, but weakly)</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">M<sup>−3/4</sup> (bigger animals die sooner)</button>
+    </div>
+    <div class="feedback good">Correct: t<sub>life</sub> = M / BMR = M / (kM<sup>3/4</sup>) = M<sup>1/4</sup>. An elephant lives longer than a mouse — roughly in proportion to M<sup>1/4</sup>. But here's the remarkable twist: if you count <em>total heartbeats</em> over a lifetime, it's approximately the same for all mammals (~1.5 billion). Life burns at a fractal rate, not a linear one.</div>
+    <div class="feedback bad">Lifespan ∝ M / BMR. If BMR ∝ M<sup>3/4</sup>, then lifespan ∝ M / M<sup>3/4</sup> = M<sup>1/4</sup>. Bigger animals live longer — but only as M<sup>1/4</sup>, a weak dependence. The fractal geometry of the vascular system (a network with hierarchical branching) gives rise to this 3/4 law.</div>
+  </div>
+
+  <div class="insight-box">
+    <p>🫁 <strong>Why 3/4?</strong> The West–Brown–Enquist model (1997) shows that a space-filling fractal network supplying energy to all cells in a body produces BMR ∝ M<sup>3/4</sup> naturally. The fractional exponent arises from the geometry of hierarchical branching — the same geometry that gives crumpled paper its 5/2 exponent. Life is paper, not peas.</p>
+  </div>
+
+  <h3>Stars vs Animals: a striking comparison</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>⭐ Stars: L ∝ M<sup>7/2</sup></h4>
+      <p>Luminosity grows steeply with mass. A star 10× heavier burns 10<sup>3.5</sup> ≈ 3000× brighter. Massive stars exhaust their fuel rapidly.</p>
+      <p>Lifespan ∝ M/L ∝ M<sup>−5/2</sup> — bigger stars die much <em>faster</em>.</p>
+    </div>
+    <div class="card">
+      <h4>🦣 Animals: BMR ∝ M<sup>3/4</sup></h4>
+      <p>Metabolic rate grows gently. A 10× heavier animal burns only 10<sup>0.75</sup> ≈ 5.6× more energy.</p>
+      <p>Lifespan ∝ M<sup>1/4</sup> — bigger animals live <em>longer</em>.</p>
+    </div>
+  </div>
+  <p>Stars and animals are both governed by power laws — but with opposite signs for lifespan scaling. The difference is in the geometry: stars are fusion reactors, animals are fractal supply networks.</p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 5 · REFLECT -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s5">
+<div class="container">
+  <div class="section-tag">§ 5 · Reflection</div>
+  <h2>Putting It Together</h2>
+  <p>Answer these consolidation questions in your notes or out loud.</p>
+
+  <div class="question-block">
+    <div class="q">1. In your own words: why does a log–log plot turn a power law into a straight line?</div>
+    <div class="choices">
+      <button class="reveal-btn" onclick="toggleHint('h1')">Show hint</button>
+    </div>
+    <div class="feedback good" id="h1">Apply log to both sides of y = kx<sup>n</sup>. You get log y = log k + n log x. This is Y = c + nX — a linear equation in the variables (log x, log y). The gradient equals n, and the y-intercept is log k.</div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">2. A planet has radius R. How does its mass scale with R, assuming uniform atomic density?</div>
+    <div class="choices">
+      <button class="reveal-btn" onclick="toggleHint('h2')">Show hint</button>
+    </div>
+    <div class="feedback good" id="h2">V ∝ R³, and ρ ≈ constant (atomic density). So M = ρV ∝ R³. On a log–log plot of mass vs radius for solar system planets, you expect slope ≈ 3.</div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">3. A crumpled paper ball has fractal dimension ~2.5. If you double the diameter, by what factor does mass increase?</div>
+    <div class="choices">
+      <button class="reveal-btn" onclick="toggleHint('h3')">Show hint</button>
+    </div>
+    <div class="feedback good" id="h3">M ∝ D<sup>2.5</sup>. If D → 2D, then M → (2D)<sup>2.5</sup> = 2<sup>2.5</sup> · D<sup>2.5</sup> = 5.66 M. Compare with solid sphere (slope 3): doubling D multiplies mass by 2³ = 8. The paper ball gains less mass per unit diameter because more of the volume is air.</div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">4. The "peas or paper" question is ultimately about the geometry of matter. Identify one living structure in your body that is clearly fractal (paper-like) rather than solid (pea-like).</div>
+    <div class="choices">
+      <button class="reveal-btn" onclick="toggleHint('h4')">Show examples</button>
+    </div>
+    <div class="feedback good" id="h4">• Lungs — 23 levels of branching from trachea to alveoli, increasing surface area enormously<br>• Blood vessels — capillary networks ramify to reach every cell<br>• Neurons — dendritic arbors branch fractally to maximise connectivity<br>• Intestinal villi — increase absorptive surface area through hierarchical folds<br>All of these are strategies for <em>packing surface into volume</em> — the essential trick of fractal geometry applied to life.</div>
+  </div>
+
+  <div class="question-block">
+    <div class="q">5. (Challenge) A mouse (mass ~20 g) has a BMR of ~0.14 W. Predict the BMR of an elephant (mass ~4000 kg) using Kleiber's law.</div>
+    <div class="choices">
+      <button class="reveal-btn" onclick="toggleHint('h5')">Show working</button>
+    </div>
+    <div class="feedback good" id="h5">BMR ∝ M<sup>3/4</sup><br>
+    Mass ratio = 4,000,000 / 20 = 200,000<br>
+    BMR ratio = (200,000)<sup>3/4</sup> ≈ 8,000<br>
+    Elephant BMR ≈ 0.14 × 8,000 ≈ 1,100 W<br>
+    (Measured value ~1,700 W — Kleiber's law gives the right order of magnitude across 8 decades.)</div>
+  </div>
+
+  <hr class="divider">
+  <h3>The central claim</h3>
+  <div class="insight-box">
+    <p>The slope of the mass–size relation encodes the <strong>geometry of organisation</strong>. Dead matter packs like peas → slope 3 (integer, Euclidean). Living matter organises hierarchically like crumpled paper → fractional slope between 2 and 3. The fractal exponent is not a curiosity — it is the geometric signature of purposeful, multi-scale organisation. <em>Life is paper, not peas.</em></p>
+  </div>
+
+  <div style="margin-top:3rem; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-dim);">
+    Further reading: Barrow, J. D. — <em>The Artful Universe</em> · West, Brown & Enquist (1997) Science 276 · Kleiber, M. (1932) Hilgardia 6
+  </div>
+</div>
+</section>
+
+<footer>
+  <span>Constructed by Silicon · Anthropic Claude</span> &nbsp;—&nbsp; <span>Architect Carbon · LeeMcCullochJames</span>
+  &nbsp;|&nbsp; McMurmerings · Power Laws & Fractal Life
+</footer>
+
+<script>
+// ── NAV DOTS & PROGRESS ──────────────────────────────────────
+const sections = ['s0','s1','s2','s3','s4','s5'];
+function scrollTo(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+
+function updateProgress(){
+  const scrolled = window.scrollY;
+  const total = document.body.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (scrolled/total*100)+'%';
+  
+  sections.forEach((id,i) => {
+    const el = document.getElementById(id);
+    const rect = el.getBoundingClientRect();
+    const dot = document.getElementById('dot'+i);
+    if(rect.top < window.innerHeight*0.6 && rect.bottom > 0){
+      document.querySelectorAll('.step-dot').forEach(d=>d.classList.remove('active'));
+      dot.classList.add('active');
+    }
+    if(rect.top < window.innerHeight*0.85) el.classList.add('visible');
+  });
+}
+window.addEventListener('scroll', updateProgress);
+setTimeout(()=>{ document.getElementById('s0').classList.add('visible'); }, 100);
+
+// ── QUIZ LOGIC ───────────────────────────────────────────────
+let answered = {};
+function check(btn, result){
+  const block = btn.closest('.question-block');
+  const fbs = block.querySelectorAll('.feedback');
+  if(block.dataset.answered) return;
+  block.dataset.answered = true;
+  block.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
+  btn.classList.add(result);
+  if(result==='correct'){
+    fbs[0] && (fbs[0].classList.add('show','good'));
+  } else {
+    btn.classList.add('wrong');
+    fbs[1] && (fbs[1].classList.add('show','bad'));
+    // reveal correct
+    block.querySelectorAll('.choice-btn').forEach(b=>{
+      if(!b.classList.contains('wrong')) b.classList.add('revealed');
+    });
+  }
+}
+function toggleHint(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+// ── CANVAS UTILITIES ─────────────────────────────────────────
+const GOLD='#c9a84c', BLUE='#5b9bd5', GREEN='#5faf7a', DIM='#3a3a3e', TEXT='#8a857a';
+
+function drawAxes(ctx, w, h, pad, xlabel, ylabel){
+  ctx.strokeStyle=DIM; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.lineTo(w-pad,h-pad);
+  ctx.stroke();
+  ctx.fillStyle=TEXT; ctx.font='11px IBM Plex Mono, monospace';
+  ctx.textAlign='center';
+  ctx.fillText(xlabel, w/2, h-6);
+  ctx.save(); ctx.translate(12, h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(ylabel,0,0); ctx.restore();
+}
+
+function mapX(x, xmin, xmax, pad, w){ return pad + (x-xmin)/(xmax-xmin)*(w-2*pad); }
+function mapY(y, ymin, ymax, pad, h){ return h-pad - (y-ymin)/(ymax-ymin)*(h-2*pad); }
+
+function plotPoints(ctx, xs, ys, xmin, xmax, ymin, ymax, pad, w, h, color, r){
+  ctx.fillStyle=color;
+  for(let i=0;i<xs.length;i++){
+    const px=mapX(xs[i],xmin,xmax,pad,w);
+    const py=mapY(ys[i],ymin,ymax,pad,h);
+    ctx.beginPath(); ctx.arc(px,py,r,0,2*Math.PI); ctx.fill();
+  }
+}
+
+function plotLine(ctx, xmin, xmax, ymin, ymax, pad, w, h, fn, color, lw){
+  ctx.strokeStyle=color; ctx.lineWidth=lw||1.5;
+  ctx.beginPath();
+  let first=true;
+  for(let px=pad;px<=w-pad;px+=2){
+    const x = xmin+(px-pad)/(w-2*pad)*(xmax-xmin);
+    const y = fn(x);
+    if(y<ymin||y>ymax){ first=true; continue; }
+    const py=mapY(y,ymin,ymax,pad,h);
+    if(first){ ctx.moveTo(px,py); first=false; } else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+}
+
+// ── POWER SLIDER PLOTS ───────────────────────────────────────
+function updatePowerPlot(){
+  const n = parseFloat(document.getElementById('powerSlider').value);
+  document.getElementById('powerVal').textContent = n.toFixed(2);
+  
+  // Raw plot
+  const rawC = document.getElementById('rawCanvas');
+  const rctx = rawC.getContext('2d');
+  rctx.clearRect(0,0,rawC.width,rawC.height);
+  rctx.fillStyle='#161618'; rctx.fillRect(0,0,rawC.width,rawC.height);
+  const w=rawC.width, h=rawC.height, pad=40;
+  drawAxes(rctx,w,h,pad,'x','y');
+  const k=1, xmax=5, ymax=n>0?Math.pow(xmax,n):10;
+  const ymin=n<0?-5:0;
+  plotLine(rctx,0.1,xmax,ymin,ymax*1.1,pad,w,h,x=>k*Math.pow(x,n),GOLD,2);
+  // label
+  rctx.fillStyle=GOLD; rctx.font='12px IBM Plex Mono'; rctx.textAlign='left';
+  rctx.fillText('y = x^'+n.toFixed(2), pad+5, pad+15);
+
+  // Log-log plot
+  const logC = document.getElementById('logCanvas');
+  const lctx = logC.getContext('2d');
+  lctx.clearRect(0,0,logC.width,logC.height);
+  lctx.fillStyle='#161618'; lctx.fillRect(0,0,logC.width,logC.height);
+  drawAxes(lctx,w,h,pad,'log x','log y');
+  const lxmin=-0.5, lxmax=1, lymin=n<0?-5:n*lxmin-0.2, lymax=n*lxmax+0.2;
+  const lspan=Math.max(Math.abs(lymax-lymin),1);
+  plotLine(lctx,lxmin,lxmax,lymin-lspan*0.05,lymax+lspan*0.05,pad,w,h,
+    x=>n*x, GOLD, 2);
+  // slope annotation
+  lctx.fillStyle=BLUE; lctx.font='11px IBM Plex Mono'; lctx.textAlign='left';
+  lctx.fillText('slope = '+n.toFixed(2), pad+5, pad+15);
+}
+updatePowerPlot();
+
+// ── PEAS LOG-LOG ─────────────────────────────────────────────
+const peasMass=[1.2,9.5,25.6,91.1], peasDiam=[1.1,2.1,2.9,4.5];
+const peasLM=peasMass.map(m=>Math.log10(m));
+const peasLD=peasDiam.map(d=>Math.log10(d));
+
+function drawPeas(slope){
+  const c=document.getElementById('peasCanvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  drawAxes(ctx,w,h,pad,'log10(diameter / cm)','log10(mass / g)');
+  const xmin=-0.1,xmax=0.75,ymin=-0.1,ymax=2.2;
+  
+  // best-fit intercept at slope given
+  const meanX=peasLD.reduce((a,b)=>a+b)/peasLD.length;
+  const meanY=peasLM.reduce((a,b)=>a+b)/peasLM.length;
+  const intercept=meanY-slope*meanX;
+  
+  plotLine(ctx,xmin,xmax,ymin,ymax,pad,w,h,x=>slope*x+intercept,GOLD,1.5);
+  plotPoints(ctx,peasLD,peasLM,xmin,xmax,ymin,ymax,pad,w,h,BLUE,5);
+  
+  // residual score
+  let ss=0; peasLD.forEach((x,i)=>{ ss+=(peasLM[i]-(slope*x+intercept))**2; });
+  ctx.fillStyle=GOLD; ctx.font='12px IBM Plex Mono'; ctx.textAlign='right';
+  ctx.fillText('n = '+slope.toFixed(2), w-pad-5, pad+18);
+  ctx.fillStyle=TEXT;
+  ctx.fillText('Sum residuals^2 = '+ss.toFixed(4), w-pad-5, pad+35);
+}
+function updatePeas(){
+  const n=parseFloat(document.getElementById('peasSlider').value);
+  document.getElementById('peasVal').textContent=n.toFixed(2);
+  drawPeas(n);
+}
+function revealPeas(){
+  document.getElementById('peasSlider').value=3.0;
+  document.getElementById('peasVal').textContent='3.00';
+  drawPeas(3.0);
+  document.getElementById('peasLabel').textContent='Best fit slope ~3.0 - M = k * D^3';
+}
+drawPeas(2.0);
+
+// ── PAPER LOG-LOG ─────────────────────────────────────────────
+const paperMass=[1,4,16,64,256], paperDiam=[1.5,2.4,4.6,7.3,15.5];
+const paperLM=paperMass.map(m=>Math.log10(m));
+const paperLD=paperDiam.map(d=>Math.log10(d));
+
+function drawPaper(slope){
+  const c=document.getElementById('paperCanvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  drawAxes(ctx,w,h,pad,'log10(diameter / cm)','log10(mass / g)');
+  const xmin=0.1,xmax=1.3,ymin=-0.1,ymax=2.6;
+
+  const meanX=paperLD.reduce((a,b)=>a+b)/paperLD.length;
+  const meanY=paperLM.reduce((a,b)=>a+b)/paperLM.length;
+  const intercept=meanY-slope*meanX;
+
+  plotLine(ctx,xmin,xmax,ymin,ymax,pad,w,h,x=>slope*x+intercept,GOLD,1.5);
+  plotPoints(ctx,paperLD,paperLM,xmin,xmax,ymin,ymax,pad,w,h,GREEN,5);
+
+  let ss=0; paperLD.forEach((x,i)=>{ ss+=(paperLM[i]-(slope*x+intercept))**2; });
+  ctx.fillStyle=GOLD; ctx.font='12px IBM Plex Mono'; ctx.textAlign='right';
+  ctx.fillText('n = '+slope.toFixed(2), w-pad-5, pad+18);
+  ctx.fillStyle=TEXT;
+  ctx.fillText('Sum residuals^2 = '+ss.toFixed(4), w-pad-5, pad+35);
+}
+function updatePaper(){
+  const n=parseFloat(document.getElementById('paperSlider').value);
+  document.getElementById('paperVal').textContent=n.toFixed(2);
+  drawPaper(n);
+}
+function revealPaper(){
+  document.getElementById('paperSlider').value=2.38;
+  document.getElementById('paperVal').textContent='2.38';
+  drawPaper(2.38);
+  document.getElementById('paperLabel').textContent='Best fit slope ~2.38 (~5/2) - M = k * D^(5/2)';
+}
+drawPaper(2.0);
+
+// ── COMPARISON CHART ──────────────────────────────────────────
+function drawComp(){
+  const c=document.getElementById('compCanvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  drawAxes(ctx,w,h,pad,'log10(diameter)','log10(mass)');
+  const xmin=0,xmax=1.4,ymin=-0.3,ymax=2.7;
+
+  // peas line slope 3 through pea data
+  const pmX=peasLD.reduce((a,b)=>a+b)/peasLD.length;
+  const pmY=peasLM.reduce((a,b)=>a+b)/peasLM.length;
+  const pi=pmY-3*pmX;
+  plotLine(ctx,xmin,xmax,ymin,ymax,pad,w,h,x=>3*x+pi,BLUE,2);
+  plotPoints(ctx,peasLD,peasLM,xmin,xmax,ymin,ymax,pad,w,h,BLUE,5);
+
+  // paper line slope 2.38
+  const paX=paperLD.reduce((a,b)=>a+b)/paperLD.length;
+  const paY=paperLM.reduce((a,b)=>a+b)/paperLM.length;
+  const pai=paY-2.38*paX;
+  plotLine(ctx,xmin,xmax,ymin,ymax,pad,w,h,x=>2.38*x+pai,GOLD,2);
+  plotPoints(ctx,paperLD,paperLM,xmin,xmax,ymin,ymax,pad,w,h,GREEN,5);
+
+  // legend
+  ctx.font='11px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillStyle=BLUE; ctx.fillRect(pad+5,pad+10,14,3);
+  ctx.fillText('Peas (n=3)', pad+22, pad+18);
+  ctx.fillStyle=GOLD; ctx.fillRect(pad+5,pad+27,14,3);
+  ctx.fillStyle=GREEN; ctx.fillText('Paper (n=2.38)', pad+22, pad+35);
+}
+drawComp();
+
+// ── KLEIBER PLOT ─────────────────────────────────────────────
+function drawKleiber(){
+  const c=document.getElementById('kleiberCanvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=55;
+  drawAxes(ctx,w,h,pad,'log10(Mass / g)','log10(BMR / W)');
+  const xmin=1,xmax=8,ymin=-2.5,ymax=5.5;
+
+  // Approximate Kleiber line: log(BMR) = -3.83 + 0.75*log(mass_g)
+  // (converting from kg: log(mass_g) = log(mass_kg)+3)
+  const k_int=-3.83+0.75*(-3+3); // shift
+  // Using direct: BMR(W) = 0.0178 * mass(g)^0.75  (approx)
+  const intercept=Math.log10(0.0178);
+  plotLine(ctx,xmin,xmax,ymin,ymax,pad,w,h,x=>intercept+0.75*x,GOLD,2);
+
+  // Some representative species (log10 mass g, log10 BMR W)
+  const species=[
+    {name:'Mouse',       m:1.3,  bmr:-1.85},
+    {name:'Rat',         m:2.3,  bmr:-1.1},
+    {name:'Rabbit',      m:3.4,  bmr:-0.3},
+    {name:'Cat',         m:3.7,  bmr:0.2},
+    {name:'Dog',         m:4.3,  bmr:0.9},
+    {name:'Human',       m:4.85, bmr:1.7},
+    {name:'Horse',       m:5.7,  bmr:2.7},
+    {name:'Elephant',    m:6.6,  bmr:3.2},
+    {name:'Blue whale',  m:8.0,  bmr:4.9},
+  ];
+  species.forEach(s=>{
+    const px=mapX(s.m,xmin,xmax,pad,w);
+    const py=mapY(s.bmr,ymin,ymax,pad,h);
+    ctx.fillStyle=BLUE;
+    ctx.beginPath(); ctx.arc(px,py,5,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle=TEXT; ctx.font='9px IBM Plex Mono'; ctx.textAlign='left';
+    if(s.name==='Human'||s.name==='Mouse'||s.name==='Blue whale'||s.name==='Elephant')
+      ctx.fillText(s.name,px+6,py+4);
+  });
+
+  ctx.fillStyle=GOLD; ctx.font='12px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillText('slope = 3/4 = 0.75', pad+10, pad+20);
+}
+drawKleiber();
+
+// trigger visible for first section
+setTimeout(updateProgress,200);
+</script>
+</body>
+</html>
