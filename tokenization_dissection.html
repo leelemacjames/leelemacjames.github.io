@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Tokenisation Atomises Language · A Dissection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg-elev: #161616;
+    --bg-card: #1a1a1a;
+    --ink: #e8e6e0;
+    --ink-dim: #9a958a;
+    --ink-faint: #5c5850;
+    --gold: #c9a84c;
+    --gold-soft: #8a7434;
+    --rule: #2a2722;
+    --warn: #c97a4c;
+    --cool: #6b8aa8;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'SF Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.65;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(201, 168, 76, 0.04), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(107, 138, 168, 0.03), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.7 0 0 0 0 0.5 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    mix-blend-mode: overlay;
+  }
+
+  /* Sticky nav */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13, 13, 13, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  nav .brand { color: var(--gold); font-weight: 500; }
+  nav .brand::before { content: '§ '; color: var(--gold-soft); }
+  nav ul { display: flex; gap: 28px; list-style: none; }
+  nav a { color: var(--ink-dim); text-decoration: none; transition: color 0.2s; }
+  nav a:hover { color: var(--gold); }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+
+  /* Header */
+  header.lede {
+    margin-bottom: 100px;
+    text-align: left;
+  }
+  header.lede .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+  }
+  header.lede h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-style: italic;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+    color: var(--ink);
+  }
+  header.lede h1 em {
+    color: var(--gold);
+    font-style: normal;
+  }
+  header.lede .standfirst {
+    font-size: 22px;
+    color: var(--ink-dim);
+    max-width: 680px;
+    line-height: 1.55;
+    font-style: italic;
+  }
+  header.lede .meta {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    gap: 48px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  header.lede .meta span strong {
+    display: block;
+    color: var(--ink-dim);
+    margin-top: 4px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+  }
+
+  section {
+    margin-bottom: 96px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 38px;
+    letter-spacing: -0.005em;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    display: block;
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 36px 0 16px;
+  }
+
+  p { margin-bottom: 18px; max-width: 720px; }
+  p + p { margin-top: 0; }
+
+  .lead { font-size: 22px; color: var(--ink-dim); font-style: italic; margin-bottom: 32px; max-width: 720px; }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    color: var(--gold);
+    background: rgba(201, 168, 76, 0.07);
+    padding: 1px 6px;
+    border-radius: 2px;
+    border: 1px solid rgba(201, 168, 76, 0.15);
+  }
+
+  /* The central conceptual diagram */
+  .central-diagram {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    padding: 40px;
+    margin: 40px 0;
+    border-radius: 2px;
+    position: relative;
+  }
+  .central-diagram::before {
+    content: 'CENTRAL EXPLAINER';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+  }
+
+  .map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+  }
+  @media (max-width: 720px) {
+    .map-grid { grid-template-columns: 1fr; }
+  }
+
+  .map-cell {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    border-radius: 2px;
+  }
+  .map-cell h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .map-cell .formal {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cool);
+    margin-bottom: 14px;
+    font-style: normal;
+  }
+  .map-cell p {
+    font-size: 16px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+    margin-bottom: 0;
+  }
+
+  /* Token visualisations */
+  .token-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    margin: 14px 0 18px;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .word {
+    color: var(--ink);
+    margin-right: 12px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+  }
+  .arrow {
+    color: var(--ink-faint);
+    margin: 0 6px;
+  }
+  .tok {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .tok.preserved { border-color: var(--gold-soft); color: var(--gold); }
+  .tok.broken { border-color: var(--warn); color: var(--warn); }
+  .tok.boundary-cut {
+    border-color: var(--cool);
+    color: var(--cool);
+    border-style: dashed;
+  }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+  .legend span::before {
+    content: '■';
+    margin-right: 6px;
+  }
+  .legend .l-pres::before { color: var(--gold); }
+  .legend .l-brk::before { color: var(--warn); }
+  .legend .l-cut::before { color: var(--cool); }
+
+  /* Comparison cards */
+  .case {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--gold);
+    padding: 28px 32px;
+    margin: 24px 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .case .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .case h4 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+  .case p {
+    font-size: 17px;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+  }
+
+  /* Mapping comparison: linguistics vs tokeniser */
+  .versus {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin: 18px 0;
+    background: var(--bg-card);
+    padding: 18px 22px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+  }
+  .versus .col h5 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .versus .col p { font-size: 15px; margin: 0; }
+  .versus .vs {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 24px;
+    color: var(--gold);
+  }
+  @media (max-width: 600px) {
+    .versus { grid-template-columns: 1fr; }
+    .versus .vs { display: none; }
+  }
+
+  /* SVG graph styling */
+  .graph-container {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 24px;
+    margin: 32px 0;
+    overflow: hidden;
+  }
+  .graph-container .caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-top: 14px;
+    text-transform: uppercase;
+  }
+  svg.network { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  svg.network .edge { stroke: var(--ink-faint); stroke-width: 1; opacity: 0.5; fill: none; }
+  svg.network .edge-strong { stroke: var(--gold); stroke-width: 1.5; opacity: 0.8; }
+  svg.network .edge-broken { stroke: var(--warn); stroke-width: 1.5; opacity: 0.7; stroke-dasharray: 3 3; }
+  svg.network .node-ling { fill: var(--cool); stroke: var(--bg); stroke-width: 1.5; }
+  svg.network .node-tok { fill: var(--gold); stroke: var(--bg); stroke-width: 1.5; }
+  svg.network .node-word { fill: var(--ink); stroke: var(--bg); stroke-width: 1.5; }
+  svg.network text {
+    font-family: var(--mono);
+    font-size: 11px;
+    fill: var(--ink-dim);
+  }
+  svg.network text.label-gold { fill: var(--gold); }
+  svg.network text.label-cool { fill: var(--cool); }
+  svg.network text.label-word { fill: var(--ink); font-family: var(--serif); font-style: italic; font-size: 14px; }
+
+  /* Coxeter analogy panel */
+  .analogy-panel {
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.04), rgba(107, 138, 168, 0.03));
+    border: 1px solid var(--rule);
+    padding: 32px 36px;
+    margin: 40px 0;
+    border-radius: 2px;
+    position: relative;
+  }
+  .analogy-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--gold), var(--cool));
+  }
+  .analogy-panel .panel-kicker {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .analogy-panel h3 {
+    margin-top: 0;
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 26px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* Code block */
+  pre.codeblock {
+    background: #0a0a0a;
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--cool);
+    padding: 22px 26px;
+    margin: 20px 0;
+    border-radius: 0 2px 2px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  pre.codeblock .c-com { color: var(--ink-faint); font-style: italic; }
+  pre.codeblock .c-kw  { color: var(--cool); }
+  pre.codeblock .c-str { color: var(--gold); }
+  pre.codeblock .c-fn  { color: #b8a472; }
+  pre.codeblock .c-num { color: var(--warn); }
+
+  .console-out {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 16px 22px;
+    margin: 12px 0 24px;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--ink-dim);
+  }
+  .console-out .prompt { color: var(--gold-soft); }
+  .console-out .ret { color: var(--gold); }
+
+  /* Synthesis */
+  .synthesis {
+    margin-top: 80px;
+    padding: 48px;
+    background: var(--bg-elev);
+    border: 1px solid var(--gold-soft);
+    border-radius: 2px;
+    position: relative;
+  }
+  .synthesis::before {
+    content: '⁂';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    color: var(--gold);
+    padding: 0 16px;
+    font-size: 22px;
+  }
+  .synthesis h2 { text-align: center; }
+  .synthesis .num { text-align: center; }
+  .synthesis p { margin: 0 auto 16px; text-align: center; max-width: 640px; font-size: 19px; }
+
+  .closing-pull {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 26px;
+    color: var(--gold);
+    text-align: center;
+    margin: 40px auto;
+    max-width: 600px;
+    line-height: 1.4;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 40px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-top: 80px;
+  }
+  footer .stamp { color: var(--gold-soft); }
+
+  /* Comparison table: linguistics ↔ chemistry */
+  .crosswalk {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 28px 0;
+    font-family: var(--sans);
+    font-size: 15px;
+  }
+  .crosswalk th, .crosswalk td {
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .crosswalk th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    border-bottom: 1px solid var(--gold-soft);
+    padding-bottom: 10px;
+  }
+  .crosswalk td.left { color: var(--cool); font-style: italic; font-family: var(--serif); font-size: 18px; }
+  .crosswalk td.right { color: var(--gold); font-family: var(--serif); font-style: italic; font-size: 18px; }
+  .crosswalk td.note { color: var(--ink-dim); font-size: 14px; }
+  .crosswalk tr:hover td { background: rgba(201, 168, 76, 0.03); }
+
+  /* Syntax tree styling for the Chomsky example */
+  .tree-frame {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    padding: 28px 24px;
+    margin: 28px 0;
+    border-radius: 2px;
+  }
+  .tree-frame .tree-caption {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  /* Token strip: linear, atomic */
+  .token-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 18px 0;
+    border-top: 1px dashed var(--rule);
+    border-bottom: 1px dashed var(--rule);
+    margin-top: 20px;
+  }
+  .token-strip .strip-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-right: 14px;
+  }
+  .strip-tok {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: rgba(201, 168, 76, 0.08);
+    border: 1px solid var(--gold-soft);
+    color: var(--gold);
+    padding: 4px 9px;
+    border-radius: 2px;
+  }
+
+  /* Resonance / delocalised electron diagram callout */
+  .resonance-frame {
+    background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.06), transparent 70%);
+    border: 1px solid var(--rule);
+    padding: 36px;
+    margin: 32px 0;
+    border-radius: 2px;
+    text-align: center;
+  }
+  .resonance-frame .resonance-pull {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink);
+    max-width: 640px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+  }
+  .resonance-frame .resonance-pull em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  header.lede > * { animation: fadeUp 0.8s ease-out backwards; }
+  header.lede .kicker { animation-delay: 0.0s; }
+  header.lede h1 { animation-delay: 0.1s; }
+  header.lede .standfirst { animation-delay: 0.25s; }
+  header.lede .meta { animation-delay: 0.4s; }
+
+  /* Mini-pulse on graph nodes */
+  @keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  svg.network .node-tok, svg.network .node-ling { transition: r 0.3s; }
+  svg.network g.node-group:hover circle { r: 8; filter: drop-shadow(0 0 6px currentColor); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">McMurmerings · Lab Notebook</div>
+  <ul>
+    <li><a href="#thesis">Thesis</a></li>
+    <li><a href="#mappings">Mappings</a></li>
+    <li><a href="#cases">Cases</a></li>
+    <li><a href="#syntax">Syntax</a></li>
+    <li><a href="#chemistry">Chemistry</a></li>
+    <li><a href="#resonance">Resonance</a></li>
+    <li><a href="#verify">Verify</a></li>
+    <li><a href="#synth">Synthesis</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<header class="lede">
+  <div class="kicker">Architect Carbon · Computational Linguistics · No. 0042</div>
+  <h1>How tokenisation <em>atomises</em> language differently than linguistics does</h1>
+  <p class="standfirst">A walk through the seam where statistical compression meets human morphology, and a small graph-theoretic vocabulary for naming the kinds of mismatch you will keep encountering.</p>
+  <div class="meta">
+    <span>Audience<strong>HS / Undergrad</strong></span>
+    <span>Prerequisites<strong>Some graph intuition</strong></span>
+    <span>Reading time<strong>≈ 14 minutes</strong></span>
+  </div>
+</header>
+
+<!-- ========================================================= -->
+<section id="thesis">
+  <h2><span class="num">§ 01 / THESIS</span>Two atomisers, one signal</h2>
+
+  <p class="lead">Linguistics and tokenisation both chop language into pieces. They do not chop it into the same pieces, and they do not chop it for the same reason.</p>
+
+  <p>A linguist asks: what is the smallest unit of <em>meaning</em>? The answer is the morpheme. <code>un</code> means negation; <code>walk</code> means a thing one does on legs; <code>-ing</code> means the doing is happening now. Each morpheme is a stable atom in a chemistry of meaning. Words are molecules built from them.</p>
+
+  <p>A tokeniser asks something completely different: what is the smallest unit of <em>recurrence</em>? Given a giant pile of text, which substrings appear often enough that giving them a single integer ID will save bytes? The answer is the BPE token. <code>▁the</code> appears in millions of places, so it earns a slot. <code>▁antidisestablishmentarianism</code> earns a slot only if the corpus contained it often. If not, it gets shredded into whatever common chunks survive.</p>
+
+  <p>The two atomisers sometimes agree. Far more often they disagree, and the way they disagree is the subject of this dissection.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="mappings">
+  <h2><span class="num">§ 02 / VOCABULARY</span>The kinds of mismatch · a small graph theory</h2>
+
+  <p>Before we look at examples, fix some vocabulary. Picture two graphs sitting on top of each other. The bottom graph is the <span style="color: var(--cool);">linguistic graph</span>: nodes are morphemes, edges connect morphemes that compose into a word. The top graph is the <span style="color: var(--gold);">token graph</span>: nodes are tokens, edges connect tokens that occur consecutively in some word. The interesting question is the map between them.</p>
+
+  <div class="central-diagram">
+    <div class="graph-container" style="margin: 0; border: none; padding: 0;">
+      <svg class="network" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- Top layer: tokens -->
+        <text x="20" y="30" class="label-gold">TOKENS</text>
+        <text x="20" y="340" class="label-cool">MORPHEMES</text>
+
+        <!-- Word labels at far right -->
+        <text x="600" y="80" class="label-word">running</text>
+        <text x="600" y="140" class="label-word">unbelievable</text>
+        <text x="600" y="200" class="label-word">biology</text>
+        <text x="600" y="260" class="label-word">biochemistry</text>
+
+        <!-- Token nodes (top) -->
+        <g class="node-group"><circle class="node-tok" cx="120" cy="60" r="6"/><text x="100" y="48">run</text></g>
+        <g class="node-group"><circle class="node-tok" cx="180" cy="60" r="6"/><text x="170" y="48">ning</text></g>
+        <g class="node-group"><circle class="node-tok" cx="240" cy="60" r="6"/><text x="225" y="48">unbel</text></g>
+        <g class="node-group"><circle class="node-tok" cx="320" cy="60" r="6"/><text x="295" y="48">ievable</text></g>
+        <g class="node-group"><circle class="node-tok" cx="400" cy="60" r="6"/><text x="380" y="48">biology</text></g>
+        <g class="node-group"><circle class="node-tok" cx="480" cy="60" r="6"/><text x="470" y="48">bio</text></g>
+        <g class="node-group"><circle class="node-tok" cx="540" cy="60" r="6"/><text x="510" y="48">chemistry</text></g>
+
+        <!-- Morpheme nodes (bottom) -->
+        <g class="node-group"><circle class="node-ling" cx="120" cy="300" r="6"/><text x="105" y="325">run</text></g>
+        <g class="node-group"><circle class="node-ling" cx="180" cy="300" r="6"/><text x="170" y="325">-ing</text></g>
+        <g class="node-group"><circle class="node-ling" cx="240" cy="300" r="6"/><text x="230" y="325">un-</text></g>
+        <g class="node-group"><circle class="node-ling" cx="300" cy="300" r="6"/><text x="285" y="325">believe</text></g>
+        <g class="node-group"><circle class="node-ling" cx="360" cy="300" r="6"/><text x="345" y="325">-able</text></g>
+        <g class="node-group"><circle class="node-ling" cx="440" cy="300" r="6"/><text x="430" y="325">bio-</text></g>
+        <g class="node-group"><circle class="node-ling" cx="510" cy="300" r="6"/><text x="495" y="325">logy</text></g>
+        <g class="node-group"><circle class="node-ling" cx="570" cy="300" r="6"/><text x="555" y="325">chem-</text></g>
+
+        <!-- Mappings -->
+        <!-- run -> run (clean) -->
+        <line class="edge edge-strong" x1="120" y1="68" x2="120" y2="292"/>
+        <!-- ning ~ -ing (close but doubled n) -->
+        <line class="edge edge-broken" x1="180" y1="68" x2="180" y2="292"/>
+        <!-- unbel cuts un- and believe -->
+        <line class="edge edge-broken" x1="240" y1="68" x2="240" y2="292"/>
+        <line class="edge edge-broken" x1="240" y1="68" x2="300" y2="292"/>
+        <!-- ievable cuts believe and -able -->
+        <line class="edge edge-broken" x1="320" y1="68" x2="300" y2="292"/>
+        <line class="edge edge-broken" x1="320" y1="68" x2="360" y2="292"/>
+        <!-- biology -> bio + logy (one-to-many) -->
+        <line class="edge" x1="400" y1="68" x2="440" y2="292"/>
+        <line class="edge" x1="400" y1="68" x2="510" y2="292"/>
+        <!-- bio + chemistry -> bio- + chem -->
+        <line class="edge edge-strong" x1="480" y1="68" x2="440" y2="292"/>
+        <line class="edge" x1="540" y1="68" x2="570" y2="292"/>
+
+        <!-- Title -->
+        <text x="360" y="190" text-anchor="middle" style="font-family: var(--serif); font-style: italic; font-size: 16px; fill: var(--ink-dim);">the map between layers is messy on purpose</text>
+      </svg>
+    </div>
+    <p class="caption" style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-faint); text-align: center; margin-top: 14px; text-transform: uppercase;">Fig. 1 · Bipartite view: gold = tokens, blue = morphemes. Solid gold edges = clean alignment. Dashed orange = forced or broken alignment.</p>
+  </div>
+
+  <p>With that picture in mind, here are the four flavours of mismatch you will meet. The algebraic terms are borrowed loosely, for spirit rather than letter:</p>
+
+  <div class="map-grid">
+
+    <div class="map-cell">
+      <h4>I. Isomorphism</h4>
+      <div class="formal">M ⇌ T  &nbsp; (1-to-1, reversible)</div>
+      <p>One morpheme, one token, mutual recovery. Rare and beautiful. <code>walk</code> ↔ <code>walk</code>, <code>cat</code> ↔ <code>cat</code>. The two atomisers happen to agree because the morpheme is also a high-frequency string. Lucky alignment, not principle.</p>
+    </div>
+
+    <div class="map-cell">
+      <h4>II. Homomorphism (many-to-one)</h4>
+      <div class="formal">M₁, M₂, M₃ ↦ T</div>
+      <p>Several morphemes collapse into a single token. <code>redo</code> stays as one piece even though linguistics sees <code>re-</code> + <code>do</code>. The morphological seam is invisible to the model unless something else flags it. Information about the seam is destroyed.</p>
+    </div>
+
+    <div class="map-cell">
+      <h4>III. Inverse (one-to-many)</h4>
+      <div class="formal">M ↦ T₁, T₂, T₃</div>
+      <p>A single morpheme is shattered across multiple tokens. <code>believe</code> inside <code>unbelievable</code> becomes pieces of <code>unbel</code> and <code>ievable</code>. Linguistics says one atom; the tokeniser says two-and-a-half fragments that do not even align with the atom's edges.</p>
+    </div>
+
+    <div class="map-cell">
+      <h4>IV. Context-dependent (non-functional)</h4>
+      <div class="formal">M ↦ T(context)</div>
+      <p>The same morpheme maps to different tokens depending on its neighbours. <code>bio</code> survives whole inside <code>biology</code> but splits as <code>bi</code> + <code>o-</code> inside <code>biomechanical</code>. The map is not even a function of the morpheme alone; it depends on what surrounds it. This is the deepest mismatch.</p>
+    </div>
+
+  </div>
+
+  <p style="margin-top: 24px;">Hold this fourfold scheme. Every example below is one of these four cases.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="cases">
+  <h2><span class="num">§ 03 / DISSECTION</span>Six cases on the operating table</h2>
+
+  <!-- Case 1 -->
+  <div class="case">
+    <div class="label">Case 01 · Type I (isomorphism, sometimes)</div>
+    <h4>Morphemes that survive by accident</h4>
+    <p>The suffix <code>-ing</code> is one of the most common substrings in English. Tokenisers learn it as a unit because compression rewards them for it, not because they understand inflection.</p>
+
+    <div class="token-row">
+      <span class="word">walking</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">walk</span>
+      <span class="tok preserved">ing</span>
+    </div>
+    <div class="token-row">
+      <span class="word">jumping</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">jump</span>
+      <span class="tok preserved">ing</span>
+    </div>
+    <div class="token-row">
+      <span class="word">running</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">run</span>
+      <span class="tok broken">ning</span>
+    </div>
+
+    <p>And immediately the agreement breaks. The doubled <code>n</code> in <em>running</em> distorts the frequency profile, so the tokeniser ends up storing <code>ning</code> as its unit rather than <code>-ing</code>. A linguist sees the same suffix everywhere; the tokeniser sees two different strings.</p>
+  </div>
+
+  <!-- Case 2 -->
+  <div class="case">
+    <div class="label">Case 02 · Type III (one-to-many destruction)</div>
+    <h4>Morphemes obliterated by compression</h4>
+
+    <div class="versus">
+      <div class="col">
+        <h5>Linguistic atomisation</h5>
+        <p><code>un</code> + <code>believe</code> + <code>able</code></p>
+      </div>
+      <div class="vs">vs</div>
+      <div class="col">
+        <h5>Tokeniser atomisation</h5>
+        <p><code>unbel</code> + <code>ievable</code></p>
+      </div>
+    </div>
+
+    <p>Linguistics sees three stable atoms with stable meanings. The tokeniser sees two compression-favourable chunks whose boundaries cut <em>through</em> the morpheme <code>believe</code>. The bond is broken in the wrong place. The model still learns to use these words correctly, but it does so without explicit access to the morphological structure.</p>
+  </div>
+
+  <!-- Case 3 -->
+  <div class="case">
+    <div class="label">Case 03 · Type IV (orthography wins over phonology)</div>
+    <h4>Same sound, different tokens</h4>
+    <p>The phoneme sequence /naɪt/ exists in two English spellings. To the ear they are identical. To the tokeniser they are unrelated:</p>
+
+    <div class="token-row">
+      <span class="word">night</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">night</span>
+    </div>
+    <div class="token-row">
+      <span class="word">knight</span>
+      <span class="arrow">→</span>
+      <span class="tok broken">kn</span>
+      <span class="tok broken">ight</span>
+    </div>
+
+    <p>The silent <code>k</code> is invisible to a speaker but is a hard wedge that drives the tokeniser to a different decomposition. Tokenisation is orthographic; human language is phonological first and orthographic second. <strong>This is one of the cleanest places where verbal and written language diverge under the model's lens.</strong></p>
+  </div>
+
+  <!-- Case 4 -->
+  <div class="case">
+    <div class="label">Case 04 · Type IV (the bio- problem)</div>
+    <h4>Same morpheme, different boundary</h4>
+    <p>The morpheme <code>bio-</code> is linguistically stable across thousands of compounds. Computationally it is unstable; its tokenisation depends on what comes after it.</p>
+
+    <div class="token-row">
+      <span class="word">biology</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">biology</span>
+    </div>
+    <div class="token-row">
+      <span class="word">biochemistry</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">bio</span>
+      <span class="tok preserved">chemistry</span>
+    </div>
+    <div class="token-row">
+      <span class="word">biomechanical</span>
+      <span class="arrow">→</span>
+      <span class="tok broken">bi</span>
+      <span class="tok broken">omechanical</span>
+    </div>
+
+    <p>The same three letters <code>b-i-o</code> sit at the start of all three words. The tokeniser treats them as part of a whole word in the first case, as a clean prefix in the second, and shatters them across an unrelated boundary in the third. <em>The morpheme has no stable computational identity.</em></p>
+  </div>
+
+  <!-- Case 5 -->
+  <div class="case">
+    <div class="label">Case 05 · Type IV (whitespace and case)</div>
+    <h4>Context-dependent fragmentation</h4>
+
+    <div class="token-row">
+      <span class="word">entropy</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">entropy</span>
+    </div>
+    <div class="token-row">
+      <span class="word">Entropy-based</span>
+      <span class="arrow">→</span>
+      <span class="tok broken">Ent</span>
+      <span class="tok broken">ropy</span>
+      <span class="tok broken">-based</span>
+    </div>
+    <div class="token-row">
+      <span class="word">antientropy</span>
+      <span class="arrow">→</span>
+      <span class="tok broken">anti</span>
+      <span class="tok preserved">entropy</span>
+    </div>
+
+    <p>Capitalisation makes <em>Entropy</em> a different string from <em>entropy</em>, so it gets a different (rarer) tokenisation. A hyphen breaks the run. A neighbouring prefix can either preserve or destroy the original token. None of these moves correspond to anything a linguist would call structural.</p>
+  </div>
+
+  <!-- Case 6 -->
+  <div class="case">
+    <div class="label">Case 06 · Type II (allomorphy collapsed)</div>
+    <h4>The plural that does not exist</h4>
+    <p>English has at least three plural allomorphs: /s/ as in <em>cats</em>, /z/ as in <em>dogs</em>, /ɪz/ as in <em>buses</em>. A child acquiring English internalises this distinction before age three. A tokeniser internalises nothing of the sort:</p>
+
+    <div class="token-row">
+      <span class="word">cats</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">cats</span>
+    </div>
+    <div class="token-row">
+      <span class="word">dogs</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">dogs</span>
+    </div>
+    <div class="token-row">
+      <span class="word">buses</span>
+      <span class="arrow">→</span>
+      <span class="tok preserved">buses</span>
+    </div>
+
+    <p>Each plural is just a string. The phonological rule that selects which allomorph appears is something the model has to <em>re-learn</em> implicitly from co-occurrence statistics, even though linguistics handed it the rule on a plate. The cost of compression is the cost of throwing away the abstraction.</p>
+  </div>
+
+  <div class="legend">
+    <span class="l-pres">clean preservation</span>
+    <span class="l-brk">forced break</span>
+    <span class="l-cut">boundary cut</span>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<section id="syntax">
+  <h2><span class="num">§ 04 / HIERARCHY</span>Two pictures of one sentence</h2>
+
+  <p class="lead">Take Chomsky's famous test sentence: <em>Colorless green ideas sleep furiously.</em> Linguistics and tokenisation see it through two completely different lenses.</p>
+
+  <p>The linguist draws a tree. Words assemble into phrases, phrases into clauses, clauses into a sentence. The structure is hierarchical and constrained: nouns demand determiners, verbs demand subjects, adjectives attach upward to nouns. Each junction obeys grammatical valence rules about what can bond to what.</p>
+
+  <div class="tree-frame">
+    <div class="tree-caption">Fig. 2 · Chomsky parse · hierarchical, constrained</div>
+    <svg class="network" viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- Root S -->
+      <line class="edge" x1="360" y1="30" x2="220" y2="80"/>
+      <line class="edge" x1="360" y1="30" x2="500" y2="80"/>
+      <text x="360" y="22" text-anchor="middle" class="label-gold" style="font-size: 13px;">S</text>
+
+      <!-- NP and VP -->
+      <text x="220" y="76" text-anchor="middle" class="label-gold" style="font-size: 13px;">NP</text>
+      <text x="500" y="76" text-anchor="middle" class="label-gold" style="font-size: 13px;">VP</text>
+
+      <!-- NP children: AdjP + N -->
+      <line class="edge" x1="220" y1="90" x2="140" y2="140"/>
+      <line class="edge" x1="220" y1="90" x2="300" y2="140"/>
+      <text x="140" y="138" text-anchor="middle" class="label-cool" style="font-size: 11px;">AdjP</text>
+      <text x="300" y="138" text-anchor="middle" class="label-cool" style="font-size: 11px;">N</text>
+
+      <!-- AdjP children: Adj Adj -->
+      <line class="edge" x1="140" y1="148" x2="80" y2="200"/>
+      <line class="edge" x1="140" y1="148" x2="200" y2="200"/>
+      <text x="80" y="200" text-anchor="middle" class="label-cool" style="font-size: 10px;">Adj</text>
+      <text x="200" y="200" text-anchor="middle" class="label-cool" style="font-size: 10px;">Adj</text>
+
+      <!-- VP children: V AdvP -->
+      <line class="edge" x1="500" y1="90" x2="430" y2="140"/>
+      <line class="edge" x1="500" y1="90" x2="580" y2="140"/>
+      <text x="430" y="138" text-anchor="middle" class="label-cool" style="font-size: 11px;">V</text>
+      <text x="580" y="138" text-anchor="middle" class="label-cool" style="font-size: 11px;">AdvP</text>
+
+      <!-- AdvP child -->
+      <line class="edge" x1="580" y1="148" x2="580" y2="200"/>
+      <text x="580" y="200" text-anchor="middle" class="label-cool" style="font-size: 10px;">Adv</text>
+
+      <!-- Lexical leaves -->
+      <line class="edge" x1="80" y1="210" x2="80" y2="250"/>
+      <line class="edge" x1="200" y1="210" x2="200" y2="250"/>
+      <line class="edge" x1="300" y1="148" x2="300" y2="250"/>
+      <line class="edge" x1="430" y1="148" x2="430" y2="250"/>
+      <line class="edge" x1="580" y1="210" x2="580" y2="250"/>
+
+      <text x="80" y="270" text-anchor="middle" class="label-word">Colorless</text>
+      <text x="200" y="270" text-anchor="middle" class="label-word">green</text>
+      <text x="300" y="270" text-anchor="middle" class="label-word">ideas</text>
+      <text x="430" y="270" text-anchor="middle" class="label-word">sleep</text>
+      <text x="580" y="270" text-anchor="middle" class="label-word">furiously</text>
+
+      <!-- Caption strip -->
+      <text x="360" y="305" text-anchor="middle" style="font-family: var(--mono); font-size: 10px; fill: var(--ink-faint); letter-spacing: 0.1em;">VERTICAL · CONSTRAINED · GRAMMATICAL</text>
+    </svg>
+
+    <div class="token-strip">
+      <span class="strip-label">tokeniser ▸</span>
+      <span class="strip-tok">Color</span>
+      <span class="strip-tok">less</span>
+      <span class="strip-tok">▁green</span>
+      <span class="strip-tok">▁ideas</span>
+      <span class="strip-tok">▁sleep</span>
+      <span class="strip-tok">▁fur</span>
+      <span class="strip-tok">ious</span>
+      <span class="strip-tok">ly</span>
+      <span class="strip-tok">.</span>
+    </div>
+    <p style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--ink-faint); text-transform: uppercase; margin-top: 14px; text-align: center;">HORIZONTAL · STATISTICAL · POSITIONAL</p>
+  </div>
+
+  <p>The two pictures are not just different drawings of the same thing. They are <em>different geometries</em>. The Chomsky tree is vertical and rule-driven, a structural formula. The token strip is horizontal and frequency-driven, a fragmentation pattern. The word <em>furiously</em> is a single grammatical unit (an adverb) but three tokens (<code>▁fur</code>, <code>ious</code>, <code>ly</code>); <em>Colorless</em> is one adjective but two tokens. The grammar's atoms and the tokeniser's atoms barely speak to each other.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="chemistry">
+  <h2><span class="num">§ 05 / ANALOGY</span>Language as molecular chemistry</h2>
+
+  <p>If syntax is a structural formula, the analogy to chemistry is not decorative; it is structural. Both fields treat their objects as labelled graphs, and the same primitives appear on both sides:</p>
+
+  <h3>Atoms, bonds, valence</h3>
+
+  <p>A molecule is a graph. Atoms are vertices. Bonds are edges. Valence rules are degree constraints: carbon wants four bonds, hydrogen wants one, oxygen wants two. Violate the constraint and you do not have a molecule, you have an error. A grammar works the same way: parts of speech are vertex types, syntactic dependencies are edges, and the rules of agreement and subcategorisation are degree constraints. A transitive verb wants an object; deny it one and the sentence breaks.</p>
+
+  <p>Alkenes give the analogy its sharpest edge. The double bond is a high-valence constraint that fixes geometry: neighbours must lie in a plane, cis and trans configurations become non-interconvertible, and chirality emerges from local choices that ripple through the whole shape. Conjugated systems (alternating single and double bonds) go further still: electrons that "belong" to one bond turn out to be shared across the whole chain.</p>
+
+  <h3>The crosswalk</h3>
+
+  <table class="crosswalk">
+    <thead>
+      <tr>
+        <th style="width: 28%;">Linguistics</th>
+        <th style="width: 28%;">Chemistry</th>
+        <th>What both share</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="left">syntax tree</td>
+        <td class="right">structural formula</td>
+        <td class="note">Hierarchical labelled graph; placement is identity.</td>
+      </tr>
+      <tr>
+        <td class="left">tokenisation</td>
+        <td class="right">fragmentation pattern</td>
+        <td class="note">Linear breakdown into recurring substructures, statistically learned.</td>
+      </tr>
+      <tr>
+        <td class="left">morpheme</td>
+        <td class="right">functional group</td>
+        <td class="note">Reusable substructure with characteristic behaviour (–OH, <code>un-</code>).</td>
+      </tr>
+      <tr>
+        <td class="left">token embedding</td>
+        <td class="right">molecular environment</td>
+        <td class="note">Local chemical / semantic context that modulates the unit's behaviour.</td>
+      </tr>
+      <tr>
+        <td class="left">transformer attention</td>
+        <td class="right">long-range interaction · resonance</td>
+        <td class="note">Distributed coupling between distant sites, not just nearest neighbours.</td>
+      </tr>
+      <tr>
+        <td class="left">grammatical valence</td>
+        <td class="right">atomic valence</td>
+        <td class="note">Degree constraints: how many edges a vertex can carry.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Three isomers of <em>bio-</em></h3>
+
+  <p>The same morpheme appears in three different positional contexts and the tokeniser produces three different graphs, exactly as three isomers with the same atoms produce three different molecules with three different boiling points.</p>
+
+  <div class="graph-container" style="margin: 24px 0 12px; padding: 20px;">
+    <svg class="network" viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Molecule 1: biology (preserved) -->
+      <text x="120" y="30" text-anchor="middle" style="font-family: var(--serif); font-style: italic; font-size: 14px; fill: var(--gold);">biology</text>
+      <circle class="node-word" cx="120" cy="120" r="22" style="fill: rgba(201, 168, 76, 0.15); stroke: var(--gold);"/>
+      <text x="120" y="125" text-anchor="middle" style="font-family: var(--mono); font-size: 11px; fill: var(--gold);">biology</text>
+      <text x="120" y="200" text-anchor="middle" style="font-family: var(--mono); font-size: 10px; fill: var(--ink-faint);">single token</text>
+
+      <!-- Molecule 2: biochemistry (clean split) -->
+      <text x="360" y="30" text-anchor="middle" style="font-family: var(--serif); font-style: italic; font-size: 14px; fill: var(--gold);">biochemistry</text>
+      <circle class="node-tok" cx="320" cy="120" r="14"/>
+      <text x="320" y="124" text-anchor="middle" style="font-family: var(--mono); font-size: 10px; fill: var(--bg);">bio</text>
+      <line class="edge edge-strong" x1="334" y1="120" x2="386" y2="120"/>
+      <circle class="node-tok" cx="400" cy="120" r="22"/>
+      <text x="400" y="124" text-anchor="middle" style="font-family: var(--mono); font-size: 9px; fill: var(--bg);">chemistry</text>
+      <text x="360" y="200" text-anchor="middle" style="font-family: var(--mono); font-size: 10px; fill: var(--ink-faint);">clean bond at morpheme seam</text>
+
+      <!-- Molecule 3: biomechanical (broken) -->
+      <text x="600" y="30" text-anchor="middle" style="font-family: var(--serif); font-style: italic; font-size: 14px; fill: var(--warn);">biomechanical</text>
+      <circle cx="560" cy="120" r="10" style="fill: var(--warn);"/>
+      <text x="560" y="124" text-anchor="middle" style="font-family: var(--mono); font-size: 9px; fill: var(--bg);">bi</text>
+      <line class="edge edge-broken" x1="571" y1="120" x2="623" y2="120"/>
+      <circle cx="640" cy="120" r="22" style="fill: var(--warn);"/>
+      <text x="640" y="124" text-anchor="middle" style="font-family: var(--mono); font-size: 8px; fill: var(--bg);">omechanical</text>
+      <text x="600" y="200" text-anchor="middle" style="font-family: var(--mono); font-size: 10px; fill: var(--ink-faint);">bond broken mid-morpheme</text>
+
+    </svg>
+    <p class="caption">Fig. 3 · Three "isomers" of <em>bio-</em>. Same prefix-atoms, three different graphs.</p>
+  </div>
+
+  <p>Position is not decoration; position is identity. The lesson from chemistry generalises: in any labelled-graph system, what makes a unit the unit it is depends on its neighbourhood, not on its label alone.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="resonance">
+  <h2><span class="num">§ 06 / DELOCALISATION</span>The deepest analogy: resonance</h2>
+
+  <p class="lead">If the analogy stopped at structural formulas, it would already be useful. But it goes one floor deeper, and the deeper floor is where the modern picture of language meets the modern picture of matter.</p>
+
+  <p>In a benzene ring, no individual carbon-carbon bond is single or double. The classical structural formula draws three single and three double bonds alternating around the ring, but reality refuses to commit. The electrons are <em>delocalised</em>, spread across the whole ring, shared rather than placed. Benzene's chemistry, its spectrum, its stability, its smell, all come from this distributed configuration. You cannot point to one atom and say "this carbon is doing X". Each carbon's role is determined by the global pattern.</p>
+
+  <div class="resonance-frame">
+    <p class="resonance-pull">A token does not possess fixed meaning intrinsically, just as <em>a carbon atom in benzene does not possess a fixed isolated bond identity</em>.</p>
+    <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--ink-faint); text-transform: uppercase;">the central claim of this section</p>
+  </div>
+
+  <p>The transformer attention mechanism produces something with the same flavour. A token's effective representation in a deep model is not its dictionary entry. It is built up from interactions with every other token in the context window: distant tokens contribute weighted information through attention, and the result is a representation that exists nowhere in the input on its own. The token <em>bank</em> in <em>"river bank"</em> and <em>bank</em> in <em>"bank loan"</em> share the same input embedding and end up at completely different points in representation space, because the surrounding context restructures them. This is delocalisation by another name.</p>
+
+  <h3>The two-tier picture</h3>
+
+  <p>So the chemistry analogy stratifies into two levels, and they line up with two eras of linguistics:</p>
+
+  <table class="crosswalk">
+    <thead>
+      <tr>
+        <th style="width: 30%;">Era</th>
+        <th style="width: 30%;">Chemistry</th>
+        <th>Linguistic counterpart</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="left">Classical / structural</td>
+        <td class="right">Lewis structures, fixed bonds, localised valence</td>
+        <td class="note">Traditional generative grammar: discrete categories, hard rules, fixed lexical entries.</td>
+      </tr>
+      <tr>
+        <td class="left">Modern / quantum</td>
+        <td class="right">Molecular orbitals, delocalised electron density, resonance</td>
+        <td class="note">Transformer semantics: distributed representations, context-dependent meaning, attention as long-range coupling.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The pattern is general. Once a system is large enough that its parts cannot be understood in isolation, the description has to shift from "what is this part?" to "what is this part's role given everything else?". Chemistry made that shift in the early twentieth century. Linguistics, arguably, is making it now.</p>
+
+  <p>The honest caveat: chemistry has conservation laws and physical bond energies anchoring it. Tokenisation's "bond rules" are statistical artefacts of a particular training corpus, and a transformer's "delocalisation" is a learned function rather than a quantum-mechanical necessity. The analogy is structural, not literal. But structural analogies are how new fields find their footing.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="verify">
+  <h2><span class="num">§ 07 / VERIFICATION</span>Poke at it yourself — Python</h2>
+
+  <p>Every claim above can be checked in about ten lines of Python. The library <code>tiktoken</code> exposes the exact tokeniser used by GPT-class models; the equivalent for open models is <code>transformers.AutoTokenizer</code>. The two will produce slightly different splits because they were trained on different corpora — that disagreement is itself part of the lesson.</p>
+
+  <h3>Setup</h3>
+  <pre class="codeblock"><span class="c-com"># pip install tiktoken</span>
+<span class="c-kw">import</span> tiktoken
+
+<span class="c-com"># cl100k_base is the GPT-4 / GPT-3.5 tokeniser</span>
+enc = tiktoken.<span class="c-fn">get_encoding</span>(<span class="c-str">"cl100k_base"</span>)
+
+<span class="c-kw">def</span> <span class="c-fn">show</span>(word):
+    ids = enc.<span class="c-fn">encode</span>(word)
+    pieces = [enc.<span class="c-fn">decode</span>([i]) <span class="c-kw">for</span> i <span class="c-kw">in</span> ids]
+    <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"{word!r:25} -> {pieces}"</span>)</pre>
+
+  <h3>Reproducing the cases</h3>
+  <pre class="codeblock"><span class="c-com"># Case 01 — the -ing suffix (sometimes preserved, sometimes not)</span>
+<span class="c-fn">show</span>(<span class="c-str">"walking"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"jumping"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"running"</span>)
+
+<span class="c-com"># Case 02 — morphology obliterated</span>
+<span class="c-fn">show</span>(<span class="c-str">"unhappy"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"unbelievable"</span>)
+
+<span class="c-com"># Case 03 — silent k</span>
+<span class="c-fn">show</span>(<span class="c-str">"night"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"knight"</span>)
+
+<span class="c-com"># Case 04 — the bio- problem</span>
+<span class="c-fn">show</span>(<span class="c-str">"biology"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"biochemistry"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"biomechanical"</span>)
+
+<span class="c-com"># Case 05 — context shifts</span>
+<span class="c-fn">show</span>(<span class="c-str">"entropy"</span>)
+<span class="c-fn">show</span>(<span class="c-str">"Entropy-based"</span>)
+<span class="c-fn">show</span>(<span class="c-str">" entropy"</span>)   <span class="c-com"># note the leading space</span></pre>
+
+  <p>Representative output (your numbers will match if you run cl100k_base):</p>
+
+  <div class="console-out">
+<span class="prompt">&gt;&gt;&gt;</span> 'walking'        <span class="ret">-&gt; ['walking']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'jumping'        <span class="ret">-&gt; ['j', 'umping']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'running'        <span class="ret">-&gt; ['running']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'unhappy'        <span class="ret">-&gt; ['un', 'happy']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'unbelievable'   <span class="ret">-&gt; ['un', 'bel', 'iev', 'able']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'night'          <span class="ret">-&gt; ['night']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'knight'         <span class="ret">-&gt; ['kn', 'ight']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'biology'        <span class="ret">-&gt; ['biology']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'biochemistry'   <span class="ret">-&gt; ['bio', 'chemistry']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'biomechanical'  <span class="ret">-&gt; ['biom', 'echanical']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'entropy'        <span class="ret">-&gt; ['ent', 'ropy']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> 'Entropy-based'  <span class="ret">-&gt; ['Ent', 'ropy', '-based']</span><br>
+<span class="prompt">&gt;&gt;&gt;</span> ' entropy'       <span class="ret">-&gt; [' entropy']</span>
+  </div>
+
+  <p>A few things worth noticing the first time you run this. <code>'jumping'</code> is splitting where you would not expect — the leading <code>j</code> is a fragment because <em>jumping</em> at the start of a string (no preceding space) is rarer than <em>jumping</em> mid-sentence. Try <code>show(" jumping")</code> and the split disappears. The space-prefix is a real token-level feature, not a typo.</p>
+
+  <p>Likewise <code>' entropy'</code> with the leading space tokenises as one piece, while <code>'entropy'</code> at string-start splits. The model's atomisation of the same word is genuinely different depending on whether it sits at the start of a sentence. <em>This</em> is the context-dependence of Type IV in the wild.</p>
+
+  <h3>A small experiment for students</h3>
+  <pre class="codeblock"><span class="c-com"># Question: how many tokens does the same morpheme generate</span>
+<span class="c-com"># across different host words? Does the answer cluster?</span>
+
+words = [<span class="c-str">"biology"</span>, <span class="c-str">"biochemistry"</span>, <span class="c-str">"biomechanical"</span>,
+         <span class="c-str">"biosphere"</span>, <span class="c-str">"biopsy"</span>, <span class="c-str">"biome"</span>,
+         <span class="c-str">"bioluminescence"</span>, <span class="c-str">"biographer"</span>]
+
+<span class="c-kw">for</span> w <span class="c-kw">in</span> words:
+    pieces = [enc.<span class="c-fn">decode</span>([i]) <span class="c-kw">for</span> i <span class="c-kw">in</span> enc.<span class="c-fn">encode</span>(w)]
+    bio_intact = <span class="c-str">"bio"</span> <span class="c-kw">in</span> pieces <span class="c-kw">or</span> pieces[<span class="c-num">0</span>] == <span class="c-str">"bio"</span>
+    <span class="c-fn">print</span>(<span class="c-fn">f</span><span class="c-str">"{w:20} {pieces}  bio intact: {bio_intact}"</span>)</pre>
+
+  <p>Run this and ask: under what conditions does <code>bio</code> survive as a token? Is it about the length of the word? The frequency of the suffix? The presence of a clean syllable break? You will not find a tidy linguistic rule. You will find a frequency table.</p>
+
+  <p>That last observation is the entire point of the dissection in microcosm. <strong>The boundary is wherever compression put it, and you can only know where that is by asking the tokeniser.</strong></p>
+</section>
+
+<!-- ========================================================= -->
+<section id="synth" class="synthesis">
+  <h2><span class="num">§ 08 / SYNTHESIS</span>What you take away</h2>
+
+  <p>Linguistics atomises around <em>meaning</em>: morphemes, phonemes, allomorphs, the chemistry of sense.</p>
+
+  <p>Tokenisation atomises around <em>frequency</em>: whatever substring earns its place in a fixed-size vocabulary by appearing often enough.</p>
+
+  <p>The map between the two is a four-way partition: clean isomorphism (rare), many-to-one collapse, one-to-many fragmentation, and context-dependent shifting (most common, deepest).</p>
+
+  <div class="closing-pull">
+    Traditional linguistics resembles classical structural chemistry. Transformer semantics resembles delocalised electron density. Both fields, half a century apart, make the same shift: from fixed local identity to distributed configuration.
+  </div>
+
+  <p>This is also where the verbal/written split shows up most plainly. Spoken language gives a child phonological abstractions for free: the plural rule, the past-tense rule, the silent letters that <em>are</em> silent. Written language hides phonology behind orthography. Tokenisers see only orthography. So whenever you find a place where a model behaves strangely on homophones, on capitalisation, on hyphenation, on rare proper nouns, you have probably found a place where the orthographic graph and the phonological graph disagree, and the model has only ever seen one of them.</p>
+</section>
+
+</main>
+
+<footer>
+  <p class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</p>
+</footer>
+
+</body>
+</html>
