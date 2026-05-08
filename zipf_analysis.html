@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zipf Across Atomisations · An Empirical Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d; --bg-elev: #161616; --bg-card: #1a1a1a;
+    --ink: #e8e6e0; --ink-dim: #9a958a; --ink-faint: #5c5850;
+    --gold: #c9a84c; --gold-soft: #8a7434;
+    --rule: #2a2722; --warn: #c97a4c; --cool: #6b8aa8;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--serif); font-size: 19px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(201,168,76,0.04), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(107,138,168,0.03), transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.7 0 0 0 0 0.5 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4; pointer-events: none; z-index: 0; mix-blend-mode: overlay;
+  }
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(13,13,13,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 40px; display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  nav .brand { color: var(--gold); font-weight: 500; }
+  nav .brand::before { content: '§ '; color: var(--gold-soft); }
+  nav ul { display: flex; gap: 28px; list-style: none; }
+  nav a { color: var(--ink-dim); text-decoration: none; transition: color 0.2s; }
+  nav a:hover { color: var(--gold); }
+  main {
+    position: relative; z-index: 1;
+    max-width: 1080px; margin: 0 auto; padding: 80px 40px 120px;
+  }
+  header.lede { margin-bottom: 100px; }
+  header.lede .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 24px;
+  }
+  header.lede h1 {
+    font-family: var(--serif); font-weight: 500; font-style: italic;
+    font-size: clamp(40px, 6vw, 64px); line-height: 1.05;
+    margin-bottom: 28px; color: var(--ink);
+  }
+  header.lede h1 em { color: var(--gold); font-style: normal; }
+  header.lede .standfirst {
+    font-size: 22px; color: var(--ink-dim); max-width: 700px;
+    line-height: 1.55; font-style: italic;
+  }
+  header.lede .meta {
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule);
+    display: flex; gap: 48px; font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  header.lede .meta span strong {
+    display: block; color: var(--ink-dim); margin-top: 4px; font-weight: 400;
+    letter-spacing: 0.05em;
+  }
+  section { margin-bottom: 88px; }
+  h2 {
+    font-family: var(--serif); font-weight: 500; font-size: 36px;
+    letter-spacing: -0.005em; margin-bottom: 6px; color: var(--ink);
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 12px; color: var(--gold);
+    display: block; letter-spacing: 0.2em; margin-bottom: 12px; font-weight: 400;
+  }
+  h3 {
+    font-family: var(--sans); font-weight: 500; font-size: 14px;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
+    margin: 36px 0 16px;
+  }
+  p { margin-bottom: 18px; max-width: 720px; }
+  .lead { font-size: 22px; color: var(--ink-dim); font-style: italic;
+    margin-bottom: 32px; max-width: 720px; }
+  code, .mono {
+    font-family: var(--mono); font-size: 0.88em; color: var(--gold);
+    background: rgba(201,168,76,0.07); padding: 1px 6px; border-radius: 2px;
+    border: 1px solid rgba(201,168,76,0.15);
+  }
+  .figure-frame {
+    background: var(--bg-elev); border: 1px solid var(--rule);
+    padding: 20px 24px; margin: 24px 0;
+    border-radius: 2px;
+  }
+  .figure-frame svg { display: block; width: 100%; height: auto; }
+  .figure-caption {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--ink-faint); text-align: center;
+    margin-top: 14px; text-transform: uppercase;
+  }
+  .stat-table {
+    background: var(--bg-card); border: 1px solid var(--rule);
+    border-collapse: collapse; width: 100%;
+    margin: 20px 0; font-family: var(--sans); font-size: 14px;
+  }
+  .stat-table th {
+    background: var(--bg-elev); padding: 10px 14px; text-align: left;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--rule);
+  }
+  .stat-table td {
+    padding: 10px 14px; color: var(--ink-dim);
+    border-bottom: 1px solid var(--rule);
+  }
+  .stat-table tr:last-child td { border-bottom: none; }
+  .stat-table .word-cell {
+    font-family: var(--serif); font-style: italic;
+    color: var(--ink); font-size: 17px;
+  }
+  .stat-table .count-cell {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+  }
+  .stat-table .pieces-cell {
+    font-family: var(--mono); font-size: 12px;
+  }
+  .stat-table .pieces-bpe { color: var(--gold); }
+  .stat-table .pieces-morph { color: var(--cool); }
+
+  .key-result {
+    background: var(--bg-elev); border: 1px solid var(--rule);
+    border-left: 2px solid var(--gold);
+    padding: 22px 26px; margin: 24px 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .key-result .label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .key-result h4 {
+    font-family: var(--serif); font-weight: 500; font-size: 22px;
+    margin-bottom: 12px; color: var(--ink);
+  }
+  .key-result p { font-size: 17px; color: var(--ink-dim); margin-bottom: 0; }
+
+  .caveat {
+    background: var(--bg-card); border: 1px solid var(--rule);
+    border-left: 2px solid var(--cool);
+    padding: 22px 26px; margin: 24px 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .caveat .label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--cool); margin-bottom: 10px;
+  }
+  .caveat p { font-size: 16px; color: var(--ink-dim); margin-bottom: 12px; max-width: none; }
+  .caveat p:last-child { margin-bottom: 0; }
+
+  pre.codeblock {
+    background: #0a0a0a; border: 1px solid var(--rule);
+    border-left: 2px solid var(--cool);
+    padding: 20px 24px; margin: 20px 0;
+    border-radius: 0 2px 2px 0; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+    color: var(--ink);
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 40px; text-align: center;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--ink-faint); margin-top: 80px;
+  }
+  footer .stamp { color: var(--gold-soft); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">McMurmerings · Empirical Companion</div>
+  <ul>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#zipf">Zipf</a></li>
+    <li><a href="#fits">Fits</a></li>
+    <li><a href="#ks">KS / AD</a></li>
+    <li><a href="#heaps">Heaps</a></li>
+    <li><a href="#joint">Disagreement</a></li>
+    <li><a href="#synth">Synthesis</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<header class="lede">
+  <div class="kicker">Architect Carbon · Computational Linguistics · Empirical Companion to No. 0042</div>
+  <h1>Zipf across <em>atomisations</em></h1>
+  <p class="standfirst">Three ways to cut the same English corpus into pieces, measured. Power-law exponents, Kolmogorov-Smirnov distances, Anderson-Darling diagnostics, Heaps' law. The numbers tell a sharper story than the prose alone.</p>
+  <div class="meta">
+    <span>Corpus<strong>2,000,000 word tokens</strong></span>
+    <span>Source<strong>wordfreq · multi-genre English</strong></span>
+    <span>Method<strong>CSN MLE + KS + AD</strong></span>
+  </div>
+</header>
+
+<!-- ========================================================= -->
+<section id="setup">
+  <h2><span class="num">§ 01 / SETUP</span>What this analysis is and is not</h2>
+
+  <p class="lead">Three atomisations of the same corpus, evaluated on the same statistics.</p>
+
+  <p>A corpus of 2,000,000 word tokens was sampled from the <code>wordfreq</code> aggregated English frequency dictionary, which combines Wikipedia, books, news, subtitles, Reddit, and Twitter. The same running text was then atomised three ways:</p>
+
+  <p><strong>Whitespace words</strong>: the classical Zipf baseline. Pieces are word-strings separated by spaces.</p>
+
+  <p><strong>BPE tokens</strong>: a Byte-Pair Encoding tokeniser was trained <em>on this corpus</em> with a vocabulary cap of 16,000, then applied back to it. Training BPE locally rather than using a third-party-trained encoding (such as <code>cl100k_base</code>) keeps the comparison fair: any difference observed must come from the BPE algorithm itself, not from contamination by a different training set.</p>
+
+  <p><strong>Morfessor morphs</strong>: an unsupervised morpheme-like segmentation, learned by Morfessor 2.0 from the corpus's word-frequency dictionary. Morfessor optimises an MDL prior that approximately corresponds to morphemic decomposition.</p>
+
+  <div class="caveat">
+    <div class="label">Methodological caveats</div>
+    <p>Morfessor segmentations are <em>not</em> ground-truth morphology. The algorithm produces frequency-driven units that approximate morphemes; some segmentations are linguistically clean (<em>justice</em>, <em>injustice</em>, <em>thereby</em>), others are contestable (<em>anthem</em> → <em>an + them</em>). A linguist's gold-standard analysis would differ in the specifics. The comparison here is therefore between three <em>algorithmic</em> atomisers, two of which (BPE, Morfessor) are unsupervised and frequency-driven by construction.</p>
+
+    <p>The 2M-token corpus is large enough for clean rank-frequency curves but small relative to billion-token web corpora. Power-law exponent estimates have tight confidence intervals at this size, but the exact numerical values would shift slightly on a different corpus. The qualitative picture (the relative ordering of α values, the direction of disagreement between BPE and Morfessor) would not.</p>
+
+    <p>All p-values reported below are floored at the numerical precision of the test (typically below 10<sup>-300</sup>). This is a feature of two-sample tests on samples of this size: the distinguishability of distributions is overdetermined. The interpretive numbers are the test statistics (D for KS, A² for Anderson-Darling), which quantify how far apart the distributions are, not whether they are separable.</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<section id="zipf">
+  <h2><span class="num">§ 02 / RANK-FREQUENCY</span>Three Zipf curves on one axis</h2>
+
+  <p>The first thing to do is plot all three rank-frequency distributions on the same log-log axes. If Zipf's law held identically for all three atomisations, the three curves would be parallel straight lines.</p>
+
+  <div class="figure-frame">
+    <svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg" class="zipf-svg"><rect x="70" y="30" width="620" height="380" fill="none" stroke="#2a2722" stroke-width="1"/><line x1="70.0" y1="30" x2="70.0" y2="410" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="70.0" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">0</tspan></text><line x1="198.20409071762185" y1="30" x2="198.20409071762185" y2="410" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="198.20409071762185" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">1</tspan></text><line x1="326.4081814352437" y1="30" x2="326.4081814352437" y2="410" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="326.4081814352437" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">2</tspan></text><line x1="454.61227215286556" y1="30" x2="454.61227215286556" y2="410" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="454.61227215286556" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">3</tspan></text><line x1="582.8163628704874" y1="30" x2="582.8163628704874" y2="410" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="582.8163628704874" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">4</tspan></text><line x1="70" y1="410.0" x2="690" y2="410.0" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="414.0" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">0</tspan></text><line x1="70" y1="335.10131622159946" x2="690" y2="335.10131622159946" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="339.10131622159946" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">1</tspan></text><line x1="70" y1="260.2026324431989" x2="690" y2="260.2026324431989" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="264.2026324431989" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">2</tspan></text><line x1="70" y1="185.3039486647984" x2="690" y2="185.3039486647984" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="189.3039486647984" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">3</tspan></text><line x1="70" y1="110.4052648863979" x2="690" y2="110.4052648863979" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="114.4052648863979" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">4</tspan></text><line x1="70" y1="35.50658110799736" x2="690" y2="35.50658110799736" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="39.50658110799736" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">5</tspan></text><text x="380.0" y="450" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em">RANK (log)</text><text x="20" y="220.0" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em" transform="rotate(-90 20 220.0)">FREQUENCY (log)</text><polyline points="70.0,30.1 108.6,52.5 131.2,54.2 147.2,54.8 159.6,64.6 169.8,79.3 178.3,83.8 185.8,84.0 192.3,86.1 198.2,88.4 203.5,91.3 208.4,95.5 212.8,98.1 216.9,98.2 220.8,100.1 224.4,102.0 227.7,104.4 230.9,106.6 233.9,106.9 236.8,107.7 239.5,108.2 242.1,109.9 244.6,112.3 246.9,112.4 249.2,116.9 251.4,119.1 253.5,119.1 255.5,119.3 257.5,119.8 259.4,120.1 261.2,120.7 263.0,121.3 264.7,121.7 266.3,123.9 268.0,124.0 269.5,124.1 271.0,124.9 272.5,125.9 274.0,127.4 275.4,128.3 276.8,129.8 278.1,130.7 279.4,130.9 281.9,131.7 283.2,132.2 284.4,132.2 285.5,132.9 287.8,133.6 288.9,134.1 291.1,135.2 292.1,136.4 294.1,136.9 295.1,138.2 297.0,139.0 298.0,139.7 299.8,141.0 301.6,141.4 303.3,145.9 304.9,146.1 306.5,149.1 308.1,149.9 309.6,150.8 311.1,151.1 312.6,151.9 314.0,152.7 315.4,153.4 317.4,154.6 318.7,155.4 319.9,156.1 321.8,157.3 323.6,157.7 324.7,158.6 326.4,159.5 328.1,160.4 329.7,161.7 331.2,162.2 332.7,162.8 334.2,164.9 335.6,165.4 337.5,166.5 338.8,167.2 340.6,168.4 341.9,169.6 343.5,172.9 345.1,173.6 346.7,174.6 348.2,175.7 349.7,175.9 351.2,177.6 352.9,178.4 354.3,179.8 356.0,180.8 357.6,182.0 359.1,182.9 360.7,183.8 362.1,185.6 363.6,187.7 365.3,188.6 366.9,189.1 368.2,189.8 369.8,191.5 371.6,192.0 373.0,192.6 374.5,192.9 376.1,193.6 377.6,194.2 379.2,195.0 380.9,195.7 382.3,196.9 383.9,197.8 385.5,198.3 387.0,199.2 388.5,200.1 390.1,201.0 391.7,201.5 393.2,202.1 394.7,203.0 396.3,204.0 397.9,204.9 399.4,205.5 401.0,206.3 402.5,206.7 404.1,207.7 405.6,208.4 407.2,209.3 408.8,210.1 410.3,211.1 411.9,211.7 413.4,212.5 415.0,213.4 416.5,214.1 418.1,215.1 419.6,216.1 421.2,217.2 422.7,217.8 424.3,218.5 425.8,219.6 427.4,220.1 429.0,221.0 430.5,221.7 432.1,222.5 433.6,223.4 435.1,224.0 436.7,224.8 438.3,225.7 439.8,226.4 441.3,226.9 442.9,227.9 444.5,228.7 446.0,229.5 447.6,230.3 449.2,231.2 450.7,231.9 452.3,232.8 453.8,233.5 455.4,234.4 456.9,235.3 458.5,236.2 460.0,237.2 461.6,238.1 463.1,239.3 464.7,240.2 466.2,241.3 467.8,241.8 469.3,242.8 470.9,243.5 472.5,244.1 474.0,245.1 475.6,246.2 477.1,247.5 478.7,248.6 480.2,249.3 481.8,250.4 483.3,251.4 484.9,252.2 486.4,253.5 488.0,254.3 489.6,255.1 491.1,256.2 492.6,257.1 494.2,258.0 495.8,259.2 497.3,259.9 498.9,261.2 500.4,262.2 502.0,263.3 503.5,264.0 505.1,265.1 506.6,266.3 508.2,267.5 509.7,268.3 511.3,269.6 512.8,270.9 514.4,271.8 516.0,272.7 517.5,274.2 519.1,275.2 520.6,276.3 522.2,277.4 523.7,278.5 525.3,279.6 526.8,280.9 528.4,282.1 529.9,283.4 531.5,284.1 533.1,285.5 534.6,286.9 536.2,287.7 537.7,289.2 539.3,290.0 540.8,291.7 542.4,292.5 543.9,294.4 545.5,295.3 547.0,296.3 548.6,297.3 550.2,298.3 551.7,300.5 553.3,301.6 554.8,302.8 556.4,304.0 557.9,305.3 559.5,306.6 561.0,308.0 562.6,309.5 564.1,311.0 565.7,311.0 567.2,312.6 568.8,314.2 570.4,316.0 571.9,317.8 573.5,317.8 575.0,319.8 576.6,321.9 578.1,321.9 579.7,324.2 581.2,324.2 582.8,326.6 584.3,329.2 585.9,329.2 587.4,332.0 589.0,332.0 590.5,332.0 592.1,335.1 593.7,335.1 595.2,338.5 596.8,338.5 598.3,342.4 599.9,342.4 601.4,342.4 603.0,346.7 604.5,346.7 606.1,346.7 607.6,351.7 609.2,351.7 610.8,351.7 612.3,351.7 613.9,357.6 615.4,357.6 617.0,357.6 618.5,357.6 620.1,364.9 621.6,364.9 623.2,364.9 624.7,364.9 626.3,364.9 627.8,364.9 629.4,374.3 631.0,374.3 632.5,374.3 634.1,374.3 635.6,374.3 637.2,374.3 638.7,374.3 640.3,387.5 641.8,387.5 643.4,387.5 644.9,387.5 646.5,387.5 648.0,387.5 649.6,387.5 651.2,387.5 652.7,387.5 654.3,387.5 655.8,387.5 657.4,410.0 658.9,410.0 660.5,410.0 662.0,410.0 663.6,410.0 665.1,410.0 666.7,410.0 668.2,410.0 669.8,410.0 671.4,410.0 672.9,410.0 674.5,410.0 676.0,410.0 677.6,410.0 679.1,410.0 680.7,410.0 682.2,410.0 683.8,410.0 685.3,410.0 686.9,410.0 688.4,410.0 690.0,410.0" fill="none" stroke="#e8e6e0" stroke-width="1.5" opacity="0.85"/><polyline points="70.0,30.0 108.6,52.0 131.2,54.1 147.2,54.8 159.6,63.1 169.8,78.5 178.3,83.6 185.8,83.9 192.3,86.1 198.2,88.0 203.5,89.6 208.4,95.4 212.8,98.0 216.9,98.1 220.8,99.2 224.4,101.2 227.7,104.2 230.9,106.3 233.9,106.4 236.8,107.0 239.5,108.0 242.1,109.3 244.6,111.0 246.9,112.3 249.2,112.3 251.4,116.6 253.5,117.2 255.5,117.7 257.5,118.6 259.4,119.6 261.2,119.8 263.0,119.8 264.7,121.2 266.3,121.6 268.0,122.4 269.5,123.6 271.0,123.7 272.5,124.0 274.0,125.5 275.4,127.0 276.8,128.2 278.1,128.9 279.4,129.5 280.7,129.8 283.2,131.1 284.4,131.5 285.5,131.7 286.7,131.7 288.9,133.4 290.0,134.0 291.1,134.5 293.1,135.5 294.1,135.8 296.1,137.4 297.0,138.0 298.9,139.7 300.7,140.6 301.6,140.8 303.3,145.1 304.9,145.8 305.7,146.1 307.3,148.4 308.9,149.1 310.4,149.7 311.9,150.6 313.3,151.7 314.7,152.0 316.0,152.6 318.0,154.0 319.3,154.5 320.5,154.6 322.4,156.1 323.6,156.5 325.3,158.5 326.4,159.2 328.1,159.9 329.7,160.8 330.7,161.1 332.2,161.9 333.7,162.9 335.1,163.7 336.6,164.6 337.9,165.6 339.7,166.3 341.0,167.6 342.7,168.9 343.9,171.2 345.5,172.4 347.1,173.6 348.2,174.5 349.7,174.7 351.2,175.6 352.6,177.2 354.3,178.0 355.6,179.3 357.2,180.2 358.5,181.3 360.1,181.9 361.6,183.4 363.0,184.3 364.4,185.8 365.8,187.5 367.2,187.9 368.8,188.9 370.3,189.4 371.6,189.9 373.0,191.2 374.7,191.5 376.1,191.8 377.4,192.2 379.0,192.9 380.5,193.6 381.9,194.2 383.3,194.9 384.7,196.0 386.3,197.0 387.8,197.6 389.2,198.2 390.6,199.2 392.0,199.8 393.6,200.8 395.0,201.4 396.5,202.2 397.9,203.0 399.4,203.9 400.9,204.8 402.3,205.5 403.7,205.9 405.2,206.3 406.7,206.9 408.1,207.6 409.5,208.5 411.0,209.1 412.5,210.2 414.0,211.1 415.3,211.6 416.9,212.6 418.3,213.4 419.8,214.5 421.2,214.9 422.7,216.0 424.2,216.9 425.6,217.6 427.1,218.5 428.5,219.1 429.9,219.9 431.4,220.6 432.9,221.5 434.4,222.2 435.8,223.0 437.2,223.6 438.7,224.4 440.2,224.9 441.6,225.7 443.1,226.2 444.6,226.9 446.0,227.7 447.5,228.5 448.9,229.4 450.4,230.3 451.8,230.8 453.3,231.7 454.7,232.4 456.2,233.1 457.6,233.8 459.1,235.0 460.6,235.6 462.1,236.5 463.5,237.5 464.9,238.3 466.4,239.2 467.9,240.2 469.3,241.1 470.8,241.4 472.2,242.2 473.7,243.1 475.1,243.9 476.6,244.7 478.1,245.7 479.5,246.8 481.0,247.9 482.4,248.8 483.9,249.7 485.4,250.4 486.8,251.2 488.3,252.2 489.7,253.2 491.2,254.0 492.6,254.8 494.1,255.7 495.5,256.5 497.0,257.4 498.5,258.3 499.9,259.2 501.4,260.2 502.8,261.2 504.3,262.2 505.8,262.9 507.2,264.0 508.7,265.1 510.1,265.9 511.6,267.1 513.0,267.9 514.5,269.1 516.0,270.0 517.4,270.9 518.9,271.8 520.3,273.2 521.8,274.2 523.3,275.2 524.7,276.3 526.2,277.4 527.6,278.5 529.1,279.1 530.5,280.9 532.0,281.5 533.4,282.7 534.9,284.1 536.4,284.8 537.8,286.2 539.3,286.9 540.7,288.4 542.2,289.2 543.7,290.0 545.1,291.7 546.6,292.5 548.0,293.4 549.5,294.4 550.9,296.3 552.4,297.3 553.9,298.3 555.3,299.4 556.8,300.5 558.2,301.6 559.7,302.8 561.1,304.0 562.6,305.3 564.1,306.6 565.5,308.0 567.0,308.0 568.4,309.5 569.9,311.0 571.3,312.6 572.8,314.2 574.3,314.2 575.7,316.0 577.2,317.8 578.6,317.8 580.1,319.8 581.5,321.9 583.0,321.9 584.5,324.2 585.9,324.2 587.4,326.6 588.8,326.6 590.3,329.2 591.7,329.2 593.2,332.0 594.7,332.0 596.1,335.1 597.6,335.1 599.0,335.1 600.5,338.5 601.9,338.5 603.4,338.5 604.9,342.4 606.3,342.4 607.8,342.4 609.2,346.7 610.7,346.7 612.1,346.7 613.6,351.7 615.1,351.7 616.5,351.7 618.0,351.7 619.4,357.6 620.9,357.6 622.4,357.6 623.8,357.6 625.3,364.9 626.7,364.9 628.2,364.9 629.6,364.9 631.1,374.3 632.6,374.3 634.0,374.3 635.5,374.3 636.9,374.3 638.4,387.5 639.8,387.5 641.3,387.5 642.8,387.5 644.2,387.5 645.7,410.0 647.1,410.0 648.6,410.0 650.0,410.0 651.5,410.0" fill="none" stroke="#6b8aa8" stroke-width="1.5" opacity="0.85"/><polyline points="70.0,30.0 108.6,52.1 131.2,54.1 147.2,54.7 159.6,63.4 169.8,78.4 178.3,83.6 185.8,84.0 192.3,86.1 198.2,87.5 203.5,89.7 208.4,95.4 212.8,98.0 216.9,98.1 220.8,98.9 224.4,100.0 227.7,104.1 230.9,105.4 233.9,106.6 236.8,106.7 239.5,107.9 242.1,109.2 244.6,112.2 246.9,112.3 249.2,115.4 251.4,116.1 253.5,117.0 255.5,118.2 257.5,119.3 259.4,119.3 261.2,119.8 263.0,121.1 264.7,121.6 266.3,121.9 268.0,123.1 269.5,123.3 271.0,123.9 272.5,125.6 274.0,127.2 275.4,128.2 276.8,128.6 278.1,128.6 279.4,129.8 280.7,130.6 281.9,130.7 283.2,131.5 284.4,131.7 285.5,131.7 286.7,131.8 288.9,134.0 290.0,134.3 291.1,135.1 292.1,135.2 294.1,136.4 295.1,137.7 297.0,138.9 298.0,139.7 298.9,140.4 300.7,140.6 301.6,140.7 303.3,145.7 304.9,146.1 305.7,146.6 307.3,147.9 308.9,148.2 310.4,149.2 311.1,149.7 312.6,150.5 314.0,151.5 315.4,151.8 316.7,152.0 318.0,152.5 319.3,153.2 321.2,154.4 322.4,155.3 323.6,155.9 324.7,156.6 326.4,158.5 327.5,158.9 329.1,159.5 330.2,159.9 331.7,161.0 333.2,161.2 334.2,161.9 335.6,163.1 337.0,164.5 338.4,164.9 339.7,165.6 341.0,165.8 342.3,166.7 343.9,168.3 345.1,168.9 346.3,170.7 347.9,172.0 349.4,172.2 350.4,173.6 351.9,174.6 353.3,175.5 354.6,175.9 356.0,177.0 357.2,177.5 358.5,178.0 360.1,179.2 361.3,180.0 362.7,181.6 364.2,182.1 365.3,182.7 366.6,183.2 368.0,184.1 369.5,185.5 370.8,186.5 372.1,187.0 373.5,187.6 374.9,187.9 376.1,188.7 377.4,189.4 379.0,190.1 380.2,190.7 381.5,191.3 382.9,191.6 384.3,192.1 385.7,192.8 387.0,193.6 388.3,194.1 389.6,194.8 391.0,195.6 392.4,196.3 393.7,196.6 395.0,197.6 396.5,198.6 397.7,199.3 399.1,200.0 400.4,200.7 401.8,201.3 403.2,201.8 404.6,203.0 405.8,203.7 407.2,204.3 408.5,205.0 409.9,205.5 411.3,205.9 412.6,206.3 414.0,206.9 415.2,207.5 416.7,208.4 418.0,209.1 419.4,210.1 420.7,210.7 422.0,211.1 423.4,211.7 424.8,212.6 426.1,213.1 427.5,214.0 428.8,214.8 430.1,215.7 431.5,216.2 432.8,216.8 434.2,217.4 435.5,217.9 436.9,218.9 438.2,219.5 439.6,220.3 440.9,221.1 442.3,221.8 443.6,222.3 445.0,222.7 446.3,223.5 447.7,223.9 449.0,224.7 450.3,225.1 451.7,225.8 453.0,226.5 454.4,227.1 455.8,227.7 457.1,228.3 458.4,229.2 459.8,230.0 461.1,230.7 462.5,231.9 463.8,232.3 465.2,232.8 466.5,233.7 467.9,234.4 469.2,235.3 470.6,236.1 471.9,236.9 473.3,237.5 474.6,238.3 476.0,239.2 477.3,240.0 478.7,240.7 480.0,241.4 481.4,242.2 482.7,242.8 484.1,243.5 485.4,244.3 486.8,245.1 488.1,245.9 489.5,247.0 490.8,247.9 492.2,248.8 493.5,249.7 494.9,250.4 496.2,251.2 497.6,252.2 498.9,252.9 500.3,253.7 501.6,254.3 503.0,255.1 504.3,255.9 505.7,257.1 507.0,257.7 508.3,258.6 509.7,259.6 511.0,260.2 512.4,261.5 513.7,262.2 515.1,263.3 516.4,264.0 517.8,265.1 519.1,265.9 520.5,267.1 521.8,267.9 523.2,268.7 524.5,269.6 525.9,270.4 527.2,271.3 528.6,272.3 529.9,273.2 531.3,274.2 532.6,275.2 534.0,276.3 535.3,277.4 536.7,278.5 538.0,279.1 539.4,280.2 540.7,281.5 542.1,282.1 543.4,283.4 544.8,284.1 546.1,284.8 547.5,286.2 548.8,286.9 550.2,288.4 551.5,289.2 552.9,290.0 554.2,290.8 555.6,292.5 556.9,293.4 558.3,294.4 559.6,295.3 560.9,296.3 562.3,297.3 563.6,298.3 565.0,299.4 566.3,300.5 567.7,301.6 569.0,302.8 570.4,304.0 571.7,305.3 573.1,305.3 574.4,306.6 575.8,308.0 577.1,309.5 578.5,309.5 579.8,311.0 581.2,312.6 582.5,314.2 583.9,314.2 585.2,316.0 586.6,317.8 587.9,317.8 589.3,319.8 590.6,319.8 592.0,321.9 593.3,321.9 594.7,324.2 596.0,324.2 597.4,326.6 598.7,326.6 600.1,329.2 601.4,329.2 602.8,329.2 604.1,335.1 605.5,346.7 606.8,374.3 608.2,410.0" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.85"/><rect x="490" y="42" width="180" height="76" fill="#161616" stroke="#2a2722" stroke-width="0.5"/><line x1="502" y1="60" x2="524" y2="60" stroke="#e8e6e0" stroke-width="2"/><text x="532" y="64" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">Whitespace words</text><line x1="502" y1="78" x2="524" y2="78" stroke="#6b8aa8" stroke-width="2"/><text x="532" y="82" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">Morfessor morphs</text><line x1="502" y1="96" x2="524" y2="96" stroke="#c9a84c" stroke-width="2"/><text x="532" y="100" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">BPE tokens</text></svg>
+    <p class="figure-caption">Fig. 1 · Rank-frequency, log-log. Whitespace words (white), Morfessor morphs (cool), BPE tokens (gold).</p>
+  </div>
+
+  <p>The curves are not parallel. Each atomisation produces a different shape, and the differences are systematic.</p>
+
+  <p>Whitespace words run furthest to the right because the corpus has the largest number of distinct word types (68,555). Morfessor lies between the other two, with about half as many distinct morph types. BPE has the fewest types (15,765) because of its vocabulary cap. The rightmost ends of the curves measure how each atomisation deals with the long tail of rare items: by including them all (words), by sometimes splitting them into known morphs (Morfessor), or by always shattering them into common subword pieces (BPE).</p>
+
+  <p>The slopes also differ. The BPE curve descends more steeply than the words curve, with the Morfessor curve in between. This is the formal signature of compression: BPE concentrates probability mass on its frequent tokens more aggressively than the underlying word distribution does.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="fits">
+  <h2><span class="num">§ 03 / POWER-LAW FITS</span>What α tells you</h2>
+
+  <p>The Clauset-Shalizi-Newman maximum-likelihood procedure was used to fit a discrete power law to each distribution. The procedure also identifies the lower cutoff <em>x</em><sub>min</sub> above which the power-law fit is valid; below that cutoff the data may behave differently. The fitted exponent α and its standard error σ are reported below.</p>
+
+  <div class="figure-frame">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" class="zipf-svg"><rect x="110" y="30" width="580" height="120" fill="none" stroke="#2a2722" stroke-width="1"/><line x1="351.6666666666667" y1="30" x2="351.6666666666667" y2="150" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="351.6666666666667" y="168" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">1.0</text><line x1="472.5" y1="30" x2="472.5" y2="150" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="472.5" y="168" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">1.5</text><line x1="593.3333333333334" y1="30" x2="593.3333333333334" y2="150" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="593.3333333333334" y="168" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">2.0</text><line x1="351.6666666666667" y1="26" x2="351.6666666666667" y2="154" stroke="#c97a4c" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/><text x="351.6666666666667" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#c97a4c" opacity="0.8">Zipf ideal &alpha;=1</text><rect x="110" y="49.0" width="397.1485047944421" height="16" fill="#e8e6e0" opacity="0.7"/><line x1="506.5546775776193" y1="57.0" x2="507.74233201126486" y2="57.0" stroke="#e8e6e0" stroke-width="2"/><line x1="507.74233201126486" y1="52.0" x2="507.74233201126486" y2="62.0" stroke="#e8e6e0" stroke-width="2"/><line x1="506.5546775776193" y1="52.0" x2="506.5546775776193" y2="62.0" stroke="#e8e6e0" stroke-width="2"/><text x="100" y="61.0" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">Whitespace words</text><text x="515.7423320112648" y="61.0" font-family="IBM Plex Mono" font-size="12" fill="#e8e6e0">&alpha; = 1.643 &plusmn; 0.002</text><rect x="110" y="79.0" width="499.8991056314207" height="16" fill="#6b8aa8" opacity="0.7"/><line x1="603.2092358714659" y1="87.0" x2="616.5889753913756" y2="87.0" stroke="#6b8aa8" stroke-width="2"/><line x1="616.5889753913756" y1="82.0" x2="616.5889753913756" y2="92.0" stroke="#6b8aa8" stroke-width="2"/><line x1="603.2092358714659" y1="82.0" x2="603.2092358714659" y2="92.0" stroke="#6b8aa8" stroke-width="2"/><text x="100" y="91.0" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">Morfessor morphs</text><text x="624.5889753913756" y="91.0" font-family="IBM Plex Mono" font-size="12" fill="#6b8aa8">&alpha; = 2.069 &plusmn; 0.028</text><rect x="110" y="109.0" width="512.8447217471974" height="16" fill="#c9a84c" opacity="0.7"/><line x1="615.4033071118579" y1="117.0" x2="630.2861363825368" y2="117.0" stroke="#c9a84c" stroke-width="2"/><line x1="630.2861363825368" y1="112.0" x2="630.2861363825368" y2="122.0" stroke="#c9a84c" stroke-width="2"/><line x1="615.4033071118579" y1="112.0" x2="615.4033071118579" y2="122.0" stroke="#c9a84c" stroke-width="2"/><text x="100" y="121.0" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">BPE tokens</text><text x="638.2861363825368" y="121.0" font-family="IBM Plex Mono" font-size="12" fill="#c9a84c">&alpha; = 2.122 &plusmn; 0.031</text><text x="400.0" y="190" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em">FITTED POWER-LAW EXPONENT &alpha; (CSN MLE, TAIL ABOVE x_min)</text></svg>
+    <p class="figure-caption">Fig. 2 · Fitted power-law exponents α with standard errors. Higher α means a steeper (thinner) tail.</p>
+  </div>
+
+  <table class="stat-table">
+    <tr>
+      <th>Atomisation</th>
+      <th>α (fitted)</th>
+      <th>σ</th>
+      <th>x<sub>min</sub></th>
+      <th>Tail size</th>
+      <th>KS distance to PL fit</th>
+    </tr>
+    <tr>
+      <td class="word-cell">Whitespace words</td>
+      <td class="pieces-cell">1.643</td>
+      <td class="count-cell">0.002</td>
+      <td class="count-cell">1</td>
+      <td class="count-cell">68,555</td>
+      <td class="pieces-cell">0.015</td>
+    </tr>
+    <tr>
+      <td class="word-cell">Morfessor morphs</td>
+      <td class="pieces-cell">2.069</td>
+      <td class="count-cell">0.028</td>
+      <td class="count-cell">161</td>
+      <td class="count-cell">1,490</td>
+      <td class="pieces-cell">0.017</td>
+    </tr>
+    <tr>
+      <td class="word-cell">BPE tokens</td>
+      <td class="pieces-cell">2.122</td>
+      <td class="count-cell">0.031</td>
+      <td class="count-cell">212</td>
+      <td class="count-cell">1,328</td>
+      <td class="pieces-cell">0.018</td>
+    </tr>
+  </table>
+
+  <div class="key-result">
+    <div class="label">Result</div>
+    <h4>The two algorithmic atomisers produce noticeably steeper tails</h4>
+    <p>BPE α ≈ 2.12 and Morfessor α ≈ 2.07, both well above the words α ≈ 1.64. A higher α means probability mass concentrates more sharply on the head of the distribution and the tail is correspondingly thinner. Compression-driven atomisers are intrinsically <em>more Zipfian</em> than the underlying word distribution they were trained from. They have to be: that concentration is the source of the compression.</p>
+  </div>
+
+  <p>The KS distance between each fitted power law and its empirical data is small in all three cases (around 0.015 to 0.018), which means the power-law form is a reasonable description of the tail in every atomisation. The differences are in α, not in whether the distributions are power-laws at all. All three are. They are simply different power laws.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="ks">
+  <h2><span class="num">§ 04 / KOLMOGOROV-SMIRNOV</span>How far apart are the distributions?</h2>
+
+  <p>The previous section established that all three atomisations produce power-law tails. The natural next question is how different those distributions are <em>from each other</em>. The two-sample Kolmogorov-Smirnov test answers this directly: it measures the maximum vertical distance D between two empirical cumulative distribution functions.</p>
+
+  <p>Three pairwise comparisons were run on the log-frequency arrays of each atomisation, both on the full distributions and restricted to the tail above each pair's <em>x</em><sub>min</sub>. Anderson-Darling was added as a tail-weighted robustness check.</p>
+
+  <div class="figure-frame">
+    <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" class="zipf-svg"><text x="223.33333333333331" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#c9a84c" letter-spacing="0.1em">KS · full distribution</text><text x="409.99999999999994" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#c9a84c" letter-spacing="0.1em">KS · tail only (above x_min)</text><text x="596.6666666666666" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#c9a84c" letter-spacing="0.1em">Anderson-Darling A²</text><text x="118" y="121.33333333333334" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">Words vs BPE</text><rect x="138" y="96.66666666666667" width="123.07706091128013" height="41.333333333333336" fill="#6b8aa8" opacity="0.65"/><text x="269.0770609112801" y="121.33333333333334" font-family="IBM Plex Mono" font-size="12" fill="#6b8aa8">D = 0.757</text><rect x="324.66666666666663" y="96.66666666666667" width="160.1491357304354" height="41.333333333333336" fill="#c9a84c" opacity="0.65"/><text x="492.81580239710206" y="121.33333333333334" font-family="IBM Plex Mono" font-size="12" fill="#c9a84c">D = 0.985</text><rect x="511.3333333333333" y="96.66666666666667" width="162.66666666666666" height="41.333333333333336" fill="#c97a4c" opacity="0.65"/><text x="682.0" y="121.33333333333334" font-family="IBM Plex Mono" font-size="12" fill="#c97a4c">A² = 21,054</text><text x="118" y="204.00000000000003" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">Words vs Morfessor</text><rect x="138" y="179.33333333333334" width="60.10036251216901" height="41.333333333333336" fill="#6b8aa8" opacity="0.65"/><text x="206.100362512169" y="204.00000000000003" font-family="IBM Plex Mono" font-size="12" fill="#6b8aa8">D = 0.369</text><rect x="324.66666666666663" y="179.33333333333334" width="159.34001410060048" height="41.333333333333336" fill="#c9a84c" opacity="0.65"/><text x="492.0066807672671" y="204.00000000000003" font-family="IBM Plex Mono" font-size="12" fill="#c9a84c">D = 0.980</text><rect x="511.3333333333333" y="179.33333333333334" width="154.0952086211159" height="41.333333333333336" fill="#c97a4c" opacity="0.65"/><text x="673.4285419544492" y="204.00000000000003" font-family="IBM Plex Mono" font-size="12" fill="#c97a4c">A² = 12,460</text><text x="118" y="286.6666666666667" text-anchor="end" font-family="IBM Plex Sans" font-size="13" fill="#9a958a">BPE vs Morfessor</text><rect x="138" y="262.0" width="91.39574134092591" height="41.333333333333336" fill="#6b8aa8" opacity="0.65"/><text x="237.3957413409259" y="286.6666666666667" font-family="IBM Plex Mono" font-size="12" fill="#6b8aa8">D = 0.562</text><rect x="324.66666666666663" y="262.0" width="40.284563758389254" height="41.333333333333336" fill="#c9a84c" opacity="0.65"/><text x="372.9512304250559" y="286.6666666666667" font-family="IBM Plex Mono" font-size="12" fill="#c9a84c">D = 0.248</text><rect x="511.3333333333333" y="262.0" width="146.22588842689458" height="41.333333333333336" fill="#c97a4c" opacity="0.65"/><text x="665.559221760228" y="286.6666666666667" font-family="IBM Plex Mono" font-size="12" fill="#c97a4c">A² = 7,698</text><text x="360.0" y="352" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#5c5850">ALL DIFFERENCES p &lt; 10⁻³⁰⁰ AT THIS SAMPLE SIZE; D AND A² ARE THE INTERPRETIVE NUMBERS</text></svg>
+    <p class="figure-caption">Fig. 3 · Pairwise distribution distances. Three columns: KS on full distributions, KS on tails only, Anderson-Darling A².</p>
+  </div>
+
+  <p>Three observations from these numbers.</p>
+
+  <p><strong>First.</strong> Words versus BPE shows the largest full-distribution KS distance (0.757). The reason is structural: BPE has a fixed vocabulary cap of 16,000 while the corpus has 68,555 word types. The empirical distributions are not just shifted but defined over support sets of fundamentally different size. KS captures this strongly.</p>
+
+  <p><strong>Second.</strong> Words versus Morfessor shows the smallest KS distance (0.369). Morfessor's segmentation, being closer to morphologically motivated, leaves the rank-frequency shape closer to whitespace words.</p>
+
+  <p><strong>Third.</strong> When restricted to the tail above each <em>x</em><sub>min</sub>, the picture inverts. Words versus BPE and words versus Morfessor both jump to a tail-KS distance near 0.98 (because the tails are sampled at very different scales in those comparisons). But <strong>BPE versus Morfessor in the tail collapses to D = 0.248</strong>. The two compression-driven atomisers, restricted to their high-frequency tails, look statistically far closer to each other than either looks to whole-word frequency.</p>
+
+  <div class="key-result">
+    <div class="label">Convergence in the tail</div>
+    <h4>BPE and Morfessor converge in their tail statistics</h4>
+    <p>Tail-restricted KS for BPE versus Morfessor is roughly four times smaller than for either against whitespace words. Two unsupervised atomisers that learn from frequency end up producing distributions whose tails are statistically similar, even though their objective functions and segmentation outputs differ substantially. This is the formal echo of the essay's claim: compression-driven atomisation has a characteristic statistical signature, distinct from the morphologically meaningful one.</p>
+  </div>
+
+  <p>Anderson-Darling broadly confirms the KS picture but with much larger numerical separations because A² weights the tail more heavily. All three pairwise A² values are over 7,000, well into the regime where the test rejects identical distributions at any conventional significance level. As with KS, the interpretive value is in the relative magnitude of A² between pairs, not the absolute number.</p>
+</section>
+
+<!-- ========================================================= -->
+<section id="heaps">
+  <h2><span class="num">§ 05 / HEAPS' LAW</span>Vocabulary growth as the corpus grows</h2>
+
+  <p>Zipf's law describes the frequency distribution at a fixed corpus size. Heaps' law describes how the vocabulary V grows as the corpus N grows: empirically V ≈ K · N<sup>β</sup>, with β between roughly 0.4 and 0.7 for natural-language text. The exponent β tells you how aggressively new types appear as the corpus extends.</p>
+
+  <div class="figure-frame">
+    <svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" class="zipf-svg"><rect x="70" y="30" width="620" height="340" fill="none" stroke="#2a2722" stroke-width="1"/><line x1="70.0" y1="30" x2="70.0" y2="370" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="70.0" y="390" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">2</tspan></text><line x1="213.00771555214968" y1="30" x2="213.00771555214968" y2="370" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="213.00771555214968" y="390" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">3</tspan></text><line x1="356.01543110429935" y1="30" x2="356.01543110429935" y2="370" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="356.01543110429935" y="390" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">4</tspan></text><line x1="499.023146656449" y1="30" x2="499.023146656449" y2="370" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="499.023146656449" y="390" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">5</tspan></text><line x1="642.0308622085987" y1="30" x2="642.0308622085987" y2="370" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="642.0308622085987" y="390" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">6</tspan></text><line x1="70" y1="471.3379916451766" x2="690" y2="471.3379916451766" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="475.3379916451766" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">1</tspan></text><line x1="70" y1="356.28755130992863" x2="690" y2="356.28755130992863" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="360.28755130992863" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">2</tspan></text><line x1="70" y1="241.2371109746807" x2="690" y2="241.2371109746807" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="245.2371109746807" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">3</tspan></text><line x1="70" y1="126.18667063943272" x2="690" y2="126.18667063943272" stroke="#2a2722" stroke-width="0.5" stroke-dasharray="2 3"/><text x="62" y="130.18667063943272" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">10<tspan font-size="8" baseline-shift="super">4</tspan></text><text x="380.0" y="410" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em">CORPUS TOKENS N (log)</text><text x="20" y="200.0" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em" transform="rotate(-90 20 200.0)">VOCABULARY V (log)</text><polyline points="70.0,370.0 85.3,358.3 101.5,345.9 117.3,335.4 133.1,322.7 148.7,313.0 164.5,301.9 180.3,290.0 196.1,280.7 211.9,270.6 227.7,259.3 243.5,248.8 259.2,238.6 275.0,228.7 290.8,218.3 306.6,209.6 322.3,199.8 338.1,190.8 353.9,181.9 369.7,172.7 385.4,163.7 401.2,154.8 417.0,146.3 432.7,138.6 448.5,130.5 464.3,122.9 480.1,115.6 495.8,108.4 511.6,101.2 527.4,94.0 543.1,86.9 558.9,79.9 574.7,73.2 590.5,66.8 606.2,60.4 622.0,54.0 637.8,47.8 653.5,41.8 669.3,35.8 685.1,30.0 685.1,30.0" fill="none" stroke="#e8e6e0" stroke-width="1.8" opacity="0.9"/><circle cx="70.0" cy="370.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="85.3" cy="358.3" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="101.5" cy="345.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="117.3" cy="335.4" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="133.1" cy="322.7" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="148.7" cy="313.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="164.5" cy="301.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="180.3" cy="290.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="196.1" cy="280.7" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="211.9" cy="270.6" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="227.7" cy="259.3" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="243.5" cy="248.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="259.2" cy="238.6" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="275.0" cy="228.7" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="290.8" cy="218.3" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="306.6" cy="209.6" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="322.3" cy="199.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="338.1" cy="190.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="353.9" cy="181.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="369.7" cy="172.7" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="385.4" cy="163.7" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="401.2" cy="154.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="417.0" cy="146.3" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="432.7" cy="138.6" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="448.5" cy="130.5" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="464.3" cy="122.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="480.1" cy="115.6" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="495.8" cy="108.4" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="511.6" cy="101.2" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="527.4" cy="94.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="543.1" cy="86.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="558.9" cy="79.9" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="574.7" cy="73.2" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="590.5" cy="66.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="606.2" cy="60.4" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="622.0" cy="54.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="637.8" cy="47.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="653.5" cy="41.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="669.3" cy="35.8" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="685.1" cy="30.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><circle cx="685.1" cy="30.0" r="2.5" fill="#e8e6e0" opacity="0.7"/><polyline points="70.6,369.3 85.8,357.8 102.6,344.7 118.1,334.4 134.4,321.2 149.9,311.5 165.9,300.2 182.3,288.2 197.9,279.0 213.6,269.2 229.5,257.9 245.3,247.6 261.2,237.6 277.0,227.8 292.7,217.5 308.4,208.9 324.1,199.0 339.9,190.3 355.6,181.7 371.4,172.8 387.1,164.1 402.9,155.6 418.7,147.5 434.5,140.4 450.3,132.8 466.0,125.7 481.8,119.4 497.5,113.0 513.3,106.8 529.1,100.8 544.8,95.2 560.6,89.9 576.4,85.3 592.2,81.1 607.9,77.2 623.7,73.7 639.5,70.7 655.3,68.2 671.0,66.1 686.8,64.5 686.8,64.5" fill="none" stroke="#6b8aa8" stroke-width="1.8" opacity="0.9"/><circle cx="70.6" cy="369.3" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="85.8" cy="357.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="102.6" cy="344.7" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="118.1" cy="334.4" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="134.4" cy="321.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="149.9" cy="311.5" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="165.9" cy="300.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="182.3" cy="288.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="197.9" cy="279.0" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="213.6" cy="269.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="229.5" cy="257.9" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="245.3" cy="247.6" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="261.2" cy="237.6" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="277.0" cy="227.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="292.7" cy="217.5" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="308.4" cy="208.9" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="324.1" cy="199.0" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="339.9" cy="190.3" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="355.6" cy="181.7" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="371.4" cy="172.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="387.1" cy="164.1" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="402.9" cy="155.6" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="418.7" cy="147.5" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="434.5" cy="140.4" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="450.3" cy="132.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="466.0" cy="125.7" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="481.8" cy="119.4" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="497.5" cy="113.0" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="513.3" cy="106.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="529.1" cy="100.8" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="544.8" cy="95.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="560.6" cy="89.9" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="576.4" cy="85.3" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="592.2" cy="81.1" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="607.9" cy="77.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="623.7" cy="73.7" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="639.5" cy="70.7" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="655.3" cy="68.2" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="671.0" cy="66.1" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="686.8" cy="64.5" r="2.5" fill="#6b8aa8" opacity="0.7"/><circle cx="686.8" cy="64.5" r="2.5" fill="#6b8aa8" opacity="0.7"/><polyline points="73.0,366.8 87.7,355.8 105.5,341.7 120.6,331.6 137.0,318.3 152.3,308.7 168.8,296.6 186.2,283.2 201.2,274.7 216.5,265.0 233.0,253.2 248.7,243.4 264.3,233.5 279.9,223.9 295.7,213.7 311.4,205.2 327.3,196.0 342.9,187.8 358.5,179.8 374.4,171.6 390.2,163.5 406.1,155.6 421.9,148.4 437.6,142.3 453.4,136.0 469.1,130.3 484.9,125.3 500.6,120.6 516.4,116.4 532.2,113.0 548.0,110.1 563.8,108.0 579.6,106.4 595.3,105.3 611.1,104.6 626.9,104.2 642.7,104.0 658.5,103.8 674.2,103.6 690.0,103.4 690.0,103.4" fill="none" stroke="#c9a84c" stroke-width="1.8" opacity="0.9"/><circle cx="73.0" cy="366.8" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="87.7" cy="355.8" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="105.5" cy="341.7" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="120.6" cy="331.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="137.0" cy="318.3" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="152.3" cy="308.7" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="168.8" cy="296.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="186.2" cy="283.2" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="201.2" cy="274.7" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="216.5" cy="265.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="233.0" cy="253.2" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="248.7" cy="243.4" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="264.3" cy="233.5" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="279.9" cy="223.9" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="295.7" cy="213.7" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="311.4" cy="205.2" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="327.3" cy="196.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="342.9" cy="187.8" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="358.5" cy="179.8" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="374.4" cy="171.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="390.2" cy="163.5" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="406.1" cy="155.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="421.9" cy="148.4" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="437.6" cy="142.3" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="453.4" cy="136.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="469.1" cy="130.3" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="484.9" cy="125.3" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="500.6" cy="120.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="516.4" cy="116.4" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="532.2" cy="113.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="548.0" cy="110.1" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="563.8" cy="108.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="579.6" cy="106.4" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="595.3" cy="105.3" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="611.1" cy="104.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="626.9" cy="104.2" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="642.7" cy="104.0" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="658.5" cy="103.8" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="674.2" cy="103.6" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="690.0" cy="103.4" r="2.5" fill="#c9a84c" opacity="0.7"/><circle cx="690.0" cy="103.4" r="2.5" fill="#c9a84c" opacity="0.7"/><rect x="86" y="274" width="240" height="84" fill="#161616" stroke="#2a2722" stroke-width="0.5"/><line x1="98" y1="294" x2="120" y2="294" stroke="#e8e6e0" stroke-width="2"/><text x="128" y="298" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">Whitespace words &beta;=0.681</text><line x1="98" y1="316" x2="120" y2="316" stroke="#6b8aa8" stroke-width="2"/><text x="128" y="320" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">Morfessor morphs &beta;=0.623</text><line x1="98" y1="338" x2="120" y2="338" stroke="#c9a84c" stroke-width="2"/><text x="128" y="342" font-family="IBM Plex Mono" font-size="11" fill="#9a958a">BPE tokens &beta;=0.538</text></svg>
+    <p class="figure-caption">Fig. 4 · Heaps' law. Vocabulary V as a function of cumulative corpus size N, log-log. Each point is a checkpoint as the analyser walks through the corpus.</p>
+  </div>
+
+  <table class="stat-table">
+    <tr>
+      <th>Atomisation</th><th>β</th><th>K</th><th>R²</th>
+    </tr>
+    <tr>
+      <td class="word-cell">Whitespace words</td>
+      <td class="pieces-cell">0.681</td>
+      <td class="count-cell">5.07</td>
+      <td class="pieces-cell">0.9898</td>
+    </tr>
+    <tr>
+      <td class="word-cell">Morfessor morphs</td>
+      <td class="pieces-cell">0.623</td>
+      <td class="count-cell">7.79</td>
+      <td class="pieces-cell">0.9720</td>
+    </tr>
+    <tr>
+      <td class="word-cell">BPE tokens</td>
+      <td class="pieces-cell">0.538</td>
+      <td class="count-cell">14.84</td>
+      <td class="pieces-cell">0.9265</td>
+    </tr>
+  </table>
+
+  <div class="key-result">
+    <div class="label">Saturation</div>
+    <h4>BPE vocabulary growth flattens, words keep growing, Morfessor sits between</h4>
+    <p>BPE's β ≈ 0.54 is the lowest because BPE's vocabulary is capped at 16,000 by construction; once the cap is saturated, no new types can appear regardless of corpus size. Whole-word vocabulary β ≈ 0.68 keeps climbing because new rare words always remain in the corpus. Morfessor β ≈ 0.62 sits between: it has no fixed cap, but its frequency-driven segmentation reuses morph types more aggressively than whole-word counting does. The Heaps exponent is, in effect, a direct measurement of how "open" each atomisation's vocabulary is.</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<section id="joint">
+  <h2><span class="num">§ 06 / DISAGREEMENT</span>Where BPE and Morfessor cut differently</h2>
+
+  <p>The most pedagogically useful plot of the analysis is the joint distribution of pieces-per-word. For every word type in the corpus, the number of BPE pieces and the number of Morfessor pieces were recorded. Plotting these as a 2D histogram, weighted by the word's corpus frequency, shows where the two atomisers agree (on the diagonal) and where they cut differently (off the diagonal).</p>
+
+  <div class="figure-frame">
+    <svg viewBox="0 0 540 540" xmlns="http://www.w3.org/2000/svg" class="zipf-svg"><rect x="80.0" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.000"/><rect x="125.55555555555556" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="171.11111111111111" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="216.66666666666669" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="262.22222222222223" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="307.77777777777777" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="353.33333333333337" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="423.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="1.000"/><text x="148.33333333333334" y="403.99999999999994" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e8e6e0">93.4%</text><rect x="171.11111111111111" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.517"/><rect x="216.66666666666669" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.055"/><rect x="262.22222222222223" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="307.77777777777777" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="353.33333333333337" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="376.66666666666663" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.754"/><text x="148.33333333333334" y="357.3333333333333" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e8e6e0">3.1%</text><rect x="171.11111111111111" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.714"/><text x="193.88888888888889" y="357.3333333333333" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e8e6e0">1.8%</text><rect x="216.66666666666669" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.455"/><rect x="262.22222222222223" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.179"/><rect x="307.77777777777777" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="353.33333333333337" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="330.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.648"/><rect x="171.11111111111111" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.610"/><rect x="216.66666666666669" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.511"/><rect x="262.22222222222223" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.287"/><rect x="307.77777777777777" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.055"/><rect x="353.33333333333337" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="283.3333333333333" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.518"/><rect x="171.11111111111111" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.469"/><rect x="216.66666666666669" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.397"/><rect x="262.22222222222223" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.278"/><rect x="307.77777777777777" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.071"/><rect x="353.33333333333337" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="236.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.359"/><rect x="171.11111111111111" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.328"/><rect x="216.66666666666669" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.280"/><rect x="262.22222222222223" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.151"/><rect x="307.77777777777777" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.000"/><rect x="353.33333333333337" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="398.8888888888889" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="190.0" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.191"/><rect x="171.11111111111111" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.172"/><rect x="216.66666666666669" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.121"/><rect x="262.22222222222223" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="307.77777777777777" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="353.33333333333337" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.000"/><rect x="398.8888888888889" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="444.44444444444446" y="143.33333333333331" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="171.11111111111111" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.055"/><rect x="216.66666666666669" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="262.22222222222223" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="307.77777777777777" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="353.33333333333337" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="398.8888888888889" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.000"/><rect x="444.44444444444446" y="96.66666666666666" width="44.55555555555556" height="45.666666666666664" fill="#6b8aa8" opacity="0.000"/><rect x="80.0" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="125.55555555555556" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="171.11111111111111" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="216.66666666666669" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.050"/><rect x="262.22222222222223" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="307.77777777777777" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="353.33333333333337" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="398.8888888888889" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c97a4c" opacity="0.000"/><rect x="444.44444444444446" y="50.0" width="44.55555555555556" height="45.666666666666664" fill="#c9a84c" opacity="0.000"/><line x1="80" y1="470" x2="490" y2="50" stroke="#c9a84c" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/><text x="285.0" y="510" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em">MORFESSOR PIECES PER WORD</text><text x="20" y="260.0" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9a958a" letter-spacing="0.1em" transform="rotate(-90 20 260.0)">BPE PIECES PER WORD</text><text x="102.77777777777777" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">0</text><text x="72" y="450.66666666666663" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">0</text><text x="148.33333333333334" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">1</text><text x="72" y="403.99999999999994" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">1</text><text x="193.88888888888889" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">2</text><text x="72" y="357.3333333333333" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">2</text><text x="239.44444444444446" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">3</text><text x="72" y="310.66666666666663" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">3</text><text x="285.0" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">4</text><text x="72" y="264.0" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">4</text><text x="330.55555555555554" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">5</text><text x="72" y="217.33333333333334" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">5</text><text x="376.11111111111114" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">6</text><text x="72" y="170.66666666666666" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">6</text><text x="421.6666666666667" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">7</text><text x="72" y="123.99999999999999" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">7</text><text x="467.22222222222223" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">8+</text><text x="72" y="77.33333333333333" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#5c5850">8+</text><rect x="80" y="518" width="10" height="10" fill="#c9a84c" opacity="0.7"/><text x="96" y="526" font-family="IBM Plex Mono" font-size="10" fill="#9a958a">on diagonal (agree)</text><rect x="240" y="518" width="10" height="10" fill="#c97a4c" opacity="0.7"/><text x="256" y="526" font-family="IBM Plex Mono" font-size="10" fill="#9a958a">BPE shatters</text><rect x="370" y="518" width="10" height="10" fill="#6b8aa8" opacity="0.7"/><text x="386" y="526" font-family="IBM Plex Mono" font-size="10" fill="#9a958a">morphs split more</text></svg>
+    <p class="figure-caption">Fig. 5 · Joint distribution of BPE pieces (vertical) versus Morfessor pieces (horizontal) per word, weighted by word frequency. Gold = on diagonal (the two atomisers agree). Orange = BPE shatters more. Blue = Morfessor splits more aggressively.</p>
+  </div>
+
+  <p>Most of the probability mass sits in the (1, 1) cell, which means most word tokens in the corpus are kept whole by both atomisers. This is unsurprising: high-frequency function words are atomic for both. The interesting structure is in the off-diagonal cells.</p>
+
+  <p>Two characteristic patterns emerge from the off-diagonal cases.</p>
+
+  <h3>Where BPE shatters and Morfessor preserves</h3>
+
+  <p>BPE has no notion of morpheme. It splits words wherever its merge history happens to leave seams. This produces violent shattering on rare words that Morfessor recognises as monomorphemic, most often <em>proper nouns</em> and <em>borrowed Latinate vocabulary</em>:</p>
+
+  <table class="stat-table">
+    <tr>
+      <th>Word</th>
+      <th>Count</th>
+      <th>BPE pieces</th>
+      <th>Morfessor pieces</th>
+    </tr>
+    <tr><td class="word-cell">schizophrenia</td><td class="count-cell">7</td><td class="pieces-cell pieces-bpe">sch / iz / oph / ren / ia</td><td class="pieces-cell pieces-morph">schizophrenia</td></tr>
+    <tr><td class="word-cell">bartholomew</td><td class="count-cell">5</td><td class="pieces-cell pieces-bpe">bar / th / ol / ome / w</td><td class="pieces-cell pieces-morph">bartholomew</td></tr>
+    <tr><td class="word-cell">spaghetti</td><td class="count-cell">10</td><td class="pieces-cell pieces-bpe">sp / ag / het / ti</td><td class="pieces-cell pieces-morph">spaghetti</td></tr>
+    <tr><td class="word-cell">wimbledon</td><td class="count-cell">9</td><td class="pieces-cell pieces-bpe">wi / m / bled / on</td><td class="pieces-cell pieces-morph">wimbledon</td></tr>
+    <tr><td class="word-cell">chattanooga</td><td class="count-cell">9</td><td class="pieces-cell pieces-bpe">ch / att / ano / oga</td><td class="pieces-cell pieces-morph">chattanooga</td></tr>
+    <tr><td class="word-cell">susceptible</td><td class="count-cell">9</td><td class="pieces-cell pieces-bpe">sus / ce / pti / ble</td><td class="pieces-cell pieces-morph">susceptible</td></tr>
+    <tr><td class="word-cell">czechoslovakia</td><td class="count-cell">8</td><td class="pieces-cell pieces-bpe">cze / cho / slovak / ia</td><td class="pieces-cell pieces-morph">czechoslovakia</td></tr>
+    <tr><td class="word-cell">zuckerberg</td><td class="count-cell">8</td><td class="pieces-cell pieces-bpe">z / uck / er / berg</td><td class="pieces-cell pieces-morph">zuckerberg</td></tr>
+  </table>
+
+  <p>None of these are linguistically morphemic splits. <em>schizophrenia</em> is a single Greek-derived noun. <em>Czechoslovakia</em>, <em>Antarctica</em>, <em>Wimbledon</em> are proper nouns that should travel as units. BPE's algorithm, blind to that, dismantles them into the closest available subword chunks (<code>sch / iz / oph / ren / ia</code>) and the model has to relearn the unity downstream from co-occurrence statistics.</p>
+
+  <h3>Where Morfessor splits and BPE preserves</h3>
+
+  <p>The reverse pattern is just as illustrative. Morfessor's MDL objective rewards finding shared morphological pieces across the vocabulary. When a frequent compound word like <em>thereby</em> contains two pieces that both recur in many other words, Morfessor splits. BPE, having seen <em>thereby</em> often enough to merit a single token slot, keeps it whole:</p>
+
+  <table class="stat-table">
+    <tr>
+      <th>Word</th>
+      <th>Count</th>
+      <th>BPE pieces</th>
+      <th>Morfessor pieces</th>
+    </tr>
+    <tr><td class="word-cell">justin</td><td class="count-cell">57</td><td class="pieces-cell pieces-bpe">justin</td><td class="pieces-cell pieces-morph">just / in</td></tr>
+    <tr><td class="word-cell">thereby</td><td class="count-cell">29</td><td class="pieces-cell pieces-bpe">thereby</td><td class="pieces-cell pieces-morph">there / by</td></tr>
+    <tr><td class="word-cell">anthem</td><td class="count-cell">23</td><td class="pieces-cell pieces-bpe">anthem</td><td class="pieces-cell pieces-morph">an / them</td></tr>
+    <tr><td class="word-cell">theirs</td><td class="count-cell">20</td><td class="pieces-cell pieces-bpe">theirs</td><td class="pieces-cell pieces-morph">their / s</td></tr>
+    <tr><td class="word-cell">incoming</td><td class="count-cell">19</td><td class="pieces-cell pieces-bpe">incoming</td><td class="pieces-cell pieces-morph">in / coming</td></tr>
+    <tr><td class="word-cell">intake</td><td class="count-cell">19</td><td class="pieces-cell pieces-bpe">intake</td><td class="pieces-cell pieces-morph">in / take</td></tr>
+    <tr><td class="word-cell">inappropriate</td><td class="count-cell">18</td><td class="pieces-cell pieces-bpe">inappropriate</td><td class="pieces-cell pieces-morph">in / appropriate</td></tr>
+    <tr><td class="word-cell">thereafter</td><td class="count-cell">17</td><td class="pieces-cell pieces-bpe">thereafter</td><td class="pieces-cell pieces-morph">there / after</td></tr>
+  </table>
+
+  <p>These are textbook morphological splits. <em>injustice</em> is <em>in</em> + <em>justice</em>; <em>incoming</em> is <em>in</em> + <em>coming</em>; <em>inappropriate</em> is <em>in</em> + <em>appropriate</em>. The compounds are frequent enough that BPE earns a vocabulary slot for them and keeps them whole, but linguistically they are decomposable, and Morfessor finds the decomposition.</p>
+
+  <div class="key-result">
+    <div class="label">The asymmetry made visible</div>
+    <h4>Two algorithmic atomisers, two different errors</h4>
+    <p>BPE makes the rare-word shattering error: it has no way to know that <em>schizophrenia</em> is one morpheme. Morfessor makes the frequent-compound splitting error: it cannot tell that <em>inappropriate</em> functions as a single semantic unit despite being morphologically composite. These are not just different segmentations of the same words. They are different <em>kinds</em> of failure mode, each baked into the algorithm's objective function. A linguist would consider both wrong, but wrong in opposite directions.</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<section id="synth">
+  <h2><span class="num">§ 07 / SYNTHESIS</span>What the numbers say that the prose did not</h2>
+
+  <p>The companion essay made a structural claim: that BPE depends on Zipf-like statistics, and that compression-driven atomisation has a characteristic statistical signature distinct from morphologically meaningful one. This analysis tested that claim directly and added quantitative substance to it.</p>
+
+  <p>Three findings worth holding onto.</p>
+
+  <p><strong>One. All three atomisations are power-laws, with measurably different exponents.</strong> Whitespace words: α ≈ 1.64. Morfessor morphs: α ≈ 2.07. BPE tokens: α ≈ 2.12. The compression-driven atomisers have steeper tails, by a margin much larger than the standard error in the fit. The compression itself is the reason: an algorithm whose objective is to give frequent things short codes will produce a more concentrated distribution than the underlying word frequencies show.</p>
+
+  <p><strong>Two. KS distance in the tail captures convergence between BPE and Morfessor.</strong> Restricted to high-frequency items above each fit's <em>x</em><sub>min</sub>, BPE and Morfessor are statistically far closer to each other (D = 0.248) than either is to whole-word frequency. The two unsupervised algorithms find different segmentations of individual words but produce comparable statistical signatures in the aggregate. That is what it means to say compression-driven atomisation has a signature.</p>
+
+  <p><strong>Three. The off-diagonal cases on Fig. 5 are the empirical version of Case 04 from the essay.</strong> The <em>bio-</em> story in the essay was a hand-picked illustration. Fig. 5 and the two disagreement tables show the same phenomenon at corpus scale: BPE and morphological segmentation cut the same words in measurably different places, and the directions of disagreement are characteristic. BPE shatters rare words; Morfessor splits frequent compounds.</p>
+
+  <p>The essay's structural claim is therefore not just a metaphor. It corresponds to measurable differences in α, in pairwise KS distance, in Heaps' β, and in pieces-per-word at the level of individual words. The numbers do not replace the prose. They give it a load-bearing floor.</p>
+
+  <p style="font-style: italic; color: var(--gold); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 22px 0; margin: 36px auto 28px; text-align: center; max-width: 600px; font-size: 22px; line-height: 1.45;">The footing is real. The deeper explanation remains unfinished.</p>
+</section>
+
+</main>
+
+<footer>
+  <p class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</p>
+</footer>
+
+</body>
+</html>
