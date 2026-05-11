@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Surface Area, Volume & Units Learner</title>
+<style>
+:root{
+  --bg:#0e0e0f;
+  --panel:#171719;
+  --panel2:#212126;
+  --ink:#ece7dc;
+  --muted:#aaa397;
+  --gold:#c9a84c;
+  --blue:#5b9bd5;
+  --green:#65b982;
+  --red:#c75b5b;
+  --line:#34343a;
+  --cream:#f6efe1;
+  --dark:#111;
+  --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", "Consolas", monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+header{padding:2.2rem 1.2rem 1.6rem;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#111,#191815)}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-weight:300;font-size:clamp(2rem,5vw,3.6rem);line-height:1.05;margin-bottom:.7rem}
+h1 em{color:var(--gold);font-style:normal}
+.sub{color:var(--muted);max-width:760px;font-size:1.05rem}
+nav{position:sticky;top:0;z-index:20;background:rgba(14,14,15,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+nav .wrap{display:flex;gap:.5rem;overflow-x:auto;padding:.6rem 1rem}
+nav button{white-space:nowrap;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.45rem .8rem;font-family:var(--mono);font-size:.72rem;cursor:pointer}
+nav button:hover, nav button.active{color:var(--gold);border-color:var(--gold)}
+section{padding:2.5rem 1.2rem;border-bottom:1px solid var(--line)}
+h2{font-weight:400;font-size:clamp(1.45rem,3vw,2.2rem);margin-bottom:.9rem;color:var(--ink)}
+h3{font-size:1.15rem;color:var(--gold);margin:1.6rem 0 .7rem;font-weight:500}
+p{color:var(--muted);margin:.55rem 0}
+strong{color:var(--ink);font-weight:600}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem;margin:1rem 0;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin:1rem 0}
+.formula{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.6rem .85rem;color:var(--gold);font-family:var(--mono);margin:.35rem 0}
+.key{border-left:4px solid var(--gold);background:rgba(201,168,76,.08);padding:.9rem 1rem;border-radius:10px;margin:1rem 0;color:var(--ink)}
+.qbox{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:1rem;margin:1rem 0}
+.q{font-weight:600;color:var(--ink);margin-bottom:.7rem}
+.choices{display:grid;gap:.5rem}
+.choice{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:.7rem .8rem;text-align:left;cursor:pointer;font-size:.95rem}
+.choice:hover{border-color:var(--gold);color:var(--ink)}
+.choice.correct{border-color:var(--green);background:rgba(101,185,130,.12);color:var(--green)}
+.choice.wrong{border-color:var(--red);background:rgba(199,91,91,.12);color:var(--red)}
+.feedback{display:none;margin-top:.7rem;padding:.75rem;border-radius:10px;background:var(--panel2);color:var(--ink)}
+.feedback.show{display:block}.feedback.good{border-left:4px solid var(--green)}.feedback.bad{border-left:4px solid var(--red)}
+svg{max-width:100%;height:auto;display:block;margin:auto}.svgbox{background:#f9f6ed;color:#111;border-radius:14px;padding:1rem;border:1px solid #ddd;min-height:250px}
+.label{font-size:14px;fill:#111;font-family:Arial,sans-serif}.small{font-size:12px}.axis{stroke:#111;stroke-width:2}.shape{fill:#dbeafe;stroke:#1e3a8a;stroke-width:2}.shape2{fill:#dcfce7;stroke:#166534;stroke-width:2}.shape3{fill:#fee2e2;stroke:#991b1b;stroke-width:2}.dim{stroke:#b45309;stroke-width:2;marker-end:url(#arrow);marker-start:url(#arrow)}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:.65rem;text-align:left;color:var(--muted)}th{color:var(--gold);background:var(--panel2)}td:first-child{color:var(--ink)}
+input,select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:.55rem;font-size:1rem;max-width:150px}.row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.8rem 0}.result{font-family:var(--mono);color:var(--gold);font-size:1.15rem;margin-top:.6rem}.btn{background:var(--gold);border:0;color:#111;border-radius:10px;padding:.6rem .9rem;cursor:pointer;font-weight:600}.btn.secondary{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;margin:.8rem 0}summary{cursor:pointer;color:var(--gold);font-weight:600}.note{font-size:.92rem;color:var(--muted)}
+footer{padding:1.5rem;text-align:center;color:var(--muted);font-family:var(--mono);font-size:.75rem}
+@media print{body{background:white;color:black}header,nav,footer{display:none}section{page-break-inside:avoid;border:0}.card,.qbox,details{box-shadow:none;background:white;color:black}.choice{color:black}.svgbox{border:1px solid #aaa}.formula{color:black;background:white}.key{background:#f6f6f6;color:black}}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]})"></script>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Surface Area, Volume & <em>Units</em></h1>
+    <p class="sub">A Year 10 Q&A learner for spheres, cylinders and cuboids, with a units bridge from microlitres (µL) to cubic centimetres (cm³). Built for preamble work before oil-film, density, pressure or power-law investigations.</p>
+  </div>
+</header>
+<nav>
+  <div class="wrap">
+    <button onclick="jump('start')" class="active">Start</button>
+    <button onclick="jump('dimensions')">Dimensions</button>
+    <button onclick="jump('cuboids')">Cuboids</button>
+    <button onclick="jump('cylinders')">Cylinders</button>
+    <button onclick="jump('spheres')">Spheres</button>
+    <button onclick="jump('units')">Units</button>
+    <button onclick="jump('oil')">Oil film</button>
+    <button onclick="jump('quiz')">Quiz</button>
+  </div>
+</nav>
+
+<section id="start"><div class="wrap">
+  <h2>Start: what are we measuring?</h2>
+  <div class="grid">
+    <div class="card"><h3>Length</h3><p>A one-dimensional measurement. It measures a line distance.</p><div class="formula">cm, m, mm</div></div>
+    <div class="card"><h3>Area</h3><p>A two-dimensional measurement. It measures a surface.</p><div class="formula">cm², m², mm²</div></div>
+    <div class="card"><h3>Volume</h3><p>A three-dimensional measurement. It measures space occupied.</p><div class="formula">cm³, m³, mL, µL</div></div>
+  </div>
+  <div class="key">The unit tells you the dimension: cm is length, cm² is area, cm³ is volume.</div>
+  <div class="qbox" data-answer="b">
+    <div class="q">Q1. Which unit is used for volume?</div>
+    <div class="choices">
+      <button class="choice" data-choice="a">cm</button>
+      <button class="choice" data-choice="b">cm³</button>
+      <button class="choice" data-choice="c">cm²</button>
+    </div>
+    <div class="feedback good">Correct. Cubic centimetres measure volume.</div>
+    <div class="feedback bad">Check the exponent. A cube unit has power 3, so it measures volume.</div>
+  </div>
+</div></section>
+
+<section id="dimensions"><div class="wrap">
+  <h2>1. Dimension: line, surface, space</h2>
+  <div class="svgbox">
+    <svg viewBox="0 0 760 260" aria-label="length area volume diagram">
+      <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/></marker></defs>
+      <line x1="50" y1="80" x2="210" y2="80" stroke="#1e3a8a" stroke-width="5"/>
+      <text x="90" y="125" class="label">length</text><text x="82" y="150" class="label small">one direction</text>
+      <rect x="295" y="35" width="140" height="100" class="shape2"/>
+      <text x="345" y="165" class="label">area</text><text x="312" y="190" class="label small">two directions</text>
+      <polygon points="550,55 660,55 700,95 590,95" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"/>
+      <polygon points="590,95 700,95 700,175 590,175" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="2"/>
+      <polygon points="550,55 590,95 590,175 550,135" fill="#93c5fd" stroke="#1e3a8a" stroke-width="2"/>
+      <text x="600" y="210" class="label">volume</text><text x="575" y="235" class="label small">three directions</text>
+    </svg>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>Length pattern</h3><div class="formula">\(a\)</div><p>One length.</p></div>
+    <div class="card"><h3>Area pattern</h3><div class="formula">\(a \times b\)</div><p>Two lengths multiplied.</p></div>
+    <div class="card"><h3>Volume pattern</h3><div class="formula">\(a \times b \times c\)</div><p>Three lengths multiplied.</p></div>
+  </div>
+</div></section>
+
+<section id="cuboids"><div class="wrap">
+  <h2>2. Cuboids: the easiest volume</h2>
+  <div class="grid">
+    <div class="svgbox">
+      <svg viewBox="0 0 420 300">
+        <defs><marker id="arrow2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/></marker></defs>
+        <polygon points="90,80 260,80 320,130 150,130" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"/>
+        <polygon points="150,130 320,130 320,230 150,230" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="2"/>
+        <polygon points="90,80 150,130 150,230 90,180" fill="#93c5fd" stroke="#1e3a8a" stroke-width="2"/>
+        <line x1="150" y1="248" x2="320" y2="248" class="dim"/><text x="218" y="275" class="label">length</text>
+        <line x1="340" y1="130" x2="340" y2="230" class="dim"/><text x="350" y="185" class="label">height</text>
+        <line x1="80" y1="190" x2="140" y2="240" class="dim"/><text x="42" y="232" class="label">width</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Cuboid formulas</h3>
+      <p>Volume is base area times height.</p>
+      <div class="formula">\(V = lwh\)</div><br />
+      <div class="formula">\(SA = 2lw + 2lh + 2wh\)</div>
+      <p class="note">Surface area counts all six outside faces.</p>
+    </div>
+  </div>
+  <div class="qbox" data-answer="c">
+    <div class="q">Q2. A cuboid is 4 cm by 3 cm by 2 cm. What is its volume?</div>
+    <div class="choices"><button class="choice" data-choice="a">9 cm³</button><button class="choice" data-choice="b">18 cm³</button><button class="choice" data-choice="c">24 cm³</button></div>
+    <div class="feedback good">Correct. Volume = 4 × 3 × 2 = 24 cm³.</div>
+    <div class="feedback bad">Use three lengths: volume = length × width × height.</div>
+  </div>
+</div></section>
+
+<section id="cylinders"><div class="wrap">
+  <h2>3. Cylinders: circular base times height</h2>
+  <div class="grid">
+    <div class="svgbox">
+      <svg viewBox="0 0 430 300">
+        <ellipse cx="210" cy="70" rx="120" ry="35" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"/>
+        <path d="M90 70 L90 210" stroke="#1e3a8a" stroke-width="2"/>
+        <path d="M330 70 L330 210" stroke="#1e3a8a" stroke-width="2"/>
+        <ellipse cx="210" cy="210" rx="120" ry="35" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="2"/>
+        <line x1="210" y1="70" x2="330" y2="70" stroke="#b45309" stroke-width="2"/>
+        <text x="260" y="60" class="label">r</text>
+        <line x1="360" y1="70" x2="360" y2="210" class="dim"/><text x="370" y="145" class="label">h</text>
+        <text x="145" y="260" class="label">base area = πr²</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Cylinder formulas</h3>
+      <p>A cylinder is like a stack of circular discs.</p>
+      <div class="formula">\(V = \pi r^2 h\)</div><br />
+      <div class="formula">\(\text{curved area} = 2\pi rh\)</div><br />
+      <div class="formula">\(\text{total SA} = 2\pi r^2 + 2\pi rh\)</div>
+      <p class="note">For many school problems, the volume formula is the main one.</p>
+    </div>
+  </div>
+  <div class="qbox" data-answer="a">
+    <div class="q">Q3. A cylinder has radius 3 cm and height 5 cm. Which expression gives its volume?</div>
+    <div class="choices"><button class="choice" data-choice="a">π × 3² × 5</button><button class="choice" data-choice="b">π × 3 × 5²</button><button class="choice" data-choice="c">2π × 3 × 5</button></div>
+    <div class="feedback good">Correct. Cylinder volume is πr²h.</div>
+    <div class="feedback bad">Square the radius, then multiply by the height.</div>
+  </div>
+</div></section>
+
+<section id="spheres"><div class="wrap">
+  <h2>4. Spheres: surface grows as r², volume grows as r³</h2>
+  <div class="grid">
+    <div class="svgbox">
+      <svg viewBox="0 0 420 300">
+        <circle cx="205" cy="140" r="95" class="shape"/>
+        <ellipse cx="205" cy="140" rx="95" ry="27" fill="none" stroke="#1e3a8a" stroke-dasharray="5 5"/>
+        <ellipse cx="205" cy="140" rx="32" ry="95" fill="none" stroke="#1e3a8a" stroke-dasharray="5 5"/>
+        <line x1="205" y1="140" x2="300" y2="140" stroke="#b45309" stroke-width="3"/>
+        <circle cx="205" cy="140" r="4" fill="#111"/>
+        <text x="250" y="130" class="label">r</text>
+        <text x="125" y="265" class="label">sphere</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Sphere formulas</h3>
+      <div class="formula">\(SA = 4\pi r^2\)</div><br />
+      <div class="formula">\(V = \dfrac{4}{3}\pi r^3\)</div>
+      <p>If radius doubles, surface area becomes 4 times bigger and volume becomes 8 times bigger.</p>
+    </div>
+  </div>
+  <table>
+    <tr><th>Radius change</th><th>Surface area change</th><th>Volume change</th></tr>
+    <tr><td>r doubles</td><td>2² = 4 times</td><td>2³ = 8 times</td></tr>
+    <tr><td>r triples</td><td>3² = 9 times</td><td>3³ = 27 times</td></tr>
+    <tr><td>r becomes 10 times bigger</td><td>10² = 100 times</td><td>10³ = 1000 times</td></tr>
+  </table>
+  <div class="qbox" data-answer="b">
+    <div class="q">Q4. If a sphere's radius doubles, what happens to its volume?</div>
+    <div class="choices"><button class="choice" data-choice="a">It doubles</button><button class="choice" data-choice="b">It becomes 8 times bigger</button><button class="choice" data-choice="c">It becomes 4 times bigger</button></div>
+    <div class="feedback good">Correct. Volume grows with r³, so doubling gives 2³ = 8.</div>
+    <div class="feedback bad">Volume is three-dimensional, so use the cube: 2³.</div>
+  </div>
+</div></section>
+
+<section id="units"><div class="wrap">
+  <h2>5. Units: from µL to cm³</h2>
+  <div class="key">The essential conversion: <strong>1 mL = 1 cm³</strong>. Since <strong>1000 µL = 1 mL</strong>, it follows that <strong>1000 µL = 1 cm³</strong>.</div>
+  <div class="grid">
+    <div class="card"><h3>Microlitres to cm³</h3><div class="formula">\(1\,\mu\text{L} = 0.001\,\text{cm}^3\)</div><p>Divide microlitres by 1000.</p></div>
+    <div class="card"><h3>cm³ to microlitres</h3><div class="formula">\(1\,\text{cm}^3 = 1000\,\mu\text{L}\)</div><p>Multiply cubic centimetres by 1000.</p></div>
+    <div class="card"><h3>Common lab shortcut</h3><div class="formula">\(1\,\mu\text{L} = 1\,\text{mm}^3\)</div><p>Useful because 1 cm³ = 1000 mm³.</p></div>
+  </div>
+  <h3>Conversion machine</h3>
+  <div class="card">
+    <div class="row"><input id="unitVal" type="number" value="9" step="any"><select id="unitFrom"><option value="ul">µL</option><option value="cm3">cm³</option><option value="ml">mL</option></select><button class="btn" onclick="convertUnits()">Convert</button></div>
+    <div class="result" id="unitResult">9 µL = 0.009 cm³ = 0.009 mL</div>
+  </div>
+  <div class="qbox" data-answer="a">
+    <div class="q">Q5. 9 µL is equal to how many cm³?</div>
+    <div class="choices"><button class="choice" data-choice="a">0.009 cm³</button><button class="choice" data-choice="b">9 cm³</button><button class="choice" data-choice="c">9000 cm³</button></div>
+    <div class="feedback good">Correct. Divide by 1000: 9 µL = 0.009 cm³.</div>
+    <div class="feedback bad">Because 1000 µL = 1 cm³, microlitres are much smaller than cubic centimetres.</div>
+  </div>
+</div></section>
+
+<section id="oil"><div class="wrap">
+  <h2>6. Oil film: volume spread over area</h2>
+  <p>An oil drop spreads into a very thin circular film on water. You know the volume of oil dropped and the diameter of the film. Which formula lets you find the film thickness?</p>
+  <div class="qbox" data-answer="c" id="oilFormulaQ">
+    <div class="q">Choose the correct rearrangement to find thickness <em>h</em>:</div>
+    <div class="choices">
+      <button class="choice" data-choice="a">\(V = \text{area} \times \text{thickness}\)</button>
+      <button class="choice" data-choice="b">\(V = \pi r^2 h\)</button>
+      <button class="choice" data-choice="c">\(h = \dfrac{V}{\pi r^2}\)</button>
+    </div>
+    <div class="feedback good">
+      Correct. The volume formula \(V = \pi r^2 h\) rearranges to \(h = \dfrac{V}{\pi r^2}\). The first option is the conceptual statement; the second has \(h\) on the wrong side.
+    </div>
+    <div class="feedback bad">
+      Start from \(V = \pi r^2 h\) and divide both sides by \(\pi r^2\) to isolate \(h\).
+    </div>
+  </div>
+  <div class="grid">
+    <div class="svgbox">
+      <svg viewBox="0 0 520 260">
+        <ellipse cx="260" cy="110" rx="190" ry="60" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"/>
+        <ellipse cx="260" cy="110" rx="190" ry="60" fill="none" stroke="#1e3a8a" stroke-dasharray="6 6"/>
+        <line x1="70" y1="190" x2="450" y2="190" class="dim"/>
+        <text x="245" y="220" class="label">diameter D</text>
+        <line x1="470" y1="80" x2="470" y2="140" class="dim"/>
+        <text x="485" y="116" class="label">h</text>
+        <text x="195" y="108" class="label">thin oil film</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Oil-film calculator</h3>
+      <p>Enter oil volume in µL and film diameter in cm.</p>
+      <div class="row"><label>Volume</label><input id="oilVol" type="number" value="9" step="any"> <span>µL</span></div>
+      <div class="row"><label>Diameter</label><input id="oilDia" type="number" value="25" step="any"> <span>cm</span></div>
+      <button class="btn" onclick="oilCalc()">Calculate thickness</button>
+      <div class="result" id="oilResult">Thickness ≈ 0.0000183 cm = 183 nm</div>
+      <p class="note">This is a simplified model: circular film, even spreading, one effective layer.</p>
+    </div>
+  </div>
+  <details><summary>Worked example: 9 µL oil, 25 cm diameter film</summary><p>First convert volume: 9 µL = 0.009 cm³. Radius = 25/2 = 12.5 cm. Area = π × 12.5² ≈ 491 cm². Thickness = 0.009 / 491 ≈ 0.0000183 cm = 183 nm.</p></details>
+</div></section>
+
+<section id="quiz"><div class="wrap">
+  <h2>7. Final Q&A check</h2>
+  <div class="qbox" data-answer="c"><div class="q">Q6. Which formula gives the volume of a sphere?</div><div class="choices"><button class="choice" data-choice="a">4πr²</button><button class="choice" data-choice="b">πr²h</button><button class="choice" data-choice="c">(4/3)πr³</button></div><div class="feedback good">Correct. Sphere volume is (4/3)πr³.</div><div class="feedback bad">Look for the formula with r³, because volume is three-dimensional.</div></div>
+  <div class="qbox" data-answer="a"><div class="q">Q7. Which formula gives the surface area of a sphere?</div><div class="choices"><button class="choice" data-choice="a">4πr²</button><button class="choice" data-choice="b">(4/3)πr³</button><button class="choice" data-choice="c">lwh</button></div><div class="feedback good">Correct. Sphere surface area is 4πr².</div><div class="feedback bad">Surface area is two-dimensional, so look for r².</div></div>
+  <div class="qbox" data-answer="b"><div class="q">Q8. 250 µL equals what volume?</div><div class="choices"><button class="choice" data-choice="a">250 cm³</button><button class="choice" data-choice="b">0.25 cm³</button><button class="choice" data-choice="c">0.025 cm³</button></div><div class="feedback good">Correct. 250 ÷ 1000 = 0.25 cm³.</div><div class="feedback bad">Divide microlitres by 1000 to get cm³.</div></div>
+  <div class="qbox" data-answer="c"><div class="q">Q9. Why does volume grow faster than surface area for a sphere?</div><div class="choices"><button class="choice" data-choice="a">Because π gets bigger</button><button class="choice" data-choice="b">Because area is measured in litres</button><button class="choice" data-choice="c">Because volume depends on r³ while surface area depends on r²</button></div><div class="feedback good">Correct. Cubing grows faster than squaring.</div><div class="feedback bad">Compare the powers: r² for surface area, r³ for volume.</div></div>
+</div></section>
+
+<footer>Surface Area, Volume & Units Learner · Year 10 Physics</footer>
+<script>
+function jump(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));event.target.classList.add('active')}
+document.querySelectorAll('.qbox').forEach(box=>{box.querySelectorAll('.choice').forEach(btn=>{btn.addEventListener('click',()=>{const ans=box.dataset.answer;box.querySelectorAll('.choice').forEach(b=>{b.disabled=true;if(b.dataset.choice===ans)b.classList.add('correct')});if(btn.dataset.choice!==ans)btn.classList.add('wrong');const good=box.querySelector('.feedback.good');const bad=box.querySelector('.feedback.bad');if(btn.dataset.choice===ans){good.classList.add('show')}else{bad.classList.add('show')}})})});
+function convertUnits(){const v=parseFloat(document.getElementById('unitVal').value||0);const from=document.getElementById('unitFrom').value;let cm3;if(from==='ul')cm3=v/1000;if(from==='cm3')cm3=v;if(from==='ml')cm3=v;const ul=cm3*1000;const ml=cm3;document.getElementById('unitResult').textContent=`${v} ${from==='ul'?'µL':from==='ml'?'mL':'cm³'} = ${fmt(cm3)} cm³ = ${fmt(ml)} mL = ${fmt(ul)} µL`;}
+function oilCalc(){const volUl=parseFloat(document.getElementById('oilVol').value||0);const dia=parseFloat(document.getElementById('oilDia').value||0);const volCm3=volUl/1000;const r=dia/2;const area=Math.PI*r*r;const hcm=volCm3/area;const nm=hcm*1e7;document.getElementById('oilResult').textContent=`Thickness ≈ ${fmt(hcm)} cm = ${fmt(nm)} nm`;}
+function fmt(x){if(!isFinite(x))return '0';if(Math.abs(x)>=1000)return x.toFixed(0);if(Math.abs(x)>=1)return x.toFixed(3).replace(/\.0+$/,'');if(Math.abs(x)>=0.001)return x.toFixed(6).replace(/0+$/,'').replace(/\.$/,'');return x.toExponential(3)}
+convertUnits();oilCalc();
+</script>
+</body>
+</html>
