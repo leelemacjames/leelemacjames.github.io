@@ -435,6 +435,84 @@
   .ink { color: var(--gold); font-family: var(--mono); font-size: 0.96em; }
   em.term { color: var(--gold); font-style: italic; font-family: var(--serif); }
 
+  /* 2D matrix display with bracket lines */
+  .matrix-2d {
+    display: inline-grid;
+    gap: 0;
+    padding: 6px 18px;
+    margin: 0 6px;
+    border-left: 1.5px solid var(--gold);
+    border-right: 1.5px solid var(--gold);
+    color: var(--ink);
+    font-family: var(--mono);
+    vertical-align: middle;
+  }
+  .matrix-2d .mrow {
+    display: grid;
+    gap: 18px;
+    padding: 4px 0;
+  }
+  .matrix-2d .mrow span {
+    text-align: center;
+    min-width: 22px;
+    font-size: 16px;
+  }
+  .matrix-2d .mrow span.dim { color: var(--ink-dim); }
+  .matrix-2d .mrow span.hi { color: var(--gold); font-weight: 500; }
+
+  .matrix-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 18px 0;
+  }
+  .matrix-line .op {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--gold);
+  }
+  .matrix-line .col-vec {
+    display: inline-grid;
+    padding: 6px 14px;
+    border-left: 1.5px solid var(--gold);
+    border-right: 1.5px solid var(--gold);
+    font-family: var(--mono);
+    font-size: 16px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .matrix-line .col-vec span {
+    padding: 4px 0;
+    min-width: 26px;
+  }
+
+  /* Eigenvector workshop - try-it card */
+  .try-card {
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    padding: 22px 26px;
+    margin: 22px 0;
+  }
+  .try-card h4 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 20px;
+    color: var(--gold);
+    margin: 0 0 10px;
+  }
+  .try-card .verdict {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-left: 2px solid var(--gold);
+    background: #0a0a0a;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+  }
+
   /* Eigendecomposition display */
   .eigen-grid {
     display: grid;
@@ -977,14 +1055,133 @@
 
 <h3>The three eigenmodes of the iteration</h3>
 
-<p>The iteration <span class="ink">(a, b, c) → (a+b, a+c, b+c)</span> is a linear map on ℝ³. Its matrix is</p>
+<p>So far we have done arithmetic on triples. Now let us look at the iteration as a single object — a <em class="term">matrix</em> — and see what it really is.</p>
 
-<div class="closed-form">
-  <span class="ink">M = [1 1 0 ; 1 0 1 ; 0 1 1]</span>
-  <div class="caption">rows: each new value as a sum of old values</div>
+<p>The rule <span class="ink">(a, b, c) → (a+b, a+c, b+c)</span> can be written as a multiplication. Each new value is a sum of the old values, with a 1 wherever the old value contributes and a 0 wherever it does not. Reading off the coefficients gives a 3×3 grid of 1s and 0s:</p>
+
+<div class="matrix-line">
+  <span class="matrix-label" style="font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--gold);">M&nbsp;=</span>
+  <div class="matrix-2d">
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);">
+      <span class="hi">1</span><span class="hi">1</span><span class="dim">0</span>
+    </div>
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);">
+      <span class="hi">1</span><span class="dim">0</span><span class="hi">1</span>
+    </div>
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);">
+      <span class="dim">0</span><span class="hi">1</span><span class="hi">1</span>
+    </div>
+  </div>
 </div>
 
-<p>The matrix has three eigenvalues and three eigenvectors, and they are <em class="term">exactly the three stories we have already told</em>, sitting one in each eigenspace. The whole iteration decomposes into three independent motions along three fixed directions.</p>
+<p style="text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: -8px;">Row 1: new min = a + b · Row 2: new mid = a + c · Row 3: new max = b + c</p>
+
+<p>Multiplying M by the column vector (a, b, c) gives:</p>
+
+<div class="matrix-line">
+  <div class="matrix-2d">
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>1</span><span>0</span></div>
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>0</span><span>1</span></div>
+    <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>0</span><span>1</span><span>1</span></div>
+  </div>
+  <div class="col-vec"><span>a</span><span>b</span><span>c</span></div>
+  <span class="op">=</span>
+  <div class="col-vec"><span>a+b</span><span>a+c</span><span>b+c</span></div>
+</div>
+
+<p>This is the iteration in one picture. Apply M, get the next triple. Apply M again, get the one after that. The whole investigation is the repeated action of one matrix.</p>
+
+<h3>Hunting for eigenvectors</h3>
+
+<p>Here is the new question. We know what M does to <em>any</em> triple — it produces the next one. Are there some <em>special</em> triples that M handles particularly cleanly? Triples that come out looking like themselves, only scaled?</p>
+
+<p>A vector <em class="term">v</em> is called an <em class="term">eigenvector</em> of M if applying M to <em>v</em> gives back a <em>multiple</em> of <em>v</em> — not a brand-new direction, but the same direction with a scaling factor. The scaling factor is called the <em class="term">eigenvalue</em> and is usually written λ ("lambda"). The defining equation is:</p>
+
+<div class="closed-form">
+  <span class="ink">M · v &nbsp;=&nbsp; λ · v</span>
+  <div class="caption">M leaves the direction of v alone, only stretches or flips it</div>
+</div>
+
+<p>How do you find eigenvectors of a matrix? For a beginner there is a beautiful method: <em>guess symmetric directions</em> and check. The matrix M has a lot of symmetry — its rows and columns are permutations of each other — so any direction that respects that symmetry has a good chance of being an eigenvector. Let us try the three most symmetric guesses on a sorted triple.</p>
+
+<!-- Guess 1: (1, 1, 1) -->
+<div class="try-card">
+  <h4>Guess 1 · All three the same · v = (1, 1, 1)</h4>
+  <p>The most obvious symmetric direction: all entries equal. Apply M.</p>
+  <div class="matrix-line">
+    <div class="matrix-2d">
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>1</span><span>0</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>0</span><span>1</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>0</span><span>1</span><span>1</span></div>
+    </div>
+    <div class="col-vec"><span>1</span><span>1</span><span>1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>1+1+0</span><span>1+0+1</span><span>0+1+1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>2</span><span>2</span><span>2</span></div>
+    <span class="op">=</span>
+    <span style="font-family: var(--mono); font-size: 18px; color: var(--gold);">2</span>
+    <span class="op">·</span>
+    <div class="col-vec"><span>1</span><span>1</span><span>1</span></div>
+  </div>
+  <div class="verdict">M · (1,1,1) = 2 · (1,1,1). So (1, 1, 1) <strong>is</strong> an eigenvector with eigenvalue <span class="ink">λ = 2</span>. This direction is the "growth" axis: any triple with equal entries doubles each step.</div>
+</div>
+
+<!-- Guess 2: (1, 0, -1) -->
+<div class="try-card">
+  <h4>Guess 2 · Outer values opposite, middle zero · v = (1, 0, −1)</h4>
+  <p>Another symmetric direction: the first entry and the last entry are equal-and-opposite, the middle is zero. Apply M.</p>
+  <div class="matrix-line">
+    <div class="matrix-2d">
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>1</span><span>0</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>0</span><span>1</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>0</span><span>1</span><span>1</span></div>
+    </div>
+    <div class="col-vec"><span>1</span><span>0</span><span>−1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>1+0+0</span><span>1+0−1</span><span>0+0−1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>1</span><span>0</span><span>−1</span></div>
+    <span class="op">=</span>
+    <span style="font-family: var(--mono); font-size: 18px; color: var(--gold);">1</span>
+    <span class="op">·</span>
+    <div class="col-vec"><span>1</span><span>0</span><span>−1</span></div>
+  </div>
+  <div class="verdict">M · (1, 0, −1) = 1 · (1, 0, −1). So (1, 0, −1) <strong>is</strong> an eigenvector with eigenvalue <span class="ink">λ = 1</span>. The vector is multiplied by 1, which means <em>it does not change at all</em>. This direction is the "span" axis: the c − a value of any triple is preserved forever.</div>
+</div>
+
+<!-- Guess 3: (1, -2, 1) -->
+<div class="try-card">
+  <h4>Guess 3 · Outer values together, middle opposite · v = (1, −2, 1)</h4>
+  <p>The third symmetric direction: outer values agree (+1 each), middle takes the opposite role with double magnitude (−2). The total entries sum to zero, like the previous guess. Apply M.</p>
+  <div class="matrix-line">
+    <div class="matrix-2d">
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>1</span><span>0</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>0</span><span>1</span></div>
+      <div class="mrow" style="grid-template-columns: repeat(3, 1fr);"><span>0</span><span>1</span><span>1</span></div>
+    </div>
+    <div class="col-vec"><span>1</span><span>−2</span><span>1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>1−2+0</span><span>1+0+1</span><span>0−2+1</span></div>
+    <span class="op">=</span>
+    <div class="col-vec"><span>−1</span><span>2</span><span>−1</span></div>
+    <span class="op">=</span>
+    <span style="font-family: var(--mono); font-size: 18px; color: var(--gold);">−1</span>
+    <span class="op">·</span>
+    <div class="col-vec"><span>1</span><span>−2</span><span>1</span></div>
+  </div>
+  <div class="verdict">M · (1, −2, 1) = (−1) · (1, −2, 1). So (1, −2, 1) <strong>is</strong> an eigenvector with eigenvalue <span class="ink">λ = −1</span>. The vector is flipped each step. This direction is the "lopsidedness" axis: it captures how unequal the gaps L and R are, and the sign of that imbalance flips every iteration.</div>
+</div>
+
+<p>Three guesses, three hits. We have found all three eigenvectors of M, with eigenvalues 2, 1, and −1.</p>
+
+<div class="panel story">
+  <p>This is what eigenvectors <em>are</em>: special directions a matrix leaves alone, only scaling. For our matrix M, those directions correspond exactly to the three things the iteration does — <strong>grow</strong> (λ=2), <strong>preserve</strong> (λ=1), and <strong>flip</strong> (λ=−1). The matrix has no fourth thing to do. Any starting triple is some blend of these three directions, and the iteration acts on each blend independently.</p>
+</div>
+
+<h3>The three modes summarised</h3>
+
+<p>Naming what we have found:</p>
 
 <div class="eigen-grid">
   <div class="eigen-card lam2">
