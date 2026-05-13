@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sums in Pairs · A Learner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --panel: #161616;
+    --panel-2: #1c1c1c;
+    --ink: #e8e4d8;
+    --ink-dim: #9a9385;
+    --rule: #2a2a2a;
+    --gold: #c9a84c;
+    --gold-soft: rgba(201, 168, 76, 0.18);
+    --red: #b8554a;
+    --blue: #6a8fb3;
+    --green: #7a9a6d;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.6;
+    font-size: 17px;
+  }
+
+  /* ----- Sticky nav ----- */
+  nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13, 13, 13, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav.top .brand {
+    color: var(--gold);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    margin-right: auto;
+  }
+  nav.top a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav.top a:hover { color: var(--gold); }
+  nav.top a.active { color: var(--ink); }
+
+  /* ----- Layout ----- */
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  header.hero {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 48px;
+    margin-bottom: 56px;
+  }
+  header.hero .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  header.hero h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(44px, 6vw, 72px);
+    line-height: 1.05;
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+  }
+  header.hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  header.hero .lede {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    max-width: 640px;
+    font-weight: 400;
+  }
+
+  section.level {
+    margin-bottom: 96px;
+  }
+
+  .level-head {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px;
+  }
+  .level-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .level-head h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 38px;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 26px;
+    margin: 36px 0 14px;
+    color: var(--ink);
+  }
+
+  p { margin: 0 0 16px; max-width: 70ch; }
+
+  /* ----- Panels and reveals ----- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 28px 32px;
+    margin: 24px 0;
+  }
+  .panel.story {
+    border-left: 2px solid var(--gold);
+  }
+  .panel.teacher {
+    background: var(--panel-2);
+    border: 1px dashed var(--rule);
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink-dim);
+  }
+  .panel.teacher::before {
+    content: "FOR THE TEACHER";
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .panel.teacher strong { color: var(--ink); font-weight: 500; }
+  .panel.teacher h4 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 20px;
+    margin: 18px 0 6px;
+    color: var(--ink);
+  }
+
+  /* Step reveal — used inside levels for the gentle build */
+  .reveal-step {
+    margin: 18px 0;
+  }
+  .reveal-step button.reveal-btn {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reveal-step button.reveal-btn:hover {
+    background: var(--gold-soft);
+  }
+  .reveal-step button.reveal-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .reveal-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+    margin-top: 0;
+  }
+  .reveal-content.open {
+    max-height: 4000px;
+    opacity: 1;
+    margin-top: 18px;
+  }
+
+  /* ----- Mystic Martha riddle box ----- */
+  .riddle {
+    background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+    border: 1px solid var(--rule);
+    padding: 26px 30px;
+    margin: 22px 0;
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.6;
+  }
+  .riddle .who {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .riddle ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0 0;
+  }
+  .riddle li {
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .riddle li:last-child { border-bottom: none; }
+  .riddle .num {
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 17px;
+  }
+
+  /* ----- Bar model SVG container ----- */
+  .bar-model {
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    margin: 18px 0;
+    text-align: center;
+  }
+  .bar-model svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .bar-model .caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  /* ----- Interactive solver ----- */
+  .solver {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 26px 28px;
+    margin: 22px 0;
+  }
+  .solver h4 {
+    font-family: var(--serif);
+    font-size: 22px;
+    margin: 0 0 16px;
+    font-weight: 500;
+  }
+  .input-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .input-row label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .input-row input {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 15px;
+    border-radius: 2px;
+  }
+  .input-row input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  button.go {
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    padding: 11px 22px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  button.go:hover { background: #d8b65a; }
+  .output {
+    margin-top: 16px;
+    padding: 16px 18px;
+    background: #0a0a0a;
+    border-left: 2px solid var(--gold);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre-wrap;
+    min-height: 24px;
+  }
+  .output:empty::before {
+    content: "Awaiting input...";
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+
+  /* ----- Parity table ----- */
+  table.parity {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  table.parity th, table.parity td {
+    border: 1px solid var(--rule);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  table.parity th {
+    background: var(--panel-2);
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  table.parity .yes { color: var(--green); }
+  table.parity .no { color: var(--red); }
+
+  /* ----- Network / handshake diagram ----- */
+  .handshake-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    margin: 24px 0;
+  }
+  .handshake-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 18px;
+    text-align: center;
+  }
+  .handshake-card svg {
+    width: 100%;
+    height: 140px;
+  }
+  .handshake-card .n {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--gold);
+    margin-top: 8px;
+  }
+  .handshake-card .count {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+
+  /* ----- Inline maths ----- */
+  .ink { color: var(--gold); font-family: var(--mono); font-size: 0.96em; }
+  em.term { color: var(--gold); font-style: italic; font-family: var(--serif); }
+
+  /* ----- Footer ----- */
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 80px;
+    padding: 36px 32px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  footer .stamp {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--gold);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    margin-top: 8px;
+    display: block;
+  }
+
+  /* utility */
+  .center { text-align: center; }
+  .small { font-size: 14px; color: var(--ink-dim); }
+  .divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 32px 0;
+  }
+
+  /* matrix display for linear algebra bridge */
+  .matrix-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin: 22px 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    flex-wrap: wrap;
+  }
+  .matrix {
+    display: inline-grid;
+    padding: 8px 16px;
+    border-left: 1.5px solid var(--gold);
+    border-right: 1.5px solid var(--gold);
+    color: var(--ink);
+  }
+  .matrix .row {
+    display: grid;
+    gap: 14px;
+    padding: 2px 0;
+  }
+  .matrix .row span {
+    text-align: center;
+    min-width: 22px;
+  }
+  .matrix-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .matrix .col-head {
+    color: var(--ink-dim);
+    font-size: 12px;
+    border-bottom: 1px dotted var(--rule);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+  }
+  .matrix .row-label {
+    color: var(--ink-dim);
+    font-size: 12px;
+    padding-right: 8px;
+    text-align: right;
+  }
+  .equals {
+    font-family: var(--serif);
+    font-size: 26px;
+    color: var(--gold);
+  }
+
+  /* pre-learning checklist */
+  .checklist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--rule);
+    margin: 18px 0;
+    border: 1px solid var(--rule);
+  }
+  .check-row {
+    background: var(--panel);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.8fr) 2fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .check-row.head {
+    background: var(--panel-2);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .check-row .what { font-family: var(--serif); font-size: 18px; color: var(--ink); }
+  .check-row .status { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); }
+  .check-row .stake { font-size: 14px; color: var(--ink-dim); line-height: 1.5; }
+  @media (max-width: 640px) {
+    .check-row { grid-template-columns: 1fr; gap: 4px; }
+    .check-row.head { display: none; }
+  }
+
+  /* gentle entrance for new content */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal-content.open > * {
+    animation: fadeUp 0.5s ease both;
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <span class="brand">Sums in Pairs · a learner</span>
+  <a href="#pre">Pre</a>
+  <a href="#level-1">L1</a>
+  <a href="#level-2">L2</a>
+  <a href="#level-3">L3</a>
+  <a href="#level-4">L4</a>
+  <a href="#level-5">L5</a>
+  <a href="#handshake">Handshake</a>
+  <a href="#bridges">Bridges</a>
+  <a href="#teacher-notes">Notes</a>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">Block 3 · Session 5 · A Mathematical Investigation</div>
+  <h1>Sums <em>in pairs</em></h1>
+  <p class="lede">Mystic Martha tells you the sums but never the numbers. Five levels, one rising idea: when the trick stops working, build the method that survives.</p>
+</header>
+
+<!-- ============================================================ -->
+<!-- PRE-LEARNING -->
+<!-- ============================================================ -->
+<section class="level" id="pre">
+  <div class="level-head">
+    <span class="level-num">Pre · learning</span>
+    <h2>What needs to be in the room before you start</h2>
+  </div>
+
+  <p>This panel is for the teacher running the session. Most of these prerequisites are <em>conceptual scaffolding</em> rather than content. A pupil can do every Level 1–5 calculation without ever hearing the words "ordinality" or "constraint", but the session lands deeper if the teacher has those words ready to deploy at the right moment.</p>
+
+  <div class="checklist">
+    <div class="check-row head">
+      <div>Concept</div>
+      <div>Usually there?</div>
+      <div>What is at stake without it</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Ordinality vs cardinality</div>
+      <div class="status">Almost never named</div>
+      <div class="stake">The inequality <span class="ink">A &lt; B &lt; C &lt; D</span> is purely ordinal. The pair-sums are cardinal. Half the task — pinning which sum is which in Levels 4 and 5 — is an <em>ordinal</em> argument that produces <em>cardinal</em> equations. Without the distinction, pupils treat A &lt; B &lt; C as decoration. With it, they see ordinality as a tool that does mathematical work before any arithmetic begins.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Parity (odd + odd, etc.)</div>
+      <div class="status">Listed in the deck</div>
+      <div class="stake">Needed for Level 3. The three rules — <span class="ink">odd+odd=even</span>, <span class="ink">even+even=even</span>, <span class="ink">odd+even=odd</span> — must be reflex by the time pupils meet the parity filter.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Two-digit addition fluency</div>
+      <div class="status">Yes at Y7/8</div>
+      <div class="stake">Level 2 fails on shaky arithmetic. The whole pivot from trial to method is only persuasive if the arithmetic itself isn't the obstacle.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Letters as unknowns</div>
+      <div class="status">Variable</div>
+      <div class="stake">Bar models cushion this brilliantly — a pupil who can't yet handle A, B, C symbolically can handle three bars labelled with names. But the teacher should be ready to walk pupils between the two registers.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">The idea of a constraint</div>
+      <div class="status">Almost never named</div>
+      <div class="stake">A < B is a constraint. A + B = 8 is a constraint. The pupil's job is to find the values that satisfy all the constraints at once. Naming this is the entry point to thinking like a problem-solver rather than an equation-cruncher. It also rehabilitates inequality as a first-class mathematical object, not a B-list relation that lives in the shadow of equality.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Triangular numbers</div>
+      <div class="status">Sometimes seen</div>
+      <div class="stake">The handshake bridge is much cleaner if pupils already know 1, 3, 6, 10, 15 as a named sequence. Without it, the count of pair-sums (3, 6, 10) feels coincidental rather than structural.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Pascal's triangle</div>
+      <div class="status">Sometimes glimpsed</div>
+      <div class="stake">The deep home of <span class="ink">n(n−1)/2</span> is the third diagonal of Pascal: <em>n choose 2</em>. A pupil who has seen Pascal can be told that the handshake count, the count of pair-sums, the number of edges of K<sub>n</sub>, the triangular numbers, and the third Pascal diagonal are the same object viewed from five angles. That is a major representation-switching experience in its own right.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Weighted graph (vertices &amp; edges, edge labels)</div>
+      <div class="status">Almost never at Y7</div>
+      <div class="stake">This is the cleanest framing of the whole task: given a weighted complete graph where each edge weight is the sum of the two vertex weights, recover the vertex weights. The teacher doesn't need to use those words with pupils, but holding them in mind transforms what the teacher sees in the classroom.</div>
+    </div>
+
+    <div class="check-row">
+      <div class="what">Necessary vs sufficient</div>
+      <div class="status">Almost never at Y7</div>
+      <div class="stake">Parity is necessary but not sufficient. Pupils very rarely meet this distinction before A-level proof work, but it lives natively here. If you have a rapid-grasper class, this is a place to plant the vocabulary in the teacher's voice even if not in the pupil's.</div>
+    </div>
+  </div>
+
+  <h3>The bigger philosophical seed</h3>
+
+  <div class="panel story">
+    <p>School mathematics trains pupils to chase <em class="term">equalities</em>. "Solve for x" produces a single value, which feels like victory. Most of higher mathematics, by contrast, runs on <em class="term">inequalities</em>: bounding, sandwiching, estimating, "this is at most that". Mystic Martha's puzzle, especially in its four-friend two-solution form, is where pupils can <em>feel</em> for the first time that an answer is a region carved by constraints, not a point produced by an equation. That experience, at thirteen, is worth more than any technique the session teaches.</p>
+  </div>
+
+  <p>If a pupil leaves this session thinking that inequalities do real mathematical work — that A &lt; B &lt; C &lt; D <em>is</em> half of the answer — the session has succeeded irrespective of which Mystic Martha problems they solved on the day.</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- LEVEL 1 -->
+<!-- ============================================================ -->
+<section class="level" id="level-1">
+  <div class="level-head">
+    <span class="level-num">Level 01</span>
+    <h2>Three friends, small numbers</h2>
+  </div>
+
+  <p>Ali, Biko and Casie each pick a positive whole number. Biko's is bigger than Ali's. Casie's is bigger than Biko's. They keep their numbers hidden, but Mystic Martha tells you the three pair-sums.</p>
+
+  <div class="riddle">
+    <div class="who">Mystic Martha says</div>
+    Ali and Biko's numbers sum to <span class="num">8</span>.<br>
+    Ali and Casie's numbers sum to <span class="num">13</span>.<br>
+    Biko and Casie's numbers sum to <span class="num">15</span>.
+  </div>
+
+  <p>Before any method, before any algebra: <em class="term">have a go</em>. Try numbers. See what fits.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r1-1">Show a way in →</button>
+    <div class="reveal-content" id="r1-1">
+      <p>Two numbers that add to 8, with the smaller being Ali's: that's 1+7, 2+6, 3+5. For each, check whether Casie can be a whole number bigger than Biko that works with the other two sums.</p>
+      <p>Try Ali = 3, Biko = 5. Then Ali + Casie = 13 gives Casie = 10. Check the last one: Biko + Casie = 5 + 10 = 15. ✓</p>
+      <p class="center"><span class="ink">Ali = 3 &nbsp;·&nbsp; Biko = 5 &nbsp;·&nbsp; Casie = 10</span></p>
+    </div>
+  </div>
+
+  <div class="panel teacher">
+    <h4>What this level is doing</h4>
+    <p>Trial and error is the correct first move here. The numbers are small enough that pupils can land the answer through systematic listing. This is the moment to praise <strong>adventurousness</strong> — trying something without knowing it will work — and <strong>systematic listing</strong> of the pair (1,7), (2,6), (3,5).</p>
+    <p>Do <strong>not</strong> teach a method yet. Pupils need to feel the success of trial and error first, so that when it breaks in Level 2, the need for a method is genuine and not imposed.</p>
+    <p>If a rapid grasper writes <span class="ink">A + B = 8, A + C = 13, B + C = 15</span> and solves algebraically: praise it, then ask them to also justify by trial. Algebra is a method that arrives; here we are building the soil it grows in.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LEVEL 2 -->
+<!-- ============================================================ -->
+<section class="level" id="level-2">
+  <div class="level-head">
+    <span class="level-num">Level 02</span>
+    <h2>The same problem, with big numbers</h2>
+  </div>
+
+  <p>Ali, Biko and Casie pick new numbers. The constraints are identical. Only the sums have changed.</p>
+
+  <div class="riddle">
+    <div class="who">Mystic Martha says</div>
+    Ali and Biko's numbers sum to <span class="num">156</span>.<br>
+    Ali and Casie's numbers sum to <span class="num">193</span>.<br>
+    Biko and Casie's numbers sum to <span class="num">215</span>.
+  </div>
+
+  <p>Have a go with trial and error. Notice how it feels.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r2-1">Why it feels harder →</button>
+    <div class="reveal-content" id="r2-1">
+      <p>For Ali + Biko = 156, the possible pairs run from (1, 155) all the way down. Trial and error is still <em>possible</em>, but the search has exploded. The numbers themselves haven't changed the problem; the <em class="term">size</em> of the search space has.</p>
+      <p>This is the pedagogical pivot. The method must now do what trial cannot.</p>
+    </div>
+  </div>
+
+  <h3>Xia's idea — bar models</h3>
+  <p>Xia draws each sum as two bars side by side. Each person becomes a bar of unknown length, repeated wherever they appear.</p>
+
+  <div class="bar-model">
+    <svg viewBox="0 0 600 220" aria-label="Three bar models stacked: Ali+Biko=8, Ali+Casie=13, Biko+Casie=15">
+      <!-- Bar 1: A + B = 8 -->
+      <rect x="60" y="20" width="60" height="32" fill="#3a5a78" stroke="#6a8fb3" />
+      <rect x="120" y="20" width="100" height="32" fill="#5a7a48" stroke="#7a9a6d" />
+      <text x="90" y="40" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">A</text>
+      <text x="170" y="40" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">B</text>
+      <text x="240" y="40" fill="#c9a84c" font-family="IBM Plex Mono" font-size="14">= 8</text>
+
+      <!-- Bar 2: A + C = 13 -->
+      <rect x="60" y="80" width="60" height="32" fill="#3a5a78" stroke="#6a8fb3" />
+      <rect x="120" y="80" width="200" height="32" fill="#88503e" stroke="#b8554a" />
+      <text x="90" y="100" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">A</text>
+      <text x="220" y="100" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">C</text>
+      <text x="340" y="100" fill="#c9a84c" font-family="IBM Plex Mono" font-size="14">= 13</text>
+
+      <!-- Bar 3: B + C = 15 -->
+      <rect x="60" y="140" width="100" height="32" fill="#5a7a48" stroke="#7a9a6d" />
+      <rect x="160" y="140" width="200" height="32" fill="#88503e" stroke="#b8554a" />
+      <text x="110" y="160" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">B</text>
+      <text x="260" y="160" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="13">C</text>
+      <text x="380" y="160" fill="#c9a84c" font-family="IBM Plex Mono" font-size="14">= 15</text>
+    </svg>
+    <div class="caption">Three pair-sums as bars · using the small-number version to see the idea</div>
+  </div>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r2-2">Xia adds the top two bars →</button>
+    <div class="reveal-content" id="r2-2">
+      <p>Stack <span class="ink">(A + B)</span> on top of <span class="ink">(A + C)</span>. That gives one A, another A, one B, and one C. The total is <span class="ink">8 + 13 = 21</span>, which equals <span class="ink">A + A + B + C</span>, which is <span class="ink">2A + (B + C)</span>.</p>
+      <p>Subtract the third bar, <span class="ink">B + C = 15</span>: <span class="ink">21 − 15 = 6 = 2A</span>. Halve: <span class="ink">A = 3</span>.</p>
+      <p>Then everything falls out: <span class="ink">B = 8 − 3 = 5</span> and <span class="ink">C = 13 − 3 = 10</span>.</p>
+    </div>
+  </div>
+
+  <h3>Yana's idea — add all three</h3>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r2-3">Yana stacks every bar →</button>
+    <div class="reveal-content" id="r2-3">
+      <p>Add all three pair-sums: <span class="ink">8 + 13 + 15 = 36</span>. Every person appears in <strong>exactly two</strong> of the pair-sums, so the total is <span class="ink">2(A + B + C)</span>. Halve: <span class="ink">A + B + C = 18</span>.</p>
+      <p>To find A, subtract the sum that doesn't contain A — that is <span class="ink">B + C = 15</span>. So <span class="ink">A = 18 − 15 = 3</span>. Same answer. Different route.</p>
+    </div>
+  </div>
+
+  <div class="panel story">
+    <p><strong>Now apply either method to the big problem.</strong> Both methods are <em class="term">arithmetic of bars</em>, not algebra. Try Xia's method with the 156 / 193 / 215 sums.</p>
+  </div>
+
+  <div class="solver">
+    <h4>Solver — Three Friends</h4>
+    <p class="small">Enter the three pair-sums. The solver applies Xia's method and shows the working.</p>
+    <div class="input-row">
+      <div><label>A + B</label><input type="number" id="s1-ab" value="156"></div>
+      <div><label>A + C</label><input type="number" id="s1-ac" value="193"></div>
+      <div><label>B + C</label><input type="number" id="s1-bc" value="215"></div>
+    </div>
+    <button class="go" onclick="solve3()">Solve →</button>
+    <div class="output" id="s1-out"></div>
+  </div>
+
+  <div class="panel teacher">
+    <h4>What this level is doing</h4>
+    <p>The pivot from trial to method is the entire <strong>raison d'être</strong> of the session. Pupils must feel that trial has failed before a method feels welcome. If you teach the method first, you have removed the reason for it to exist.</p>
+    <p>The two methods (Xia, Yana) embody two different aesthetics: <strong>local elimination</strong> (subtract to isolate one variable) versus <strong>global accounting</strong> (sum the whole system, then peel off). Both reappear constantly in higher mathematics — Gaussian elimination is Xia's; trace identities are Yana's.</p>
+    <p>Ask: <em>which method do you prefer, and why?</em> The mathematical content is the comparison, not the answer.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LEVEL 3 -->
+<!-- ============================================================ -->
+<section class="level" id="level-3">
+  <div class="level-head">
+    <span class="level-num">Level 03</span>
+    <h2>From bars to networks — and a parity surprise</h2>
+  </div>
+
+  <p>Now redraw the problem. Three circles for A, B, C. Three lines joining them. Label each line with the sum of the two people it connects.</p>
+
+  <div class="bar-model">
+    <svg viewBox="0 0 400 240" aria-label="Triangle network with A, B, C at corners and sums on edges">
+      <!-- triangle edges -->
+      <line x1="80" y1="200" x2="320" y2="200" stroke="#c9a84c" stroke-width="1.5" />
+      <line x1="80" y1="200" x2="200" y2="40" stroke="#c9a84c" stroke-width="1.5" />
+      <line x1="320" y1="200" x2="200" y2="40" stroke="#c9a84c" stroke-width="1.5" />
+      <!-- edge labels -->
+      <text x="200" y="222" text-anchor="middle" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="14">10</text>
+      <text x="120" y="120" text-anchor="end" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="14">15</text>
+      <text x="280" y="120" text-anchor="start" fill="#e8e4d8" font-family="IBM Plex Mono" font-size="14">19</text>
+      <!-- vertex circles -->
+      <circle cx="80" cy="200" r="22" fill="#161616" stroke="#c9a84c" stroke-width="1.5" />
+      <circle cx="320" cy="200" r="22" fill="#161616" stroke="#c9a84c" stroke-width="1.5" />
+      <circle cx="200" cy="40" r="22" fill="#161616" stroke="#c9a84c" stroke-width="1.5" />
+      <text x="80" y="206" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="22" font-style="italic">A</text>
+      <text x="320" y="206" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="22" font-style="italic">B</text>
+      <text x="200" y="46" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="22" font-style="italic">C</text>
+    </svg>
+    <div class="caption">Same problem, new picture · sums live on edges, people live on vertices</div>
+  </div>
+
+  <p>The bars haven't disappeared. They have been compressed into a network. The same calculation — <span class="ink">10 + 15 − 19 = 6 = 2A</span> — now reads off the diagram directly: <em>add the two edges meeting at A, subtract the edge opposite A</em>.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r3-1">Try the parity question →</button>
+    <div class="reveal-content" id="r3-1">
+      <p>Mystic Martha gives you these sums: <span class="ink">10, 13, 20</span>. Apply the method. Twice A is <span class="ink">10 + 13 − 20 = 3</span>. So A = 1.5.</p>
+      <p>Not a whole number. The problem has <em class="term">no integer solution</em>. The numbers Mystic Martha gave you could not have come from three positive integers.</p>
+    </div>
+  </div>
+
+  <h3>The parity rule</h3>
+  <p>Add all three pair-sums. By Yana's argument, the total is <span class="ink">2(A + B + C)</span>. That is always even. So:</p>
+
+  <div class="panel story">
+    <p><strong>If the three pair-sums don't add to an even number, there is no integer solution.</strong> This is a <em class="term">necessary condition</em> — a test the data must pass before any method can succeed.</p>
+  </div>
+
+  <p>Why does parity matter so much in mathematics? Because it's free information. You don't need to solve anything to apply it. It tells you whether to bother.</p>
+
+  <div class="solver">
+    <h4>Parity Checker</h4>
+    <p class="small">Try your own three pair-sums. Does the data even have a chance of being valid?</p>
+    <div class="input-row">
+      <div><label>Sum 1</label><input type="number" id="p-1" value="10"></div>
+      <div><label>Sum 2</label><input type="number" id="p-2" value="13"></div>
+      <div><label>Sum 3</label><input type="number" id="p-3" value="20"></div>
+    </div>
+    <button class="go" onclick="checkParity()">Check →</button>
+    <div class="output" id="p-out"></div>
+  </div>
+
+  <div class="panel teacher">
+    <h4>What this level is doing</h4>
+    <p>Three things happen here, and they are deeply connected.</p>
+    <p>First, a <strong>change of representation</strong>: bar models → networks. The mathematics is identical; the picture is new. This is the single most powerful move in problem-solving: representations don't change what is true, they change what is <em>visible</em>.</p>
+    <p>Second, the introduction of a <strong>necessary condition</strong> (parity). Necessary conditions are the working mathematician's compass. They tell you whether you are even in the right country before you start looking for the city.</p>
+    <p>Third, the dignity of <strong>no solution</strong>. Year 7 pupils often believe every problem has an answer because every exercise they've met has had one. The mathematical reality is that <em>most</em> data are inconsistent, and recognising inconsistency is a skill, not a failure.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LEVEL 4 -->
+<!-- ============================================================ -->
+<section class="level" id="level-4">
+  <div class="level-head">
+    <span class="level-num">Level 04</span>
+    <h2>Four friends, six sums — and an ambiguity</h2>
+  </div>
+
+  <p>Now Ali, Biko, Casie and Dev. Same rules: each successive person has a larger number. Mystic Martha gives you all the pair-sums. How many will there be?</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r4-0">Count them →</button>
+    <div class="reveal-content" id="r4-0">
+      <p>The pairs are AB, AC, AD, BC, BD, CD. That's <strong>six</strong> sums. Already this is the handshake problem in disguise: six handshakes among four people. Hold that thought; we return to it.</p>
+    </div>
+  </div>
+
+  <div class="riddle">
+    <div class="who">Mystic Martha says (in increasing order)</div>
+    <span class="num">20, &nbsp; 32, &nbsp; 35, &nbsp; 38, &nbsp; 41, &nbsp; 53</span>
+  </div>
+
+  <p>Some sums you can identify immediately. Some you cannot.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r4-1">Which sums are pinned →</button>
+    <div class="reveal-content" id="r4-1">
+      <p>The <strong>smallest sum</strong> must be A + B (the two smallest numbers). The <strong>next smallest</strong> must be A + C. The <strong>largest</strong> must be C + D. The <strong>second largest</strong> must be B + D.</p>
+      <p>So: <span class="ink">A+B = 20, A+C = 32, B+D = 41, C+D = 53</span>.</p>
+      <p>Two sums remain: <span class="ink">35</span> and <span class="ink">38</span>. They must be <span class="ink">B + C</span> and <span class="ink">A + D</span>, but <em>we cannot say which is which from the ordering alone</em>.</p>
+    </div>
+  </div>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r4-2">Resolving the ambiguity →</button>
+    <div class="reveal-content" id="r4-2">
+      <p>Use the parity rule from Level 3 on the inner triangle A, B, C. The three sums A+B, A+C, B+C must add to an even total.</p>
+      <p><span class="ink">20 + 32 + B+C = even</span>. So <span class="ink">B+C</span> must be even. Between 35 and 38, only <span class="ink">38</span> is even. So <span class="ink">B+C = 38</span>, <span class="ink">A+D = 35</span>.</p>
+      <p>Then 2A = 20 + 32 − 38 = 14, so A = 7. B = 13, C = 25, D = 28.</p>
+    </div>
+  </div>
+
+  <h3>Two solutions, same data</h3>
+  <p>Now try this set: <span class="ink">11, 13, 16, 18, 21, 23</span>.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r4-3">Show what happens →</button>
+    <div class="reveal-content" id="r4-3">
+      <p>The pinned sums: A+B = 11, A+C = 13, B+D = 21, C+D = 23. The middle two — 16 and 18 — are B+C and A+D, but parity does not disqualify either.</p>
+      <p>If B+C = 16: A = 4, B = 7, C = 9, D = 14. ✓<br>
+         If B+C = 18: A = 3, B = 8, C = 10, D = 13. ✓</p>
+      <p>Both solutions are <em>genuinely valid</em>. The same six sums correspond to two different sets of four integers. Mystic Martha's data is <em class="term">under-determined</em>.</p>
+    </div>
+  </div>
+
+  <div class="panel story">
+    <p>This is profound. <strong>Information is not the same as solution.</strong> You can have all the pair-sums and still not know the numbers. The mathematics has handed you a fork, and the fork is honest.</p>
+  </div>
+
+  <div class="solver">
+    <h4>Solver — Four Friends</h4>
+    <p class="small">Enter six pair-sums in increasing order. The solver pins what it can and reports any ambiguity or contradiction.</p>
+    <div class="input-row">
+      <div><label>S1 (smallest)</label><input type="number" id="s4-1" value="11"></div>
+      <div><label>S2</label><input type="number" id="s4-2" value="13"></div>
+      <div><label>S3</label><input type="number" id="s4-3" value="16"></div>
+      <div><label>S4</label><input type="number" id="s4-4" value="18"></div>
+      <div><label>S5</label><input type="number" id="s4-5" value="21"></div>
+      <div><label>S6 (largest)</label><input type="number" id="s4-6" value="23"></div>
+    </div>
+    <button class="go" onclick="solve4()">Solve →</button>
+    <div class="output" id="s4-out"></div>
+  </div>
+
+  <div class="panel teacher">
+    <h4>What this level is doing</h4>
+    <p>The combinatorial structure changes. With three people, the network was a triangle — one sum per pair, three sums total, no ordering ambiguity once you know which person is which. With four, the network is the <strong>complete graph K₄</strong>: six edges, and the middle two pair-sums are not pinned by order.</p>
+    <p>This level transitions pupils from <strong>"is there a solution?"</strong> (Level 3) to <strong>"how many solutions?"</strong> Both questions are mathematical, and the second is often harder. Pupils meet, perhaps for the first time, the idea that a problem can have <em>multiple correct answers</em> without anyone being wrong.</p>
+    <p>This is also where parity stops being a yes/no test and becomes a <strong>tie-breaker</strong> between candidate configurations. The technique deepens because the problem demands more of it.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LEVEL 5 -->
+<!-- ============================================================ -->
+<section class="level" id="level-5">
+  <div class="level-head">
+    <span class="level-num">Level 05</span>
+    <h2>Five friends, ten sums — and a global trick</h2>
+  </div>
+
+  <p>Ali, Biko, Casie, Dev, Eve. Increasing order of numbers. How many pair-sums?</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r5-0">Count again →</button>
+    <div class="reveal-content" id="r5-0">
+      <p>AB, AC, AD, AE, BC, BD, BE, CD, CE, DE. That's <strong>ten</strong> sums. With <em>n</em> friends, the number of pair-sums is always <span class="ink">n(n−1)/2</span>.</p>
+      <p>That formula will mean something specific in a moment.</p>
+    </div>
+  </div>
+
+  <div class="riddle">
+    <div class="who">Mystic Martha says</div>
+    <span class="num">8, &nbsp; 10, &nbsp; 13, &nbsp; 14, &nbsp; 16, &nbsp; 19, &nbsp; 20, &nbsp; 21, &nbsp; 22, &nbsp; 25</span>
+  </div>
+
+  <p>With ten sums, even working out which is which is hard. Pinning by order only gets you four: A+B, A+C, C+E, D+E. The middle is a maze. So instead of starting locally, start globally.</p>
+
+  <div class="reveal-step">
+    <button class="reveal-btn" data-target="r5-1">Yana's idea, scaled up →</button>
+    <div class="reveal-content" id="r5-1">
+      <p>Add all ten sums. Each of the five people appears in exactly <em>four</em> pair-sums (each person pairs with each of the other four). So:</p>
+      <p class="center"><span class="ink">total of all pair-sums = 4 · (A + B + C + D + E)</span></p>
+      <p><span class="ink">8 + 10 + 13 + 14 + 16 + 19 + 20 + 21 + 22 + 25 = 168</span>. Therefore <span class="ink">A + B + C + D + E = 42</span>.</p>
+      <p>Now subtract the smallest pair-sum (which is A + B) and the largest (which is D + E): <span class="ink">42 − 8 − 25 = 9 = C</span>.</p>
+      <p>From there: A = 1, B = 7, D = 12, E = 13. Check by recomputing all ten sums.</p>
+    </div>
+  </div>
+
+  <div class="panel story">
+    <p>Notice what just happened. The method we used here — <em class="term">total of all sums equals (n − 1) times the grand total</em> — is Yana's idea generalised. When trial and error fails, when local elimination is too tangled, the global identity rescues you. <strong>Mathematics rewards stepping back.</strong></p>
+  </div>
+
+  <div class="solver">
+    <h4>Solver — Five Friends (Global Method)</h4>
+    <p class="small">Enter ten pair-sums in any order. The solver applies the global identity to extract the middle person C, then peels the rest.</p>
+    <div class="input-row" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">
+      <div><label>Sum</label><input type="number" class="s5" value="8"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="10"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="13"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="14"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="16"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="19"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="20"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="21"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="22"></div>
+      <div><label>Sum</label><input type="number" class="s5" value="25"></div>
+    </div>
+    <button class="go" onclick="solve5()">Solve →</button>
+    <div class="output" id="s5-out"></div>
+  </div>
+
+  <div class="panel teacher">
+    <h4>What this level is doing</h4>
+    <p>Two ideas land here. First, <strong>the global identity</strong>: each person appears in exactly (n−1) of the pair-sums, so summing all pair-sums gives (n−1) times the grand total. This is the first sighting of a <em>combinatorial double-counting argument</em>, which is one of the most pervasive techniques in all of discrete mathematics.</p>
+    <p>Second, the formula <span class="ink">n(n−1)/2</span> for the number of pair-sums. Pupils have seen 3 sums (n=3), 6 sums (n=4), 10 sums (n=5). Ask them: <em>do you notice anything?</em> These are the triangular numbers. They will appear again as handshakes.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- HANDSHAKE / RAMSEY CONNECTION -->
+<!-- ============================================================ -->
+<section class="level" id="handshake">
+  <div class="level-head">
+    <span class="level-num">Bridge</span>
+    <h2>Why this <em>is</em> the handshake problem</h2>
+  </div>
+
+  <p>If <em>n</em> people walk into a room and everyone shakes hands with everyone else exactly once, how many handshakes happen?</p>
+
+  <div class="handshake-grid">
+    <div class="handshake-card">
+      <svg viewBox="0 0 120 120">
+        <line x1="40" y1="60" x2="80" y2="60" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="40" cy="60" r="12" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="80" cy="60" r="12" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      </svg>
+      <div class="n">n = 2</div>
+      <div class="count">1 handshake · 1 pair-sum</div>
+    </div>
+    <div class="handshake-card">
+      <svg viewBox="0 0 120 120">
+        <line x1="30" y1="90" x2="90" y2="90" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="30" y1="90" x2="60" y2="30" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="90" y1="90" x2="60" y2="30" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="30" cy="90" r="10" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="90" cy="90" r="10" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="60" cy="30" r="10" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      </svg>
+      <div class="n">n = 3</div>
+      <div class="count">3 handshakes · 3 pair-sums</div>
+    </div>
+    <div class="handshake-card">
+      <svg viewBox="0 0 120 120">
+        <line x1="25" y1="25" x2="95" y2="25" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="25" y1="95" x2="95" y2="95" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="25" y1="25" x2="25" y2="95" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="95" y1="25" x2="95" y2="95" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="25" y1="25" x2="95" y2="95" stroke="#c9a84c" stroke-width="1.5"/>
+        <line x1="95" y1="25" x2="25" y2="95" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="25" cy="25" r="9" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="95" cy="25" r="9" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="25" cy="95" r="9" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="95" cy="95" r="9" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      </svg>
+      <div class="n">n = 4</div>
+      <div class="count">6 handshakes · 6 pair-sums</div>
+    </div>
+    <div class="handshake-card">
+      <svg viewBox="0 0 120 120">
+        <!-- K5: 5 vertices on a pentagon, all 10 edges -->
+        <g stroke="#c9a84c" stroke-width="1.2">
+          <!-- vertices at pentagon angles -->
+          <line x1="60" y1="20" x2="103" y2="51"/>
+          <line x1="60" y1="20" x2="87" y2="100"/>
+          <line x1="60" y1="20" x2="33" y2="100"/>
+          <line x1="60" y1="20" x2="17" y2="51"/>
+          <line x1="103" y1="51" x2="87" y2="100"/>
+          <line x1="103" y1="51" x2="33" y2="100"/>
+          <line x1="103" y1="51" x2="17" y2="51"/>
+          <line x1="87" y1="100" x2="33" y2="100"/>
+          <line x1="87" y1="100" x2="17" y2="51"/>
+          <line x1="33" y1="100" x2="17" y2="51"/>
+        </g>
+        <circle cx="60" cy="20" r="8" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="103" cy="51" r="8" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="87" cy="100" r="8" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="33" cy="100" r="8" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="17" cy="51" r="8" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      </svg>
+      <div class="n">n = 5</div>
+      <div class="count">10 handshakes · 10 pair-sums</div>
+    </div>
+  </div>
+
+  <p>The same picture. Every time we counted pair-sums, we were counting handshakes. Every triangle, every K₄, every K₅ is a network in which the people are <em class="term">vertices</em> and the pair-sums are <em class="term">edges</em>.</p>
+
+  <p>The handshake formula is exactly <span class="ink">n(n − 1)/2</span>. Two people, one handshake. Three, three. Four, six. Five, ten. These are the <em class="term">triangular numbers</em>: 1, 3, 6, 10, 15, 21, ... and they arise here for the same reason they always arise — every pair is counted once.</p>
+
+  <h3>Why does this matter?</h3>
+  <p>Once you see that Mystic Martha's problem is a problem on a <em class="term">complete graph K<sub>n</sub></em>, you have unlocked a vast territory. The complete graph is the basic object of <em class="term">Ramsey theory</em>, the part of mathematics that asks:</p>
+
+  <div class="panel story">
+    <p>Imagine colouring every edge of K<sub>n</sub> either red or blue. <strong>How big must n be before you are guaranteed to find three people who all shook hands with the same colour?</strong></p>
+    <p>The answer is n = 6. This is Ramsey's theorem, and it is one of the most beautiful results in twentieth-century mathematics. It says: <em>complete disorder is impossible</em>. In any sufficiently large structure, some kind of order must emerge.</p>
+  </div>
+
+  <p>The session you have just worked through is not "about" Ramsey theory. But it lives in the same building. The instinct to draw the network, count the edges, and ask <em>what must be true</em> — those are the same instincts a research mathematician uses when they meet K<sub>17</sub> and ask whether five mutual handshakes of the same colour are unavoidable. (They are. We're not sure about six.)</p>
+
+  <div class="panel teacher">
+    <h4>What to say to a Year 7 class</h4>
+    <p>You don't need to mention Ramsey by name unless they're hungry. But the deep idea — that <strong>the network <em>is</em> the problem</strong>, and the network has structural rules that survive every change of question — is the single most transferable lesson of the session.</p>
+    <p>Suggested closing: "Today you have not just solved puzzles. You have practised the move that all mathematicians make: redraw the question until the question redraws itself."</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- CONCEPTUAL BRIDGES -->
+<!-- ============================================================ -->
+<section class="level" id="bridges">
+  <div class="level-head">
+    <span class="level-num">Bridges</span>
+    <h2>What you have just been doing was actually…</h2>
+  </div>
+
+  <p>This panel is the teacher's panel, addressed to whoever is teaching the teacher. It names the higher-mathematics homes of the techniques the pupils have just practised, so that the session is held inside its full context. None of this needs to reach the pupils unless they ask. All of it should reach the teacher.</p>
+
+  <h3>The weighted graph framing</h3>
+
+  <p>The cleanest sentence anyone has ever written about Mystic Martha's puzzle is this: <em>given a weighted complete graph K<sub>n</sub> where each edge weight is the sum of the two vertex weights, recover the vertex weights.</em></p>
+
+  <p>Vertices are <em class="term">people</em>. Edges are <em class="term">pair-sums</em>. The complete graph K<sub>n</sub> is the object that contains every possible pair, and so it is the natural home of every pair-sum problem. Once a pupil has been shown that the triangle in Level 3 <em>is</em> K<sub>3</sub>, the K<sub>4</sub> diagram is no longer a new picture, it is the same picture with one more vertex. The handshake formula <span class="ink">n(n−1)/2</span> tells you how many edges that picture has.</p>
+
+  <h3>The adjacency matrix and the incidence matrix</h3>
+
+  <p>You asked whether this can be set up as an adjacency matrix. The answer is yes, almost — and the "almost" is itself a teaching moment.</p>
+
+  <p>The <em class="term">adjacency matrix</em> of K<sub>n</sub> is the n×n matrix with a 1 wherever two distinct vertices are connected and a 0 on the diagonal. For K<sub>3</sub> that is:</p>
+
+  <div class="matrix-box">
+    <span class="matrix-label">A<sub>K₃</sub> =</span>
+    <div class="matrix">
+      <div class="row" style="grid-template-columns: repeat(3, 1fr);">
+        <span class="col-head">A</span><span class="col-head">B</span><span class="col-head">C</span>
+      </div>
+      <div class="row" style="grid-template-columns: repeat(3, 1fr);"><span>0</span><span>1</span><span>1</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>0</span><span>1</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 1fr);"><span>1</span><span>1</span><span>0</span></div>
+    </div>
+  </div>
+
+  <p>That matrix encodes the <em>graph structure</em> — who shakes hands with whom — but it doesn't tell you which pair-sum is which. For Mystic Martha's puzzle you want a different matrix: the <em class="term">incidence matrix</em> M, with one row per <em>edge</em> and one column per <em>vertex</em>. Each row has exactly two 1s, in the columns of the two endpoints of that edge.</p>
+
+  <div class="matrix-box">
+    <span class="matrix-label">M<sub>K₃</sub> =</span>
+    <div class="matrix">
+      <div class="row" style="grid-template-columns: 60px repeat(3, 1fr);">
+        <span class="row-label"></span><span class="col-head">A</span><span class="col-head">B</span><span class="col-head">C</span>
+      </div>
+      <div class="row" style="grid-template-columns: 60px repeat(3, 1fr);"><span class="row-label">A+B</span><span>1</span><span>1</span><span>0</span></div>
+      <div class="row" style="grid-template-columns: 60px repeat(3, 1fr);"><span class="row-label">A+C</span><span>1</span><span>0</span><span>1</span></div>
+      <div class="row" style="grid-template-columns: 60px repeat(3, 1fr);"><span class="row-label">B+C</span><span>0</span><span>1</span><span>1</span></div>
+    </div>
+  </div>
+
+  <p>Mystic Martha's three-friend puzzle is exactly the linear system <span class="ink">M v = s</span>, where v is the column of unknowns and s is the column of pair-sums:</p>
+
+  <div class="matrix-box">
+    <div class="matrix">
+      <div class="row" style="grid-template-columns: repeat(3, 32px);"><span>1</span><span>1</span><span>0</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 32px);"><span>1</span><span>0</span><span>1</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 32px);"><span>0</span><span>1</span><span>1</span></div>
+    </div>
+    <div class="matrix" style="border-color: var(--ink-dim);">
+      <div class="row" style="grid-template-columns: 32px;"><span>A</span></div>
+      <div class="row" style="grid-template-columns: 32px;"><span>B</span></div>
+      <div class="row" style="grid-template-columns: 32px;"><span>C</span></div>
+    </div>
+    <span class="equals">=</span>
+    <div class="matrix" style="border-color: var(--ink-dim);">
+      <div class="row" style="grid-template-columns: 36px;"><span>8</span></div>
+      <div class="row" style="grid-template-columns: 36px;"><span>13</span></div>
+      <div class="row" style="grid-template-columns: 36px;"><span>15</span></div>
+    </div>
+  </div>
+
+  <h3>Xia's method is the inverse matrix</h3>
+
+  <p>The 3×3 incidence matrix of K<sub>3</sub> has determinant 2, so it's invertible. Its inverse is</p>
+
+  <div class="matrix-box">
+    <span class="matrix-label">M⁻¹ = ½ ·</span>
+    <div class="matrix">
+      <div class="row" style="grid-template-columns: repeat(3, 40px);"><span>+1</span><span>+1</span><span>−1</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 40px);"><span>+1</span><span>−1</span><span>+1</span></div>
+      <div class="row" style="grid-template-columns: repeat(3, 40px);"><span>−1</span><span>+1</span><span>+1</span></div>
+    </div>
+  </div>
+
+  <p>Stare at the first row. <strong>That row is Xia's method.</strong> "Take one of the first sum, one of the second, minus one of the third, then halve." The inverse matrix has remembered the algorithm. The other two rows are Xia's method applied to recover B and C respectively. The whole session's local-elimination technique is captured in a single 3×3 matrix.</p>
+
+  <p>Yana's method also lives in the matrix, differently. Sum the rows of M: you get <span class="ink">(2, 2, 2)</span>. So <span class="ink">(1,1,1)·s = 2(A+B+C)</span>, which is exactly Yana's global identity. Same matrix, two readings — and the two readings are the two methods the pupils discovered.</p>
+
+  <h3>Four friends: the matrix gets taller</h3>
+
+  <p>For K<sub>4</sub>, M is 6×4 — six edges, four vertices. The system is <em class="term">over-determined</em>: more equations than unknowns. Generic data of six numbers has no solution as four-vertex weights. Mystic Martha's data has a solution <em>only because she generated it consistently</em>. The session's <strong>parity rule</strong> is the simplest integrality test on whether the data lies in the column space of M.</p>
+
+  <p>For K<sub>5</sub>, M is 10×5. Still over-determined. The Level 5 global identity — sum all rows of M to get <span class="ink">(4, 4, 4, 4, 4)</span>, hence summing all pair-sums gives <span class="ink">4(A+B+C+D+E)</span> — is the statement that the all-ones vector lies in the row space of M with a known coefficient. In general, for K<sub>n</sub>, summing rows gives <span class="ink">(n−1, n−1, …, n−1)</span>, and that is Yana's identity, scaled to any n.</p>
+
+  <h3>The Level 4 two-solution case, properly understood</h3>
+
+  <p>Once you assign each of the six pair-sums to a specific edge of K<sub>4</sub>, the linear system has a unique solution. The ambiguity in Level 4 is not algebraic — it is <em class="term">combinatorial</em>, and it lives one level above the linear algebra. The data of Mystic Martha consists of an unordered multiset of six numbers, and there is more than one way to <em>assign</em> these numbers to the six edges of K<sub>4</sub> in a way consistent with the ordering A &lt; B &lt; C &lt; D.</p>
+
+  <p>This is a beautifully clean example for a teacher: a problem that has both an algebraic layer (uniquely solvable once the assignment is fixed) and a combinatorial layer (the assignment is not always unique). Inverse problems in physics and engineering routinely have this exact two-stage structure.</p>
+
+  <h3>The list of higher-mathematics homes</h3>
+
+  <p>Beyond linear algebra, what else has the pupil quietly practised?</p>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Double counting</h4>
+    <p>Yana's argument — each person appears in exactly (n−1) pair-sums, so summing all pair-sums gives (n−1) times the total — is a <em class="term">double-counting</em> argument. You count the same total in two different ways and equate the results. This is one of the foundational moves of combinatorics, and pupils have just done one in Year 7.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Invariants</h4>
+    <p>"What does not change?" The sum of all pair-sums is an invariant of the labelling: rename the people however you like, the total stays the same. Searching for invariants is one of the great recurring instincts in mathematics, from school problems to Noether's theorem.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Identifiability and inverse problems</h4>
+    <p>When does the data uniquely determine the answer? The Level 4 two-solution case is a clean and honest example of <em class="term">non-identifiability</em>: data that allows more than one explanation. This is the central question of statistics, signal processing, and inverse problems across the sciences.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Binomial coefficients and Pascal</h4>
+    <p>The number of pair-sums is <span class="ink">C(n, 2) = n(n−1)/2</span>. These are the entries of the third diagonal of Pascal's triangle and they are also the triangular numbers. The five views — pair-sums, handshakes, edges of K<sub>n</sub>, triangular numbers, the third Pascal diagonal — are the same object. A pupil who feels that equivalence has had an experience that compresses several years of separate-looking topics into a single shape.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Necessary and sufficient conditions</h4>
+    <p>Parity is necessary but not sufficient. Pupils almost never meet this distinction explicitly until A-level. Here it lives natively: the parity test can rule a problem <em>out</em>, but passing the test does not rule it <em>in</em>. The asymmetry is the lesson.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">Inequalities as substrate</h4>
+    <p>The constraints <span class="ink">A &lt; B &lt; C &lt; D</span> do half the work of the session and they are inequalities. The two-solution case in Level 4 is a region carved by constraints, not a point produced by an equation. Pupils have just lived inside the way higher mathematics actually behaves.</p>
+  </div>
+
+  <h3>The single sentence to give the teacher</h3>
+
+  <div class="panel story">
+    <p>Mystic Martha's puzzle is an inverse problem on the weighted complete graph K<sub>n</sub>, solvable by an incidence-matrix linear system whose row sums encode the global trick and whose individual rows encode the local trick. The pupil-facing language for any of that is the bar model and the network diagram. The teacher who can hold both languages at once teaches the session twice over, once for the room and once for the future.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- TEACHER NOTES -->
+<!-- ============================================================ -->
+<section class="level" id="teacher-notes">
+  <div class="level-head">
+    <span class="level-num">Notes</span>
+    <h2>For the teaching of teachers</h2>
+  </div>
+
+  <p>This learner is built to be usable in two registers at once: a Year 7 / Year 8 student walks through Levels 1 to 5 and meets a complete arc of investigation. A teacher who has run this with their own class then revisits the same pages with the "For the Teacher" panels open and sees the architecture beneath.</p>
+
+  <h3>The five skills this session builds</h3>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">1. Adventurous trial</h4>
+    <p>The willingness to try numbers when you don't yet know they'll work. Level 1 rewards this. Level 2 deliberately punishes it. Pupils need both experiences.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">2. Representation switching</h4>
+    <p>Bars → networks. Same maths, different picture. Pupils who can move between representations solve problems pupils who can't, can't.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">3. Necessary conditions</h4>
+    <p>Parity arrives as a free filter. It cannot prove a solution exists; it can prove one cannot. Pupils need to feel the asymmetry. (<em>Necessary, not sufficient</em> is a vocabulary worth introducing here in the teacher's voice even if not in the pupil's.)</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">4. Multiplicity</h4>
+    <p>Four friends, the same six sums, two valid answers. Mathematical problems can have many solutions; mathematical problems can have none. The notion that every problem has exactly one answer is a school artefact, not a mathematical truth.</p>
+  </div>
+
+  <div class="panel">
+    <h4 style="font-family: var(--serif); font-weight:500; margin-top:0;">5. Global thinking</h4>
+    <p>When the local view drowns in possibilities, sum everything. Yana's instinct, scaled. This is the same instinct that gives rise to integrals, traces, partition functions, and most of what physicists do.</p>
+  </div>
+
+  <h3>Where to dwell, where to move on</h3>
+  <p>The slowest part of the session should be the transition from Level 1 to Level 2. The fastest part can be Level 4's solver — pupils who have grasped the parity argument will sprint through it. Level 5 is where the strongest pupils should be encouraged to make their own problems and challenge each other.</p>
+
+  <h3>Vocabulary worth seeding</h3>
+  <p><em class="term">Pair-sum</em>, <em class="term">network</em>, <em class="term">edge</em>, <em class="term">vertex</em>, <em class="term">parity</em>, <em class="term">necessary</em>, <em class="term">sufficient</em>, <em class="term">under-determined</em>, <em class="term">global identity</em>, <em class="term">complete graph</em>. None need to be tested. All should be heard.</p>
+
+  <h3>The deeper rationale</h3>
+  <p>Sums in Pairs is not really about pair-sums. It is about the way mathematicians take a piece of data and ask three questions in sequence: <em>can I solve it locally? if not, can I redraw it? if I redraw it, what survives?</em> Those three questions are the engine of mathematics, and a pupil who learns to ask them at thirteen is unlikely to stop asking them at thirty.</p>
+
+  <p>Mystic Martha will never tell you the numbers. She tells you what is preserved under summation. The pupil's job is to recover what was hidden. The teacher's job is to make sure they remember the recovery, not just the result.</p>
+</section>
+
+</main>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+  <span class="stamp">a learner for sums, networks, and the patience of method</span>
+</footer>
+
+<script>
+  // --- Gentle reveals ---
+  document.querySelectorAll('.reveal-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      target.classList.toggle('open');
+      btn.textContent = target.classList.contains('open')
+        ? btn.textContent.replace('→', '✓')
+        : btn.textContent.replace('✓', '→');
+    });
+  });
+
+  // --- Sticky nav active section ---
+  const sections = document.querySelectorAll('section.level');
+  const navLinks = document.querySelectorAll('nav.top a');
+  const linkMap = {};
+  navLinks.forEach(a => { linkMap[a.getAttribute('href').slice(1)] = a; });
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const link = linkMap[e.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px' });
+  sections.forEach(s => obs.observe(s));
+
+  // --- Solver: 3 friends ---
+  function solve3() {
+    const ab = parseInt(document.getElementById('s1-ab').value, 10);
+    const ac = parseInt(document.getElementById('s1-ac').value, 10);
+    const bc = parseInt(document.getElementById('s1-bc').value, 10);
+    const out = document.getElementById('s1-out');
+    if ([ab, ac, bc].some(isNaN)) { out.textContent = "Need three integers."; return; }
+    const total = ab + ac + bc;
+    if (total % 2 !== 0) {
+      out.textContent = `Sum of all three pair-sums = ${total}, which is odd.\nNo integer solution exists. (Parity rule.)`;
+      return;
+    }
+    const twoA = ab + ac - bc;
+    if (twoA % 2 !== 0 || twoA <= 0) {
+      out.textContent = `2A = ${ab} + ${ac} − ${bc} = ${twoA}\nNo valid positive integer solution.`;
+      return;
+    }
+    const A = twoA / 2;
+    const B = ab - A;
+    const C = ac - A;
+    out.textContent =
+      `Step 1 · 2A = (A+B) + (A+C) − (B+C) = ${ab} + ${ac} − ${bc} = ${twoA}\n` +
+      `Step 2 · A = ${twoA} ÷ 2 = ${A}\n` +
+      `Step 3 · B = (A+B) − A = ${ab} − ${A} = ${B}\n` +
+      `Step 4 · C = (A+C) − A = ${ac} − ${A} = ${C}\n\n` +
+      `Check · B + C = ${B} + ${C} = ${B+C}  (given: ${bc})  ${B+C === bc ? '✓' : '✗ data inconsistent'}`;
+  }
+
+  // --- Parity checker ---
+  function checkParity() {
+    const a = parseInt(document.getElementById('p-1').value, 10);
+    const b = parseInt(document.getElementById('p-2').value, 10);
+    const c = parseInt(document.getElementById('p-3').value, 10);
+    const out = document.getElementById('p-out');
+    if ([a, b, c].some(isNaN)) { out.textContent = "Need three integers."; return; }
+    const total = a + b + c;
+    if (total % 2 === 0) {
+      out.textContent =
+        `${a} + ${b} + ${c} = ${total} (even)\n` +
+        `Parity rule passed. An integer solution is possible.\n` +
+        `(Whether the solution exists with all positives depends on more — try the Level 2 solver.)`;
+    } else {
+      out.textContent =
+        `${a} + ${b} + ${c} = ${total} (odd)\n` +
+        `Parity rule failed. No integer solution can exist.\n` +
+        `These three numbers cannot be the pair-sums of any three integers A, B, C.`;
+    }
+  }
+
+  // --- Solver: 4 friends ---
+  function solve4() {
+    const s = [1,2,3,4,5,6].map(i => parseInt(document.getElementById('s4-' + i).value, 10));
+    const out = document.getElementById('s4-out');
+    if (s.some(isNaN)) { out.textContent = "Need six integers."; return; }
+    const sorted = [...s].sort((a,b) => a-b);
+    if (sorted.some((v,i) => v !== s[i])) {
+      out.textContent = `Sums must be in increasing order. I will sort them: ${sorted.join(', ')}\n\n` + solve4Logic(sorted);
+    } else {
+      out.textContent = solve4Logic(sorted);
+    }
+  }
+  function solve4Logic(s) {
+    // s[0]=A+B, s[1]=A+C, s[4]=B+D, s[5]=C+D pinned by order
+    // s[2] and s[3] are {B+C, A+D} in unknown order
+    const AB = s[0], AC = s[1], BD = s[4], CD = s[5];
+    const mid1 = s[2], mid2 = s[3];
+    const solutions = [];
+    for (const BC of [mid1, mid2]) {
+      const AD = (BC === mid1) ? mid2 : mid1;
+      const twoA = AB + AC - BC;
+      if (twoA <= 0 || twoA % 2 !== 0) continue;
+      const A = twoA / 2;
+      const B = AB - A, C = AC - A, D = CD - C;
+      // Verify all six sums
+      const all = [A+B, A+C, A+D, B+C, B+D, C+D].sort((a,b)=>a-b);
+      const ok = all.every((v,i) => v === s[i]);
+      if (ok && A > 0 && B > A && C > B && D > C) {
+        solutions.push({ A, B, C, D, BCval: BC, ADval: AD });
+      }
+    }
+    if (solutions.length === 0) {
+      return `Pinned: A+B = ${AB}, A+C = ${AC}, B+D = ${BD}, C+D = ${CD}\nMiddle ambiguity: ${mid1} or ${mid2} for B+C.\n\nNo valid solution found with the given sums and ordering constraints.`;
+    }
+    let txt = `Pinned · A+B = ${AB} · A+C = ${AC} · B+D = ${BD} · C+D = ${CD}\nMiddle two (${mid1}, ${mid2}) split between B+C and A+D.\n`;
+    solutions.forEach((sol, i) => {
+      txt += `\nSolution ${i+1}  (B+C = ${sol.BCval}, A+D = ${sol.ADval})\n`;
+      txt += `   A = ${sol.A} · B = ${sol.B} · C = ${sol.C} · D = ${sol.D}\n`;
+    });
+    if (solutions.length === 2) {
+      txt += `\nTwo valid solutions. Mystic Martha's data is under-determined.`;
+    }
+    return txt;
+  }
+
+  // --- Solver: 5 friends ---
+  function solve5() {
+    const inputs = document.querySelectorAll('.s5');
+    const s = Array.from(inputs).map(el => parseInt(el.value, 10));
+    const out = document.getElementById('s5-out');
+    if (s.some(isNaN) || s.length !== 10) { out.textContent = "Need ten integers."; return; }
+    const sorted = [...s].sort((a,b)=>a-b);
+    const total = sorted.reduce((a,b)=>a+b, 0);
+    if (total % 4 !== 0) {
+      out.textContent =
+        `Sum of all ten pair-sums = ${total}\n` +
+        `Each person appears in 4 pair-sums, so total must be divisible by 4.\n` +
+        `${total} ÷ 4 = ${total/4} (not an integer). No integer solution.`;
+      return;
+    }
+    const grand = total / 4;
+    const AB = sorted[0], DE = sorted[9];
+    const C = grand - AB - DE;
+    const AC = sorted[1], CE = sorted[8];
+    const A = AC - C, E = CE - C;
+    const B = AB - A, D = DE - E;
+    const computed = [A+B, A+C, A+D, A+E, B+C, B+D, B+E, C+D, C+E, D+E].sort((a,b)=>a-b);
+    const matches = computed.every((v,i) => v === sorted[i]);
+    let txt =
+      `Step 1 · Sum of all ten pair-sums = ${total}\n` +
+      `Step 2 · Each person appears 4 times, so A+B+C+D+E = ${total} ÷ 4 = ${grand}\n` +
+      `Step 3 · Smallest sum = A+B = ${AB} · Largest sum = D+E = ${DE}\n` +
+      `Step 4 · C = ${grand} − ${AB} − ${DE} = ${C}\n` +
+      `Step 5 · A+C = ${AC} (2nd smallest) → A = ${AC} − ${C} = ${A}\n` +
+      `Step 6 · C+E = ${CE} (2nd largest) → E = ${CE} − ${C} = ${E}\n` +
+      `Step 7 · B = ${AB} − ${A} = ${B} · D = ${DE} − ${E} = ${D}\n\n` +
+      `A = ${A} · B = ${B} · C = ${C} · D = ${D} · E = ${E}\n\n` +
+      (matches
+        ? `Check · all ten computed sums match the input. ✓`
+        : `Check · computed sums = ${computed.join(', ')}\nInput sums   = ${sorted.join(', ')}\nNot all match — the data may be inconsistent or the ordering assumption (2nd smallest = A+C, 2nd largest = C+E) may not hold for these particular sums.`);
+    out.textContent = txt;
+  }
+</script>
+
+</body>
+</html>
