@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iterating Pair-Sums · A Triple Investigation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --panel: #161616;
+    --panel-2: #1c1c1c;
+    --ink: #e8e4d8;
+    --ink-dim: #9a9385;
+    --rule: #2a2a2a;
+    --gold: #c9a84c;
+    --gold-soft: rgba(201, 168, 76, 0.18);
+    --blue: #6a8fb3;
+    --green: #7a9a6d;
+    --red: #b8554a;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.6;
+    font-size: 17px;
+  }
+
+  nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13, 13, 13, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav.top .brand {
+    color: var(--gold);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    margin-right: auto;
+  }
+  nav.top a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav.top a:hover { color: var(--gold); }
+
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
+
+  header.hero {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 36px;
+    margin-bottom: 44px;
+  }
+  header.hero .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  header.hero h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(38px, 5.5vw, 64px);
+    line-height: 1.05;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  header.hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  header.hero .lede {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    max-width: 640px;
+    font-weight: 400;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 32px;
+    margin: 56px 0 18px;
+    letter-spacing: -0.005em;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 23px;
+    margin: 30px 0 12px;
+  }
+
+  p { margin: 0 0 14px; max-width: 70ch; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .panel.story { border-left: 2px solid var(--gold); }
+
+  /* --- The control card --- */
+  .controls {
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    padding: 28px;
+    margin: 24px 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 760px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+  }
+  .triple-input {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .triple-input label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .triple-input input[type="number"] {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 12px 10px;
+    font-family: var(--mono);
+    font-size: 18px;
+    text-align: center;
+    border-radius: 2px;
+  }
+  .triple-input input:focus { outline: none; border-color: var(--gold); }
+  .step-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .step-controls label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .step-controls input[type="range"] {
+    flex: 1;
+    min-width: 140px;
+  }
+  .step-display {
+    font-family: var(--mono);
+    color: var(--gold);
+    font-size: 14px;
+    min-width: 30px;
+  }
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .preset-row button {
+    background: transparent;
+    color: var(--ink-dim);
+    border: 1px solid var(--rule);
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-row button:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .validation {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--red);
+    min-height: 16px;
+  }
+
+  /* --- Triple sequence display --- */
+  .sequence-grid {
+    margin: 32px 0;
+    overflow-x: auto;
+  }
+  table.triples {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 14px;
+    min-width: 580px;
+  }
+  table.triples th {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 500;
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  table.triples td {
+    padding: 12px 14px;
+    border-bottom: 1px dotted var(--rule);
+    text-align: right;
+  }
+  table.triples td.step { text-align: left; color: var(--ink-dim); }
+  table.triples td.min { color: var(--blue); }
+  table.triples td.mid { color: var(--gold); font-weight: 500; }
+  table.triples td.max { color: var(--red); }
+  table.triples td.gap { color: var(--ink-dim); font-size: 12px; }
+  table.triples td.span { color: var(--green); }
+
+  /* Toggle for which corner to track */
+  .corner-toggle {
+    display: flex;
+    gap: 0;
+    margin: 20px 0 14px;
+    border: 1px solid var(--rule);
+    width: fit-content;
+  }
+  .corner-toggle button {
+    background: transparent;
+    color: var(--ink-dim);
+    border: none;
+    border-right: 1px solid var(--rule);
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .corner-toggle button:last-child { border-right: none; }
+  .corner-toggle button.active {
+    background: var(--gold-soft);
+    color: var(--gold);
+  }
+  .corner-toggle button:hover:not(.active) {
+    color: var(--ink);
+  }
+
+  /* Sequence trace highlight */
+  .sequence-trace {
+    background: #0a0a0a;
+    border-left: 2px solid var(--gold);
+    padding: 18px 22px;
+    margin: 16px 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink);
+    word-spacing: 0.3em;
+  }
+  .sequence-trace .label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .sequence-trace .num {
+    color: var(--gold);
+  }
+  .sequence-trace .diff {
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+
+  /* Chart container */
+  .chart {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .chart .legend {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    flex-wrap: wrap;
+  }
+  .chart .legend span { display: flex; align-items: center; gap: 6px; }
+  .chart .legend .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  /* Closed form display */
+  .closed-form {
+    background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+    border: 1px solid var(--rule);
+    padding: 26px 32px;
+    margin: 22px 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 28px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .closed-form .ink {
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 22px;
+  }
+  .closed-form .caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+
+  /* Sign flag */
+  .sign-flag {
+    display: inline-block;
+    padding: 2px 10px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 14px;
+    border-radius: 2px;
+    margin: 0 2px;
+  }
+
+  /* --- Flipping triangle diagram --- */
+  .flip-diagram {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 24px 20px 30px;
+    margin: 26px 0;
+    overflow-x: auto;
+  }
+  .flip-diagram svg {
+    display: block;
+    margin: 0 auto;
+    min-width: 700px;
+    width: 100%;
+    max-width: 980px;
+    height: auto;
+  }
+  .flip-diagram .caption {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+  /* Triangle vertex highlight on hover */
+  .vertex-group:hover .vertex-circle { fill: var(--gold-soft); }
+  .vertex-group:hover .vertex-label { fill: var(--gold); }
+
+  /* Step legend below the diagram */
+  .step-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .step-legend .leg-item {
+    background: var(--panel-2);
+    padding: 12px 14px;
+    border-left: 2px solid var(--gold);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .step-legend .leg-item .leg-label {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--gold);
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .ink { color: var(--gold); font-family: var(--mono); font-size: 0.96em; }
+  em.term { color: var(--gold); font-style: italic; font-family: var(--serif); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 80px;
+    padding: 32px 28px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  footer .stamp {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--gold);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    margin-top: 8px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <span class="brand">Iterating pair-sums · a triple investigation</span>
+  <a href="#flip">Flip</a>
+  <a href="#observe">Observe</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#signs">Signs</a>
+  <a href="#closed">Closed form</a>
+  <a href="#why-triples">Why triples</a>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">A companion piece to Sums in Pairs</div>
+  <h1>What happens when you <em>keep</em> pair-summing</h1>
+  <p class="lede">Take a sorted triple. Replace it with the three pair-sums, sorted. Repeat. The span never changes. The shape flips. The whole orbit collapses to a two-parameter closed form. Toggle the corners and watch.</p>
+</header>
+
+<!-- ============================================================ -->
+<section id="flip">
+<h2>Why the rule looks like it does</h2>
+
+<p>Before any sequence, the geometry. A triangle has three vertices and three edges. Label the vertices with our three numbers <em class="term">a</em>, <em class="term">b</em>, <em class="term">c</em>. Each edge naturally carries the sum of its two endpoints: the edge between <em>a</em> and <em>b</em> carries <span class="ink">a+b</span>, the edge between <em>a</em> and <em>c</em> carries <span class="ink">a+c</span>, the edge between <em>b</em> and <em>c</em> carries <span class="ink">b+c</span>.</p>
+
+<p>Now perform the dual operation: <em class="term">make the edges into the new vertices.</em> The triangle flips. Its three edges become its three new vertices, carrying the pair-sums as their values. The triangle has eaten its own boundary, and the new triangle is upside-down with respect to the first.</p>
+
+<div class="flip-diagram">
+  <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+    <!-- ===================== Triangle 0: upright, vertices 5, 8, 10 ===================== -->
+    <!-- Edges with their pair-sum labels (these become vertices of next triangle) -->
+    <g id="tri0">
+      <!-- Triangle outline -->
+      <polygon points="100,260 220,260 160,140" fill="rgba(201,168,76,0.04)" stroke="#c9a84c" stroke-width="1.2"/>
+      <!-- Edge midpoint markers - these are the "edge values" and where lineage flows out -->
+      <!-- midpoint of a-b (left base, vertices a=bottom-left, b=top) -->
+      <circle cx="130" cy="200" r="14" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+      <text x="130" y="205" text-anchor="middle" fill="#6a8fb3" font-family="IBM Plex Mono" font-size="11">13</text>
+      <!-- midpoint of a-c (bottom, vertices a=bottom-left, c=bottom-right) -->
+      <circle cx="160" cy="260" r="14" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="160" y="265" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11">15</text>
+      <!-- midpoint of b-c (right, vertices b=top, c=bottom-right) -->
+      <circle cx="190" cy="200" r="14" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+      <text x="190" y="205" text-anchor="middle" fill="#b8554a" font-family="IBM Plex Mono" font-size="11">18</text>
+      <!-- Vertex circles -->
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="100" cy="260" r="20" fill="#161616" stroke="#e8e4d8" stroke-width="1.5"/>
+        <text class="vertex-label" x="100" y="266" text-anchor="middle" fill="#e8e4d8" font-family="Cormorant Garamond" font-size="22" font-style="italic">5</text>
+        <text x="100" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">a</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="220" cy="260" r="20" fill="#161616" stroke="#e8e4d8" stroke-width="1.5"/>
+        <text class="vertex-label" x="220" y="266" text-anchor="middle" fill="#e8e4d8" font-family="Cormorant Garamond" font-size="22" font-style="italic">10</text>
+        <text x="220" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">c</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="160" cy="140" r="20" fill="#161616" stroke="#e8e4d8" stroke-width="1.5"/>
+        <text class="vertex-label" x="160" y="146" text-anchor="middle" fill="#e8e4d8" font-family="Cormorant Garamond" font-size="22" font-style="italic">8</text>
+        <text x="160" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">b</text>
+      </g>
+      <text x="160" y="375" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11" letter-spacing="0.1em">STEP 0</text>
+      <text x="160" y="395" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">(5, 8, 10)</text>
+    </g>
+
+    <!-- Lineage arrows from tri0 edge-circles to tri1 vertex positions -->
+    <!-- Edge a+b=13 (blue) → top of inverted tri1 -->
+    <path d="M 144 200 Q 250 130 380 140" stroke="#6a8fb3" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <!-- Edge a+c=15 (gold/middle) → bottom vertex of inverted tri1 -->
+    <path d="M 174 260 Q 260 280 360 280" stroke="#c9a84c" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <!-- Edge b+c=18 (red) → right of inverted tri1 -->
+    <path d="M 204 200 Q 280 170 440 200" stroke="#b8554a" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+
+    <!-- ===================== Triangle 1: INVERTED, vertices are old edges ===================== -->
+    <!-- inverted: point at bottom, base at top -->
+    <g id="tri1">
+      <polygon points="320,140 440,140 380,260" fill="rgba(201,168,76,0.04)" stroke="#c9a84c" stroke-width="1.2"/>
+      <!-- Edges of tri1 -->
+      <!-- new a-b edge (between 13 and 15): top-left side of inverted triangle -->
+      <circle cx="350" cy="200" r="14" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+      <text x="350" y="205" text-anchor="middle" fill="#6a8fb3" font-family="IBM Plex Mono" font-size="11">28</text>
+      <!-- new a-c edge (between 13 and 18): top edge -->
+      <circle cx="380" cy="140" r="14" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="380" y="145" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11">31</text>
+      <!-- new b-c edge (between 15 and 18): top-right side -->
+      <circle cx="410" cy="200" r="14" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+      <text x="410" y="205" text-anchor="middle" fill="#b8554a" font-family="IBM Plex Mono" font-size="11">33</text>
+      <!-- vertices of tri1 — note color comes from which edge of tri0 it descended from -->
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="320" cy="140" r="20" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+        <text class="vertex-label" x="320" y="146" text-anchor="middle" fill="#6a8fb3" font-family="Cormorant Garamond" font-size="20" font-style="italic">13</text>
+        <text x="320" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">a</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="440" cy="140" r="20" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+        <text class="vertex-label" x="440" y="146" text-anchor="middle" fill="#b8554a" font-family="Cormorant Garamond" font-size="20" font-style="italic">18</text>
+        <text x="440" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">c</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="380" cy="260" r="20" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <text class="vertex-label" x="380" y="266" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="20" font-style="italic">15</text>
+        <text x="380" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">b</text>
+      </g>
+      <text x="380" y="375" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11" letter-spacing="0.1em">STEP 1</text>
+      <text x="380" y="395" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">(13, 15, 18)</text>
+    </g>
+
+    <!-- Lineage arrows from tri1 edge-circles to tri2 vertex positions -->
+    <path d="M 364 200 Q 470 270 590 260" stroke="#6a8fb3" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <path d="M 394 140 Q 480 130 580 140" stroke="#c9a84c" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <path d="M 424 200 Q 510 230 660 260" stroke="#b8554a" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+
+    <!-- ===================== Triangle 2: upright again ===================== -->
+    <g id="tri2">
+      <polygon points="540,260 660,260 600,140" fill="rgba(201,168,76,0.04)" stroke="#c9a84c" stroke-width="1.2"/>
+      <circle cx="570" cy="200" r="14" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+      <text x="570" y="205" text-anchor="middle" fill="#6a8fb3" font-family="IBM Plex Mono" font-size="11">59</text>
+      <circle cx="600" cy="260" r="14" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="600" y="265" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11">61</text>
+      <circle cx="630" cy="200" r="14" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+      <text x="630" y="205" text-anchor="middle" fill="#b8554a" font-family="IBM Plex Mono" font-size="11">64</text>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="540" cy="260" r="20" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+        <text class="vertex-label" x="540" y="266" text-anchor="middle" fill="#6a8fb3" font-family="Cormorant Garamond" font-size="20" font-style="italic">28</text>
+        <text x="540" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">a</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="660" cy="260" r="20" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+        <text class="vertex-label" x="660" y="266" text-anchor="middle" fill="#b8554a" font-family="Cormorant Garamond" font-size="20" font-style="italic">33</text>
+        <text x="660" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">c</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="600" cy="140" r="20" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <text class="vertex-label" x="600" y="146" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="20" font-style="italic">31</text>
+        <text x="600" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">b</text>
+      </g>
+      <text x="600" y="375" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11" letter-spacing="0.1em">STEP 2</text>
+      <text x="600" y="395" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">(28, 31, 33)</text>
+    </g>
+
+    <!-- Arrows to triangle 3 -->
+    <path d="M 584 200 Q 690 130 820 140" stroke="#6a8fb3" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <path d="M 614 260 Q 700 280 800 280" stroke="#c9a84c" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+    <path d="M 644 200 Q 720 170 880 200" stroke="#b8554a" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity="0.7"/>
+
+    <!-- ===================== Triangle 3: inverted again ===================== -->
+    <g id="tri3">
+      <polygon points="760,140 880,140 820,260" fill="rgba(201,168,76,0.04)" stroke="#c9a84c" stroke-width="1.2"/>
+      <circle cx="790" cy="200" r="14" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+      <text x="790" y="205" text-anchor="middle" fill="#6a8fb3" font-family="IBM Plex Mono" font-size="10">120</text>
+      <circle cx="820" cy="140" r="14" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="820" y="145" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="10">123</text>
+      <circle cx="850" cy="200" r="14" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+      <text x="850" y="205" text-anchor="middle" fill="#b8554a" font-family="IBM Plex Mono" font-size="10">125</text>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="760" cy="140" r="20" fill="#161616" stroke="#6a8fb3" stroke-width="1.5"/>
+        <text class="vertex-label" x="760" y="146" text-anchor="middle" fill="#6a8fb3" font-family="Cormorant Garamond" font-size="18" font-style="italic">59</text>
+        <text x="760" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">a</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="880" cy="140" r="20" fill="#161616" stroke="#b8554a" stroke-width="1.5"/>
+        <text class="vertex-label" x="880" y="146" text-anchor="middle" fill="#b8554a" font-family="Cormorant Garamond" font-size="18" font-style="italic">64</text>
+        <text x="880" y="118" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">c</text>
+      </g>
+      <g class="vertex-group">
+        <circle class="vertex-circle" cx="820" cy="260" r="20" fill="#161616" stroke="#c9a84c" stroke-width="1.5"/>
+        <text class="vertex-label" x="820" y="266" text-anchor="middle" fill="#c9a84c" font-family="Cormorant Garamond" font-size="18" font-style="italic">61</text>
+        <text x="820" y="298" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">b</text>
+      </g>
+      <text x="820" y="375" text-anchor="middle" fill="#c9a84c" font-family="IBM Plex Mono" font-size="11" letter-spacing="0.1em">STEP 3</text>
+      <text x="820" y="395" text-anchor="middle" fill="#9a9385" font-family="IBM Plex Mono" font-size="10">(59, 61, 64)</text>
+    </g>
+
+    <!-- Labels for clarity -->
+    <text x="60" y="20" fill="#9a9385" font-family="IBM Plex Mono" font-size="10" letter-spacing="0.1em">VERTICES = NUMBERS · EDGES = PAIR-SUMS · NEXT TRIANGLE INHERITS EDGE-VALUES AS VERTICES</text>
+  </svg>
+  <div class="caption">Four successive triangles — alternating up, down, up, down — for the starting triple (5, 8, 10)</div>
+
+  <div class="step-legend">
+    <div class="leg-item">
+      <span class="leg-label">The smallest pair-sum (blue)</span>
+      a + b · always becomes the smallest vertex of the next triangle
+    </div>
+    <div class="leg-item">
+      <span class="leg-label">The middle pair-sum (gold)</span>
+      a + c · always becomes the middle vertex of the next triangle
+    </div>
+    <div class="leg-item">
+      <span class="leg-label">The largest pair-sum (red)</span>
+      b + c · always becomes the largest vertex of the next triangle
+    </div>
+  </div>
+</div>
+
+<p>Look at the diagram for a moment without me narrating. The three things to notice are these.</p>
+
+<p><strong>One.</strong> Each triangle is upside-down relative to the previous one. This is the geometric content of the operation: vertices have become edges, edges have become vertices. The triangle is its own dual in this sense, which is why iteration is possible at all. K<sub>3</sub> is the unique complete graph for which vertices and edges have the same cardinality (3 each), so the dual lives in the same space as the original.</p>
+
+<p><strong>Two.</strong> The colour of each new vertex tells you its parentage. A blue vertex came from the smallest edge of the previous triangle. A gold vertex came from the middle edge. A red vertex came from the largest edge. The lineage is unambiguous because the ordering <span class="ink">a + b &lt; a + c &lt; b + c</span> is forced (it always holds when a &lt; b &lt; c), so "smallest", "middle", "largest" are well-defined at every step.</p>
+
+<p><strong>Three.</strong> Trace any one colour through the diagram. Follow the gold path from step 0 to step 3: the edge labelled 15 becomes the vertex labelled 15 becomes the edge labelled 31 becomes the vertex labelled 31 becomes the edge labelled 61 becomes the vertex labelled 61 becomes the edge labelled 123. This is the <em class="term">middle sequence</em>, in geometric form. Each value spends one step as an edge of one triangle and the next step as a vertex of the next.</p>
+
+<div class="panel story">
+  <p>The rule <span class="ink">(a, b, c) → (a+b, a+c, b+c)</span> looks arbitrary when written algebraically. The flipping triangles show it is not arbitrary at all. It is the inevitable consequence of saying: <em>edges become vertices, vertices become edges, repeat</em>. The values just come along for the ride.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="observe">
+<h2>The set-up</h2>
+
+<p>Pick three numbers <em class="term">a &lt; b &lt; c</em>. The three pair-sums in sorted order are <span class="ink">(a+b, a+c, b+c)</span> — smallest = small + middle, middle = small + large, largest = middle + large. So pair-summing is a self-map on sorted triples. You can do it again. And again.</p>
+
+<div class="controls">
+  <div>
+    <div class="triple-input">
+      <div>
+        <label>a · smallest</label>
+        <input type="number" id="in-a" value="5" min="-9999" max="9999">
+      </div>
+      <div>
+        <label>b · middle</label>
+        <input type="number" id="in-b" value="8" min="-9999" max="9999">
+      </div>
+      <div>
+        <label>c · largest</label>
+        <input type="number" id="in-c" value="10" min="-9999" max="9999">
+      </div>
+    </div>
+    <div class="validation" id="valid-msg"></div>
+    <div class="preset-row">
+      <button onclick="loadPreset(5,8,10)">5, 8, 10</button>
+      <button onclick="loadPreset(1,5,10)">1, 5, 10 (Jacobsthal)</button>
+      <button onclick="loadPreset(2,3,5)">2, 3, 5</button>
+      <button onclick="loadPreset(7,12,20)">7, 12, 20</button>
+      <button onclick="loadPreset(1,2,3)">1, 2, 3</button>
+    </div>
+  </div>
+  <div>
+    <div class="step-controls">
+      <label>Steps:</label>
+      <input type="range" id="steps" min="2" max="10" value="6">
+      <span class="step-display" id="steps-display">6</span>
+    </div>
+    <p style="font-size: 14px; color: var(--ink-dim); margin-top: 10px;">Each step replaces the triple with its three pair-sums in sorted order. The table below updates live.</p>
+  </div>
+</div>
+
+<div class="sequence-grid">
+<table class="triples" id="triples-table">
+  <thead>
+    <tr>
+      <th>n</th>
+      <th style="text-align:right;">min (a)</th>
+      <th style="text-align:right;">mid (b)</th>
+      <th style="text-align:right;">max (c)</th>
+      <th style="text-align:right;">L gap</th>
+      <th style="text-align:right;">R gap</th>
+      <th style="text-align:right;">span</th>
+    </tr>
+  </thead>
+  <tbody id="triples-body"></tbody>
+</table>
+</div>
+
+<h3>Read off any one sequence</h3>
+<p>Three sequences live inside the table: the minima down the first column, the middles down the second, the maxima down the third. Toggle to highlight one at a time and see its first differences.</p>
+
+<div class="corner-toggle">
+  <button data-corner="min" class="active" onclick="setCorner('min')">Min</button>
+  <button data-corner="mid" onclick="setCorner('mid')">Mid</button>
+  <button data-corner="max" onclick="setCorner('max')">Max</button>
+</div>
+
+<div class="sequence-trace" id="trace"></div>
+
+<div class="panel story">
+  <p>Notice what happens. The first differences of the <strong>minima</strong> sequence are exactly the values of the <strong>middle</strong> sequence. The first differences of the <strong>maxima</strong> sequence are also exactly the middle sequence. This is because the new minimum is <em>old min + old middle</em>, and the new maximum is <em>old max + old middle</em> — both grow by exactly the middle value at each step. It is the cleanest possible algebra, falling straight out of the definition of "sorted pair-sums".</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="invariants">
+<h2>What survives the iteration</h2>
+
+<p>If you stare at the table long enough, the same number stares back at you from the right-most column. The <em class="term">span</em> — max minus min — is fixed forever. Whatever the starting triple, whatever the step, the span is invariant.</p>
+
+<p>The proof is one line. If the triple is (a, b, c), the new triple in sort order is (a+b, a+c, b+c). The new span is (b+c) − (a+b) = c − a, the old span. The middle vertex cancels.</p>
+
+<div class="closed-form">
+  <span class="ink">c<sub>n</sub> − a<sub>n</sub> &nbsp;=&nbsp; c<sub>0</sub> − a<sub>0</sub></span> &nbsp; for all n
+  <div class="caption">an invariant of the iteration</div>
+</div>
+
+<p>This is the simplest kind of invariant: a quantity preserved under the dynamics. In mathematics the search for invariants is the search for what is real about a system — what survives every transformation. Here, the span survives. Everything else changes.</p>
+
+<h3>The other invariant: the gap multiset</h3>
+
+<p>Look at the left gap (mid − min) and the right gap (max − mid). In the (5, 8, 10) example they are 3 and 2. After one step they are 2 and 3. They have <em class="term">swapped</em>.</p>
+
+<p>Algebra: the new gaps are <span class="ink">(a+c) − (a+b) = c − b = R_old</span> and <span class="ink">(b+c) − (a+c) = b − a = L_old</span>. The iteration permutes the two gaps. So the <em>multiset</em> {L, R} is invariant, but the assignment of which-is-which has period 2.</p>
+
+<div class="panel">
+<p>This is your first encounter with a structure that has two flavours of invariance: a strictly-conserved quantity (the span) <em>and</em> a quantity whose value alternates but whose multiset is conserved (the gaps). In physics this distinction is the difference between a strict conservation law and a discrete symmetry. The triple iteration has both, in miniature.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="signs">
+<h2>The sign of the gap difference</h2>
+
+<p>Define <span class="ink">g<sub>n</sub> = L<sub>n</sub> − R<sub>n</sub></span> at step n — the <em class="term">gap difference</em>, signed. From the swap rule (the iteration permutes L and R) we have <span class="ink">g<sub>n+1</sub> = −g<sub>n</sub></span>. So the sign alternates every step. If you started with L &gt; R it flips to L &lt; R, then back, then forward, forever.</p>
+
+<p>Why does this matter? Because <em>g</em> shows up in the recursion for the middle sequence. The new middle is a + c. Using <span class="ink">g = (b − a) − (c − b) = 2b − a − c</span>, we get <span class="ink">a + c = 2b − g</span>. So:</p>
+
+<div class="closed-form">
+  <span class="ink">b<sub>n+1</sub> = 2 · b<sub>n</sub> − g<sub>n</sub></span>
+  <div class="caption">g<sub>n</sub> alternates between +g<sub>0</sub> and −g<sub>0</sub></div>
+</div>
+
+<p>This is "almost doubling, with a sign-flipping wobble." The current sign-of-gap-difference flag for your triple is:</p>
+
+<div style="text-align: center; margin: 20px 0;">
+  <span id="sign-readout"></span>
+</div>
+
+<p>The middle sequence almost doubles each step — the ratio b<sub>n+1</sub> / b<sub>n</sub> converges to 2 — but the wobble of ±g<sub>0</sub> prevents it from being a pure power-of-two scaling. That wobble is the entire content of the sign analysis, and it is what makes the closed form interesting rather than trivial.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="closed">
+<h2>The closed form</h2>
+
+<p>Solving the recursion <span class="ink">b<sub>n+1</sub> = 2 b<sub>n</sub> − g<sub>n</sub></span>, with <span class="ink">g<sub>n</sub> = g<sub>0</sub> · (−1)<sup>n</sup></span>, gives a clean closed form. Let <span class="ink">T = a + b + c</span> be the sum of the original triple, and <span class="ink">g = L − R = 2b − a − c</span> be the initial gap difference (positive if L &gt; R, negative if L &lt; R). Then for all n ≥ 0:</p>
+
+<div class="closed-form" id="formula-display">
+  <span class="ink">b<sub>n</sub> = (T · 2<sup>n</sup> + g · (−1)<sup>n</sup>) / 3</span>
+  <div class="caption">middle of the n-th triple, in closed form</div>
+</div>
+
+<p>For the current triple, the values are:</p>
+<div class="closed-form" id="formula-specific">
+  <!-- filled by JS -->
+</div>
+
+<p>Two parameters, T and g, pin the entire orbit. Different triples that share the same T and g have identical middle sequences. The triple has been compressed to two numbers.</p>
+
+<h3>The Jacobsthal connection</h3>
+
+<p>The Jacobsthal numbers are 0, 1, 1, 3, 5, 11, 21, 43, 85, 171, ..., defined by <span class="ink">J<sub>n+1</sub> = J<sub>n</sub> + 2 J<sub>n−1</sub></span> with J<sub>0</sub> = 0, J<sub>1</sub> = 1. Their closed form is</p>
+
+<div class="closed-form">
+  <span class="ink">J<sub>n</sub> = (2<sup>n</sup> − (−1)<sup>n</sup>) / 3</span>
+  <div class="caption">the Jacobsthal numbers, in closed form</div>
+</div>
+
+<p>Compare to ours. Our middle sequence is</p>
+
+<div class="closed-form">
+  <span class="ink">b<sub>n</sub> = (T / 3) · 2<sup>n</sup> &nbsp;+&nbsp; (g / 3) · (−1)<sup>n</sup></span>
+  <div class="caption">an affine combination of 2<sup>n</sup> and (−1)<sup>n</sup></div>
+</div>
+
+<p>Both sequences live in the same two-dimensional space spanned by 2<sup>n</sup> and (−1)<sup>n</sup>. So the orbit of every triple under pair-sum iteration is a linear combination of these two basic sequences, and the Jacobsthal numbers are simply one particular member of this family.</p>
+
+<div class="panel story">
+  <p>Try the preset triple <strong>(1, 5, 10)</strong>. Its sum is T = 16 and its initial gap difference is g = (b − a) − (c − b) = 4 − 5 = −1. The middle sequence is 5, 11, 21, 43, 85, ... — exactly J<sub>4</sub>, J<sub>5</sub>, J<sub>6</sub>, J<sub>7</sub>, J<sub>8</sub>, the Jacobsthal numbers themselves, shifted. The middle sequence of <em>that particular triple</em> is the Jacobsthal sequence, full stop. Other triples are Jacobsthal-flavoured blends.</p>
+</div>
+
+<h3>Chart of the three sequences</h3>
+
+<div class="chart">
+  <svg id="chart-svg" viewBox="0 0 800 360" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="legend">
+    <span><span class="dot" style="background:#6a8fb3;"></span>min</span>
+    <span><span class="dot" style="background:#c9a84c;"></span>mid</span>
+    <span><span class="dot" style="background:#b8554a;"></span>max</span>
+  </div>
+</div>
+
+<p>All three sequences grow roughly as 2<sup>n</sup>, but they are separated by the span. On a log scale they would be three parallel lines getting asymptotically closer. The proportional convergence — span / mean → 0 — is the iteration's way of saying "the gaps stay fixed in absolute size but become negligible compared to the magnitudes."</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="why-triples">
+<h2>Why this only works for triples</h2>
+
+<p>The pair-sum operation on n vertices produces <span class="ink">C(n, 2) = n(n−1)/2</span> edges. For this to be a self-map — for the output to be the same size as the input, so we can iterate — we need n(n−1)/2 = n, which forces n = 3.</p>
+
+<p>Triples are the unique fixed point of the cardinality count. K<sub>3</sub> is the only complete graph whose edges and vertices balance. Pair-summing is therefore a self-map only on triples, and this is the structural reason that triples have such a clean iteration theory while quadruples and higher do not.</p>
+
+<p>If you wanted to iterate on a quadruple, you would need to first define a way of cutting six pair-sums back down to four numbers. There are many natural choices — take the four smallest, take the four edges of a Hamiltonian cycle, take the four sums adjacent to each vertex — and each gives its own dynamical system, none of which is as clean as the triple case.</p>
+
+<div class="panel story">
+  <p>This is a small but real example of a deep mathematical principle: <strong>self-similarity requires balance</strong>. Iterating a transformation needs the output to be of the same type as the input, and that is a hard combinatorial constraint. The reason fractals exist is that the scaling map is a self-map. The reason renormalisation works is that the renormalisation step is a self-map. Triple iteration works for exactly the same reason: pair-sum balances against itself only at n = 3.</p>
+</div>
+
+<h3>What the orbit looks like geometrically</h3>
+
+<p>Plot the three values of each triple as a point in 3-space (or as three points on the number line). The iteration is a linear map (in the affine sense) with eigenvalues 2, 2, and a sign-related smaller piece. The triples lie along a one-dimensional ray of growth modulated by a periodic oscillation in the gap structure. It is the simplest possible non-trivial discrete dynamical system, and it lives natively inside the Year 7 Sums in Pairs investigation, waiting for any pupil with the curiosity to ask "what if I just keep going?"</p>
+</section>
+
+</main>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+  <span class="stamp">a companion piece to Sums in Pairs, for when one wonders what the iteration does</span>
+</footer>
+
+<script>
+  let currentCorner = 'min';
+  let currentTriples = [];
+
+  function loadPreset(a, b, c) {
+    document.getElementById('in-a').value = a;
+    document.getElementById('in-b').value = b;
+    document.getElementById('in-c').value = c;
+    update();
+  }
+
+  function setCorner(c) {
+    currentCorner = c;
+    document.querySelectorAll('.corner-toggle button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.corner === c);
+    });
+    renderTrace();
+  }
+
+  function update() {
+    const a = parseInt(document.getElementById('in-a').value, 10);
+    const b = parseInt(document.getElementById('in-b').value, 10);
+    const c = parseInt(document.getElementById('in-c').value, 10);
+    const steps = parseInt(document.getElementById('steps').value, 10);
+    document.getElementById('steps-display').textContent = steps;
+
+    const valid = document.getElementById('valid-msg');
+    if ([a, b, c].some(isNaN)) { valid.textContent = 'Need three integers.'; return; }
+    if (!(a < b && b < c)) {
+      valid.textContent = 'Need a < b < c (strictly increasing).';
+      return;
+    }
+    valid.textContent = '';
+
+    // Build sequence of triples
+    const seq = [[a, b, c]];
+    for (let i = 0; i < steps; i++) {
+      const [x, y, z] = seq[seq.length - 1];
+      seq.push([x + y, x + z, y + z]);
+    }
+    currentTriples = seq;
+
+    renderTable(seq);
+    renderTrace();
+    renderFormulaSpecific(a, b, c, seq);
+    renderSign(a, b, c);
+    renderChart(seq);
+  }
+
+  function renderTable(seq) {
+    const body = document.getElementById('triples-body');
+    body.innerHTML = '';
+    seq.forEach((t, i) => {
+      const L = t[1] - t[0];
+      const R = t[2] - t[1];
+      const span = t[2] - t[0];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="step">${i}</td>
+        <td class="min">${t[0]}</td>
+        <td class="mid">${t[1]}</td>
+        <td class="max">${t[2]}</td>
+        <td class="gap">${L}</td>
+        <td class="gap">${R}</td>
+        <td class="span">${span}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  function renderTrace() {
+    const trace = document.getElementById('trace');
+    const idx = currentCorner === 'min' ? 0 : currentCorner === 'mid' ? 1 : 2;
+    const cornerLabel = currentCorner === 'min' ? 'Minima' : currentCorner === 'mid' ? 'Middles' : 'Maxima';
+    const vals = currentTriples.map(t => t[idx]);
+    const diffs = vals.slice(1).map((v, i) => v - vals[i]);
+
+    let html = `<span class="label">${cornerLabel} sequence</span>`;
+    html += vals.map(v => `<span class="num">${v}</span>`).join(' · ');
+    html += `<br><span class="label" style="margin-top:14px;">First differences</span>`;
+    html += `<span class="diff">${diffs.join(' · ')}</span>`;
+
+    // Add the algebraic note
+    if (currentCorner === 'min' || currentCorner === 'max') {
+      html += `<br><span class="diff" style="margin-top:10px; display:block; color: var(--ink);">First differences are exactly the middle sequence — because new ${currentCorner} = old ${currentCorner} + old middle.</span>`;
+    } else {
+      // Middle sequence — show the recursion
+      html += `<br><span class="diff" style="margin-top:10px; display:block; color: var(--ink);">Ratios b<sub>n+1</sub>/b<sub>n</sub>: `;
+      const ratios = vals.slice(1).map((v, i) => (v / vals[i]).toFixed(3));
+      html += ratios.join(', ') + ' &nbsp;→&nbsp; 2</span>';
+    }
+    trace.innerHTML = html;
+  }
+
+  function renderFormulaSpecific(a, b, c, seq) {
+    const T = a + b + c;
+    const g = 3 * b - T; // = L - R = 2b - a - c
+    const L = b - a, R = c - b;
+    const el = document.getElementById('formula-specific');
+    let html = `<span class="ink">T = a + b + c = ${a} + ${b} + ${c} = ${T}</span><br>`;
+    html += `<span class="ink">g = L − R = ${L} − ${R} = ${g}</span><br><br>`;
+    html += `<span class="ink">b<sub>n</sub> = (${T} · 2<sup>n</sup> ${g >= 0 ? '+' : '−'} ${Math.abs(g)} · (−1)<sup>n</sup>) / 3</span>`;
+    html += `<div class="caption">verified: b<sub>0</sub>...b<sub>${Math.min(5, seq.length-1)}</sub> = `;
+    html += seq.slice(0, 6).map(t => t[1]).join(', ');
+    html += `</div>`;
+    el.innerHTML = html;
+  }
+
+  function renderSign(a, b, c) {
+    const L = b - a, R = c - b;
+    const g0 = L - R;
+    const el = document.getElementById('sign-readout');
+    if (g0 === 0) {
+      el.innerHTML = `<span class="sign-flag">g<sub>0</sub> = 0</span> — gaps are equal, so the wobble vanishes and middles double exactly.`;
+      return;
+    }
+    const flips = [];
+    for (let n = 0; n < 5; n++) {
+      const sign = g0 * Math.pow(-1, n);
+      flips.push(`<span class="sign-flag">g<sub>${n}</sub> = ${sign > 0 ? '+' : ''}${sign}</span>`);
+    }
+    el.innerHTML = `<div style="margin-bottom:10px; color: var(--ink-dim); font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;">FOR THIS TRIPLE</div>` + flips.join(' ');
+  }
+
+  function renderChart(seq) {
+    const svg = document.getElementById('chart-svg');
+    const W = 800, H = 360;
+    const pad = { l: 60, r: 30, t: 20, b: 40 };
+    const xMax = seq.length - 1;
+    const yMax = Math.max(...seq.map(t => t[2]));
+    const yMin = Math.min(...seq.map(t => t[0]), 0);
+    const xScale = x => pad.l + (x / xMax) * (W - pad.l - pad.r);
+    const yScale = y => H - pad.b - ((y - yMin) / (yMax - yMin)) * (H - pad.t - pad.b);
+
+    let svgContent = '';
+
+    // Axes
+    svgContent += `<line x1="${pad.l}" y1="${H-pad.b}" x2="${W-pad.r}" y2="${H-pad.b}" stroke="#2a2a2a" stroke-width="1"/>`;
+    svgContent += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H-pad.b}" stroke="#2a2a2a" stroke-width="1"/>`;
+
+    // X ticks
+    for (let i = 0; i <= xMax; i++) {
+      svgContent += `<text x="${xScale(i)}" y="${H-pad.b+18}" fill="#9a9385" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">${i}</text>`;
+      svgContent += `<line x1="${xScale(i)}" y1="${H-pad.b}" x2="${xScale(i)}" y2="${H-pad.b+4}" stroke="#2a2a2a"/>`;
+    }
+
+    // Y axis (5 ticks)
+    for (let i = 0; i <= 4; i++) {
+      const v = yMin + (i / 4) * (yMax - yMin);
+      const y = yScale(v);
+      svgContent += `<text x="${pad.l-8}" y="${y+4}" fill="#9a9385" font-family="IBM Plex Mono" font-size="11" text-anchor="end">${Math.round(v)}</text>`;
+      svgContent += `<line x1="${pad.l-4}" y1="${y}" x2="${pad.l}" y2="${y}" stroke="#2a2a2a"/>`;
+    }
+
+    // Three series
+    const colors = ['#6a8fb3', '#c9a84c', '#b8554a'];
+    for (let s = 0; s < 3; s++) {
+      const pts = seq.map((t, i) => `${xScale(i)},${yScale(t[s])}`);
+      svgContent += `<polyline points="${pts.join(' ')}" fill="none" stroke="${colors[s]}" stroke-width="1.5"/>`;
+      seq.forEach((t, i) => {
+        svgContent += `<circle cx="${xScale(i)}" cy="${yScale(t[s])}" r="3.5" fill="${colors[s]}"/>`;
+      });
+    }
+
+    // X axis label
+    svgContent += `<text x="${W/2}" y="${H-6}" fill="#9a9385" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">step n</text>`;
+
+    svg.innerHTML = svgContent;
+  }
+
+  document.getElementById('in-a').addEventListener('input', update);
+  document.getElementById('in-b').addEventListener('input', update);
+  document.getElementById('in-c').addEventListener('input', update);
+  document.getElementById('steps').addEventListener('input', update);
+
+  update();
+</script>
+
+</body>
+</html>
