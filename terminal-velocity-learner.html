@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Velocity & Viscosity · Learner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --gold: #c9a84c;
+    --gold-dim: #7a6230;
+    --text: #e8e2d4;
+    --text-muted: #888;
+    --text-dim: #555;
+    --accent-blue: #5a8fa8;
+    --accent-red: #c0554a;
+    --accent-green: #6a9e72;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,13,13,0.97);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 2rem;
+    backdrop-filter: blur(6px);
+  }
+  nav .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    padding: 0.8rem 0;
+    flex-shrink: 0;
+    margin-right: 2rem;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 1rem 0.8rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* SECTIONS */
+  section { display: none; min-height: calc(100vh - 52px); padding: 3rem 2rem 5rem; max-width: 860px; margin: 0 auto; }
+  section.active { display: block; }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1.15;
+    margin-bottom: 0.4rem;
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2.5rem 0 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+  }
+  h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    color: var(--gold);
+    margin: 1.8rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.9rem; color: var(--text); }
+  .subtitle { color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; letter-spacing: 0.06em; margin-bottom: 2rem; }
+
+  /* CALLOUT BOXES */
+  .callout {
+    border-left: 3px solid var(--gold);
+    background: var(--surface2);
+    padding: 1rem 1.2rem;
+    margin: 1.4rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.key {
+    border-color: var(--accent-blue);
+  }
+  .callout.warn {
+    border-color: var(--accent-red);
+  }
+  .callout.formula {
+    border-color: var(--gold-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92rem;
+  }
+  .callout .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+  .callout.key .label { color: var(--accent-blue); }
+  .callout.warn .label { color: var(--accent-red); }
+
+  /* FORCE DIAGRAM */
+  .diagram-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+
+  /* ANIMATION CANVAS */
+  canvas { display: block; border-radius: 6px; }
+
+  .sim-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin: 1.5rem 0;
+    align-items: flex-end;
+  }
+  .control-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.07em;
+    margin-bottom: 0.35rem;
+  }
+  .control-group input[type=range] {
+    -webkit-appearance: none;
+    width: 180px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    display: block;
+  }
+  .control-group input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .control-group .val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-top: 0.3rem;
+  }
+
+  button.sim-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1.1rem;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s, color 0.2s;
+  }
+  button.sim-btn:hover { background: var(--gold); color: var(--bg); }
+
+  /* QUIZ */
+  .quiz-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.2rem 0;
+  }
+  .quiz-q p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin-bottom: 0.8rem; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.88rem;
+    padding: 0.55rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .quiz-opt:hover { border-color: var(--gold-dim); }
+  .quiz-opt.correct { border-color: var(--accent-green); background: rgba(106,158,114,0.12); color: var(--accent-green); }
+  .quiz-opt.wrong { border-color: var(--accent-red); background: rgba(192,85,74,0.1); color: var(--accent-red); }
+  .quiz-feedback {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 0.7rem;
+    min-height: 1.2em;
+    color: var(--text-muted);
+  }
+
+  /* CALCULATOR */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  @media (max-width: 580px) { .calc-grid { grid-template-columns: 1fr; } }
+  .calc-field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+  .calc-field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .calc-field input:focus { border-color: var(--gold-dim); }
+  .calc-result {
+    background: var(--surface2);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--gold);
+    min-height: 3rem;
+  }
+
+  /* STOKES TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.88rem; }
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+  }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: var(--surface2); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+
+  /* VT velocity display */
+  #vt-readout {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+  #vt-readout span { color: var(--gold); }
+
+  .eq-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: inline-block;
+    margin: 0 0.3rem;
+  }
+  .eq-formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--gold);
+  }
+  em { font-style: italic; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">Terminal Velocity</div>
+  <a onclick="show('s0')" id="nav-s0" class="active">Equilibrium</a>
+  <a onclick="show('s1')" id="nav-s1">Forces</a>
+  <a onclick="show('s2')" id="nav-s2">Viscosity</a>
+  <a onclick="show('s3')" id="nav-s3">Simulator</a>
+  <a onclick="show('s4')" id="nav-s4">Calculator</a>
+  <a onclick="show('s5')" id="nav-s5">Quiz</a>
+</nav>
+
+<!-- ============ SECTION 0: EQUILIBRIUM PREAMBLE ============ -->
+<section id="s0" class="active">
+  <h1>Equilibrium does not mean still</h1>
+  <div class="subtitle">// the conceptual foundation</div>
+
+  <p>Before a single cone is dropped or a sphere measured, you need this idea locked in.</p>
+
+  <div class="callout warn">
+    <div class="label">Common Misconception</div>
+    A common conflation: equilibrium of forces means the object is stationary. This is wrong. Equilibrium means the <strong>net force is zero</strong>. Newton's second law is <em>F = ma</em>. Zero net force means zero <em>acceleration</em>, not zero velocity.
+  </div>
+
+  <p>An object can move at constant, non-zero velocity perfectly consistent with Newton's laws, provided all forces on it are balanced. This is the first thing terminal velocity teaches.</p>
+
+  <div class="callout key">
+    <div class="label">Newton's Second Law</div>
+    <span class="eq-formula">F<sub>net</sub> = ma</span><br>
+    If <span class="eq-formula">F<sub>net</sub> = 0</span> then <span class="eq-formula">a = 0</span>, meaning velocity is <em>constant</em> (which includes constant = 0, but also constant = 60 ms<sup>-1</sup>).
+  </div>
+
+  <h2>The journey to terminal velocity</h2>
+  <p>Consider an object released from rest in a fluid (air, water, glycerol). Three stages follow:</p>
+
+  <h3>Stage 1 — Accelerating</h3>
+  <p>At the moment of release, velocity is zero so drag is zero. The only significant force is weight (downward). Net force is non-zero, acceleration is non-zero, so the object speeds up.</p>
+
+  <h3>Stage 2 — Still accelerating, but less so</h3>
+  <p>As speed increases, drag increases (drag depends on velocity). Weight remains constant. The net downward force decreases. The object still accelerates, but at a diminishing rate.</p>
+
+  <h3>Stage 3 — Terminal velocity</h3>
+  <p>At some speed, drag exactly equals weight (ignoring buoyancy for now). Net force = 0. Acceleration = 0. Velocity is constant. This constant velocity is the terminal velocity.</p>
+
+  <div class="callout">
+    <div class="label">Key Statement</div>
+    Terminal velocity is an <strong>equilibrium of forces</strong>, producing <strong>zero acceleration</strong> at <strong>non-zero constant velocity</strong>. The object is in mechanical equilibrium while moving.
+  </div>
+
+  <div class="diagram-wrap">
+    <canvas id="cvPhase" width="760" height="200"></canvas>
+  </div>
+  <p style="text-align:center; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--text-muted);">velocity vs. time — the approach to terminal velocity</p>
+</section>
+
+<!-- ============ SECTION 1: FORCES ============ -->
+<section id="s1">
+  <h1>Forces in the fluid</h1>
+  <div class="subtitle">// weight · drag · buoyancy</div>
+
+  <h2>Ignoring buoyancy (falling through air)</h2>
+  <p>For an object falling through air, the buoyant upthrust is negligible compared to weight. Two forces act:</p>
+
+  <div class="diagram-wrap">
+    <canvas id="cvForce2" width="200" height="280"></canvas>
+  </div>
+
+  <div class="callout formula">
+    <div class="label">At terminal velocity (no buoyancy)</div>
+    Weight = Drag<br>
+    mg = 6πηrv<sub>t</sub><br><br>
+    Rearranging: v<sub>t</sub> = mg / (6πηr)
+  </div>
+
+  <p>Since <em>m = ρ · V = (4/3)πr³ρ</em>, substituting gives the compact Stokes result:</p>
+
+  <div class="callout formula">
+    <div class="label">Stokes terminal velocity</div>
+    v<sub>t</sub> = (2r²ρg) / (9η)
+  </div>
+
+  <p>Terminal velocity scales with <em>r²</em> — doubling the radius quadruples the terminal speed.</p>
+
+  <h2>Including buoyancy (falling through liquid)</h2>
+  <p>When the fluid density is not negligible (a ball bearing through glycerol, a pebble through water), Archimedes' upthrust adds a third upward force.</p>
+
+  <div class="diagram-wrap">
+    <canvas id="cvForce3" width="200" height="320"></canvas>
+  </div>
+
+  <div class="callout formula">
+    <div class="label">At terminal velocity (with buoyancy)</div>
+    Weight = Upthrust + Viscous drag<br>
+    (4/3)πr³ρ<sub>obj</sub>g = (4/3)πr³ρ<sub>fluid</sub>g + 6πηrv<sub>t</sub><br><br>
+    v<sub>t</sub> = 2r²g(ρ<sub>obj</sub> − ρ<sub>fluid</sub>) / (9η)
+  </div>
+
+  <p>Only the <em>density difference</em> matters. An object denser than the fluid sinks; less dense, it rises. In both cases, the same force balance applies at the terminal speed.</p>
+
+  <h2>Viscosity data</h2>
+  <table>
+    <tr><th>Fluid</th><th>Temperature</th><th>Viscosity η (Pa·s)</th></tr>
+    <tr><td>Air</td><td>room temp</td><td>1.8 × 10⁻⁵</td></tr>
+    <tr><td>Water</td><td>20°C</td><td>1.0 × 10⁻³</td></tr>
+    <tr><td>Water</td><td>100°C</td><td>0.3 × 10⁻³</td></tr>
+    <tr><td>Blood</td><td>37°C</td><td>2.7 × 10⁻³</td></tr>
+    <tr><td>Glycerol</td><td>20°C</td><td>1.5</td></tr>
+    <tr><td>Pitch tar</td><td>room temp</td><td>~10⁸</td></tr>
+  </table>
+  <p>Note: viscosity <em>decreases</em> with temperature for liquids (faster-moving molecules slip past each other more easily). Pitch tar, the subject of the world's longest-running experiment (Queensland, Australia), drips perhaps once per decade.</p>
+</section>
+
+<!-- ============ SECTION 2: VISCOSITY ============ -->
+<section id="s2">
+  <h1>Viscosity &amp; Stokes' Law</h1>
+  <div class="subtitle">// fluid friction at the microscale</div>
+
+  <p>Viscosity η is the measure of a fluid's resistance to relative motion of its layers. When a sphere moves through a fluid, adjacent layers of fluid are dragged relative to each other — this internal friction is the viscous drag force.</p>
+
+  <div class="callout key">
+    <div class="label">Stokes' Law</div>
+    For a small sphere moving slowly through a viscous fluid (laminar flow):<br><br>
+    <span class="eq-formula">F<sub>D</sub> = 6πηrv</span><br><br>
+    where η is dynamic viscosity (Pa·s), r is the sphere radius (m), v is the speed (ms⁻¹).
+  </div>
+
+  <h2>Conditions for Stokes' Law</h2>
+  <p>Stokes' Law applies only when flow is <em>laminar</em> — smooth, layered flow with no turbulence. The Reynolds number Re = ρvr/η must be much less than 1. At higher speeds, flow becomes turbulent and drag grows as v² rather than v.</p>
+
+  <h2>Using terminal velocity to find η</h2>
+  <p>The glycerol-and-ball-bearings experiment exploits this beautifully. By measuring terminal velocity v for balls of known radius r:</p>
+
+  <div class="callout formula">
+    <div class="label">Rearranged for viscosity</div>
+    η = 2r²g(ρ<sub>steel</sub> − ρ<sub>glycerol</sub>) / (9v<sub>t</sub>)
+  </div>
+
+  <p>Plotting v<sub>t</sub> against r² gives a straight line through the origin with gradient 2g(ρ<sub>s</sub>−ρ<sub>L</sub>)/(9η). The gradient determines η directly.</p>
+
+  <h3>Why plot v vs r² and not v vs r?</h3>
+  <p>Linearisation. The physics says v ∝ r² (from Stokes + Archimedes). Plotting v against r gives a curve; plotting v against r² gives a straight line whose gradient can be measured precisely. Straight lines are always easier to fit and interpret.</p>
+
+  <div class="callout warn">
+    <div class="label">Temperature Warning</div>
+    Glycerol viscosity is strongly temperature-dependent. A few degrees of change from body heat in the tube can significantly shift results. Always record temperature at the start and end of the experiment.
+  </div>
+
+  <h2>True/False check</h2>
+  <p style="font-family:'Cormorant Garamond',serif; font-size:1.05rem;">Decide on each claim, then click to reveal:</p>
+
+  <div id="tf-container"></div>
+</section>
+
+<!-- ============ SECTION 3: SIMULATOR ============ -->
+<section id="s3">
+  <h1>Falling Sphere Simulator</h1>
+  <div class="subtitle">// watch the approach to equilibrium in real time</div>
+
+  <p>Adjust the parameters and observe how the object approaches its terminal velocity. The velocity-time curve asymptotes toward v<sub>t</sub> — it never exceeds it.</p>
+
+  <div class="sim-controls">
+    <div class="control-group">
+      <label>RADIUS r (mm)</label>
+      <input type="range" id="sr" min="0.5" max="5" step="0.1" value="2">
+      <div class="val" id="sr-v">2.0 mm</div>
+    </div>
+    <div class="control-group">
+      <label>DENSITY ρ<sub>obj</sub> (kg/m³)</label>
+      <input type="range" id="sd" min="500" max="11000" step="100" value="7860">
+      <div class="val" id="sd-v">7860 kg/m³</div>
+    </div>
+    <div class="control-group">
+      <label>FLUID VISCOSITY η (mPa·s)</label>
+      <input type="range" id="se" min="1" max="2000" step="1" value="18">
+      <div class="val" id="se-v">18 mPa·s</div>
+    </div>
+    <div class="control-group">
+      <label>FLUID DENSITY (kg/m³)</label>
+      <input type="range" id="sf" min="1" max="1300" step="10" value="1">
+      <div class="val" id="sf-v">1 kg/m³</div>
+    </div>
+    <button class="sim-btn" onclick="runSim()">▶ Run</button>
+    <button class="sim-btn" onclick="resetSim()">↺ Reset</button>
+  </div>
+
+  <div id="vt-readout">v<sub>t</sub> = <span id="vt-val">—</span> &nbsp;|&nbsp; time to 99% v<sub>t</sub> ≈ <span id="vt-time">—</span></div>
+
+  <div style="margin-top:1.2rem;">
+    <canvas id="cvSim" width="760" height="340" style="background:var(--surface); border:1px solid var(--border);"></canvas>
+  </div>
+
+  <div class="callout" style="margin-top:1.5rem;">
+    <div class="label">What to notice</div>
+    The curve is an exponential approach: steep at first (large net force, large acceleration), then flattening (drag grows, net force shrinks, acceleration falls). Terminal velocity is the asymptote — approached but never exceeded.
+  </div>
+</section>
+
+<!-- ============ SECTION 4: CALCULATOR ============ -->
+<section id="s4">
+  <h1>Stokes Calculator</h1>
+  <div class="subtitle">// terminal velocity · viscosity · drag force</div>
+
+  <h2>Terminal velocity (with buoyancy)</h2>
+  <p>Uses: v<sub>t</sub> = 2r²g(ρ<sub>obj</sub> − ρ<sub>fluid</sub>) / (9η)</p>
+
+  <div class="calc-grid">
+    <div class="calc-field"><label>RADIUS r (m)</label><input id="cr" type="number" value="0.002" step="0.0001"></div>
+    <div class="calc-field"><label>OBJECT DENSITY ρ<sub>obj</sub> (kg/m³)</label><input id="cd" type="number" value="7860"></div>
+    <div class="calc-field"><label>FLUID DENSITY ρ<sub>f</sub> (kg/m³)</label><input id="cf" type="number" value="1000"></div>
+    <div class="calc-field"><label>DYNAMIC VISCOSITY η (Pa·s)</label><input id="ce" type="number" value="0.001" step="0.0001"></div>
+  </div>
+  <button class="sim-btn" onclick="calcVt()">Calculate v<sub>t</sub></button>
+  <div class="calc-result" id="calc-vt-out">—</div>
+
+  <h2>Viscosity from experiment</h2>
+  <p>Rearranged: η = 2r²g(ρ<sub>obj</sub> − ρ<sub>fluid</sub>) / (9v<sub>t</sub>)</p>
+
+  <div class="calc-grid">
+    <div class="calc-field"><label>RADIUS r (m)</label><input id="er" type="number" value="0.002" step="0.0001"></div>
+    <div class="calc-field"><label>OBJECT DENSITY ρ<sub>obj</sub> (kg/m³)</label><input id="ed" type="number" value="7860"></div>
+    <div class="calc-field"><label>FLUID DENSITY ρ<sub>f</sub> (kg/m³)</label><input id="ef" type="number" value="1260"></div>
+    <div class="calc-field"><label>MEASURED v<sub>t</sub> (m/s)</label><input id="ev" type="number" value="0.05" step="0.001"></div>
+  </div>
+  <button class="sim-btn" onclick="calcEta()">Calculate η</button>
+  <div class="calc-result" id="calc-eta-out">—</div>
+
+  <h2>Stokes drag force</h2>
+  <p>F<sub>D</sub> = 6πηrv</p>
+  <div class="calc-grid">
+    <div class="calc-field"><label>VISCOSITY η (Pa·s)</label><input id="fr_e" type="number" value="0.001" step="0.0001"></div>
+    <div class="calc-field"><label>RADIUS r (m)</label><input id="fr_r" type="number" value="0.002" step="0.0001"></div>
+    <div class="calc-field"><label>SPEED v (m/s)</label><input id="fr_v" type="number" value="0.05" step="0.001"></div>
+  </div>
+  <button class="sim-btn" onclick="calcDrag()">Calculate F<sub>D</sub></button>
+  <div class="calc-result" id="calc-drag-out">—</div>
+</section>
+
+<!-- ============ SECTION 5: QUIZ ============ -->
+<section id="s5">
+  <h1>Check Understanding</h1>
+  <div class="subtitle">// select an answer to reveal feedback</div>
+  <div id="quiz-container"></div>
+</section>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+/* ======================================================
+   NAV
+====================================================== */
+function show(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 's0') drawPhase();
+  if (id === 's1') { drawForce2(); drawForce3(); }
+  if (id === 's3') drawSimCanvas(simData);
+}
+
+/* ======================================================
+   COLOURS
+====================================================== */
+const C = {
+  bg: '#0d0d0d', surface: '#141414', surface2: '#1c1c1c',
+  border: '#2a2a2a', gold: '#c9a84c', text: '#e8e2d4',
+  muted: '#888', blue: '#5a8fa8', red: '#c0554a', green: '#6a9e72'
+};
+
+/* ======================================================
+   PHASE CURVE (section 0)
+====================================================== */
+function drawPhase() {
+  const cv = document.getElementById('cvPhase');
+  const W = cv.width, H = cv.height;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = C.surface;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { l: 60, r: 40, t: 30, b: 40 };
+  const gW = W - pad.l - pad.r;
+  const gH = H - pad.t - pad.b;
+
+  // axes
+  ctx.strokeStyle = C.border;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + gH);
+  ctx.lineTo(pad.l + gW, pad.t + gH);
+  ctx.stroke();
+
+  // terminal velocity line
+  const vt = 0.85; // normalised
+  const yVt = pad.t + gH - vt * gH;
+  ctx.strokeStyle = C.gold;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.l, yVt); ctx.lineTo(pad.l + gW, yVt);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = C.gold;
+  ctx.font = "11px 'IBM Plex Mono', monospace";
+  ctx.fillText('vₜ (terminal velocity)', pad.l + gW - 155, yVt - 6);
+
+  // exponential curve
+  const tau = 0.18; // time constant in normalised units
+  ctx.strokeStyle = C.blue;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let i = 0; i <= gW; i++) {
+    const t = i / gW;
+    const v = vt * (1 - Math.exp(-t / tau));
+    const x = pad.l + i;
+    const y = pad.t + gH - v * gH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // labels
+  ctx.fillStyle = C.muted;
+  ctx.font = "11px 'IBM Plex Mono', monospace";
+  ctx.fillText('v', pad.l - 18, pad.t + 6);
+  ctx.fillText('t', pad.l + gW + 6, pad.t + gH + 4);
+
+  // stage annotations
+  const stages = [
+    { x: 0.1, label: '① large acceleration' },
+    { x: 0.4, label: '② decreasing acceleration' },
+    { x: 0.78, label: '③ a→0, v→vₜ' }
+  ];
+  stages.forEach(s => {
+    const tx = pad.l + s.x * gW;
+    const tv = vt * (1 - Math.exp(-s.x / tau));
+    const ty = pad.t + gH - tv * gH;
+    ctx.fillStyle = C.gold;
+    ctx.fillText(s.label, tx - 10, ty - 14);
+  });
+}
+
+/* ======================================================
+   FORCE DIAGRAMS
+====================================================== */
+function drawForceDiagram(cvId, forces, labels) {
+  const cv = document.getElementById(cvId);
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.surface;
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2;
+  const cy = H / 2;
+  const R = 28;
+
+  // sphere
+  const g = ctx.createRadialGradient(cx - 8, cy - 8, 4, cx, cy, R);
+  g.addColorStop(0, '#5a8fa8');
+  g.addColorStop(1, '#1c3344');
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // draw arrows
+  forces.forEach(f => {
+    const arrowLen = Math.abs(f.mag);
+    const dir = f.mag > 0 ? 1 : -1; // positive = down
+    const x1 = cx;
+    const y1 = dir > 0 ? cy + R : cy - R;
+    const x2 = cx;
+    const y2 = y1 + dir * arrowLen;
+
+    ctx.strokeStyle = f.color;
+    ctx.fillStyle = f.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // arrowhead
+    const ah = 8, aw = 5;
+    ctx.beginPath();
+    if (dir > 0) {
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - aw, y2 - ah);
+      ctx.lineTo(x2 + aw, y2 - ah);
+    } else {
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - aw, y2 + ah);
+      ctx.lineTo(x2 + aw, y2 + ah);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // label
+    ctx.fillStyle = f.color;
+    ctx.font = "12px 'IBM Plex Mono', monospace";
+    const lx = dir > 0 ? cx + 12 : cx + 12;
+    const ly = (y1 + y2) / 2 + 4;
+    ctx.fillText(f.label, lx, ly);
+  });
+
+  // force balance text
+  ctx.fillStyle = C.muted;
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+  ctx.fillText(labels, cx - 60, H - 10);
+}
+
+function drawForce2() {
+  drawForceDiagram('cvForce2', [
+    { mag: 65, color: C.blue, label: 'W = mg' },
+    { mag: -65, color: C.red, label: 'F_D = 6πηrv' }
+  ], 'W = F_D  →  equilibrium');
+}
+
+function drawForce3() {
+  drawForceDiagram('cvForce3', [
+    { mag: 80, color: C.blue, label: 'W = mg' },
+    { mag: -45, color: C.gold, label: 'U = ρ_f Vg' },
+    { mag: -35, color: C.red, label: 'F_D = 6πηrv' }
+  ], 'W = U + F_D  →  equilibrium');
+}
+
+/* ======================================================
+   SIMULATOR
+====================================================== */
+let simData = [];
+let animID = null;
+
+function getSimParams() {
+  const r = parseFloat(document.getElementById('sr').value) * 1e-3;
+  const rho_obj = parseFloat(document.getElementById('sd').value);
+  const eta = parseFloat(document.getElementById('se').value) * 1e-3;
+  const rho_f = parseFloat(document.getElementById('sf').value);
+  return { r, rho_obj, eta, rho_f };
+}
+
+function terminalVel(p) {
+  return 2 * p.r * p.r * 9.81 * (p.rho_obj - p.rho_f) / (9 * p.eta);
+}
+
+function computeSim(p) {
+  const g = 9.81;
+  const m = (4 / 3) * Math.PI * p.r ** 3 * p.rho_obj;
+  const k = 6 * Math.PI * p.eta * p.r; // drag coefficient
+  const vt = terminalVel(p);
+
+  // Analytical solution: v(t) = vt(1 - exp(-kt/m))
+  const tau = m / k;
+  const tEnd = tau * 6;
+  const steps = 300;
+  const data = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * tEnd;
+    const v = vt * (1 - Math.exp(-t / tau));
+    data.push({ t, v });
+  }
+  return { data, vt, tau };
+}
+
+function runSim() {
+  const p = getSimParams();
+  if (p.rho_obj <= p.rho_f) {
+    document.getElementById('vt-val').textContent = 'Object not denser than fluid';
+    return;
+  }
+  const { data, vt, tau } = computeSim(p);
+  simData = data;
+
+  const t99 = tau * Math.log(100); // time to 99% of vt
+  document.getElementById('vt-val').textContent = vt.toPrecision(3) + ' ms⁻¹';
+  document.getElementById('vt-time').textContent = t99.toPrecision(3) + ' s';
+
+  drawSimCanvas(data, vt);
+}
+
+function resetSim() {
+  simData = [];
+  document.getElementById('vt-val').textContent = '—';
+  document.getElementById('vt-time').textContent = '—';
+  const cv = document.getElementById('cvSim');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = C.surface;
+  ctx.fillRect(0, 0, cv.width, cv.height);
+}
+
+function drawSimCanvas(data, vtLine) {
+  const cv = document.getElementById('cvSim');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.fillStyle = C.surface;
+  ctx.fillRect(0, 0, W, H);
+
+  if (!data || data.length === 0) return;
+
+  const pad = { l: 60, r: 30, t: 30, b: 50 };
+  const gW = W - pad.l - pad.r;
+  const gH = H - pad.t - pad.b;
+
+  const tMax = data[data.length - 1].t;
+  const vMax = vtLine ? vtLine * 1.08 : Math.max(...data.map(d => d.v)) * 1.1;
+
+  function tx(t) { return pad.l + (t / tMax) * gW; }
+  function ty(v) { return pad.t + gH - (v / vMax) * gH; }
+
+  // grid
+  ctx.strokeStyle = C.border;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const yy = pad.t + (i / 5) * gH;
+    ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + gW, yy); ctx.stroke();
+    const v = vMax * (1 - i / 5);
+    ctx.fillStyle = C.muted;
+    ctx.font = "10px 'IBM Plex Mono', monospace";
+    ctx.fillText(v.toPrecision(2), pad.l - 50, yy + 4);
+  }
+  for (let i = 0; i <= 5; i++) {
+    const xx = pad.l + (i / 5) * gW;
+    ctx.beginPath(); ctx.moveTo(xx, pad.t); ctx.lineTo(xx, pad.t + gH); ctx.stroke();
+    const t = (i / 5) * tMax;
+    ctx.fillStyle = C.muted;
+    ctx.fillText(t.toPrecision(2), xx - 12, pad.t + gH + 16);
+  }
+
+  // axes
+  ctx.strokeStyle = C.muted;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + gH);
+  ctx.lineTo(pad.l + gW, pad.t + gH);
+  ctx.stroke();
+
+  // vt dashed
+  if (vtLine) {
+    ctx.strokeStyle = C.gold;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, ty(vtLine)); ctx.lineTo(pad.l + gW, ty(vtLine));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.gold;
+    ctx.font = "11px 'IBM Plex Mono', monospace";
+    ctx.fillText('vₜ = ' + vtLine.toPrecision(3) + ' ms⁻¹', pad.l + gW - 170, ty(vtLine) - 6);
+  }
+
+  // curve
+  ctx.strokeStyle = C.blue;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = tx(d.t), y = ty(d.v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = C.text;
+  ctx.font = "12px 'IBM Plex Mono', monospace";
+  ctx.fillText('v (ms⁻¹)', pad.l - 58, pad.t - 10);
+  ctx.fillText('t (s)', pad.l + gW + 6, pad.t + gH + 4);
+}
+
+// slider listeners
+['sr','sd','se','sf'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const val = parseFloat(el.value);
+    const suffixes = { sr: ' mm', sd: ' kg/m³', se: ' mPa·s', sf: ' kg/m³' };
+    document.getElementById(id + '-v').textContent = val + suffixes[id];
+  });
+});
+
+/* ======================================================
+   CALCULATORS
+====================================================== */
+function fmtSci(v) {
+  if (Math.abs(v) === 0) return '0';
+  const exp = Math.floor(Math.log10(Math.abs(v)));
+  if (Math.abs(exp) < 4) return v.toPrecision(4);
+  const mant = (v / Math.pow(10, exp)).toPrecision(3);
+  return mant + ' × 10' + superscript(exp);
+}
+function superscript(n) {
+  const map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+  return String(n).split('').map(c => map[c] || c).join('');
+}
+
+function calcVt() {
+  const r = parseFloat(document.getElementById('cr').value);
+  const rho_o = parseFloat(document.getElementById('cd').value);
+  const rho_f = parseFloat(document.getElementById('cf').value);
+  const eta = parseFloat(document.getElementById('ce').value);
+  const vt = 2 * r * r * 9.81 * (rho_o - rho_f) / (9 * eta);
+  document.getElementById('calc-vt-out').innerHTML =
+    `v<sub>t</sub> = 2r²g(ρ_obj − ρ_fluid) / 9η = <strong>${fmtSci(vt)} ms⁻¹</strong>`;
+}
+
+function calcEta() {
+  const r = parseFloat(document.getElementById('er').value);
+  const rho_o = parseFloat(document.getElementById('ed').value);
+  const rho_f = parseFloat(document.getElementById('ef').value);
+  const v = parseFloat(document.getElementById('ev').value);
+  const eta = 2 * r * r * 9.81 * (rho_o - rho_f) / (9 * v);
+  document.getElementById('calc-eta-out').innerHTML =
+    `η = 2r²g(ρ_obj − ρ_fluid) / (9v<sub>t</sub>) = <strong>${fmtSci(eta)} Pa·s</strong>`;
+}
+
+function calcDrag() {
+  const eta = parseFloat(document.getElementById('fr_e').value);
+  const r = parseFloat(document.getElementById('fr_r').value);
+  const v = parseFloat(document.getElementById('fr_v').value);
+  const F = 6 * Math.PI * eta * r * v;
+  document.getElementById('calc-drag-out').innerHTML =
+    `F<sub>D</sub> = 6πηrv = <strong>${fmtSci(F)} N</strong>`;
+}
+
+/* ======================================================
+   TRUE / FALSE
+====================================================== */
+const tfItems = [
+  { stmt: "Large ball bearings fall through glycerol faster than smaller ones of the same material.", ans: true, explain: "Correct. v_t ∝ r², so larger radius gives higher terminal velocity." },
+  { stmt: "The acceleration of a sphere falling through a fluid is constant throughout the fall.", ans: false, explain: "False. Acceleration decreases from g (at release) toward zero as drag increases with speed." },
+  { stmt: "The viscosity of a liquid can be used to infer its temperature.", ans: true, explain: "Correct. For most liquids viscosity decreases with temperature — measuring η can give temperature." },
+  { stmt: "At terminal velocity the net force on the falling object is zero.", ans: true, explain: "Correct. Forces are in equilibrium: Weight = Drag (+ Upthrust if applicable)." },
+];
+
+function buildTF() {
+  const c = document.getElementById('tf-container');
+  if (!c) return;
+  tfItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.innerHTML = `
+      <p>${item.stmt}</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="revealTF(${i}, true, this)">True</button>
+        <button class="quiz-opt" onclick="revealTF(${i}, false, this)">False</button>
+      </div>
+      <div class="quiz-feedback" id="tf-fb-${i}"></div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+function revealTF(i, choice, btn) {
+  const item = tfItems[i];
+  const fb = document.getElementById('tf-fb-' + i);
+  const opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+  if (choice === item.ans) {
+    btn.classList.add('correct');
+    fb.textContent = '✓ ' + item.explain;
+    fb.style.color = 'var(--accent-green)';
+  } else {
+    btn.classList.add('wrong');
+    fb.textContent = '✗ ' + item.explain;
+    fb.style.color = 'var(--accent-red)';
+  }
+}
+
+/* ======================================================
+   QUIZ
+====================================================== */
+const quizData = [
+  {
+    q: "An object falls at constant speed through a fluid. Which statement about the forces on it is correct?",
+    opts: [
+      "Weight is greater than drag",
+      "Drag is greater than weight",
+      "Weight equals drag; net force is zero",
+      "All forces are zero"
+    ],
+    ans: 2,
+    explain: "Constant velocity means zero acceleration, therefore zero net force. Weight = Drag (plus upthrust if relevant)."
+  },
+  {
+    q: "Stokes' Law gives drag force as F = 6πηrv. If the sphere's radius is doubled, how does the terminal velocity change (assuming same density and fluid)?",
+    opts: [
+      "Doubles",
+      "Quadruples",
+      "Halves",
+      "Stays the same"
+    ],
+    ans: 1,
+    explain: "Terminal velocity v_t = 2r²g(ρ_obj−ρ_f)/(9η). Doubling r multiplies v_t by 4."
+  },
+  {
+    q: "A ball bearing reaches terminal velocity in glycerol. The glycerol warms slightly. What happens to the terminal velocity?",
+    opts: [
+      "Decreases — warmer fluid has higher viscosity",
+      "Increases — warmer fluid has lower viscosity",
+      "Stays the same — temperature doesn't affect viscosity",
+      "Increases — warmer fluid has higher density"
+    ],
+    ans: 1,
+    explain: "For liquids, viscosity decreases with temperature. Lower η means higher v_t (v_t ∝ 1/η)."
+  },
+  {
+    q: "In the Stokes formula v_t = 2r²g(ρ_obj − ρ_fluid)/(9η), why does the density difference appear rather than just ρ_obj?",
+    opts: [
+      "To account for turbulence at high speed",
+      "Because Archimedes' upthrust reduces the effective driving force",
+      "Because the formula only works for gases",
+      "It is a dimensional coincidence"
+    ],
+    ans: 1,
+    explain: "The fluid exerts an upthrust equal to the weight of displaced fluid (ρ_fluid × V × g). The net downward force is (ρ_obj − ρ_fluid)Vg, so only the density difference matters."
+  },
+  {
+    q: "Why is it better to plot v against r² rather than v against r when finding viscosity from the Stokes experiment?",
+    opts: [
+      "To avoid negative values",
+      "Because the relationship is v ∝ r², plotting v vs r² linearises it — a straight line is easier to fit and interpret",
+      "Because the radius is always unknown",
+      "To cancel out the gravitational constant"
+    ],
+    ans: 1,
+    explain: "Since v ∝ r², plotting v vs r gives a curve. Plotting v vs r² gives a straight line through the origin with gradient 2g(ρ_s − ρ_L)/(9η), directly giving η from the gradient."
+  },
+  {
+    q: "Felix Baumgartner's jump from ~39 km (edge of space): early in the jump his speed kept increasing beyond what it would be at sea level. Why?",
+    opts: [
+      "He was accelerating due to gravity being stronger at altitude",
+      "The air was much less dense at altitude so drag was far smaller, allowing higher terminal velocity",
+      "He had a jet pack",
+      "Temperature was lower so he fell faster"
+    ],
+    ans: 1,
+    explain: "At ~39 km altitude the air density is roughly 1% of sea level. Much lower ρ_fluid means much lower drag for a given speed, so v_t is vastly higher. As he fell into denser air, drag increased and he decelerated."
+  }
+];
+
+function buildQuiz() {
+  const c = document.getElementById('quiz-container');
+  if (!c) return;
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.innerHTML = `
+      <p>Q${i+1}. ${q.q}</p>
+      <div class="quiz-opts">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="answerQ(${i},${j},this)">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qfb-${i}"></div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+function answerQ(qi, choice, btn) {
+  const q = quizData[qi];
+  const fb = document.getElementById('qfb-' + qi);
+  const opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+  if (choice === q.ans) {
+    btn.classList.add('correct');
+    fb.textContent = '✓ ' + q.explain;
+    fb.style.color = 'var(--accent-green)';
+  } else {
+    btn.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.textContent = '✗ ' + q.explain;
+    fb.style.color = 'var(--accent-red)';
+  }
+}
+
+/* ======================================================
+   INIT
+====================================================== */
+window.addEventListener('load', () => {
+  drawPhase();
+  buildTF();
+  buildQuiz();
+  runSim();
+});
+</script>
+</body>
+</html>
