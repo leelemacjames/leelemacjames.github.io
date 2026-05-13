@@ -690,10 +690,11 @@
     <div class="validation" id="valid-msg"></div>
     <div class="preset-row">
       <button onclick="loadPreset(5,8,10)">5, 8, 10</button>
-      <button onclick="loadPreset(1,5,10)">1, 5, 10 (Jacobsthal)</button>
+      <button onclick="loadPreset(1,5,10)">1, 5, 10 · Jacobsthal-shifted</button>
       <button onclick="loadPreset(2,3,5)">2, 3, 5</button>
-      <button onclick="loadPreset(7,12,20)">7, 12, 20</button>
-      <button onclick="loadPreset(1,2,3)">1, 2, 3</button>
+      <button onclick="loadPreset(10,11,12)">10, 11, 12 · g=0</button>
+      <button onclick="loadPreset(1,2,10)">1, 2, 10 · large −g</button>
+      <button onclick="loadPreset(1,9,10)">1, 9, 10 · large +g</button>
     </div>
   </div>
   <div>
@@ -814,6 +815,8 @@
   <div class="caption">the Jacobsthal numbers, in closed form</div>
 </div>
 
+<p>This is exactly our formula with <span class="ink">T = 1, g = −1</span>. So Jacobsthal is the canonical case of our family. (No actual integer triple realises T = 1 and g = −1 simultaneously — the Jacobsthal sequence is the algebraic <em>generator</em>, not a literal orbit.)</p>
+
 <p>Compare to ours. Our middle sequence is</p>
 
 <div class="closed-form">
@@ -821,11 +824,54 @@
   <div class="caption">an affine combination of 2<sup>n</sup> and (−1)<sup>n</sup></div>
 </div>
 
-<p>Both sequences live in the same two-dimensional space spanned by 2<sup>n</sup> and (−1)<sup>n</sup>. So the orbit of every triple under pair-sum iteration is a linear combination of these two basic sequences, and the Jacobsthal numbers are simply one particular member of this family.</p>
+<p>Both sequences live in the same two-dimensional space spanned by 2<sup>n</sup> and (−1)<sup>n</sup>. The orbit of every triple under pair-sum iteration is a linear combination of these two basic sequences. The two coefficients <span class="ink">T/3</span> and <span class="ink">g/3</span> determine which member of this family you've landed on.</p>
+
+<h3>When the orbit hits a shifted Jacobsthal sequence</h3>
+
+<p>For the orbit to match <em>shifted</em> Jacobsthal numbers J<sub>n+k</sub>, we need</p>
+
+<div class="closed-form">
+  <span class="ink">b<sub>n</sub> = J<sub>n+k</sub> = (2<sup>n+k</sup> − (−1)<sup>n+k</sup>) / 3 = (2<sup>k</sup> · 2<sup>n</sup> − (−1)<sup>k</sup> · (−1)<sup>n</sup>) / 3</span>
+  <div class="caption">the condition for a Jacobsthal alignment</div>
+</div>
+
+<p>Matching coefficients with our formula: this happens precisely when <span class="ink">T = 2<sup>k</sup></span> and <span class="ink">g = −(−1)<sup>k</sup></span>, i.e. when T is a power of 2 and g has the right sign parity. The preset <strong>(1, 5, 10)</strong> has T = 16 = 2<sup>4</sup> and g = −1, so it lands on J<sub>n+4</sub> = 5, 11, 21, 43, 85, 171, … — the middles match J<sub>4</sub>, J<sub>5</sub>, J<sub>6</sub>, J<sub>7</sub>, J<sub>8</sub>, J<sub>9</sub> precisely.</p>
 
 <div class="panel story">
-  <p>Try the preset triple <strong>(1, 5, 10)</strong>. Its sum is T = 16 and its initial gap difference is g = (b − a) − (c − b) = 4 − 5 = −1. The middle sequence is 5, 11, 21, 43, 85, ... — exactly J<sub>4</sub>, J<sub>5</sub>, J<sub>6</sub>, J<sub>7</sub>, J<sub>8</sub>, the Jacobsthal numbers themselves, shifted. The middle sequence of <em>that particular triple</em> is the Jacobsthal sequence, full stop. Other triples are Jacobsthal-flavoured blends.</p>
+  <p>So Jacobsthal alignments are not rare. Whenever the triple sum is a power of 2 and the gap difference is ±1 with the right parity, the orbit lands on shifted Jacobsthal numbers. The other small case worth knowing: <strong>(2, 3, 5)</strong> has T = 10, g = −1, so its middle sequence is (10 · 2<sup>n</sup> − (−1)<sup>n</sup>) / 3 = 3, 7, 13, 27, 53, 107, … which is <em>not</em> Jacobsthal but lives in the same family — same g but T ≠ 2<sup>k</sup>.</p>
 </div>
+
+<h3>The two-parameter family — what T and g actually control</h3>
+
+<p>Every orbit is pinned by two numbers, T and g. They play distinct roles. T sets the <em class="term">exponential growth</em>: the sequence grows like (T/3) · 2<sup>n</sup>. g sets the <em class="term">amplitude of the wobble</em>: the oscillation around the trend has amplitude |g/3|.</p>
+
+<p>The ratio |g|/T tells you how visible the wobble is relative to the trend. When |g|/T is tiny, the sequence looks like clean doubling. When |g|/T is large, the oscillation is conspicuous.</p>
+
+<table class="triples" style="margin-top: 18px;">
+  <thead>
+    <tr><th>case</th><th style="text-align:right;">T</th><th style="text-align:right;">g</th><th style="text-align:right;">|g|/T</th><th>character</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="step">(10, 11, 12) — equal gaps</td><td>33</td><td>0</td><td>0</td><td>pure doubling, no wobble</td></tr>
+    <tr><td class="step">(5, 8, 10)</td><td>23</td><td>+1</td><td>0.043</td><td>nearly pure doubling, tiny wobble</td></tr>
+    <tr><td class="step">(1, 5, 10) — Jacobsthal</td><td>16</td><td>−1</td><td>0.063</td><td>nearly pure doubling, tiny wobble</td></tr>
+    <tr><td class="step">(1, 2, 3)</td><td>6</td><td>0</td><td>0</td><td>pure doubling</td></tr>
+    <tr><td class="step">(1, 2, 10) — extreme right gap</td><td>13</td><td>−7</td><td>0.538</td><td>visible large wobble</td></tr>
+    <tr><td class="step">(1, 9, 10) — extreme left gap</td><td>20</td><td>+7</td><td>0.350</td><td>visible large wobble</td></tr>
+  </tbody>
+</table>
+
+<p>Try those extreme presets in the controls above and watch what happens to the chart. The orbit still doubles in trend, but the alternating wobble becomes a real feature of the line, not a footnote.</p>
+
+<h3>The boundary: when does |g| approach T?</h3>
+
+<p>For a triple with strictly positive values and a &lt; b &lt; c, the inequality <span class="ink">|g| &lt; T</span> always holds. The proof is direct: |g| = |2b − a − c| ≤ max(2b − a − c, a + c − 2b). For positive a, b, c with a &lt; b &lt; c, both quantities are smaller than a + b + c = T. Equality would require some of a, b, c to be zero or negative.</p>
+
+<div class="panel story">
+  <p>This is the algebraic statement that <em class="term">the trend always dominates the wobble</em>. The middle sequence b<sub>n</sub> = (T · 2<sup>n</sup> + g · (−1)<sup>n</sup>) / 3 stays positive for all n precisely because |g| &lt; T. The positivity of the triple and the dominance of the exponential trend are the <em>same constraint</em>. Step outside that boundary — by allowing negative or zero values — and the sequence can develop strange behaviour like passing through zero.</p>
+</div>
+
+<p>So the (T, g) parameter plane has a clean structure: the strip <span class="ink">|g| &lt; T</span> contains every realisable orbit from a positive ordered triple. The line g = 0 is the spine of pure doubling. Lines of constant T or constant g are families of orbits with shared growth rate or shared wobble. The Jacobsthal numbers and their shifts are an arithmetic progression of distinguished points at T = 2<sup>k</sup>, g = ±1.</p>
 
 <h3>Chart of the three sequences</h3>
 
