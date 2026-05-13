@@ -435,6 +435,80 @@
   .ink { color: var(--gold); font-family: var(--mono); font-size: 0.96em; }
   em.term { color: var(--gold); font-style: italic; font-family: var(--serif); }
 
+  /* Eigendecomposition display */
+  .eigen-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+  @media (min-width: 760px) {
+    .eigen-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .eigen-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    border-top: 2px solid;
+  }
+  .eigen-card.lam2 { border-top-color: #c9a84c; }
+  .eigen-card.lam1 { border-top-color: #7a9a6d; }
+  .eigen-card.lamneg { border-top-color: #b8554a; }
+  .eigen-card .eig-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .eigen-card .eig-value {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  .eigen-card.lam2 .eig-value { color: #c9a84c; }
+  .eigen-card.lam1 .eig-value { color: #7a9a6d; }
+  .eigen-card.lamneg .eig-value { color: #b8554a; }
+  .eigen-card .eig-vec {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .eigen-card .eig-meaning {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .eigen-card .eig-behaviour {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* Component evolution diagram */
+  .eigen-evolve {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 22px;
+    margin: 22px 0;
+  }
+  .eigen-evolve svg { display: block; margin: 0 auto; width: 100%; max-width: 880px; height: auto; }
+  .eigen-evolve .ev-caption {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+
   footer {
     border-top: 1px solid var(--rule);
     margin-top: 80px;
@@ -901,9 +975,75 @@
   <p>This is a small but real example of a deep mathematical principle: <strong>self-similarity requires balance</strong>. Iterating a transformation needs the output to be of the same type as the input, and that is a hard combinatorial constraint. The reason fractals exist is that the scaling map is a self-map. The reason renormalisation works is that the renormalisation step is a self-map. Triple iteration works for exactly the same reason: pair-sum balances against itself only at n = 3.</p>
 </div>
 
-<h3>What the orbit looks like geometrically</h3>
+<h3>The three eigenmodes of the iteration</h3>
 
-<p>Plot the three values of each triple as a point in 3-space (or as three points on the number line). The iteration is a linear map (in the affine sense) with eigenvalues 2, 2, and a sign-related smaller piece. The triples lie along a one-dimensional ray of growth modulated by a periodic oscillation in the gap structure. It is the simplest possible non-trivial discrete dynamical system, and it lives natively inside the Year 7 Sums in Pairs investigation, waiting for any pupil with the curiosity to ask "what if I just keep going?"</p>
+<p>The iteration <span class="ink">(a, b, c) → (a+b, a+c, b+c)</span> is a linear map on ℝ³. Its matrix is</p>
+
+<div class="closed-form">
+  <span class="ink">M = [1 1 0 ; 1 0 1 ; 0 1 1]</span>
+  <div class="caption">rows: each new value as a sum of old values</div>
+</div>
+
+<p>The matrix has three eigenvalues and three eigenvectors, and they are <em class="term">exactly the three stories we have already told</em>, sitting one in each eigenspace. The whole iteration decomposes into three independent motions along three fixed directions.</p>
+
+<div class="eigen-grid">
+  <div class="eigen-card lam2">
+    <div class="eig-label">EIGENVALUE</div>
+    <div class="eig-value">λ = 2</div>
+    <div class="eig-vec">eigenvector (1, 1, 1)</div>
+    <div class="eig-meaning">The growth direction — "all together"</div>
+    <div class="eig-behaviour">component doubles each step · this is T → 2T</div>
+  </div>
+  <div class="eigen-card lam1">
+    <div class="eig-label">EIGENVALUE</div>
+    <div class="eig-value">λ = 1</div>
+    <div class="eig-vec">eigenvector (1, 0, −1)</div>
+    <div class="eig-meaning">The span direction — "spread"</div>
+    <div class="eig-behaviour">component fixed forever · this is c − a invariant</div>
+  </div>
+  <div class="eigen-card lamneg">
+    <div class="eig-label">EIGENVALUE</div>
+    <div class="eig-value">λ = −1</div>
+    <div class="eig-vec">eigenvector (1, −2, 1)</div>
+    <div class="eig-meaning">The gap-difference direction — "lopsidedness"</div>
+    <div class="eig-behaviour">component flips sign each step · this is g → −g</div>
+  </div>
+</div>
+
+<p>Every starting triple (a, b, c) decomposes uniquely as a sum of components along these three eigenvectors. After n steps, each component is multiplied by its eigenvalue raised to the n-th power. Since the eigenvalues are 2, 1, and −1, this gives three terms with growth factors <span class="ink">2<sup>n</sup>, 1, (−1)<sup>n</sup></span> — and these are precisely the building blocks of our closed form.</p>
+
+<div class="eigen-evolve">
+  <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" id="eigen-svg"></svg>
+  <div class="ev-caption">Each step decomposed: λ=2 component (gold) doubles · λ=1 component (green) sits still · λ=−1 component (red) flips</div>
+</div>
+
+<h3>The closed form, properly understood</h3>
+
+<p>Expanding the eigendecomposition for the middle coordinate b alone gives the formula we already derived. The (1,1,1) component contributes <span class="ink">(T/3) · 2<sup>n</sup></span>. The (1,0,−1) component contributes nothing to b (its middle entry is 0). The (1,−2,1) component contributes <span class="ink">(g/3) · (−1)<sup>n</sup></span> with the right sign convention. Adding:</p>
+
+<div class="closed-form">
+  <span class="ink">b<sub>n</sub> = (T · 2<sup>n</sup> + g · (−1)<sup>n</sup>) / 3</span>
+  <div class="caption">the closed form, now in its proper home as an eigenmode sum</div>
+</div>
+
+<p>The same exercise gives the minimum and maximum sequences. The decomposition of (a, b, c) in the eigenbasis has coefficients (T/3, −S/2, −g/6) where S = c − a, and each coordinate of the triple picks up a different combination:</p>
+
+<div class="closed-form">
+  <span class="ink">a<sub>n</sub> = T·2<sup>n</sup>/3 &nbsp;−&nbsp; S/2 &nbsp;−&nbsp; g·(−1)<sup>n</sup>/6</span><br>
+  <span class="ink">b<sub>n</sub> = T·2<sup>n</sup>/3 &nbsp;+&nbsp; g·(−1)<sup>n</sup>/3</span><br>
+  <span class="ink">c<sub>n</sub> = T·2<sup>n</sup>/3 &nbsp;+&nbsp; S/2 &nbsp;−&nbsp; g·(−1)<sup>n</sup>/6</span>
+  <div class="caption">all three sequences, decomposed into the three eigenmodes</div>
+</div>
+
+<p>Notice the structure. The growth term T·2<sup>n</sup>/3 is the same in all three — they share the doubling. The constant ±S/2 separates the minima and maxima from the middle (which has no constant term because the eigenvector (1, 0, −1) has a zero middle entry). The oscillation term hits the middle harder than the extremes — coefficient 1/3 versus 1/6 — because the eigenvector (1, −2, 1) places double weight on the middle entry.</p>
+
+<p>Subtract c<sub>n</sub> − a<sub>n</sub> and the growth and oscillation terms vanish, leaving exactly S. The span invariance falls out of the algebra immediately, because the eigenvector (1, 0, −1) is the only one with a non-zero c − a component, and its eigenvalue is 1.</p>
+
+<div class="panel story">
+  <p>Three eigenvalues. Three independent stories. <strong>λ=2 doubles, λ=1 fixes, λ=−1 flips.</strong> The orbit of any triple is the sum of three motions along three fixed axes in ℝ³, each evolving according to its own simple rule. The closed form is not a clever algebraic trick — it is the eigendecomposition of a 3×3 matrix written out long. Every triple iteration ever performed is a particular trajectory in this three-axis decomposition. The triple just sets the initial coefficients.</p>
+</div>
+
+<p>This is the simplest possible non-trivial discrete dynamical system on ℝ³ with three distinct real eigenvalues. It lives natively inside the Year 7 Sums in Pairs investigation, waiting for any pupil with the curiosity to ask "what if I just keep going?"</p>
 </section>
 
 </main>
@@ -960,6 +1100,7 @@
     renderFormulaSpecific(a, b, c, seq);
     renderSign(a, b, c);
     renderChart(seq);
+    renderEigen(a, b, c, seq);
   }
 
   function renderTable(seq) {
@@ -1079,6 +1220,102 @@
 
     // X axis label
     svgContent += `<text x="${W/2}" y="${H-6}" fill="#9a9385" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">step n</text>`;
+
+    svg.innerHTML = svgContent;
+  }
+
+  function renderEigen(a, b, c, seq) {
+    const svg = document.getElementById('eigen-svg');
+    if (!svg) return;
+
+    const T = a + b + c;
+    const S = c - a;
+    const g = 2*b - a - c;
+
+    // Eigenmode components (these are the coefficients in the decomposition)
+    // α = T/3 (along (1,1,1))     -> contributes α·2^n to each coord
+    // β = -S/2 (along (1,0,-1))   -> stays β, contributes (β, 0, -β)
+    // γ = -g/6 (along (1,-2,1))   -> contributes γ(-1)^n to each multiplied by (1,-2,1)
+    const alpha = T / 3;
+    const beta = -S / 2;
+    const gamma = -g / 6;
+
+    const N = seq.length;
+    const W = 880, H = 360;
+    const padL = 70, padR = 30, padTop = 22, padB = 50;
+    const colW = (W - padL - padR) / N;
+
+    // Stacked rows: 3 rows for 3 eigenmodes, each row gets ~ (H - padTop - padB) / 3 height
+    const rowH = (H - padTop - padB) / 3;
+    const rowYs = [padTop, padTop + rowH, padTop + 2 * rowH];
+
+    // Compute max magnitudes across rows for scaling
+    // λ=2 row: alpha * 2^n
+    const lam2Vals = [];
+    for (let n = 0; n < N; n++) lam2Vals.push(alpha * Math.pow(2, n));
+    const lam2Max = Math.max(...lam2Vals.map(Math.abs), 1);
+
+    // λ=1 row: constant beta
+    const lam1Max = Math.max(Math.abs(beta), 1);
+
+    // λ=-1 row: gamma * (-1)^n, magnitude |gamma|
+    const lamNegMax = Math.max(Math.abs(gamma), 1);
+
+    let svgContent = '';
+
+    // Background row dividers and labels
+    const rowLabels = [
+      { lbl: 'λ = 2', col: '#c9a84c', valFn: n => alpha * Math.pow(2, n), max: lam2Max, story: 'doubles' },
+      { lbl: 'λ = 1', col: '#7a9a6d', valFn: n => beta, max: lam1Max, story: 'fixed' },
+      { lbl: 'λ = −1', col: '#b8554a', valFn: n => gamma * Math.pow(-1, n), max: lamNegMax, story: 'flips' }
+    ];
+
+    rowLabels.forEach((row, ri) => {
+      const yTop = rowYs[ri];
+      const yMid = yTop + rowH / 2;
+      const yBot = yTop + rowH;
+
+      // Row label
+      svgContent += `<text x="${padL - 12}" y="${yMid - 6}" fill="${row.col}" font-family="IBM Plex Mono" font-size="12" text-anchor="end">${row.lbl}</text>`;
+      svgContent += `<text x="${padL - 12}" y="${yMid + 9}" fill="#9a9385" font-family="IBM Plex Mono" font-size="9" text-anchor="end" letter-spacing="0.08em">${row.story.toUpperCase()}</text>`;
+
+      // Zero line for this row
+      svgContent += `<line x1="${padL}" y1="${yMid}" x2="${W - padR}" y2="${yMid}" stroke="#2a2a2a" stroke-width="1" stroke-dasharray="2,3"/>`;
+
+      // Top divider
+      if (ri > 0) {
+        svgContent += `<line x1="${padL}" y1="${yTop}" x2="${W - padR}" y2="${yTop}" stroke="#1c1c1c" stroke-width="1"/>`;
+      }
+
+      // Bars for each step
+      for (let n = 0; n < N; n++) {
+        const v = row.valFn(n);
+        const x = padL + colW * (n + 0.5);
+        const barW = Math.min(colW * 0.55, 28);
+        // For λ=2 (always positive growth), bar goes up from midline by full magnitude
+        // For λ=1 (constant, could be ±), bar goes up or down
+        // For λ=-1 (alternates), bar goes up or down based on sign
+        const halfH = rowH * 0.4; // max bar reach from midline
+        const barH = Math.min(Math.abs(v) / row.max, 1) * halfH;
+        const yStart = v >= 0 ? yMid - barH : yMid;
+        const yEnd = v >= 0 ? yMid : yMid + barH;
+        svgContent += `<rect x="${x - barW/2}" y="${yStart}" width="${barW}" height="${yEnd - yStart}" fill="${row.col}" opacity="0.85"/>`;
+        // Value label
+        const labelY = v >= 0 ? yStart - 4 : yEnd + 12;
+        const labelText = (Math.abs(v) < 1000) ? v.toFixed(1).replace(/\.0$/, '') : v.toFixed(0);
+        svgContent += `<text x="${x}" y="${labelY}" fill="${row.col}" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">${labelText}</text>`;
+      }
+    });
+
+    // X-axis labels (step numbers)
+    for (let n = 0; n < N; n++) {
+      const x = padL + colW * (n + 0.5);
+      svgContent += `<text x="${x}" y="${H - padB + 16}" fill="#9a9385" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">${n}</text>`;
+    }
+    svgContent += `<text x="${(W + padL - padR) / 2}" y="${H - 8}" fill="#9a9385" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" letter-spacing="0.1em">STEP n</text>`;
+
+    // Title row showing the decomposition
+    svgContent += `<text x="${W/2}" y="12" fill="#9a9385" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" letter-spacing="0.1em">EIGENMODE CONTRIBUTIONS · α=${alpha.toFixed(2)} · β=${beta.toFixed(2)} · γ=${gamma.toFixed(2)}</text>`;
 
     svg.innerHTML = svgContent;
   }
