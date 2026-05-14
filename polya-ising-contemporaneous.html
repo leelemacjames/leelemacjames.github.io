@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Networked Pólya — A Reinforced Ising Lattice</title>
+<title>Networked Pólya — Synchronous Baseline (fraction coupling)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
 
@@ -255,7 +255,7 @@
 
 <nav>
   <span class="title">Networked Pólya</span>
-  <span class="sub">Reinforced Ising Lattice</span>
+  <span class="sub">Synchronous Baseline · Fraction Coupling</span>
 </nav>
 
 <header>
@@ -278,7 +278,7 @@
 
     <div class="panel">
       <h2>Controls</h2>
-      <p class="note">J is the Ising coupling. At J=0 every urn is independent. μ sets how fast the neighbour field forgets: μ=1 couples to neighbours' last draw (annealed), low μ averages many recent draws (quenched).</p>
+      <p class="note">J is the Ising coupling. At J=0 every urn is independent.</p>
       <div class="controls">
         <div class="ctrl">
           <label>Coupling J <span class="val" id="v-J">1.20</span></label>
@@ -291,14 +291,6 @@
         <div class="ctrl">
           <label>Pólya / Ising mix w <span class="val" id="v-w">0.50</span></label>
           <input type="range" id="w" min="0" max="1" step="0.05" value="0.5" />
-        </div>
-        <div class="ctrl">
-          <label>Neighbour memory μ <span class="val" id="v-mu">0.50</span></label>
-          <input type="range" id="mu" min="0.02" max="1" step="0.02" value="0.5" />
-        </div>
-        <div class="ctrl">
-          <label>Coupling field <span class="val" id="v-field">event</span></label>
-          <button id="btn-field" style="width:100%">event field — neighbours' m_j</button>
         </div>
         <div class="ctrl">
           <label>Speed <span class="val" id="v-spd">6</span></label>
@@ -319,7 +311,7 @@
     <canvas id="history" width="900" height="220"></canvas>
     <div class="legend">
       <span><i style="background:#c9a84c"></i>tracked site fraction</span>
-      <span><i style="background:#5a6a8a"></i>neighbour event field (drives the Ising term)</span>
+      <span><i style="background:#5a6a8a"></i>local neighbour field (drives the Ising term)</span>
       <span><i style="background:#3a3a3a"></i>the 0.5 line</span>
     </div>
   </div>
@@ -329,9 +321,7 @@
     <p>Every site <code>i</code> stores two integers: <code>b_i</code> black balls drawn so far, and <code>n_i</code> total draws. Its Pólya fraction is the obvious thing, <code>b_i / n_i</code>, and it carries the entire path history in a single number.</p>
     <p>At each step the site computes a draw probability that interpolates between memory and locality:</p>
     <div class="eq">p_i = (1 - w) · (b_i / n_i) + w · σ(J · h_i)</div>
-    <p>Here <code>h_i</code> is the local field. Rather than reading the neighbours' frozen urn fractions, each site keeps an <span class="term">event memory</span> <code>m_j</code> — an exponential moving average of its own recent draws, in spin units. The field is the sum of the four neighbours' <code>m_j</code>, so a neighbourhood that has <em>recently been drawing</em> black pushes <code>h_i</code> positive. The function <code>σ</code> is the logistic squashing that turns that field into a probability, and this is exactly the Ising coupling: nearest-neighbour, alignment-favouring, temperature-controlled. The coupling <code>J</code> plays the role of inverse temperature.</p>
-    <p>The memory rate <code>μ</code> sets how the social field anneals. At <code>μ = 1</code> the field is just the neighbours' last draw — refreshed entirely by recent stochastic events, highly annealed, free to fluctuate. As <code>μ</code> falls the field averages more and more past draws, becoming sluggish and quenched, closer in spirit to the old frozen-fraction coupling. Personal urn memory stays local; only the social channel is annealed.</p>
-    <p>The <span class="term">coupling field</span> toggle makes the contrast explicit. In <em>event</em> mode the field reads neighbours' <code>m_j</code>, the annealed event memory above. In <em>fraction</em> mode it reverts to the original construction — neighbours' centred urn fractions <code>2·(b_j/n_j) − 1</code>, a frozen accumulated record that only ever drifts, never refreshes. Flip between the two on a running lattice and watch what happens to the domain boundaries: the fraction field pins them, the event field lets them breathe.</p>
+    <p>Here <code>h_i</code> is the local field, the sum over the four neighbours of their centred fractions <code>(2·frac − 1)</code>, so a neighbourhood that leans black pushes <code>h_i</code> positive. The function <code>σ</code> is the logistic squashing that turns that field into a probability, and this is exactly the Ising coupling: nearest-neighbour, alignment-favouring, temperature-controlled. The coupling <code>J</code> plays the role of inverse temperature.</p>
     <p>The site then draws a colour with probability <code>p_i</code> and reinforces. Rather than always adding one ball, it adds <code>r</code> worth of a ball, so <code>r</code> tunes how sharply the past grips the future. Small <code>r</code> keeps sites pliable; large <code>r</code> means the first few draws are nearly destiny.</p>
 
     <h3>What the three regimes look like</h3>
@@ -340,7 +330,7 @@
     <p>The middle is the point of the construction. There, a domain that forms early gets written into the path histories of all its sites, and that written-in memory resists the neighbour pressure that would otherwise erode the boundary. Domains coarsen, then freeze before they finish. The lattice keeps a record of its own youth.</p>
 
     <h3>Reading it as a Python loop</h3>
-    <p class="muted">If you want to rebuild this in NumPy, keep three arrays: <code>b</code>, <code>n</code>, and an event field <code>m</code>. Each step: convolve <code>m</code> with a four-neighbour kernel to get <code>h</code>, form <code>p = (1-w)*(b/n) + w*sigmoid(J*h)</code>, draw <code>rand &lt; p</code> for the whole grid at once, then <code>b += r*draw</code>, <code>n += r</code>, and finally refresh <code>m = (1-mu)*m + mu*(2*draw-1)</code>. The convolution is still the only line doing the Ising work — it just reads recent events now instead of accumulated fractions.</p>
+    <p class="muted">If you want to rebuild this in NumPy, the core update is one vectorised step: compute the centred fraction array, convolve with a four-neighbour kernel to get <code>h</code>, form <code>p = (1-w)*frac + w*sigmoid(J*h)</code>, draw <code>rand &lt; p</code> for the whole grid at once, then do <code>b += r*draw</code> and <code>n += r</code>. The convolution is the only line doing the Ising work, and everything else is the urn.</p>
   </section>
 </main>
 
@@ -359,8 +349,6 @@
   // state arrays: black-count and total-count per site
   let b = new Float64Array(N * N);
   let n = new Float64Array(N * N);
-  // neighbour EVENT memory, in spin units (-1..+1): exponential average of recent draws
-  let m = new Float64Array(N * N);
   let step = 0;
   let tracked = -1;
   let history = []; // {frac, field}
@@ -368,10 +356,7 @@
   let raf = null;
 
   // parameters
-  let J = 1.2, rStrength = 0.4, w = 0.5, mu = 0.5, speed = 6;
-  // coupling field source: 'event' = neighbours' m_j (annealed),
-  //                        'fraction' = neighbours' b_j/n_j centred (quenched)
-  let fieldMode = 'event';
+  let J = 1.2, rStrength = 0.4, w = 0.5, speed = 6;
 
   function idx(x, y) { return y * N + x; }
 
@@ -381,8 +366,6 @@
       const tilt = (Math.random() - 0.5) * 0.4;
       b[i] = 1 + tilt;
       n[i] = 2;
-      // seed the event field with a random recent "draw" so coupling isn't dead at t=0
-      m[i] = Math.random() < 0.5 ? -1 : 1;
     }
     step = 0;
     history = [];
@@ -396,31 +379,19 @@
   function update() {
     const newB = new Float64Array(N * N);
     const newN = new Float64Array(N * N);
-    const newM = new Float64Array(N * N);
-    // local fraction is still each site's own urn memory (personal history)
+    // compute draws using current fractions (synchronous update)
     const frac = new Float64Array(N * N);
     for (let i = 0; i < N * N; i++) frac[i] = b[i] / n[i];
-
-    // nf = the per-site value the coupling field reads from neighbours.
-    //   event mode    -> m[i], the exponential average of recent draws (annealed)
-    //   fraction mode -> 2*frac[i]-1, the frozen accumulated urn lean (quenched)
-    let nf;
-    if (fieldMode === 'event') {
-      nf = m;
-    } else {
-      nf = new Float64Array(N * N);
-      for (let i = 0; i < N * N; i++) nf[i] = 2 * frac[i] - 1;
-    }
 
     for (let y = 0; y < N; y++) {
       for (let x = 0; x < N; x++) {
         const i = idx(x, y);
-        // periodic neighbours: sum their field values into the local field h
-        const up = nf[idx(x, (y - 1 + N) % N)];
-        const dn = nf[idx(x, (y + 1) % N)];
-        const lf = nf[idx((x - 1 + N) % N, y)];
-        const rt = nf[idx((x + 1) % N, y)];
-        const h = up + dn + lf + rt;
+        // periodic neighbours, centred fractions summed -> local field
+        const up = frac[idx(x, (y - 1 + N) % N)];
+        const dn = frac[idx(x, (y + 1) % N)];
+        const lf = frac[idx((x - 1 + N) % N, y)];
+        const rt = frac[idx((x + 1) % N, y)];
+        const h = (2*up-1) + (2*dn-1) + (2*lf-1) + (2*rt-1);
 
         const polya = frac[i];
         const ising = sigmoid(J * h);
@@ -429,25 +400,18 @@
         const drawBlack = Math.random() < p ? 1 : 0;
         newB[i] = b[i] + rStrength * drawBlack;
         newN[i] = n[i] + rStrength;
-        // event memory is always refreshed, so toggling modes mid-run stays valid
-        const spin = 2 * drawBlack - 1;
-        newM[i] = (1 - mu) * m[i] + mu * spin;
       }
     }
-    b = newB; n = newN; m = newM;
+    b = newB; n = newN;
     step++;
 
     if (tracked >= 0) {
       const tx = tracked % N, ty = (tracked / N) | 0;
-      // track whichever field is currently driving the coupling
-      const tnf = (fieldMode === 'event')
-        ? (j => m[j])
-        : (j => 2 * (b[j] / n[j]) - 1);
-      const up = tnf(idx(tx,(ty-1+N)%N));
-      const dn = tnf(idx(tx,(ty+1)%N));
-      const lf = tnf(idx((tx-1+N)%N,ty));
-      const rt = tnf(idx((tx+1)%N,ty));
-      const h = up + dn + lf + rt;
+      const up = b[idx(tx,(ty-1+N)%N)]/n[idx(tx,(ty-1+N)%N)];
+      const dn = b[idx(tx,(ty+1)%N)]/n[idx(tx,(ty+1)%N)];
+      const lf = b[idx((tx-1+N)%N,ty)]/n[idx((tx-1+N)%N,ty)];
+      const rt = b[idx((tx+1)%N,ty)]/n[idx((tx+1)%N,ty)];
+      const h = (2*up-1)+(2*dn-1)+(2*lf-1)+(2*rt-1);
       history.push({ frac: b[tracked] / n[tracked], field: h / 4 }); // field normalised to [-1,1]
       if (history.length > 900) history.shift();
     }
@@ -557,22 +521,6 @@
   document.getElementById('w').addEventListener('input', e => {
     w = parseFloat(e.target.value);
     document.getElementById('v-w').textContent = w.toFixed(2);
-  });
-  document.getElementById('mu').addEventListener('input', e => {
-    mu = parseFloat(e.target.value);
-    document.getElementById('v-mu').textContent = mu.toFixed(2);
-  });
-  document.getElementById('btn-field').addEventListener('click', e => {
-    fieldMode = (fieldMode === 'event') ? 'fraction' : 'event';
-    const isEvent = fieldMode === 'event';
-    e.target.textContent = isEvent
-      ? "event field — neighbours' m_j"
-      : "fraction field — neighbours' b_j/n_j";
-    document.getElementById('v-field').textContent = isEvent ? 'event' : 'fraction';
-    // mu only governs the event field, so dim it when it does nothing
-    const muSlider = document.getElementById('mu');
-    muSlider.disabled = !isEvent;
-    muSlider.style.opacity = isEvent ? '1' : '0.35';
   });
   document.getElementById('spd').addEventListener('input', e => {
     speed = parseInt(e.target.value);
