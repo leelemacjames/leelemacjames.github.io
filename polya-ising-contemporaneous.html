@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Networked Pólya — A Reinforced Ising Lattice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --panel: #161616;
+    --ink: #e8e4d8;
+    --muted: #8a8578;
+    --gold: #c9a84c;
+    --line: #2a2a2a;
+    --black-draw: #1c1c2e;
+    --white-draw: #d8d2c0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.6;
+    padding-bottom: 4rem;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13,13,13,0.94);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  nav .title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+  }
+  nav .sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  header {
+    max-width: 820px;
+    margin: 3rem auto 2rem;
+    padding: 0 2rem;
+  }
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 2.8rem;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+  header h1 em { color: var(--gold); font-style: italic; }
+  header p {
+    color: var(--muted);
+    font-size: 1.02rem;
+    margin-bottom: 0.8rem;
+  }
+  header p .term { color: var(--ink); }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.4rem;
+  }
+  .panel h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .panel .note {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  canvas#lattice {
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    border: 1px solid var(--line);
+    cursor: crosshair;
+    background: #000;
+  }
+
+  .controls { display: flex; flex-direction: column; gap: 1.1rem; }
+  .ctrl label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .ctrl label .val { color: var(--gold); }
+  input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--line);
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    background: var(--gold);
+    cursor: pointer;
+    border-radius: 0;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 13px; height: 13px;
+    background: var(--gold);
+    cursor: pointer;
+    border: none; border-radius: 0;
+  }
+
+  .buttons { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--gold);
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  button:hover { background: var(--gold); color: var(--bg); }
+  button.run { background: var(--gold); color: var(--bg); }
+  button.run:hover { background: transparent; color: var(--ink); }
+
+  .readout {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    margin-top: 0.4rem;
+    padding-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .readout span b { color: var(--ink); font-weight: 500; }
+
+  .history-panel { margin-top: 2rem; }
+  canvas#history {
+    width: 100%;
+    height: 220px;
+    border: 1px solid var(--line);
+    background: #000;
+  }
+  .legend {
+    display: flex;
+    gap: 1.4rem;
+    margin-top: 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .legend i {
+    display: inline-block;
+    width: 11px; height: 11px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+  }
+
+  .essay {
+    max-width: 820px;
+    margin: 3.5rem auto 0;
+    padding: 0 2rem;
+  }
+  .essay h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--gold);
+  }
+  .essay h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 1.8rem 0 0.6rem;
+  }
+  .essay p { margin-bottom: 1rem; color: var(--ink); }
+  .essay p.muted { color: var(--muted); }
+  .essay code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88em;
+    background: #1c1c1c;
+    padding: 0.1rem 0.35rem;
+    color: var(--gold);
+  }
+  .essay .eq {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    background: var(--panel);
+    border-left: 2px solid var(--gold);
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0;
+    color: var(--ink);
+    overflow-x: auto;
+  }
+
+  footer {
+    max-width: 820px;
+    margin: 4rem auto 0;
+    padding: 1.6rem 2rem 0;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="title">Networked Pólya</span>
+  <span class="sub">Reinforced Ising Lattice</span>
+</nav>
+
+<header>
+  <h1>When the urn has <em>neighbours</em></h1>
+  <p>A single Pólya urn reinforces its own past: draw a colour, add a ball of that colour, and the early draws bias everything that follows. The limiting fraction is random, fixed once and never argued with again.</p>
+  <p>This lattice gives every site its own urn, then couples each urn to the four around it. Two pressures now act at once. The <span class="term">Pólya term</span> is a site's memory of its own path through time. The <span class="term">Ising term</span> is the pull of locality, a logistic response to whatever the neighbours currently show. The coupling slider sets the blend, and the regime in between is where the hybrid lives: domains that lock in early and then refuse to flip.</p>
+</header>
+
+<main>
+  <div class="layout">
+    <div class="panel">
+      <h2>The lattice</h2>
+      <p class="note">Each cell is a site. Colour shows its running black-fraction. Click any site to track its path history below.</p>
+      <canvas id="lattice" width="80" height="80"></canvas>
+      <div class="readout">
+        <span>step <b id="r-step">0</b> &nbsp; mean black-fraction <b id="r-mean">0.50</b></span>
+        <span>tracked site <b id="r-site">none</b> &nbsp; its fraction <b id="r-sitefrac">—</b></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Controls</h2>
+      <p class="note">J is the Ising coupling. At J=0 every urn is independent. μ sets how fast the neighbour field forgets: μ=1 couples to neighbours' last draw (annealed), low μ averages many recent draws (quenched).</p>
+      <div class="controls">
+        <div class="ctrl">
+          <label>Coupling J <span class="val" id="v-J">1.20</span></label>
+          <input type="range" id="J" min="0" max="4" step="0.05" value="1.2" />
+        </div>
+        <div class="ctrl">
+          <label>Reinforcement r <span class="val" id="v-r">0.40</span></label>
+          <input type="range" id="r" min="0.02" max="1" step="0.02" value="0.4" />
+        </div>
+        <div class="ctrl">
+          <label>Pólya / Ising mix w <span class="val" id="v-w">0.50</span></label>
+          <input type="range" id="w" min="0" max="1" step="0.05" value="0.5" />
+        </div>
+        <div class="ctrl">
+          <label>Neighbour memory μ <span class="val" id="v-mu">0.50</span></label>
+          <input type="range" id="mu" min="0.02" max="1" step="0.02" value="0.5" />
+        </div>
+        <div class="ctrl">
+          <label>Coupling field <span class="val" id="v-field">event</span></label>
+          <button id="btn-field" style="width:100%">event field — neighbours' m_j</button>
+        </div>
+        <div class="ctrl">
+          <label>Speed <span class="val" id="v-spd">6</span></label>
+          <input type="range" id="spd" min="1" max="20" step="1" value="6" />
+        </div>
+        <div class="buttons">
+          <button class="run" id="btn-run">Run</button>
+          <button id="btn-step">Step</button>
+          <button id="btn-reset">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel history-panel">
+    <h2>Path history at the tracked site</h2>
+    <p class="note">The reinforcement curve. A site that drifts toward an edge and stays there has locked in; one that wanders near 0.5 is still being argued with by its neighbours.</p>
+    <canvas id="history" width="900" height="220"></canvas>
+    <div class="legend">
+      <span><i style="background:#c9a84c"></i>tracked site fraction</span>
+      <span><i style="background:#5a6a8a"></i>neighbour event field (drives the Ising term)</span>
+      <span><i style="background:#3a3a3a"></i>the 0.5 line</span>
+    </div>
+  </div>
+
+  <section class="essay">
+    <h2>The model, briefly</h2>
+    <p>Every site <code>i</code> stores two integers: <code>b_i</code> black balls drawn so far, and <code>n_i</code> total draws. Its Pólya fraction is the obvious thing, <code>b_i / n_i</code>, and it carries the entire path history in a single number.</p>
+    <p>At each step the site computes a draw probability that interpolates between memory and locality:</p>
+    <div class="eq">p_i = (1 - w) · (b_i / n_i) + w · σ(J · h_i)</div>
+    <p>Here <code>h_i</code> is the local field. Rather than reading the neighbours' frozen urn fractions, each site keeps an <span class="term">event memory</span> <code>m_j</code> — an exponential moving average of its own recent draws, in spin units. The field is the sum of the four neighbours' <code>m_j</code>, so a neighbourhood that has <em>recently been drawing</em> black pushes <code>h_i</code> positive. The function <code>σ</code> is the logistic squashing that turns that field into a probability, and this is exactly the Ising coupling: nearest-neighbour, alignment-favouring, temperature-controlled. The coupling <code>J</code> plays the role of inverse temperature.</p>
+    <p>The memory rate <code>μ</code> sets how the social field anneals. At <code>μ = 1</code> the field is just the neighbours' last draw — refreshed entirely by recent stochastic events, highly annealed, free to fluctuate. As <code>μ</code> falls the field averages more and more past draws, becoming sluggish and quenched, closer in spirit to the old frozen-fraction coupling. Personal urn memory stays local; only the social channel is annealed.</p>
+    <p>The <span class="term">coupling field</span> toggle makes the contrast explicit. In <em>event</em> mode the field reads neighbours' <code>m_j</code>, the annealed event memory above. In <em>fraction</em> mode it reverts to the original construction — neighbours' centred urn fractions <code>2·(b_j/n_j) − 1</code>, a frozen accumulated record that only ever drifts, never refreshes. Flip between the two on a running lattice and watch what happens to the domain boundaries: the fraction field pins them, the event field lets them breathe.</p>
+    <p>The site then draws a colour with probability <code>p_i</code> and reinforces. Rather than always adding one ball, it adds <code>r</code> worth of a ball, so <code>r</code> tunes how sharply the past grips the future. Small <code>r</code> keeps sites pliable; large <code>r</code> means the first few draws are nearly destiny.</p>
+
+    <h3>What the three regimes look like</h3>
+    <p>Slide <code>J</code> to zero and the Ising term vanishes. Each site becomes a textbook Pólya urn, its fraction converging to its own Beta-distributed limit, and the lattice settles into salt-and-pepper noise with no spatial structure at all.</p>
+    <p>Push <code>J</code> high and the Ising term dominates. Neighbours align fast, domains sweep across the lattice, and you are watching something close to Glauber dynamics on the Ising model with the urn memory just along for the ride.</p>
+    <p>The middle is the point of the construction. There, a domain that forms early gets written into the path histories of all its sites, and that written-in memory resists the neighbour pressure that would otherwise erode the boundary. Domains coarsen, then freeze before they finish. The lattice keeps a record of its own youth.</p>
+
+    <h3>Reading it as a Python loop</h3>
+    <p class="muted">If you want to rebuild this in NumPy, keep three arrays: <code>b</code>, <code>n</code>, and an event field <code>m</code>. Each step: convolve <code>m</code> with a four-neighbour kernel to get <code>h</code>, form <code>p = (1-w)*(b/n) + w*sigmoid(J*h)</code>, draw <code>rand &lt; p</code> for the whole grid at once, then <code>b += r*draw</code>, <code>n += r</code>, and finally refresh <code>m = (1-mu)*m + mu*(2*draw-1)</code>. The convolution is still the only line doing the Ising work — it just reads recent events now instead of accumulated fractions.</p>
+  </section>
+</main>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+<script>
+(function () {
+  const N = 80;
+  const latCv = document.getElementById('lattice');
+  const latCtx = latCv.getContext('2d');
+  const hisCv = document.getElementById('history');
+  const hisCtx = hisCv.getContext('2d');
+
+  // state arrays: black-count and total-count per site
+  let b = new Float64Array(N * N);
+  let n = new Float64Array(N * N);
+  // neighbour EVENT memory, in spin units (-1..+1): exponential average of recent draws
+  let m = new Float64Array(N * N);
+  let step = 0;
+  let tracked = -1;
+  let history = []; // {frac, field}
+  let running = false;
+  let raf = null;
+
+  // parameters
+  let J = 1.2, rStrength = 0.4, w = 0.5, mu = 0.5, speed = 6;
+  // coupling field source: 'event' = neighbours' m_j (annealed),
+  //                        'fraction' = neighbours' b_j/n_j centred (quenched)
+  let fieldMode = 'event';
+
+  function idx(x, y) { return y * N + x; }
+
+  function reset() {
+    // each site starts with one black and one white ball, plus a tiny random tilt
+    for (let i = 0; i < N * N; i++) {
+      const tilt = (Math.random() - 0.5) * 0.4;
+      b[i] = 1 + tilt;
+      n[i] = 2;
+      // seed the event field with a random recent "draw" so coupling isn't dead at t=0
+      m[i] = Math.random() < 0.5 ? -1 : 1;
+    }
+    step = 0;
+    history = [];
+    draw();
+    drawHistory();
+    updateReadout();
+  }
+
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function update() {
+    const newB = new Float64Array(N * N);
+    const newN = new Float64Array(N * N);
+    const newM = new Float64Array(N * N);
+    // local fraction is still each site's own urn memory (personal history)
+    const frac = new Float64Array(N * N);
+    for (let i = 0; i < N * N; i++) frac[i] = b[i] / n[i];
+
+    // nf = the per-site value the coupling field reads from neighbours.
+    //   event mode    -> m[i], the exponential average of recent draws (annealed)
+    //   fraction mode -> 2*frac[i]-1, the frozen accumulated urn lean (quenched)
+    let nf;
+    if (fieldMode === 'event') {
+      nf = m;
+    } else {
+      nf = new Float64Array(N * N);
+      for (let i = 0; i < N * N; i++) nf[i] = 2 * frac[i] - 1;
+    }
+
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const i = idx(x, y);
+        // periodic neighbours: sum their field values into the local field h
+        const up = nf[idx(x, (y - 1 + N) % N)];
+        const dn = nf[idx(x, (y + 1) % N)];
+        const lf = nf[idx((x - 1 + N) % N, y)];
+        const rt = nf[idx((x + 1) % N, y)];
+        const h = up + dn + lf + rt;
+
+        const polya = frac[i];
+        const ising = sigmoid(J * h);
+        const p = (1 - w) * polya + w * ising;
+
+        const drawBlack = Math.random() < p ? 1 : 0;
+        newB[i] = b[i] + rStrength * drawBlack;
+        newN[i] = n[i] + rStrength;
+        // event memory is always refreshed, so toggling modes mid-run stays valid
+        const spin = 2 * drawBlack - 1;
+        newM[i] = (1 - mu) * m[i] + mu * spin;
+      }
+    }
+    b = newB; n = newN; m = newM;
+    step++;
+
+    if (tracked >= 0) {
+      const tx = tracked % N, ty = (tracked / N) | 0;
+      // track whichever field is currently driving the coupling
+      const tnf = (fieldMode === 'event')
+        ? (j => m[j])
+        : (j => 2 * (b[j] / n[j]) - 1);
+      const up = tnf(idx(tx,(ty-1+N)%N));
+      const dn = tnf(idx(tx,(ty+1)%N));
+      const lf = tnf(idx((tx-1+N)%N,ty));
+      const rt = tnf(idx((tx+1)%N,ty));
+      const h = up + dn + lf + rt;
+      history.push({ frac: b[tracked] / n[tracked], field: h / 4 }); // field normalised to [-1,1]
+      if (history.length > 900) history.shift();
+    }
+  }
+
+  function draw() {
+    const img = latCtx.createImageData(N, N);
+    for (let i = 0; i < N * N; i++) {
+      const f = b[i] / n[i]; // 0..1, 1 = all black draws
+      // interpolate dark-indigo (black draw) -> warm bone (white draw)
+      const r = Math.round(28 + (216 - 28) * (1 - f));
+      const g = Math.round(28 + (210 - 28) * (1 - f));
+      const bl = Math.round(46 + (192 - 46) * (1 - f));
+      img.data[i*4] = r;
+      img.data[i*4+1] = g;
+      img.data[i*4+2] = bl;
+      img.data[i*4+3] = 255;
+    }
+    latCtx.putImageData(img, 0, 0);
+
+    if (tracked >= 0) {
+      // draw a gold ring on the tracked site, scaled to canvas
+      const scale = latCv.clientWidth / N;
+      // overlay via a second pass on a scaled context is awkward on pixelated canvas;
+      // instead mark by drawing onto displayed coords using CSS-free approach:
+      latCtx.strokeStyle = '#c9a84c';
+      latCtx.lineWidth = 1;
+      const tx = tracked % N, ty = (tracked / N) | 0;
+      latCtx.strokeRect(tx - 0.5, ty - 0.5, 2, 2);
+    }
+  }
+
+  function drawHistory() {
+    const W = hisCv.width, H = hisCv.height;
+    hisCtx.clearRect(0, 0, W, H);
+    // 0.5 baseline
+    hisCtx.strokeStyle = '#3a3a3a';
+    hisCtx.lineWidth = 1;
+    hisCtx.beginPath();
+    hisCtx.moveTo(0, H/2); hisCtx.lineTo(W, H/2); hisCtx.stroke();
+
+    if (history.length < 2) {
+      hisCtx.fillStyle = '#8a8578';
+      hisCtx.font = '13px IBM Plex Mono';
+      hisCtx.fillText('click a site on the lattice to track its path history', 20, H/2 - 12);
+      return;
+    }
+
+    const stepX = W / Math.max(history.length - 1, 1);
+
+    // neighbour field, centred at H/2
+    hisCtx.strokeStyle = '#5a6a8a';
+    hisCtx.lineWidth = 1.5;
+    hisCtx.beginPath();
+    history.forEach((pt, k) => {
+      const xx = k * stepX;
+      const yy = H/2 - pt.field * (H/2 - 10);
+      k === 0 ? hisCtx.moveTo(xx, yy) : hisCtx.lineTo(xx, yy);
+    });
+    hisCtx.stroke();
+
+    // site fraction
+    hisCtx.strokeStyle = '#c9a84c';
+    hisCtx.lineWidth = 2;
+    hisCtx.beginPath();
+    history.forEach((pt, k) => {
+      const xx = k * stepX;
+      const yy = H - pt.frac * H;
+      k === 0 ? hisCtx.moveTo(xx, yy) : hisCtx.lineTo(xx, yy);
+    });
+    hisCtx.stroke();
+  }
+
+  function updateReadout() {
+    let sum = 0;
+    for (let i = 0; i < N * N; i++) sum += b[i] / n[i];
+    document.getElementById('r-step').textContent = step;
+    document.getElementById('r-mean').textContent = (sum / (N*N)).toFixed(3);
+    if (tracked >= 0) {
+      const tx = tracked % N, ty = (tracked / N) | 0;
+      document.getElementById('r-site').textContent = `(${tx}, ${ty})`;
+      document.getElementById('r-sitefrac').textContent = (b[tracked]/n[tracked]).toFixed(3);
+    } else {
+      document.getElementById('r-site').textContent = 'none';
+      document.getElementById('r-sitefrac').textContent = '—';
+    }
+  }
+
+  function frame() {
+    if (!running) return;
+    for (let s = 0; s < speed; s++) update();
+    draw();
+    drawHistory();
+    updateReadout();
+    raf = requestAnimationFrame(frame);
+  }
+
+  // --- controls ---
+  document.getElementById('J').addEventListener('input', e => {
+    J = parseFloat(e.target.value);
+    document.getElementById('v-J').textContent = J.toFixed(2);
+  });
+  document.getElementById('r').addEventListener('input', e => {
+    rStrength = parseFloat(e.target.value);
+    document.getElementById('v-r').textContent = rStrength.toFixed(2);
+  });
+  document.getElementById('w').addEventListener('input', e => {
+    w = parseFloat(e.target.value);
+    document.getElementById('v-w').textContent = w.toFixed(2);
+  });
+  document.getElementById('mu').addEventListener('input', e => {
+    mu = parseFloat(e.target.value);
+    document.getElementById('v-mu').textContent = mu.toFixed(2);
+  });
+  document.getElementById('btn-field').addEventListener('click', e => {
+    fieldMode = (fieldMode === 'event') ? 'fraction' : 'event';
+    const isEvent = fieldMode === 'event';
+    e.target.textContent = isEvent
+      ? "event field — neighbours' m_j"
+      : "fraction field — neighbours' b_j/n_j";
+    document.getElementById('v-field').textContent = isEvent ? 'event' : 'fraction';
+    // mu only governs the event field, so dim it when it does nothing
+    const muSlider = document.getElementById('mu');
+    muSlider.disabled = !isEvent;
+    muSlider.style.opacity = isEvent ? '1' : '0.35';
+  });
+  document.getElementById('spd').addEventListener('input', e => {
+    speed = parseInt(e.target.value);
+    document.getElementById('v-spd').textContent = speed;
+  });
+
+  document.getElementById('btn-run').addEventListener('click', e => {
+    running = !running;
+    e.target.textContent = running ? 'Pause' : 'Run';
+    if (running) frame();
+    else if (raf) cancelAnimationFrame(raf);
+  });
+  document.getElementById('btn-step').addEventListener('click', () => {
+    update(); draw(); drawHistory(); updateReadout();
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    running = false;
+    document.getElementById('btn-run').textContent = 'Run';
+    if (raf) cancelAnimationFrame(raf);
+    reset();
+  });
+
+  latCv.addEventListener('click', e => {
+    const rect = latCv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / rect.width * N);
+    const y = Math.floor((e.clientY - rect.top) / rect.height * N);
+    tracked = idx(Math.max(0,Math.min(N-1,x)), Math.max(0,Math.min(N-1,y)));
+    history = [];
+    draw(); drawHistory(); updateReadout();
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>
