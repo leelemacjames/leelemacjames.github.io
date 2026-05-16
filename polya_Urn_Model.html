@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,sans-serif);color:var(--color-text-primary);background:transparent}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{padding:.5rem 0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.8rem 1rem}
+.ct{font-size:10px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.06em;margin-bottom:9px}
+.sim-row{display:grid;grid-template-columns:190px 1fr;gap:10px;align-items:start}
+.left-col{display:flex;flex-direction:column;gap:9px}
+.right-col{display:flex;flex-direction:column;gap:9px;min-width:0}
+
+/* controls — deliberately large */
+.sl-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sl-lbl{width:90px;font-size:13px;color:var(--color-text-secondary);flex-shrink:0}
+.sl-val{width:34px;text-align:right;font-weight:600;font-size:14px;flex-shrink:0;color:var(--color-text-primary)}
+input[type=range]{flex:1;min-width:0;height:22px;cursor:pointer}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn{padding:8px 20px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);
+     background:var(--color-background-secondary);font-size:14px;cursor:pointer;font-weight:500;
+     color:var(--color-text-primary);transition:background .12s,transform .1s}
+.btn:hover{background:var(--color-background-tertiary)}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.pulls-count{font-size:12px;color:var(--color-text-secondary);margin-top:6px}
+
+/* urn */
+.urn-balls{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:28px}
+.ball{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,.14);flex-shrink:0;display:inline-block;transition:transform .12s}
+.ball:hover{transform:scale(1.18)}
+.stat-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.pill{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500}
+
+/* prob bars */
+.pbar{margin-bottom:6px}
+.pbar-lbl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px}
+.pbar-track{height:8px;border-radius:4px;background:var(--color-border-tertiary);overflow:hidden}
+.pbar-fill{height:100%;border-radius:4px;transition:width .35s}
+
+/* history dots */
+.hist-dots{display:flex;flex-wrap:wrap;gap:5px}
+.hdot{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;flex-shrink:0}
+
+/* tabs — large tap targets */
+.tab-row{display:flex;gap:7px;margin-bottom:10px}
+.tab{padding:7px 18px;border-radius:14px;font-size:13px;font-weight:500;cursor:pointer;
+     border:.5px solid var(--color-border-tertiary);background:transparent;
+     color:var(--color-text-secondary);transition:background .12s}
+.tab:hover{background:var(--color-background-secondary)}
+.tab.on{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+
+/* tree */
+.tree-scroll{overflow-x:auto}
+
+/* proportion bars — tall */
+.bars-outer{overflow-x:auto}
+.bars-inner{display:flex;align-items:flex-end;gap:5px;padding-bottom:4px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-stack{display:flex;flex-direction:column-reverse;border-radius:3px;overflow:hidden}
+.bar-xlabel{font-size:10px;color:var(--color-text-secondary)}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:9px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary)}
+.leg-sw{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+
+/* bayesian */
+.bayes{display:flex;flex-direction:column;gap:7px}
+.b-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.b-lbl{min-width:130px;font-size:11px;color:var(--color-text-secondary);flex-shrink:0}
+.b-eq{font-family:var(--font-mono,monospace);font-size:11px;background:var(--color-background-secondary);padding:3px 9px;border-radius:var(--border-radius-md);color:var(--color-text-primary)}
+.b-res{font-size:14px;font-weight:600}
+.b-note{font-size:11px;line-height:1.7;color:var(--color-text-secondary);padding:6px 9px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.b-note strong{color:var(--color-text-primary)}
+
+.prose{font-size:11px;line-height:1.7;color:var(--color-text-secondary)}
+.prose strong{color:var(--color-text-primary)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<h2 class="sr-only">Pólya Urn Model — interactive reinforcement probability simulator.</h2>
+<div class="wrap" id="root"></div>
+<script>
+const COLS=[
+  {name:'Red',   hex:'#D85A30',light:'#FAECE7',text:'#993C1D'},
+  {name:'Blue',  hex:'#378ADD',light:'#E6F1FB',text:'#185FA5'},
+  {name:'Green', hex:'#639922',light:'#EAF3DE',text:'#3B6D11'},
+  {name:'Amber', hex:'#EF9F27',light:'#FAEEDA',text:'#854F0B'},
+  {name:'Pink',  hex:'#D4537E',light:'#FBEAF0',text:'#993556'},
+  {name:'Teal',  hex:'#1D9E75',light:'#E1F5EE',text:'#0F6E56'},
+];
+let nc=2, addN=1, balls=[], history=[], activeTab='tree';
+
+function reset(){
+  balls=[];history=[];
+  for(let i=0;i<nc;i++) balls.push(i);
+}
+
+function getCounts(){
+  const c={};for(let i=0;i<nc;i++)c[i]=0;
+  balls.forEach(b=>c[b]=(c[b]||0)+1);
+  return c;
+}
+
+function pull(){
+  if(history.length>=12) return;
+  const picked=balls[Math.floor(Math.random()*balls.length)];
+  for(let i=0;i<=addN;i++) balls.push(picked);
+  history.push(picked);
+  render();
+}
+
+/* ── tree ───────────────────────────────────────────────────────── */
+function buildTree(){
+  const depth=Math.min(history.length+1,5);
+  const NR=19, VG=62, HS=100;
+  const leaves=Math.pow(2,depth-1);
+  const W=Math.max(380,leaves*HS+80), H=26+depth*VG+26;
+
+  let histStr=''; history.forEach(h=>histStr+=(h===0?'R':'B'));
+  const histPaths=new Set();
+  for(let i=0;i<=histStr.length;i++) histPaths.add(histStr.slice(0,i));
+
+  const nodes=[];
+  function grow(r0,b0,path,d){
+    if(d>depth) return;
+    const tot=r0+b0, pR=r0/tot, pB=b0/tot;
+    const breadth=Math.pow(2,depth-1);
+    let lo=0,hi=breadth*2;
+    for(const ch of path){const mid=(lo+hi)/2; ch==='R'?hi=mid:lo=mid;}
+    const x=W/2-breadth*(HS/2)+(lo+hi)/2*(HS/2);
+    const y=22+(d-1)*VG;
+    nodes.push({r0,b0,tot,pR,pB,path,x,y});
+    if(d<depth){
+      grow(r0+1+addN,b0,path+'R',d+1);
+      grow(r0,b0+1+addN,path+'B',d+1);
+    }
+  }
+  grow(1,1,'',1);
+
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const nm={}; nodes.forEach(n=>nm[n.path]=n);
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" style="display:block">
+  <title>Pólya urn probability tree</title>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
+
+  nodes.forEach(n=>{
+    if(!n.path) return;
+    const par=nm[n.path.slice(0,-1)]; if(!par) return;
+    const isR=n.path.slice(-1)==='R';
+    const on=histPaths.has(n.path);
+    const ec=on?(isR?COLS[0].hex:COLS[1].hex):(dark?'#3a3a3a':'#ddd');
+    const prob=((isR?par.pR:par.pB)*100).toFixed(0)+'%';
+    const mx=(par.x+n.x)/2, my=(par.y+n.y)/2;
+    s+=`<line x1="${par.x}" y1="${par.y+NR}" x2="${n.x}" y2="${n.y-NR}" stroke="${ec}" stroke-width="${on?2.5:1}" opacity="${on?1:.4}"/>`;
+    s+=`<text x="${mx+(n.x>par.x?6:-6)}" y="${my+4}" font-size="10" fill="${on?ec:(dark?'#555':'#bbb')}" font-family="var(--font-sans,sans-serif)" text-anchor="${n.x>par.x?'start':'end'}">${prob}</text>`;
+  });
+
+  nodes.forEach(n=>{
+    const on=histPaths.has(n.path), isR=n.path.slice(-1)==='R', isRoot=n.path==='';
+    const fc=isRoot?(dark?'#3a3a3a':'#eee'):(on?(isR?COLS[0].hex:COLS[1].hex):(dark?'#252525':'#f4f4f4'));
+    const sc=on&&!isRoot?(isR?COLS[0].hex:COLS[1].hex):(dark?'#444':'#ccc');
+    const tc=(on&&!isRoot)?'#fff':(dark?'#ccc':'#444');
+    s+=`<circle cx="${n.x}" cy="${n.y}" r="${NR}" fill="${fc}" stroke="${sc}" stroke-width="${on?2.5:1}"/>`;
+    s+=`<text x="${n.x}" y="${n.y-3}" text-anchor="middle" font-size="9" fill="${tc}" font-weight="500" font-family="var(--font-sans,sans-serif)">R:${n.r0} B:${n.b0}</text>`;
+    s+=`<text x="${n.x}" y="${n.y+9}" text-anchor="middle" font-size="8.5" fill="${tc}" font-family="var(--font-sans,sans-serif)">${(n.pR*100).toFixed(0)}/${(n.pB*100).toFixed(0)}</text>`;
+  });
+
+  s+=`<text x="${W/2}" y="${H-5}" text-anchor="middle" font-size="8.5" fill="${dark?'#444':'#ccc'}" font-family="var(--font-sans,sans-serif)">Node: R·B counts · Edge: branch % · Coloured = your path</text></svg>`;
+  return s;
+}
+
+/* ── proportion bars ─────────────────────────────────────────────── */
+function buildBars(){
+  // Simulate from scratch
+  let sim=Array.from({length:nc},(_,i)=>i);
+  const snap=()=>{const c={};for(let i=0;i<nc;i++)c[i]=0;sim.forEach(b=>c[b]++);return{c,tot:sim.length};};
+  const steps=[snap()];
+  history.forEach(picked=>{
+    for(let i=0;i<=addN;i++) sim.push(picked);
+    steps.push(snap());
+  });
+
+  const FILL=200, TOTAL=224; // bar heights px
+  const n=steps.length;
+  const bw=Math.max(28, Math.min(58, Math.floor(430/Math.max(n,1))-5));
+
+  let html=`<div class="bars-outer"><div class="bars-inner" style="height:${TOTAL}px">`;
+  steps.forEach((st,si)=>{
+    let segs='';
+    for(let i=0;i<nc;i++){
+      const h=Math.max(1,Math.round(((st.c[i]||0)/st.tot)*FILL));
+      segs+=`<div style="height:${h}px;background:${COLS[i].hex};flex-shrink:0;width:100%"></div>`;
+    }
+    html+=`<div class="bar-col" style="width:${bw}px">
+      <div class="bar-stack" style="height:${FILL}px;width:100%">${segs}</div>
+      <div class="bar-xlabel">${si===0?'Start':si}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+
+  const c=getCounts(),tot=balls.length;
+  html+=`<div class="legend">`;
+  for(let i=0;i<nc;i++){
+    html+=`<div class="leg-item"><div class="leg-sw" style="background:${COLS[i].hex}"></div>${COLS[i].name} ${((c[i]||0)/tot*100).toFixed(0)}%</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+/* ── bayesian ────────────────────────────────────────────────────── */
+function buildBayes(){
+  if(nc!==2||history.length===0) return '';
+  const last=history[history.length-1];
+  const c=getCounts(), tot=balls.length;
+  const nL=c[last]||0;
+  const prL=nL-(1+addN), prTot=tot-(1+addN);
+  const prior=prL/prTot, post=nL/tot;
+  const shift=(post-prior)*100;
+  const nm=COLS[last].name, hx=COLS[last].hex;
+  return `<div class="bayes">
+  <div style="font-size:13px;margin-bottom:4px"><strong>Pull ${history.length}:</strong> drew <strong style="color:${hx}">${nm}</strong> — returned it + added ${addN} more</div>
+  <div class="b-row"><span class="b-lbl">Prior P(${nm})</span><span class="b-eq">${prL} / ${prTot}</span><span class="b-res">= ${(prior*100).toFixed(1)}%</span></div>
+  <div class="b-row"><span class="b-lbl">Posterior P(${nm})</span><span class="b-eq">${nL} / ${tot}</span><span class="b-res">= ${(post*100).toFixed(1)}%</span></div>
+  <div class="b-row"><span class="b-lbl">Shift</span><span class="b-eq">${shift>0?'+':''}${shift.toFixed(2)} pp</span><span class="b-res" style="color:${hx}">${shift>0?'↑ reinforced':'↓'}</span></div>
+  <div class="b-note">Adding ${1+addN} ball${1+addN>1?'s':''} (not just replacing 1) makes the posterior jump <strong>further than a fair replacement would</strong> — that is the engine of preferential attachment.</div>
+  </div>`;
+}
+
+/* ── render ─────────────────────────────────────────────────────── */
+function render(){
+  const R=document.getElementById('root');
+  const c=getCounts(), tot=balls.length;
+
+  let probH='';
+  for(let i=0;i<nc;i++){
+    const p=(c[i]||0)/tot;
+    probH+=`<div class="pbar">
+      <div class="pbar-lbl"><span style="color:${COLS[i].text};font-weight:500">${COLS[i].name}</span><span>${(p*100).toFixed(1)}%</span></div>
+      <div class="pbar-track"><div class="pbar-fill" style="width:${(p*100).toFixed(1)}%;background:${COLS[i].hex}"></div></div>
+    </div>`;
+  }
+
+  const histH=history.length===0
+    ?`<span style="font-size:11px;color:var(--color-text-secondary)">No pulls yet</span>`
+    :`<div class="hist-dots">${history.map((b,i)=>`<span class="hdot" style="background:${COLS[b].hex}" title="${COLS[b].name}">${i+1}</span>`).join('')}</div>`;
+
+  const rightMain=activeTab==='tree'
+    ?(nc===2?`<div class="tree-scroll">${buildTree()}</div>`
+            :`<div class="prose" style="padding:6px 0">Switch to 2 colours to use the probability tree.</div>`)
+    :buildBars();
+
+  R.innerHTML=`
+  <div class="card">
+    <div class="ct">THE MODEL</div>
+    <div class="pgrid">
+      <div class="prose"><strong>Start:</strong> one ball of each colour — every colour equally likely.</div>
+      <div class="prose"><strong>Pull &amp; replace:</strong> draw one at random, return it plus <strong>${addN}</strong> extra of the same colour. Winners grow their share.</div>
+      <div class="prose"><strong>Rich-get-richer:</strong> early luck compounds into dominance. The final proportion is path-dependent and unpredictable.</div>
+    </div>
+  </div>
+
+  <div class="sim-row">
+    <div class="left-col">
+      <div class="card">
+        <div class="ct">CONTROLS</div>
+        <div class="sl-row">
+          <span class="sl-lbl">Colours</span>
+          <input type="range" min="2" max="6" value="${nc}" oninput="nc=+this.value;reset();render()">
+          <span class="sl-val" id="nc-v">${nc}</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Add per pull</span>
+          <input type="range" min="1" max="4" value="${addN}" oninput="addN=+this.value;render()">
+          <span class="sl-val" id="add-v">+${addN}</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="pull()" ${history.length>=12?'disabled':''}>Pull</button>
+          <button class="btn" onclick="reset();render()">Reset</button>
+        </div>
+        <div class="pulls-count">Pulls: ${history.length} / 12</div>
+      </div>
+
+      <div class="card">
+        <div class="ct">URN — ${tot} balls</div>
+        <div class="urn-balls">${balls.map(b=>`<span class="ball" style="background:${COLS[b].hex}" title="${COLS[b].name}"></span>`).join('')}</div>
+        <div class="stat-pills">${Array.from({length:nc},(_,i)=>`<span class="pill" style="background:${COLS[i].light};color:${COLS[i].text}">${COLS[i].name[0]}:${c[i]||0}</span>`).join('')}</div>
+      </div>
+
+      <div class="card">
+        <div class="ct">PROBABILITIES</div>
+        ${probH}
+      </div>
+
+      <div class="card">
+        <div class="ct">PULL HISTORY</div>
+        ${histH}
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card" style="min-width:0">
+        <div class="tab-row">
+          <button class="tab ${activeTab==='tree'?'on':''}" onclick="activeTab='tree';render()">Probability tree</button>
+          <button class="tab ${activeTab==='bars'?'on':''}" onclick="activeTab='bars';render()">Proportion chart</button>
+        </div>
+        ${rightMain}
+      </div>
+      ${nc===2&&history.length>0?`<div class="card"><div class="ct">BAYESIAN UPDATE</div>${buildBayes()}</div>`:''}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">KEY IDEAS</div>
+    <div class="pgrid">
+      <div class="prose"><strong>Probability tree:</strong> each node shows ball counts at that branch point; edge labels are the probability of taking that path. Your actual pulls are highlighted — watch how a run of one colour bends later probabilities far from 50/50.</div>
+      <div class="prose"><strong>Bayesian update:</strong> prior = current ratio; evidence = the drawn colour; posterior = new ratio. Adding extra balls makes each update super-linear — winning colours gain proportionally more than they started with.</div>
+      <div class="prose"><strong>Path dependence:</strong> reset and pull again — a different long-run proportion emerges every time. Only the reinforcement mechanism is deterministic; the outcome is not. This is what <em>non-ergodic</em> means.</div>
+    </div>
+  </div>`;
+
+  const sls=R.querySelectorAll('input[type=range]');
+  if(sls[0]) sls[0].addEventListener('input',function(){const e=document.getElementById('nc-v');if(e)e.textContent=this.value;});
+  if(sls[1]) sls[1].addEventListener('input',function(){const e=document.getElementById('add-v');if(e)e.textContent='+'+this.value;});
+}
+
+reset(); render();
+</script>
+</body>
+</html>
