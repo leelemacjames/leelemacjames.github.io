@@ -26,7 +26,6 @@ window.MathJax = {
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
 
   body {
@@ -47,7 +46,7 @@ window.MathJax = {
     border-bottom: 1px solid var(--line);
     padding: 0.9rem 2rem;
     display: flex;
-    gap: 1.8rem;
+    gap: 1.6rem;
     flex-wrap: wrap;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -107,7 +106,6 @@ window.MathJax = {
   }
 
   p { margin-bottom: 1.1rem; }
-
   .lead { font-size: 1.12rem; }
 
   .mono {
@@ -131,6 +129,29 @@ window.MathJax = {
     color: var(--gold);
     display: block;
     margin-bottom: 0.6rem;
+  }
+
+  .bridge {
+    border: 1px solid var(--gold);
+    background: linear-gradient(180deg, #14130d 0%, #0c0b07 100%);
+    padding: 1.7rem 1.9rem;
+    margin: 2rem 0;
+  }
+  .bridge .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    margin-bottom: 0.9rem;
+  }
+  .bridge .q {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.35rem;
+    color: #efece2;
+    line-height: 1.4;
+    margin: 0.4rem 0 0.2rem;
   }
 
   .theorem {
@@ -200,12 +221,13 @@ window.MathJax = {
 <body>
 
 <nav>
-  <a href="#setup">Setup</a>
-  <a href="#spectral">Spectral Theorem</a>
   <a href="#polya">Pólya</a>
   <a href="#friedman">Friedman</a>
+  <a href="#bridge">The Bridge</a>
+  <a href="#general">General Object</a>
+  <a href="#spectral">Classification</a>
   <a href="#ehrenfest">Ehrenfest</a>
-  <a href="#general">General Matrix</a>
+  <a href="#dial">The Dial</a>
   <a href="#table">Conditions</a>
 </nav>
 
@@ -214,155 +236,145 @@ window.MathJax = {
 <header>
   <div class="kicker">Reinforced Processes · Analytical Foundations</div>
   <h1>Spectral Conditions for Two-Colour Replacement Urns</h1>
-  <div class="sub">From the general balanced replacement matrix down to Pólya, Friedman, and Ehrenfest as worked specialisations.</div>
+  <div class="sub">Two concrete urns first. The contrast between them forces the general object. The classification is then the answer to a question you already hold.</div>
 </header>
 
-<section id="setup">
-  <h2>The general object</h2>
-  <p class="lead">An urn holds balls of two colours. Each step draws a ball with probability equal to that colour's current proportion, then returns balls according to a fixed rule. The entire asymptotic theory is read from one matrix.</p>
-
-  <p>Let \(Z_n = (Z_n^{(1)}, Z_n^{(2)})\) be the colour counts after \(n\) draws and \(X_n = Z_n / \|Z_n\|_1\) the proportion vector. The dynamics are fixed by a <strong>replacement matrix</strong></p>
-
-  \[ A = \begin{pmatrix} a & b \\ c & d \end{pmatrix} \]
-
-  <p>where row \(i\) records how many balls of each colour are added when colour \(i\) is drawn: drawing colour 1 adds \(a\) of colour 1 and \(b\) of colour 2, and so on.</p>
-
-  <div class="callout">
-    <span class="tag">Balance condition</span>
-    The classical theory assumes each row sums to the same constant, \(a+b = c+d = S\). Then the total ball count grows deterministically as \(n S\) and the proportion is the right object to track. Without balance the urn needs the heavier non-balanced stochastic-approximation machinery; everything below assumes balance unless stated.
-  </div>
-
-  <p>Under balance, \(S\) is automatically the dominant (Perron) eigenvalue of \(A\), with the left eigenvector giving the limiting proportion direction. The work is all in the <em>second</em> eigenvalue.</p>
-</section>
-
-<div class="divider">· · ·</div>
-
-<section id="spectral">
-  <h2>The spectral classification</h2>
-  <p>Order the eigenvalues \(\lambda_1 \ge \operatorname{Re}\lambda_2\). Under balance \(\lambda_1 = S\). The single decisive quantity is the ratio</p>
-
-  \[ \rho = \frac{\operatorname{Re}\lambda_2}{\lambda_1}. \]
-
-  <div class="theorem">
-    <div class="label">Eigenvalue-ratio theorem (two colours)</div>
-    <p>The proportion \(X_n\) converges almost surely to the deterministic left-eigenvector direction of \(\lambda_1\). The fluctuations about that limit obey a trichotomy:</p>
-    <p><span class="regime-clt">If \(\rho &lt; \tfrac12\):</span> fluctuations are Gaussian of order \(n^{-1/2}\). Standard central limit behaviour; the past is forgotten.</p>
-    <p><span class="regime-mid">If \(\rho = \tfrac12\):</span> still Gaussian, but with a \(\sqrt{\log n}\) inflation of the variance scale. The critical case.</p>
-    <p><span class="regime-lock">If \(\rho &gt; \tfrac12\):</span> fluctuations are of order \(n^{\rho-1}\), which does <em>not</em> vanish on the CLT scale. The limit law is non-Gaussian and history-dependent. This is the lock-in phase.</p>
-  </div>
-
-  <p>The threshold \(\rho = \tfrac12\) is the whole conceptual payload. It is the line separating processes that forget their history from processes whose terminal state is decided by early, randomly amplified fluctuations. Everything in the specialisations below is just locating each named urn relative to this line.</p>
-
-  <p>Mechanically: writing the proportion recursion as a stochastic approximation \(X_{n+1} = X_n + \gamma_n\big(h(X_n) + \text{noise}\big)\) with step \(\gamma_n \sim 1/n\), the linearised drift near the fixed point has Jacobian eigenvalue \(\rho\). The competition between the \(n^{-1/2}\) noise injection and the \(n^{\rho-1}\) memory of past noise crosses over exactly at \(\rho = \tfrac12\). That is where the threshold comes from rather than being imposed.</p>
-</section>
-
-<div class="divider">· · ·</div>
-
 <section id="polya">
-  <h2>Specialisation I — Classic Pólya</h2>
-  <p>Draw a colour, return it, add one more of the same colour. Pure positive reinforcement.</p>
+  <h2>Start concrete — Classic Pólya</h2>
+  <p class="lead">An urn with one red and one blue ball. Draw one, return it, add a second ball of the colour you drew. Repeat. Pure positive reinforcement: whatever leads, leads harder.</p>
 
-  \[ A = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}, \qquad S = 1. \]
+  <p>Run it and watch the red proportion. It wanders, then settles. Run it again from the same start and it settles somewhere <em>else</em>. The surprising fact, the one to sit with before any theory: the proportion converges almost surely, but the value it converges to is itself random. For the symmetric start it is uniform on \([0,1]\); in general</p>
 
-  <p>Eigenvalues \(\lambda_1 = \lambda_2 = 1\), so \(\rho = 1 &gt; \tfrac12\). This sits at the extreme of the lock-in phase. The degeneracy is not incidental: it pushes the model past mere non-Gaussian fluctuation into a <em>random</em> limit. The proportion converges almost surely, but to a \(\mathrm{Beta}(\alpha,\beta)\) random variable set by the initial composition, not to a fixed number.</p>
+  \[ X_n \longrightarrow \mathrm{Beta}(\alpha_0, \beta_0), \]
+
+  <p>with parameters set by the initial composition. The limit is not a number the urn is seeking. It is a number the early draws happen to decide, after which the dynamics freeze.</p>
 
   <div class="callout">
-    <span class="tag">Reading</span>
-    The terminal state is decided by the early draws and then frozen. Different runs of the same urn converge to different limits. This is the canonical positive-feedback attractor: the past gets a permanent vote.
+    <span class="tag">Hold onto this</span>
+    Different runs of the identical urn reach different terminal proportions. The early, randomly amplified fluctuations get a permanent vote. Whatever invariant of this process explains "the past never washes out" is the thing we are eventually going to name.
   </div>
 </section>
 
 <section id="friedman">
-  <h2>Specialisation II — Friedman (anti-momentum)</h2>
-  <p>Draw a colour, return it, add one of the <em>opposite</em> colour. Negative reinforcement, the mean-reverting cousin.</p>
+  <h2>Now its mirror — Friedman</h2>
+  <p>Same urn, same draw, one change: add a ball of the <em>opposite</em> colour to the one you drew. Negative reinforcement. Whatever leads gets pushed back.</p>
 
-  \[ A = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \qquad S = 1. \]
-
-  <p>Eigenvalues are \(\lambda_1 = +1\) and \(\lambda_2 = -1\), so \(\rho = -1 &lt; \tfrac12\). Firmly in the CLT phase. The proportion converges to the deterministic value \(\tfrac12\) with Gaussian fluctuations of order \(n^{-1/2}\). No randomness in the limit, no lock-in.</p>
+  <p>Run it and watch again. This time every run does the same thing. The red proportion converges — to \(\tfrac12\), every time, with small Gaussian wobble of size \(n^{-1/2}\) around it. No randomness in the destination, no dependence on how the early draws happened to fall.</p>
 
   <div class="callout">
-    <span class="tag">Reading</span>
-    The negative second eigenvalue is the algebraic signature of restoring oscillation: a transient excess of one colour actively biases the next addition against it. Same balance constant \(S=1\) as classic Pólya, opposite asymptotic universe, and the only thing that changed was moving the \(1\)s off the diagonal.
+    <span class="tag">Hold onto this too</span>
+    Friedman differs from Pólya by a single structural choice: the added ball goes to the other colour instead of the same one. The rule changed by almost nothing. The asymptotic behaviour changed completely — from a random frozen limit to a deterministic forgotten-history one.
   </div>
 </section>
 
-<section id="ehrenfest">
-  <h2>Specialisation III — Ehrenfest (removal-based reversion)</h2>
-  <p>Here the pedagogy must be honest: Ehrenfest does <em>not</em> fit the additive balanced template, and seeing why is the lesson.</p>
-
-  <p>The Ehrenfest scheme has \(N\) balls split between two urns; each step picks a ball uniformly and moves it to the other urn. In replacement language this is a <strong>removal</strong> rule with a state-dependent transition probability, not a constant additive matrix. It therefore falls outside the affine-replacement family entirely.</p>
-
-  <p>The consequence is a different asymptotic object. The additive urns above have proportions that <em>converge</em> (to a point, or to a random variable). The Ehrenfest urn instead has a genuine <strong>stationary distribution</strong> that it relaxes toward and then maintains: \(\mathrm{Binomial}(N, \tfrac12)\). Nothing converges to a single value; a distribution is held in place.</p>
-
-  <p>The right linear-algebraic handle is no longer the replacement matrix but the Markov <strong>transition operator</strong> \(P\) on occupation states. Its eigenvalues are</p>
-
-  \[ \mu_k = 1 - \frac{2k}{N}, \qquad k = 0, 1, \dots, N. \]
-
-  <p>The spectral gap \(1 - \mu_1 = 2/N\) sets the relaxation rate toward stationarity. This <em>parallels</em> the \(\rho\) story — a subdominant eigenvalue controlling how fast memory of the initial condition decays — but on a different matrix doing analogous work.</p>
-
-  <div class="callout">
-    <span class="tag">The deliberate distinction</span>
-    Additive balanced urns: subdominant eigenvalue of the <em>replacement matrix</em> \(A\) governs whether proportions lock in. Ehrenfest: subdominant eigenvalue of the <em>transition operator</em> \(P\) governs relaxation toward a maintained distribution. Same idea (a second eigenvalue runs the asymptotics), two structurally different operators. Conflating them is the classic error; separating them cleanly is the point of including Ehrenfest at all.
+<section id="bridge">
+  <h2 style="border:none;">The bridge</h2>
+  <div class="bridge">
+    <div class="label">The question both urns have now forced</div>
+    <p>Encode each urn as the matrix that says, for each drawn colour, how many of each colour get added. Pólya is the identity \(\big(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\big)\). Friedman is the swap \(\big(\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\big)\). Both have rows summing to 1. They differ only in whether the entries sit on or off the diagonal.</p>
+    <p class="q">One freezes into a random limit, the other reverts to a fixed one. What single invariant of a \(2\times 2\) matrix flips between these two outcomes?</p>
   </div>
+
+  <p>That is the entire motivation for going general. We are not introducing a replacement matrix because the theory wants one; we are introducing it because we have two concrete urns whose only difference is the placement of two 1s, and we need to know which property of the matrix is doing the work. The answer turns out to be the <strong>second eigenvalue</strong>, and once that is the suspect, the right move is to write down every matrix of this shape at once and read the property off directly.</p>
 </section>
 
 <div class="divider">· · ·</div>
 
 <section id="general">
-  <h2>The general parameterised matrix</h2>
-  <p>Collapse the three instances back into one tunable object. Take the balanced two-colour replacement matrix with row sum \(S=1\):</p>
+  <h2>The general object</h2>
+  <p>Let \(Z_n\) be the colour counts after \(n\) draws and \(X_n = Z_n/\|Z_n\|_1\) the proportion vector. Draw colour \(i\) with probability equal to its current proportion, then add \(A_{ij}\) balls of colour \(j\), where</p>
+
+  \[ A = \begin{pmatrix} a & b \\ c & d \end{pmatrix} \]
+
+  <p>is the <strong>replacement matrix</strong>: row \(i\) is what gets added when colour \(i\) is drawn. Pólya and Friedman are now just two points in this family.</p>
+
+  <div class="callout">
+    <span class="tag">Balance condition</span>
+    The clean theory needs each row to sum to the same constant, \(a+b=c+d=S\). Then the total ball count grows deterministically as \(nS\) and the proportion is the meaningful object. Both motivating urns satisfy this with \(S=1\). Without balance the analysis needs heavier non-balanced stochastic-approximation tools; everything below assumes balance.
+  </div>
+
+  <p>Under balance, \(S\) is automatically the dominant (Perron) eigenvalue \(\lambda_1\), and its left eigenvector gives the deterministic limiting direction of \(X_n\). All the interesting behaviour — the very thing separating our two urns — lives in the <em>second</em> eigenvalue \(\lambda_2\).</p>
+</section>
+
+<section id="spectral">
+  <h2>The classification — answering the bridge</h2>
+  <p>Order the eigenvalues \(\lambda_1 \ge \operatorname{Re}\lambda_2\). The single decisive quantity is the ratio</p>
+
+  \[ \rho = \frac{\operatorname{Re}\lambda_2}{\lambda_1}. \]
+
+  <div class="theorem">
+    <div class="label">Eigenvalue-ratio theorem (two colours)</div>
+    <p>\(X_n\) converges almost surely to the deterministic \(\lambda_1\)-direction. Its fluctuations about that limit obey a trichotomy:</p>
+    <p><span class="regime-clt">\(\rho &lt; \tfrac12\):</span> Gaussian fluctuations of order \(n^{-1/2}\). History is forgotten.</p>
+    <p><span class="regime-mid">\(\rho = \tfrac12\):</span> still Gaussian, with a \(\sqrt{\log n}\) inflation. The knife-edge.</p>
+    <p><span class="regime-lock">\(\rho &gt; \tfrac12\):</span> fluctuations of order \(n^{\rho-1}\), not vanishing on the CLT scale; non-Gaussian, history-dependent limit. Lock-in.</p>
+  </div>
+
+  <p>Now resolve the bridge with the two urns in hand:</p>
+
+  <p><strong>Pólya.</strong> \(A=\big(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\big)\), eigenvalues \(1,1\), so \(\rho=1\). Past the threshold, and at the degenerate extreme where \(\lambda_1=\lambda_2\): this is exactly why the limit is not merely non-Gaussian but a <em>random</em> Beta variable. The frozen-random behaviour you watched is the \(\rho=1\) endpoint.</p>
+
+  <p><strong>Friedman.</strong> \(A=\big(\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\big)\), eigenvalues \(+1,-1\), so \(\rho=-1\). Far below the threshold. Deterministic limit \(\tfrac12\), Gaussian \(n^{-1/2}\) wobble. The negative second eigenvalue is the algebraic fingerprint of the restoring oscillation you observed.</p>
+
+  <p>So the invariant the bridge asked for is \(\rho\), and the line that flips the behaviour is \(\rho=\tfrac12\). The two urns were never qualitatively different processes with different rules; they were the same family evaluated on opposite sides of one eigenvalue threshold.</p>
+
+  <p>Where the threshold comes from, briefly: write the proportion recursion as a stochastic approximation \(X_{n+1}=X_n+\gamma_n(h(X_n)+\text{noise})\) with \(\gamma_n\sim 1/n\). The linearised drift near the fixed point has Jacobian eigenvalue \(\rho\). Fresh noise enters at scale \(n^{-1/2}\); remembered past noise decays at scale \(n^{\rho-1}\). They cross exactly at \(\rho=\tfrac12\). The threshold is derived, not imposed.</p>
+</section>
+
+<div class="divider">· · ·</div>
+
+<section id="ehrenfest">
+  <h2>The deliberate exception — Ehrenfest</h2>
+  <p>It is tempting to throw every "balls and urns" model into the family above. Ehrenfest is the instructive case where you must not, and seeing why sharpens the whole framework.</p>
+
+  <p>The Ehrenfest scheme: \(N\) balls split between two urns; each step moves a uniformly chosen ball to the other side. In replacement language this is a <strong>removal</strong> rule with a state-dependent transition probability — not a constant additive matrix. It falls outside the affine balanced family entirely.</p>
+
+  <p>The consequence is a different <em>kind</em> of limit. The additive urns have a proportion that converges (to a point, or to a random variable). Ehrenfest has no converging proportion at all; instead it relaxes toward and then maintains a stationary distribution, \(\mathrm{Binomial}(N,\tfrac12)\).</p>
+
+  <p>The right linear-algebraic handle is therefore not the replacement matrix but the Markov <strong>transition operator</strong> \(P\), with eigenvalues</p>
+
+  \[ \mu_k = 1 - \frac{2k}{N}, \qquad k=0,1,\dots,N, \]
+
+  <p>and spectral gap \(1-\mu_1 = 2/N\) setting the relaxation rate. This <em>parallels</em> the \(\rho\) story — a subdominant eigenvalue running the asymptotics — but on a different operator doing analogous work.</p>
+
+  <div class="callout">
+    <span class="tag">The distinction worth teaching</span>
+    Additive balanced urns: second eigenvalue of the <em>replacement matrix</em> \(A\) decides whether proportions lock in. Ehrenfest: second eigenvalue of the <em>transition operator</em> \(P\) decides how fast a maintained distribution is reached. Same idea, structurally different operators. Forcing Ehrenfest into the \(A\)-family is the standard error; keeping it adjacent-but-separate is the point of including it.
+  </div>
+</section>
+
+<div class="divider">· · ·</div>
+
+<section id="dial">
+  <h2>One dial through the whole family</h2>
+  <p>Collapse the additive case into a single tunable matrix. Balanced, symmetric, row sum \(1\):</p>
 
   \[ A(p) = \begin{pmatrix} p & 1-p \\ 1-p & p \end{pmatrix}, \qquad p \in [0,1]. \]
 
-  <p>This is symmetric and doubly balanced, so its eigenvectors are fixed regardless of \(p\): the Perron vector \((1,1)/2\) and the contrast vector \((1,-1)\). The eigenvalues are</p>
+  <p>Symmetric and doubly balanced, so the eigenvectors are fixed for all \(p\): Perron \((1,1)/2\) and contrast \((1,-1)\). The eigenvalues are</p>
 
-  \[ \lambda_1 = 1, \qquad \lambda_2 = 2p - 1, \qquad \Rightarrow \qquad \rho(p) = 2p - 1. \]
+  \[ \lambda_1 = 1, \qquad \lambda_2 = 2p-1, \qquad \Rightarrow \qquad \rho(p) = 2p-1. \]
 
-  <p>The single dial \(p\) now sweeps the entire trichotomy, and the named urns are just landmarks on it:</p>
+  <p>The two motivating urns are now just the endpoints of one slider:</p>
 
   <table>
     <thead>
       <tr><th>\(p\)</th><th>\(\rho = 2p-1\)</th><th>Regime</th><th>Named instance</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td class="mono">0</td>
-        <td class="mono">−1</td>
-        <td class="regime-clt">CLT, deterministic ½</td>
-        <td>Friedman (anti-momentum)</td>
-      </tr>
-      <tr>
-        <td class="mono">¼</td>
-        <td class="mono">−½</td>
-        <td class="regime-clt">CLT</td>
-        <td>—</td>
-      </tr>
-      <tr>
-        <td class="mono">¾</td>
-        <td class="mono">½</td>
-        <td class="regime-mid">Critical, \(\sqrt{\log n}\)</td>
-        <td>phase boundary</td>
-      </tr>
-      <tr>
-        <td class="mono">⅞</td>
-        <td class="mono">¾</td>
-        <td class="regime-lock">Lock-in, \(n^{\rho-1}\)</td>
-        <td>(elephant-walk analogue)</td>
-      </tr>
-      <tr>
-        <td class="mono">1</td>
-        <td class="mono">1</td>
-        <td class="regime-lock">Random Beta limit</td>
-        <td>Classic Pólya</td>
-      </tr>
+      <tr><td class="mono">0</td><td class="mono">−1</td><td class="regime-clt">CLT, deterministic ½</td><td>Friedman</td></tr>
+      <tr><td class="mono">¼</td><td class="mono">−½</td><td class="regime-clt">CLT</td><td>—</td></tr>
+      <tr><td class="mono">¾</td><td class="mono">½</td><td class="regime-mid">Critical, √log n</td><td>phase boundary</td></tr>
+      <tr><td class="mono">⅞</td><td class="mono">¾</td><td class="regime-lock">Lock-in, n^(ρ−1)</td><td>(elephant-walk analogue)</td></tr>
+      <tr><td class="mono">1</td><td class="mono">1</td><td class="regime-lock">Random Beta limit</td><td>Classic Pólya</td></tr>
     </tbody>
   </table>
 
-  <p>The pedagogically clean statement: <span class="mono">p &lt; ¾</span> forgets its history, <span class="mono">p = ¾</span> is the knife-edge, <span class="mono">p &gt; ¾</span> remembers it, and <span class="mono">p = 1</span> is the degenerate endpoint where memory becomes total and the limit itself goes random. Ehrenfest sits deliberately off this line — not a value of \(p\), but a different operator class — which is exactly why it earns a separate treatment rather than a row in this table.</p>
+  <p>Clean statement of the whole picture: <span class="mono">p &lt; ¾</span> forgets its history, <span class="mono">p = ¾</span> is the knife-edge, <span class="mono">p &gt; ¾</span> remembers it, and <span class="mono">p = 1</span> is the degenerate endpoint where memory becomes total and the limit itself goes random. Ehrenfest is deliberately <em>not</em> a value of \(p\) — different operator class — which is exactly why it earns separate treatment rather than a row here.</p>
 
   <div class="theorem">
-    <div class="label">What the later simulation must confirm, not discover</div>
-    <p>Fix \(p\) and estimate the fluctuation exponent of \(X_n\) about its limit by regressing \(\log \mathrm{Var}(X_n)\) on \(\log n\). The predicted slope is \(-1\) for \(p &lt; \tfrac34\) and \(2\rho - 2 = 4p - 4\) for \(p &gt; \tfrac34\), with a \(\log n\) inflation exactly at \(p = \tfrac34\). The simulation's only job is to land on these analytically fixed lines.</p>
+    <div class="label">What a later simulation must confirm, not discover</div>
+    <p>Fix \(p\), estimate the fluctuation exponent by regressing \(\log\mathrm{Var}(X_n)\) on \(\log n\). Predicted slope: \(-1\) for \(p&lt;\tfrac34\), and \(4p-4\) for \(p&gt;\tfrac34\), with a \(\log n\) inflation exactly at \(p=\tfrac34\). The numerics' only job is to land on these analytically fixed lines.</p>
   </div>
 </section>
 
