@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urn Spectral Regime Simulator</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=EB+Garamond&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#0d0d0d; --panel:#0c0d10; --panel2:#101116;
+    --gold:#c9a84c; --gold-soft:#c8a96e; --gold-bright:#dbb955;
+    --ink:#d8d4c8; --ink-dim:#8f8a7d; --line:#26241d;
+    --clt:#8fb89a; --mid:#dbb955; --lock:#d98a6a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'EB Garamond',Georgia,serif;font-size:17px;line-height:1.65;
+    padding:0 0 5rem;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 1.5rem}
+
+  header{padding:4rem 0 2.5rem;border-bottom:1px solid var(--line);margin-bottom:2.5rem}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--gold-soft);margin-bottom:1.1rem}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:2.6rem;
+    line-height:1.12;color:#efece2}
+  .sub{margin-top:1rem;color:var(--ink-dim);font-style:italic}
+
+  .controls{
+    border:1px solid var(--line);background:var(--panel2);
+    padding:1.6rem 1.7rem;margin-bottom:2rem;
+  }
+  .preset-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.5rem}
+  .preset{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.06em;
+    background:transparent;color:var(--ink-dim);
+    border:1px solid var(--line);padding:.55rem .9rem;cursor:pointer;
+    transition:all .18s;text-transform:uppercase;
+  }
+  .preset:hover{color:var(--gold-bright);border-color:var(--gold-soft)}
+  .preset.active{color:var(--bg);background:var(--gold);border-color:var(--gold);font-weight:500}
+
+  .slider-block{margin-bottom:1.3rem}
+  .slider-label{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--gold-soft);
+    margin-bottom:.7rem}
+  .slider-label .val{color:var(--gold-bright);font-size:.95rem}
+  input[type=range]{width:100%;-webkit-appearance:none;height:3px;
+    background:linear-gradient(90deg,var(--clt) 0%,var(--clt) 37.5%,var(--mid) 37.5%,var(--mid) 38.5%,var(--lock) 38.5%,var(--lock) 100%);
+    outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+    border-radius:50%;background:var(--gold-bright);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;
+    background:var(--gold-bright);border:2px solid var(--bg);cursor:pointer}
+
+  .params{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1rem;margin-bottom:1.3rem}
+  .param{border-left:2px solid var(--line);padding-left:.8rem}
+  .param .k{font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim)}
+  .param .v{font-family:'IBM Plex Mono',monospace;font-size:1.05rem;
+    color:var(--gold-bright);margin-top:.15rem}
+  .regime-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;
+    font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+    padding:.25rem .6rem;margin-top:.3rem}
+  .rb-clt{color:var(--clt);border:1px solid var(--clt)}
+  .rb-mid{color:var(--mid);border:1px solid var(--mid)}
+  .rb-lock{color:var(--lock);border:1px solid var(--lock)}
+
+  .knobs{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;
+    font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:var(--ink-dim)}
+  .knobs label{display:flex;align-items:center;gap:.5rem}
+  .knobs input[type=number]{width:62px;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);padding:.3rem .4rem;font-family:inherit;font-size:.74rem}
+  .run-btn{font-family:'IBM Plex Mono',monospace;font-size:.74rem;letter-spacing:.12em;
+    text-transform:uppercase;background:var(--gold);color:var(--bg);border:none;
+    padding:.6rem 1.4rem;cursor:pointer;font-weight:500;transition:opacity .15s}
+  .run-btn:hover{opacity:.85}
+  .run-btn.secondary{background:transparent;color:var(--gold-soft);border:1px solid var(--gold-soft)}
+
+  .chart-card{border:1px solid var(--line);background:var(--panel);
+    margin-bottom:1.6rem;padding:1.3rem 1.4rem}
+  .chart-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;
+    color:var(--gold-bright);margin-bottom:.2rem}
+  .chart-note{font-size:.92rem;color:var(--ink-dim);margin-bottom:1rem;font-style:italic}
+  canvas{width:100%;display:block}
+
+  .verdict{border:1px solid var(--gold);background:linear-gradient(180deg,#14130d,#0c0b07);
+    padding:1.2rem 1.4rem;margin-top:.8rem;font-size:.95rem}
+  .verdict .lbl{font-family:'IBM Plex Mono',monospace;font-size:.64rem;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--gold-bright);
+    display:block;margin-bottom:.5rem}
+  .verdict .ok{color:var(--clt)} .verdict .off{color:var(--lock)}
+
+  footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;
+    color:var(--ink-dim);text-align:center}
+  a.backlink{color:var(--gold-soft);text-decoration:none;border-bottom:1px solid var(--line)}
+  a.backlink:hover{color:var(--gold-bright)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Reinforced Processes · Interactive Companion</div>
+  <h1>Urn Spectral Regime Simulator</h1>
+  <div class="sub">Choose a spectral regime on the \(A(p)\) dial. The charts confirm the eigenvalue-ratio theorem rather than discover it.</div>
+</header>
+
+<div class="controls">
+  <div class="preset-row" id="presets"></div>
+
+  <div class="slider-block">
+    <div class="slider-label">
+      <span>reinforcement parameter&nbsp; \(p\) &nbsp;— same-colour add probability</span>
+      <span class="val" id="pVal">0.50</span>
+    </div>
+    <input type="range" id="pSlider" min="0" max="1" step="0.005" value="0.5">
+  </div>
+
+  <div class="params">
+    <div class="param"><div class="k">A(p)</div><div class="v" id="matVal">[.50 .50 / .50 .50]</div></div>
+    <div class="param"><div class="k">λ₁ , λ₂</div><div class="v" id="eigVal">1.00 , 0.00</div></div>
+    <div class="param"><div class="k">ρ = λ₂/λ₁</div><div class="v" id="rhoVal">0.00</div></div>
+    <div class="param"><div class="k">predicted regime</div><div id="regimeVal"></div></div>
+  </div>
+
+  <div class="knobs">
+    <label>runs <input type="number" id="nRuns" value="60" min="4" max="300"></label>
+    <label>draws <input type="number" id="nDraws" value="4000" min="200" max="40000"></label>
+    <label>start R/B <input type="number" id="r0" value="1" min="1" max="50">/<input type="number" id="b0" value="1" min="1" max="50"></label>
+    <button class="run-btn" id="runBtn">Run ensemble</button>
+    <button class="run-btn secondary" id="sweepBtn">Sweep slope vs p</button>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">1 · Ensemble proportion fan</div>
+  <div class="chart-note">Every run's red-proportion path, overlaid. Reversion collapses the fan; lock-in spreads it permanently.</div>
+  <canvas id="fanCanvas" height="320"></canvas>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">2 · Single-run stacked composition</div>
+  <div class="chart-note">One representative run as a stacked band — red below, blue above — showing how the split is or isn't decided early.</div>
+  <canvas id="stackCanvas" height="260"></canvas>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">3 · Variance vs n  (log–log)</div>
+  <div class="chart-note">The confirmatory panel. Theorem predicts slope −1 for \(p&lt;\tfrac34\) and \(4p-4\) for \(p&gt;\tfrac34\). Dashed gold is the prediction; points are measured.</div>
+  <canvas id="varCanvas" height="320"></canvas>
+  <div class="verdict" id="verdict"><span class="lbl">Confirmation</span><span id="verdictText">Run an ensemble to compare measured fluctuation scaling against the analytic prediction.</span></div>
+</div>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames<br>
+  <a class="backlink" href="https://leelemacjames.github.io/polya_Urn_Model.html">companion: leelemacjames.github.io/polya_Urn_Model.html</a>
+</footer>
+
+</div>
+
+<script>
+const PRESETS = [
+  {name:'Friedman', p:0.0,  cls:'rb-clt'},
+  {name:'CLT (ρ=−½)', p:0.25, cls:'rb-clt'},
+  {name:'Critical (ρ=½)', p:0.75, cls:'rb-mid'},
+  {name:'Lock-in (ρ=¾)', p:0.875, cls:'rb-lock'},
+  {name:'Pólya', p:1.0, cls:'rb-lock'}
+];
+
+const $ = id => document.getElementById(id);
+const slider=$('pSlider'), pVal=$('pVal'), matVal=$('matVal'),
+      eigVal=$('eigVal'), rhoVal=$('rhoVal'), regimeVal=$('regimeVal');
+
+function regimeOf(rho){
+  if (Math.abs(rho-0.5)<1e-9) return {txt:'CRITICAL · √log n',cls:'rb-mid'};
+  if (rho<0.5)  return {txt:'CLT · n^(−1/2)',cls:'rb-clt'};
+  if (rho>=1-1e-9) return {txt:'DEGENERATE · random Beta',cls:'rb-lock'};
+  return {txt:'LOCK-IN · n^(ρ−1)',cls:'rb-lock'};
+}
+
+function refresh(){
+  const p=parseFloat(slider.value);
+  pVal.textContent=p.toFixed(3);
+  const q=1-p;
+  matVal.textContent=`[${p.toFixed(2)} ${q.toFixed(2)} / ${q.toFixed(2)} ${p.toFixed(2)}]`;
+  const l1=1, l2=2*p-1, rho=l2/l1;
+  eigVal.textContent=`${l1.toFixed(2)} , ${l2.toFixed(2)}`;
+  rhoVal.textContent=rho.toFixed(3);
+  const r=regimeOf(rho);
+  regimeVal.innerHTML=`<span class="regime-badge ${r.cls}">${r.txt}</span>`;
+  document.querySelectorAll('.preset').forEach((b,i)=>
+    b.classList.toggle('active', Math.abs(PRESETS[i].p-p)<1e-6));
+}
+
+const pr=$('presets');
+PRESETS.forEach(ps=>{
+  const b=document.createElement('button');
+  b.className='preset'; b.textContent=ps.name;
+  b.onclick=()=>{slider.value=ps.p;refresh();};
+  pr.appendChild(b);
+});
+slider.addEventListener('input',refresh);
+refresh();
+
+// ---- simulation core --------------------------------------------------
+// A(p) additive urn: draw colour by proportion, add 1 ball.
+// drawn red  -> add red w.p. p, else add blue   (row 1 = [p, 1-p])
+// drawn blue -> add blue w.p. p, else add red   (row 2 = [1-p, p])
+function simulate(p, draws, r0, b0, sampleIdx){
+  let r=r0, b=b0;
+  const out=new Float64Array(sampleIdx.length);
+  let si=0;
+  for(let n=1;n<=draws;n++){
+    const tot=r+b;
+    const drewRed = Math.random() < r/tot;
+    const same = Math.random() < p;
+    if (drewRed){ if(same) r++; else b++; }
+    else       { if(same) b++; else r++; }
+    if (si<sampleIdx.length && n===sampleIdx[si]){
+      out[si]= r/(r+b); si++;
+    }
+  }
+  return out;
+}
+
+function logSpace(maxN, k){
+  const idx=[]; const a=Math.log(20), bb=Math.log(maxN);
+  for(let i=0;i<k;i++){
+    idx.push(Math.max(20,Math.round(Math.exp(a+(bb-a)*i/(k-1)))));
+  }
+  return [...new Set(idx)].sort((x,y)=>x-y);
+}
+
+// ---- canvas helpers ---------------------------------------------------
+function setupCanvas(cv){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  return {ctx,w,h};
+}
+const GRID='#1d1c16', AX='#3a3830', TXT='#8f8a7d';
+function axis(ctx,w,h,pad){
+  ctx.strokeStyle=AX; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad);
+  ctx.lineTo(w-pad,h-pad); ctx.stroke();
+}
+
+let lastData=null;
+
+function drawFan(samples, idx){
+  const cv=$('fanCanvas'); const {ctx,w,h}=setupCanvas(cv);
+  const pad=42; ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=GRID;
+  for(let g=0;g<=4;g++){const y=pad+(h-2*pad)*g/4;
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+  axis(ctx,w,h,pad);
+  const X=i=> pad+(w-2*pad)*Math.log(idx[i]/idx[0])/Math.log(idx[idx.length-1]/idx[0]);
+  const Y=v=> pad+(h-2*pad)*(1-v);
+  ctx.lineWidth=1;
+  samples.forEach(run=>{
+    ctx.strokeStyle='rgba(201,168,76,0.16)';
+    ctx.beginPath();
+    run.forEach((v,i)=>{ const x=X(i),y=Y(v); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.stroke();
+  });
+  // mean path
+  const mean=idx.map((_,i)=>samples.reduce((s,r)=>s+r[i],0)/samples.length);
+  ctx.strokeStyle=getCss('--gold-bright'); ctx.lineWidth=2;
+  ctx.beginPath();
+  mean.forEach((v,i)=>{const x=X(i),y=Y(v);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke();
+  ctx.fillStyle=TXT; ctx.font='11px "IBM Plex Mono"';
+  ctx.fillText('1.0',6,pad+4); ctx.fillText('0.5',6,h/2); ctx.fillText('0.0',6,h-pad+4);
+  ctx.fillText('n (log)',w/2-18,h-12);
+}
+
+function drawStack(run, idx){
+  const cv=$('stackCanvas'); const {ctx,w,h}=setupCanvas(cv);
+  const pad=42; ctx.clearRect(0,0,w,h);
+  const X=i=> pad+(w-2*pad)*i/(run.length-1);
+  const Y=v=> pad+(h-2*pad)*(1-v);
+  // red band (bottom)
+  ctx.beginPath(); ctx.moveTo(X(0),h-pad);
+  run.forEach((v,i)=>ctx.lineTo(X(i),Y(v)));
+  ctx.lineTo(X(run.length-1),h-pad); ctx.closePath();
+  ctx.fillStyle='rgba(217,138,106,0.30)'; ctx.fill();
+  // blue band (top)
+  ctx.beginPath(); ctx.moveTo(X(0),pad);
+  run.forEach((v,i)=>ctx.lineTo(X(i),Y(v)));
+  ctx.lineTo(X(run.length-1),pad); ctx.closePath();
+  ctx.fillStyle='rgba(143,184,154,0.22)'; ctx.fill();
+  // boundary
+  ctx.strokeStyle=getCss('--gold-bright'); ctx.lineWidth=2;
+  ctx.beginPath();
+  run.forEach((v,i)=>{const x=X(i),y=Y(v);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke();
+  axis(ctx,w,h,pad);
+  ctx.fillStyle=TXT; ctx.font='11px "IBM Plex Mono"';
+  ctx.fillText('blue',w-pad-34,pad+16); ctx.fillText('red',w-pad-30,h-pad-10);
+  ctx.fillText('draw n →',w/2-22,h-12);
+}
+
+function drawVar(idx, vars, p){
+  const cv=$('varCanvas'); const {ctx,w,h}=setupCanvas(cv);
+  const pad=46; ctx.clearRect(0,0,w,h);
+  const lx=idx.map(v=>Math.log10(v));
+  const ly=vars.map(v=>Math.log10(Math.max(v,1e-12)));
+  const xmin=Math.min(...lx), xmax=Math.max(...lx);
+  const ymin=Math.min(...ly), ymax=Math.max(...ly);
+  const padY=(ymax-ymin)*0.12||1;
+  const Y0=ymin-padY, Y1=ymax+padY;
+  const X=v=> pad+(w-2*pad)*(v-xmin)/(xmax-xmin);
+  const Y=v=> pad+(h-2*pad)*(1-(v-Y0)/(Y1-Y0));
+  ctx.strokeStyle=GRID;
+  for(let g=0;g<=4;g++){const y=pad+(h-2*pad)*g/4;
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+  axis(ctx,w,h,pad);
+  // predicted slope line
+  const predSlope = p>0.75+1e-9 ? (4*p-4) : -1;
+  const xa=xmin, xb=xmax;
+  const ya=ly[0], yb=ya+predSlope*(xb-xa);
+  ctx.strokeStyle=getCss('--gold'); ctx.setLineDash([6,5]); ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(X(xa),Y(ya)); ctx.lineTo(X(xb),Y(yb)); ctx.stroke();
+  ctx.setLineDash([]);
+  // measured points
+  ctx.fillStyle=getCss('--gold-bright');
+  lx.forEach((x,i)=>{ctx.beginPath();ctx.arc(X(x),Y(ly[i]),3,0,7);ctx.fill();});
+  // fitted slope (LS)
+  const meas = lsfit(lx,ly);
+  ctx.strokeStyle=getCss('--ink'); ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(X(xmin),Y(meas.a+meas.b*xmin));
+  ctx.lineTo(X(xmax),Y(meas.a+meas.b*xmax)); ctx.stroke();
+  ctx.fillStyle=TXT; ctx.font='11px "IBM Plex Mono"';
+  ctx.fillText('log₁₀ Var',8,pad-12);
+  ctx.fillText('log₁₀ n',w/2-18,h-12);
+  return {predSlope, measSlope:meas.b};
+}
+
+function lsfit(x,y){
+  const n=x.length;
+  const mx=x.reduce((a,b)=>a+b,0)/n, my=y.reduce((a,b)=>a+b,0)/n;
+  let sxy=0,sxx=0;
+  for(let i=0;i<n;i++){sxy+=(x[i]-mx)*(y[i]-my);sxx+=(x[i]-mx)**2;}
+  const b=sxy/sxx; return {b,a:my-b*mx};
+}
+
+function getCss(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// ---- run --------------------------------------------------------------
+$('runBtn').onclick=()=>{
+  const p=parseFloat(slider.value);
+  const runs=Math.max(4,Math.min(300,+$('nRuns').value));
+  const draws=Math.max(200,Math.min(40000,+$('nDraws').value));
+  const r0=+$('r0').value, b0=+$('b0').value;
+  const idx=logSpace(draws,28);
+  const samples=[];
+  for(let k=0;k<runs;k++) samples.push(simulate(p,draws,r0,b0,idx));
+  // ensemble variance at each idx
+  const vars=idx.map((_,i)=>{
+    const col=samples.map(r=>r[i]);
+    const m=col.reduce((a,b)=>a+b,0)/col.length;
+    return col.reduce((a,b)=>a+(b-m)**2,0)/col.length;
+  });
+  drawFan(samples,idx);
+  drawStack(samples[0],idx);
+  const res=drawVar(idx,vars,p);
+  lastData={p,idx,vars};
+
+  const v=$('verdictText');
+  const tol=0.35;
+  const close=Math.abs(res.measSlope-res.predSlope)<tol;
+  const rho=2*p-1;
+  v.innerHTML =
+    `ρ = ${rho.toFixed(3)}. Predicted log–log slope `+
+    `<b>${res.predSlope.toFixed(2)}</b>, measured `+
+    `<b>${res.measSlope.toFixed(2)}</b>. `+
+    (close
+      ? `<span class="ok">Within tolerance — theorem confirmed at this p.</span>`
+      : `<span class="off">Outside tolerance — raise runs/draws; finite-sample bias is largest near the ρ=½ knife-edge and at the degenerate p=1 endpoint.</span>`);
+};
+
+// ---- slope-vs-p sweep -------------------------------------------------
+$('sweepBtn').onclick=()=>{
+  const runs=Math.max(20,Math.min(120,+$('nRuns').value));
+  const draws=Math.max(500,Math.min(8000,+$('nDraws').value));
+  const r0=+$('r0').value,b0=+$('b0').value;
+  const ps=[0,0.15,0.3,0.45,0.6,0.7,0.78,0.85,0.92,0.98];
+  const idx=logSpace(draws,20);
+  const measured=ps.map(p=>{
+    const S=[]; for(let k=0;k<runs;k++)S.push(simulate(p,draws,r0,b0,idx));
+    const vars=idx.map((_,i)=>{const c=S.map(r=>r[i]);
+      const m=c.reduce((a,b)=>a+b)/c.length;
+      return c.reduce((a,b)=>a+(b-m)**2,0)/c.length;});
+    const lx=idx.map(v=>Math.log10(v)),ly=vars.map(v=>Math.log10(Math.max(v,1e-12)));
+    return lsfit(lx,ly).b;
+  });
+  // draw on fan canvas as slope-vs-p
+  const cv=$('fanCanvas');const {ctx,w,h}=setupCanvas(cv);
+  const pad=46;ctx.clearRect(0,0,w,h);
+  const predict=p=> p>0.75 ? 4*p-4 : -1;
+  const allY=[...measured,...ps.map(predict)];
+  const ymin=Math.min(...allY)-0.3,ymax=Math.max(...allY)+0.3;
+  const X=p=>pad+(w-2*pad)*p;
+  const Y=s=>pad+(h-2*pad)*(1-(s-ymin)/(ymax-ymin));
+  ctx.strokeStyle=GRID;
+  for(let g=0;g<=4;g++){const y=pad+(h-2*pad)*g/4;
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+  axis(ctx,w,h,pad);
+  // prediction curve
+  ctx.strokeStyle=getCss('--gold');ctx.setLineDash([6,5]);ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let p=0;p<=1.0001;p+=0.01){const x=X(p),y=Y(predict(p));
+    p?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+  ctx.stroke();ctx.setLineDash([]);
+  // p=3/4 marker
+  ctx.strokeStyle=getCss('--mid');ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(X(0.75),pad);ctx.lineTo(X(0.75),h-pad);ctx.stroke();
+  // measured points
+  ctx.fillStyle=getCss('--gold-bright');
+  ps.forEach((p,i)=>{ctx.beginPath();ctx.arc(X(p),Y(measured[i]),4,0,7);ctx.fill();});
+  ctx.fillStyle=TXT;ctx.font='11px "IBM Plex Mono"';
+  ctx.fillText('slope',8,pad-12);ctx.fillText('p',w/2,h-12);
+  ctx.fillText('p=¾',X(0.75)+4,pad+12);
+  $('verdictText').innerHTML='Slope-vs-p sweep: measured fluctuation exponents (points) against the analytic prediction (dashed). The kink at p=¾ is the ρ=½ knife-edge of the eigenvalue-ratio theorem.';
+};
+
+window.addEventListener('resize',()=>{ if(lastData){ /* keep static */ }});
+</script>
+</body>
+</html>
