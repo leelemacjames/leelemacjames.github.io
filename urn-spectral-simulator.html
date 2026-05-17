@@ -35,6 +35,20 @@ window.MathJax = {
     line-height:1.12;color:#efece2}
   .sub{margin-top:1rem;color:var(--ink-dim);font-style:italic}
 
+  .preamble{margin-bottom:2.2rem;font-size:1.02rem}
+  .preamble p{margin-bottom:.95rem}
+  .preamble a.backlink{color:var(--gold-soft);text-decoration:none;
+    border-bottom:1px solid var(--gold-soft)}
+  .preamble a.backlink:hover{color:var(--gold-bright)}
+  .tag-mom{display:inline-block;font-family:'IBM Plex Mono',monospace;
+    font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+    padding:.2rem .55rem;margin-right:.4rem;vertical-align:.08em}
+
+  .defn{border:1px solid var(--line);background:var(--panel2);
+    padding:1.2rem 1.4rem 0.6rem;margin-bottom:1.4rem;text-align:center}
+  .defn-cap{font-size:.86rem;color:var(--ink-dim);font-style:italic;
+    margin-top:.3rem}
+
   .controls{
     border:1px solid var(--line);background:var(--panel2);
     padding:1.6rem 1.7rem;margin-bottom:2rem;
@@ -114,8 +128,24 @@ window.MathJax = {
 <header>
   <div class="kicker">Reinforced Processes · Interactive Companion</div>
   <h1>Urn Spectral Regime Simulator</h1>
-  <div class="sub">Choose a spectral regime on the \(A(p)\) dial. The charts confirm the eigenvalue-ratio theorem rather than discover it.</div>
+  <div class="sub">Move the dial, watch the derivation hold. The charts confirm the eigenvalue-ratio theorem; they do not discover it.</div>
 </header>
+
+<div class="preamble">
+  <p>A two-colour urn draws a ball with probability equal to that colour's current share, then adds balls by a fixed rule. The single parameter \(p\) is the probability that the added ball <em>matches</em> the colour drawn. That one number sets whether the urn has <strong>momentum</strong> or <strong>anti-momentum</strong>:</p>
+
+  <p><span class="tag-mom rb-lock">momentum</span> &nbsp;High \(p\) is <em>positive reinforcement</em>: the colour you drew is the colour you add, so a transient lead feeds itself. The urn remembers its early history and can freeze into it. Pólya (\(p=1\)) is the pure case.</p>
+
+  <p><span class="tag-mom rb-clt">anti-momentum</span> &nbsp;Low \(p\) is <em>negative reinforcement</em>: the added ball opposes the drawn one, so any lead is actively pushed back. The urn forgets its history and reverts. Friedman (\(p=0\)) is the pure case.</p>
+
+  <p>The whole point of the companion explainer is that this momentum/anti-momentum split is not a difference of two unrelated models — it is one family read on opposite sides of a single eigenvalue threshold, \(\rho=\tfrac12\). This page lets you sweep the dial across that threshold and see the predicted behaviour appear. For the derivation of why \(\rho=\tfrac12\) is the dividing line, read the explainer first: <a class="backlink" href="https://leelemacjames.github.io/urn-spectral-conditions.html">leelemacjames.github.io/urn-spectral-conditions.html</a>.</p>
+</div>
+
+<div class="defn">
+  \[ A(p)=\begin{pmatrix} p & 1-p \\ 1-p & p \end{pmatrix},\qquad
+     \lambda_1=1,\quad \lambda_2=2p-1,\quad \rho=\frac{\lambda_2}{\lambda_1}=2p-1. \]
+  <div class="defn-cap">Row \(i\) = balls added when colour \(i\) is drawn. The live readout below is this matrix evaluated at the current \(p\).</div>
+</div>
 
 <div class="controls">
   <div class="preset-row" id="presets"></div>
@@ -129,9 +159,9 @@ window.MathJax = {
   </div>
 
   <div class="params">
-    <div class="param"><div class="k">A(p)</div><div class="v" id="matVal">[.50 .50 / .50 .50]</div></div>
-    <div class="param"><div class="k">λ₁ , λ₂</div><div class="v" id="eigVal">1.00 , 0.00</div></div>
-    <div class="param"><div class="k">ρ = λ₂/λ₁</div><div class="v" id="rhoVal">0.00</div></div>
+    <div class="param"><div class="k">A(p) now</div><div class="v" id="matVal">[.50 .50 / .50 .50]</div></div>
+    <div class="param"><div class="k">lambda 1 , lambda 2</div><div class="v" id="eigVal">1.00 , 0.00</div></div>
+    <div class="param"><div class="k">rho = l2 / l1</div><div class="v" id="rhoVal">0.00</div></div>
     <div class="param"><div class="k">predicted regime</div><div id="regimeVal"></div></div>
   </div>
 
@@ -146,7 +176,7 @@ window.MathJax = {
 
 <div class="chart-card">
   <div class="chart-title">1 · Ensemble proportion fan</div>
-  <div class="chart-note">Every run's red-proportion path, overlaid. Reversion collapses the fan; lock-in spreads it permanently.</div>
+  <div class="chart-note">Each faint line is one run; the bright line is the ensemble mean. <b>y-axis = fraction of balls that are red after \(n\) draws</b>; x-axis = \(n\) on a log scale. The dashed green line marks the ½ split. Read it this way: if the lines <em>converge onto</em> ½ as \(n\) grows, the urn forgets its history (anti-momentum). If they <em>stay fanned out</em> at the right edge, each run has locked into its own terminal proportion (momentum). The width of the fan at the right edge <em>is</em> the fluctuation that chart 3 measures.</div>
   <canvas id="fanCanvas" height="320"></canvas>
 </div>
 
@@ -165,7 +195,8 @@ window.MathJax = {
 
 <footer>
   Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames<br>
-  <a class="backlink" href="https://leelemacjames.github.io/polya_Urn_Model.html">companion: leelemacjames.github.io/polya_Urn_Model.html</a>
+  explainer: <a class="backlink" href="https://leelemacjames.github.io/urn-spectral-conditions.html">leelemacjames.github.io/urn-spectral-conditions.html</a>
+  &nbsp;·&nbsp; origin: <a class="backlink" href="https://leelemacjames.github.io/polya_Urn_Model.html">polya_Urn_Model.html</a>
 </footer>
 
 </div>
@@ -269,6 +300,10 @@ function drawFan(samples, idx){
   axis(ctx,w,h,pad);
   const X=i=> pad+(w-2*pad)*Math.log(idx[i]/idx[0])/Math.log(idx[idx.length-1]/idx[0]);
   const Y=v=> pad+(h-2*pad)*(1-v);
+  // 0.5 reference line
+  ctx.strokeStyle='rgba(143,184,154,0.35)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad,Y(0.5)); ctx.lineTo(w-pad,Y(0.5)); ctx.stroke();
+  ctx.setLineDash([]);
   ctx.lineWidth=1;
   samples.forEach(run=>{
     ctx.strokeStyle='rgba(201,168,76,0.16)';
@@ -283,8 +318,13 @@ function drawFan(samples, idx){
   mean.forEach((v,i)=>{const x=X(i),y=Y(v);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
   ctx.stroke();
   ctx.fillStyle=TXT; ctx.font='11px "IBM Plex Mono"';
-  ctx.fillText('1.0',6,pad+4); ctx.fillText('0.5',6,h/2); ctx.fillText('0.0',6,h-pad+4);
-  ctx.fillText('n (log)',w/2-18,h-12);
+  ctx.fillText('1.0',6,pad+4); ctx.fillText('0.5',6,Y(0.5)+4); ctx.fillText('0.0',6,h-pad+4);
+  ctx.fillText('n  (draws, log scale)',w/2-50,h-12);
+  ctx.save();
+  ctx.translate(13,h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle=getCss('--gold-soft');
+  ctx.fillText('red-ball proportion  X\u2099',-58,0);
+  ctx.restore();
 }
 
 function drawStack(run, idx){
