@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscillations: From Springs to Oobleck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-dim: #8a6e2f;
+  --bg: #0d0d0d;
+  --bg2: #141414;
+  --bg3: #1a1a1a;
+  --border: #2a2a2a;
+  --border-gold: rgba(201,168,76,0.3);
+  --text: #e8e2d4;
+  --text-dim: #7a7060;
+  --text-mid: #b0a898;
+  --red: #c0392b;
+  --blue: #3498db;
+  --teal: #1abc9c;
+  --amber: #f39c12;
+  --purple: #9b59b6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.7;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 3rem 2rem 6rem;
+}
+h1 {
+  font-size: 2.8rem;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border-gold);
+  padding-bottom: 1rem;
+  margin-bottom: 0.4rem;
+}
+.subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 3rem;
+}
+h2 {
+  font-size: 1.7rem;
+  font-weight: 400;
+  color: var(--gold);
+  margin: 3rem 0 0.8rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+h3 {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--text-mid);
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 1.8rem 0 0.6rem;
+  letter-spacing: 0.03em;
+}
+p { margin-bottom: 1rem; }
+em { font-style: italic; color: var(--gold); }
+strong { font-weight: 600; color: var(--text); }
+.mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.85em; color: var(--gold); }
+
+.equation-block {
+  background: var(--bg2);
+  border-left: 3px solid var(--gold);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--gold);
+  border-radius: 0 4px 4px 0;
+}
+.equation-block .label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+}
+
+.callout {
+  background: var(--bg3);
+  border: 1px solid var(--border-gold);
+  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+.callout.blue { border-color: rgba(52,152,219,0.4); }
+.callout.teal { border-color: rgba(26,188,156,0.4); }
+.callout.amber { border-color: rgba(243,156,18,0.4); }
+.callout-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.callout-title.gold { color: var(--gold); }
+.callout-title.blue { color: var(--blue); }
+.callout-title.teal { color: var(--teal); }
+.callout-title.amber { color: var(--amber); }
+
+/* ── Simulator panels ── */
+.sim-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+.sim-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+canvas {
+  display: block;
+  background: #0a0a0a;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  width: 100%;
+}
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.ctrl-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.ctrl-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+}
+.ctrl-label span { color: var(--gold); }
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  outline: none;
+  border-radius: 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  cursor: pointer;
+}
+.btn-row { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+button {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button:hover { background: rgba(201,168,76,0.1); }
+button.active { background: rgba(201,168,76,0.15); border-color: var(--gold); }
+
+/* fluid selector buttons */
+.fluid-btn {
+  flex: 1;
+  text-align: center;
+  padding: 0.6rem 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+.fluid-btn:hover { border-color: var(--border-gold); color: var(--gold); background: rgba(201,168,76,0.05); }
+.fluid-btn.sel { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1); }
+
+.regime-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.8rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+/* phase portrait */
+.portrait-wrap {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.portrait-wrap canvas { flex: 1; }
+
+/* data table */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 1rem 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+}
+.data-grid > div {
+  background: var(--bg2);
+  padding: 0.5rem 0.8rem;
+  color: var(--text-dim);
+}
+.data-grid .dh { background: var(--bg3); color: var(--gold); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.data-grid .dv { color: var(--text); }
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 3rem 0;
+}
+.foot {
+  margin-top: 5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<h1>Oscillations</h1>
+<div class="subtitle">Year 10 Physics · Springs, Fluids &amp; Oobleck · A Learner</div>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 1 -->
+<h2>§1 — What is Simple Harmonic Motion?</h2>
+
+<p>Pull a mass on a spring and release it. It doesn't just fall — it bounces, repeatedly, in a pattern so regular you could set your watch by it. This is <em>simple harmonic motion</em> (SHM): oscillation where the restoring force is always proportional to displacement, always pointing back toward equilibrium.</p>
+
+<div class="equation-block">
+  <div class="label">Restoring force — Hooke's Law</div>
+  F = −kx
+</div>
+
+<p>The minus sign is the physics. When you stretch the spring (<span class="mono">x > 0</span>), the force pulls back (<span class="mono">F &lt; 0</span>). Compress it, the force pushes forward. The spring is always trying to return the mass to <span class="mono">x = 0</span>.</p>
+
+<div class="callout blue">
+  <div class="callout-title blue">Why "simple"?</div>
+  SHM is "simple" because the restoring force is linear in displacement. Real springs obey this well for small displacements. Large stretches introduce nonlinearities — the maths gets harder, the motion less regular. Year 10 lives in the linear world.
+</div>
+
+<h3>The equation of motion</h3>
+<p>Newton's second law gives <span class="mono">F = ma</span>, so combining with Hooke's Law:</p>
+
+<div class="equation-block">
+  <div class="label">Equation of motion — SHM</div>
+  mẍ + kx = 0
+  <br><br>
+  ẍ + ω²x = 0 &nbsp;&nbsp;&nbsp; where ω² = k/m
+</div>
+
+<p>The solution to this differential equation is a sinusoid:</p>
+
+<div class="equation-block">
+  <div class="label">General solution</div>
+  x(t) = A cos(ωt + φ)
+  <br><br>
+  v(t) = −Aω sin(ωt + φ)
+  <br>
+  a(t) = −Aω² cos(ωt + φ)
+</div>
+
+<p>Three quantities define the oscillation completely: <em>amplitude</em> A (maximum displacement), <em>angular frequency</em> ω (how fast), and <em>phase</em> φ (where we start in the cycle). The period <span class="mono">T = 2π/ω = 2π√(m/k)</span> is strikingly independent of amplitude — swing harder, but not faster.</p>
+
+<div class="callout">
+  <div class="callout-title gold">Key quantities at a glance</div>
+  Angular frequency: <span class="mono">ω = √(k/m)</span> rad/s<br>
+  Period: <span class="mono">T = 2π/ω</span> seconds<br>
+  Frequency: <span class="mono">f = 1/T</span> Hz<br>
+  Maximum speed: <span class="mono">v_max = Aω</span> (at x = 0)<br>
+  Maximum acceleration: <span class="mono">a_max = Aω²</span> (at x = ±A)
+</div>
+
+<!-- ─── SHM SIMULATOR ─── -->
+<div class="sim-panel">
+  <div class="sim-title">Simulator 1 — Simple Harmonic Motion</div>
+  <canvas id="shmCanvas" height="200"></canvas>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-label">Mass m (kg) <span id="mVal">1.0</span></div>
+      <input type="range" id="shmM" min="0.2" max="3" step="0.1" value="1.0">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Spring k (N/m) <span id="kVal">10</span></div>
+      <input type="range" id="shmK" min="1" max="40" step="1" value="10">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Amplitude A (m) <span id="aVal">0.20</span></div>
+      <input type="range" id="shmA" min="0.05" max="0.35" step="0.01" value="0.20">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Derived — ω (rad/s) <span id="omegaVal">3.16</span></div>
+      <div class="ctrl-label" style="margin-top:4px;">Period T (s) <span id="periodVal">1.99</span></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button id="shmPlayBtn" class="active" onclick="toggleSHM()">Pause</button>
+    <button onclick="resetSHM()">Reset</button>
+  </div>
+</div>
+
+<h3>Energy in SHM</h3>
+<p>The total mechanical energy is constant and shuttles between kinetic and potential:</p>
+
+<div class="equation-block">
+  <div class="label">Energy conservation in SHM</div>
+  E_total = ½kA²
+  <br>
+  KE = ½mv² = ½k(A² − x²)
+  <br>
+  PE = ½kx²
+</div>
+
+<p>At the endpoints (<span class="mono">x = ±A</span>) all energy is stored in the spring. At <span class="mono">x = 0</span> all energy is kinetic — the mass moves fastest here. This energy exchange is one of the most beautiful balancing acts in physics.</p>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
+<h2>§2 — Introducing Damping</h2>
+
+<p>Real oscillators don't run forever. Energy leaks out through friction, air resistance, or — in our case — fluid drag. This is <em>damping</em>, and it changes everything about the long-term behaviour while leaving the short-term physics recognisable.</p>
+
+<p>The simplest model adds a drag force proportional to velocity:</p>
+
+<div class="equation-block">
+  <div class="label">Damping force — viscous drag</div>
+  F_drag = −bẋ
+  <br><br>
+  mẍ + bẋ + kx = 0
+</div>
+
+<p>The parameter <em>b</em> is the damping coefficient, in units of kg/s. The equation now has three terms: inertia (mẍ), damping (bẋ), and restoring force (kx). These three quantities are always in balance.</p>
+
+<h3>The three regimes</h3>
+<p>Define the <em>damping ratio</em> <span class="mono">ζ = b / (2√(mk))</span>. This single number determines which of three qualitatively different behaviours you get:</p>
+
+<div class="data-grid">
+  <div class="dh">Regime</div><div class="dh">Condition</div><div class="dh">ζ</div><div class="dh">Behaviour</div>
+  <div class="dv">Underdamped</div><div>b &lt; 2√(mk)</div><div class="dv">ζ &lt; 1</div><div>Oscillates, decays</div>
+  <div class="dv">Critically damped</div><div>b = 2√(mk)</div><div class="dv">ζ = 1</div><div>Returns fastest, no oscillation</div>
+  <div class="dv">Overdamped</div><div>b &gt; 2√(mk)</div><div class="dv">ζ &gt; 1</div><div>Sluggish return, no oscillation</div>
+</div>
+
+<h3>Underdamped solution</h3>
+<p>When <span class="mono">ζ &lt; 1</span> the system still oscillates but at a slightly reduced frequency, and the amplitude decays exponentially:</p>
+
+<div class="equation-block">
+  <div class="label">Underdamped solution</div>
+  x(t) = Ae^(−γt) cos(ω_d t + φ)
+  <br><br>
+  γ = b/(2m) &nbsp;&nbsp;&nbsp; (decay rate)
+  <br>
+  ω_d = √(ω₀² − γ²) &nbsp;&nbsp;&nbsp; (damped angular frequency)
+</div>
+
+<p>The factor <span class="mono">Ae^(−γt)</span> is the decaying envelope — an exponential shroud around the oscillation. The damped frequency ω_d is always less than the natural frequency ω₀; damping slows the oscillation slightly.</p>
+
+<!-- ─── DAMPING SIMULATOR ─── -->
+<div class="sim-panel">
+  <div class="sim-title">Simulator 2 — Damped Harmonic Motion</div>
+  <canvas id="dampCanvas" height="220"></canvas>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-label">Mass m (kg) <span id="dmVal">0.5</span></div>
+      <input type="range" id="dampM" min="0.1" max="2" step="0.1" value="0.5">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Spring k (N/m) <span id="dkVal">20</span></div>
+      <input type="range" id="dampK" min="5" max="60" step="1" value="20">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Damping b (kg/s) <span id="dbVal">0.8</span></div>
+      <input type="range" id="dampB" min="0.0" max="12" step="0.1" value="0.8">
+    </div>
+    <div class="ctrl-row" style="justify-content:flex-end; align-items:flex-end; padding-bottom:4px;">
+      <div id="regimeBadge" class="regime-badge">Underdamped (ζ = 0.20)</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button id="dampPlayBtn" class="active" onclick="toggleDamp()">Pause</button>
+    <button onclick="resetDamp()">Reset</button>
+  </div>
+</div>
+
+<div class="callout teal">
+  <div class="callout-title teal">Observation task</div>
+  Use Simulator 2. Start with b low — you'll see oscillation with a decaying envelope. Gradually increase b. Watch carefully for the moment the oscillation disappears. That transition is critical damping (ζ = 1). Keep increasing and notice how the return to zero actually slows down — the overdamped case.
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
+<h2>§3 — Spring-Mass in a Fluid</h2>
+
+<p>Now make the damping physical. Submerge the spring-mass system in a fluid. The drag force on an object moving through a viscous fluid at low speeds is given by <em>Stokes' Law</em>:</p>
+
+<div class="equation-block">
+  <div class="label">Stokes drag — sphere of radius r</div>
+  F_drag = 6πηrv = bv
+  <br><br>
+  b = 6πηr
+</div>
+
+<p>Here <em>η</em> is the dynamic viscosity of the fluid (in Pa·s). Water has <span class="mono">η ≈ 0.001 Pa·s</span>. This tells us b is determined by the fluid's resistance to flow, and by the size of the object moving through it.</p>
+
+<h3>Newtonian fluids</h3>
+<p>Water is a <em>Newtonian fluid</em>: its viscosity is constant, independent of how fast you stir it. The drag is simply proportional to velocity. Submerge a spring-mass system in water and you get textbook underdamped motion for a light enough bob, gradually losing amplitude as energy dissipates into warming the water.</p>
+
+<div class="callout">
+  <div class="callout-title gold">Real viscosities</div>
+  Water at 20°C: <span class="mono">η ≈ 0.001 Pa·s</span><br>
+  Olive oil: <span class="mono">η ≈ 0.1 Pa·s</span><br>
+  Honey: <span class="mono">η ≈ 10 Pa·s</span><br>
+  Oobleck (at rest): <span class="mono">η ≈ 100–10,000 Pa·s</span> (highly variable!)
+</div>
+
+<h3>Non-Newtonian fluids — oobleck</h3>
+<p>Mix cornstarch and water in roughly a 2:1 ratio by mass (cornstarch to water) and you get <em>oobleck</em> — named after Dr. Seuss. It is profoundly strange. Poke it hard and it solidifies; let it flow gently and it behaves like a liquid. This is called <em>shear-thickening</em> behaviour: viscosity increases with shear rate.</p>
+
+<p>Oobleck is a <em>dilatant</em> fluid. Its cornstarch particles pack together under rapid compression, creating momentary interlocking structures — essentially jamming. The faster you move through it, the harder it resists. This makes the damping force deeply nonlinear:</p>
+
+<div class="equation-block">
+  <div class="label">Generalised power-law drag (Ostwald–de Waele model)</div>
+  F_drag = −K |ẋ|^(n−1) ẋ
+  <br><br>
+  n &lt; 1 → shear-thinning (ketchup, blood)
+  <br>
+  n = 1 → Newtonian (water)
+  <br>
+  n &gt; 1 → shear-thickening (oobleck, wet sand)
+</div>
+
+<p>For oobleck, <span class="mono">n ≈ 1.5–3</span> depending on concentration. This means the drag ramps up super-linearly with velocity — slow oscillations are barely damped, fast ones are crushed.</p>
+
+<!-- ─── FLUID SIMULATOR ─── -->
+<div class="sim-panel">
+  <div class="sim-title">Simulator 3 — Spring-Mass in Varying Fluids</div>
+  <canvas id="fluidCanvas" height="300"></canvas>
+  <div class="btn-row" style="margin-bottom:0.8rem;">
+    <button class="fluid-btn sel" id="fBtn0" onclick="setFluid(0)">Vacuum<br>(no drag)</button>
+    <button class="fluid-btn" id="fBtn1" onclick="setFluid(1)">Water<br>(Newtonian)</button>
+    <button class="fluid-btn" id="fBtn2" onclick="setFluid(2)">Corn 1:2<br>(dilute mix)</button>
+    <button class="fluid-btn" id="fBtn3" onclick="setFluid(3)">Oobleck 2:1<br>(n ≈ 2.0)</button>
+    <button class="fluid-btn" id="fBtn4" onclick="setFluid(4)">Dense Oobleck<br>(n ≈ 3.0)</button>
+  </div>
+  <canvas id="fluidTrace" height="120" style="margin-top:0.5rem;"></canvas>
+  <div style="display:flex; gap:1rem; margin-top:0.6rem; font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--text-dim);">
+    <span>Model: <span id="fluidModel" style="color:var(--gold);">Vacuum (b=0)</span></span>
+    <span>Power law n: <span id="fluidN" style="color:var(--gold);">—</span></span>
+    <span>Regime: <span id="fluidRegime" style="color:var(--gold);">Underdamped</span></span>
+  </div>
+  <div class="btn-row">
+    <button id="fluidPlayBtn" class="active" onclick="toggleFluid()">Pause</button>
+    <button onclick="resetFluid()">Reset</button>
+  </div>
+</div>
+
+<div class="callout amber">
+  <div class="callout-title amber">What to notice with oobleck</div>
+  Switch between Water and Oobleck 2:1. At large amplitudes (fast motion) the oobleck damps much more aggressively than the linear model predicts. But watch what happens as the oscillations decay and become slow — the oobleck behaves more like water. This velocity-dependent viscosity is the signature of shear thickening.
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
+<h2>§4 — Phase Portraits</h2>
+
+<p>A position-time graph tells one story. A <em>phase portrait</em> — displacement x on the horizontal axis, velocity v on the vertical — tells another. In SHM the trajectory is a perfect ellipse. Damping spirals the trajectory inward toward the origin.</p>
+
+<div class="sim-panel">
+  <div class="sim-title">Simulator 4 — Phase Portrait</div>
+  <div class="portrait-wrap">
+    <canvas id="phaseCanvas" height="280" style="max-width:300px;"></canvas>
+    <div style="flex:1;">
+      <canvas id="phaseTrace" height="140"></canvas>
+      <canvas id="phaseVTrace" height="140" style="margin-top:4px;"></canvas>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-label">Damping b <span id="pdbVal">1.0</span></div>
+      <input type="range" id="phaseB" min="0" max="8" step="0.1" value="1.0">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Amplitude A <span id="pdaVal">0.25</span></div>
+      <input type="range" id="phaseA" min="0.05" max="0.35" step="0.01" value="0.25">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button id="phasePlayBtn" class="active" onclick="togglePhase()">Pause</button>
+    <button onclick="resetPhase()">Reset</button>
+  </div>
+</div>
+
+<div class="callout blue">
+  <div class="callout-title blue">Reading the phase portrait</div>
+  Each point on the spiral encodes the complete state of the oscillator at one moment — both where the mass is and how fast it's moving. The inward spiral visualises energy loss. A perfect ellipse (b = 0) means no damping — the system revisits every state forever.
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
+<h2>§5 — Summary &amp; Connections</h2>
+
+<div class="data-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="dh">System</div><div class="dh">Key parameter</div><div class="dh">Real example</div>
+  <div class="dv">Ideal SHM</div><div>ω = √(k/m)</div><div>Tuning fork, pendulum (small angle)</div>
+  <div class="dv">Underdamped</div><div>ζ &lt; 1</div><div>Car suspension on smooth road</div>
+  <div class="dv">Critically damped</div><div>ζ = 1</div><div>Closing a door with a damper</div>
+  <div class="dv">Overdamped</div><div>ζ &gt; 1</div><div>Mass in thick oil</div>
+  <div class="dv">Shear-thickening</div><div>n &gt; 1 (power law)</div><div>Oobleck, wet sand (cornstarch 2:1)</div>
+</div>
+
+<p>Damping is not merely a correction to perfect SHM — it is the physics of the real world intruding. Every real oscillator is dissipative. Engineers tune damping deliberately: car suspensions aim for near-critical damping; earthquake-resistant buildings use fluid dampers; the human ear exploits fluid damping in the cochlea to distinguish frequencies.</p>
+
+<p>Oobleck sits at an unusual corner of this landscape: a fluid that becomes temporarily solid under stress. It's not just a curiosity — body armour research, protective packaging, and even road surfaces have explored oobleck-like materials. The physics you've encountered here — nonlinear drag, velocity-dependent viscosity, power-law models — is active research territory.</p>
+
+<div class="callout">
+  <div class="callout-title gold">Questions to carry with you</div>
+  1. Why is the period of SHM independent of amplitude? (Hint: think about the force law)<br>
+  2. A heavier mass on the same spring — does it oscillate faster or slower?<br>
+  3. What would a phase portrait look like for oobleck at large vs small amplitudes?<br>
+  4. If you doubled the cornstarch concentration, would you expect more or less damping?<br>
+  5. How does the cochlea exploit damping to separate different sound frequencies?
+</div>
+
+<div class="foot">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   SIMULATOR 1 — Pure SHM
+══════════════════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('shmCanvas');
+  const ctx = cv.getContext('2d');
+  let W, H, playing = true, t = 0, raf;
+  let m = 1.0, k = 10, A = 0.20;
+
+  function resize(){
+    W = cv.offsetWidth; H = 200;
+    cv.width = W; cv.height = H;
+  }
+
+  function draw(){
+    if(!W) return;
+    ctx.clearRect(0,0,W,H);
+
+    const omega = Math.sqrt(k/m);
+    const x = A * Math.cos(omega * t);
+    const v = -A * omega * Math.sin(omega * t);
+
+    // draw trace
+    const pts = 400;
+    ctx.beginPath();
+    for(let i=0; i<pts; i++){
+      const tt = t - (pts-i)*0.015;
+      const xx = A * Math.cos(omega * tt);
+      const px = i*(W/pts);
+      const py = H/2 - xx*(H*1.1)/2;
+      i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle='rgba(201,168,76,0.35)';
+    ctx.lineWidth=1.2;
+    ctx.stroke();
+
+    // envelope
+    ctx.beginPath();
+    for(let i=0; i<pts; i++){
+      const px = i*(W/pts);
+      const py = H/2 - A*(H*1.1)/2;
+      i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle='rgba(201,168,76,0.12)';
+    ctx.lineWidth=0.8;
+    ctx.stroke();
+    ctx.beginPath();
+    for(let i=0; i<pts; i++){
+      const px = i*(W/pts);
+      const py = H/2 + A*(H*1.1)/2;
+      i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // current position dot
+    const px = W*0.88;
+    const py = H/2 - x*(H*1.1)/2;
+    ctx.beginPath();
+    ctx.arc(px,py,6,0,Math.PI*2);
+    ctx.fillStyle='#c9a84c';
+    ctx.fill();
+
+    // spring graphic (left side)
+    drawSpring(ctx, 40, H/2, 40, py, '#555', '#888');
+    ctx.beginPath();
+    ctx.arc(40,py,10,0,Math.PI*2);
+    ctx.fillStyle='#3a3a3a';
+    ctx.strokeStyle='#c9a84c';
+    ctx.lineWidth=1.5;
+    ctx.fill(); ctx.stroke();
+
+    // equilibrium line
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(30, H/2); ctx.lineTo(W-20, H/2);
+    ctx.strokeStyle='rgba(255,255,255,0.07)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // labels
+    ctx.font='11px IBM Plex Mono';
+    ctx.fillStyle='rgba(201,168,76,0.5)';
+    ctx.fillText('x(t)=A cos(ωt)', W-130, 14);
+  }
+
+  function drawSpring(ctx, x1,y1,x2,y2, lineCol, coilCol){
+    const coils=12, r=7;
+    const len = y2-y1;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1,y1+len*0.08);
+    ctx.strokeStyle=lineCol; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath();
+    for(let i=0;i<=coils*8;i++){
+      const frac = i/(coils*8);
+      const cx = x2 + r * Math.sin(frac*coils*Math.PI*2);
+      const cy = y1+len*0.1 + frac*(len*0.8);
+      i===0 ? ctx.moveTo(cx,cy) : ctx.lineTo(cx,cy);
+    }
+    ctx.strokeStyle=coilCol; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2,y1+len*0.9); ctx.lineTo(x2,y2);
+    ctx.strokeStyle=lineCol; ctx.stroke();
+  }
+
+  function tick(){
+    if(playing) t += 0.016;
+    draw();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function updateParams(){
+    m = +document.getElementById('shmM').value;
+    k = +document.getElementById('shmK').value;
+    A = +document.getElementById('shmA').value;
+    const omega = Math.sqrt(k/m);
+    document.getElementById('mVal').textContent = m.toFixed(1);
+    document.getElementById('kVal').textContent = k;
+    document.getElementById('aVal').textContent = A.toFixed(2);
+    document.getElementById('omegaVal').textContent = omega.toFixed(2);
+    document.getElementById('periodVal').textContent = (2*Math.PI/omega).toFixed(2);
+  }
+
+  ['shmM','shmK','shmA'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateParams);
+  });
+
+  window.toggleSHM = function(){
+    playing = !playing;
+    document.getElementById('shmPlayBtn').textContent = playing?'Pause':'Play';
+    document.getElementById('shmPlayBtn').classList.toggle('active', playing);
+  };
+  window.resetSHM = function(){ t=0; };
+
+  window.addEventListener('resize', ()=>{ resize(); });
+  resize();
+  updateParams();
+  tick();
+})();
+
+/* ══════════════════════════════════════════════════════
+   SIMULATOR 2 — Damped HM
+══════════════════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('dampCanvas');
+  const ctx = cv.getContext('2d');
+  let W, H, playing = true, t = 0;
+  let m=0.5, k=20, b=0.8, A=0.28;
+
+  function resize(){ W=cv.offsetWidth; H=220; cv.width=W; cv.height=H; }
+
+  function draw(){
+    if(!W) return;
+    ctx.clearRect(0,0,W,H);
+    const omega0 = Math.sqrt(k/m);
+    const gamma = b/(2*m);
+    const zeta = b/(2*Math.sqrt(m*k));
+    const omegaD = (zeta<1) ? Math.sqrt(Math.max(0, omega0*omega0 - gamma*gamma)) : 0;
+
+    function xAt(tt){
+      if(tt<0) return A;
+      if(zeta < 1){
+        return A * Math.exp(-gamma*tt) * Math.cos(omegaD*tt);
+      } else if(zeta === 1){
+        return A * Math.exp(-gamma*tt) * (1 + gamma*tt);
+      } else {
+        const r1 = -gamma + Math.sqrt(gamma*gamma - omega0*omega0);
+        const r2 = -gamma - Math.sqrt(gamma*gamma - omega0*omega0);
+        return A/(r1-r2) * (r1*Math.exp(r2*tt) - r2*Math.exp(r1*tt));
+      }
+    }
+
+    const pts = 500;
+    const tWindow = Math.max(8, 4*Math.PI/Math.max(omegaD,0.5));
+
+    // envelope
+    if(zeta < 1){
+      ctx.beginPath();
+      for(let i=0;i<pts;i++){
+        const tt = (i/pts)*tWindow;
+        const env = A*Math.exp(-gamma*tt);
+        const px = (i/pts)*W;
+        const py = H/2 - env*(H*0.82)/2;
+        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      for(let i=pts-1;i>=0;i--){
+        const tt = (i/pts)*tWindow;
+        const env = A*Math.exp(-gamma*tt);
+        const px = (i/pts)*W;
+        const py = H/2 + env*(H*0.82)/2;
+        ctx.lineTo(px,py);
+      }
+      ctx.closePath();
+      ctx.fillStyle='rgba(201,168,76,0.04)';
+      ctx.fill();
+      ctx.beginPath();
+      for(let i=0;i<pts;i++){
+        const tt=(i/pts)*tWindow;
+        const env=A*Math.exp(-gamma*tt);
+        const px=(i/pts)*W;
+        ctx.moveTo(px, H/2-env*(H*0.82)/2);
+        if(i>0){
+          ctx.lineTo(px, H/2-env*(H*0.82)/2);
+        }
+      }
+    }
+
+    // trace
+    ctx.beginPath();
+    let started=false;
+    for(let i=0;i<pts;i++){
+      const tt=(i/pts)*tWindow;
+      const xx=xAt(tt);
+      const px=(i/pts)*W;
+      const py=H/2 - xx*(H*0.82)/2;
+      if(!started){ctx.moveTo(px,py);started=true;}
+      else ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle='#c9a84c';
+    ctx.lineWidth=1.8;
+    ctx.stroke();
+
+    // current cursor
+    const xNow = xAt(t % tWindow);
+    const curPx = (t%tWindow)/tWindow*W;
+    const curPy = H/2 - xNow*(H*0.82)/2;
+    ctx.beginPath(); ctx.arc(curPx, curPy, 5, 0, Math.PI*2);
+    ctx.fillStyle='#c9a84c'; ctx.fill();
+
+    // equilibrium
+    ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2);
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.setLineDash([]);
+
+    // regime badge
+    let regime, rc;
+    if(zeta<0.999){ regime=`Underdamped (ζ = ${zeta.toFixed(2)})`; rc='#c9a84c'; }
+    else if(zeta<1.001){ regime=`Critical (ζ ≈ 1.00)`; rc='#1abc9c'; }
+    else{ regime=`Overdamped (ζ = ${zeta.toFixed(2)})`; rc='#e74c3c'; }
+    document.getElementById('regimeBadge').textContent = regime;
+    document.getElementById('regimeBadge').style.color = rc;
+    document.getElementById('regimeBadge').style.borderColor = rc+'66';
+  }
+
+  function tick(){
+    if(playing) t += 0.025;
+    draw();
+    requestAnimationFrame(tick);
+  }
+
+  function updateParams(){
+    m=+document.getElementById('dampM').value;
+    k=+document.getElementById('dampK').value;
+    b=+document.getElementById('dampB').value;
+    document.getElementById('dmVal').textContent=m.toFixed(1);
+    document.getElementById('dkVal').textContent=k;
+    document.getElementById('dbVal').textContent=b.toFixed(1);
+  }
+  ['dampM','dampK','dampB'].forEach(id=>document.getElementById(id).addEventListener('input',updateParams));
+
+  window.toggleDamp=function(){ playing=!playing; document.getElementById('dampPlayBtn').textContent=playing?'Pause':'Play'; document.getElementById('dampPlayBtn').classList.toggle('active',playing); };
+  window.resetDamp=function(){ t=0; };
+
+  window.addEventListener('resize',()=>{ resize(); });
+  resize(); updateParams(); tick();
+})();
+
+/* ══════════════════════════════════════════════════════
+   SIMULATOR 3 — Fluid spring-mass (Runge-Kutta)
+══════════════════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('fluidCanvas');
+  const ctx = cv.getContext('2d');
+  const tcv = document.getElementById('fluidTrace');
+  const tctx = tcv.getContext('2d');
+  let W, H, TW, TH, playing = true;
+
+  const FLUIDS = [
+    { name:'Vacuum (b=0)', n:1, K:0, color:'#888', modelStr:'No drag', bg:'rgba(40,40,40,0.6)', bgFill:'#0a0a0a' },
+    { name:'Water', n:1, K:1.5, color:'#3498db', modelStr:'Linear (Stokes)', bg:'rgba(15,30,60,0.7)', bgFill:'#060d18' },
+    { name:'Dilute mix (corn 1:2)', n:1.4, K:4, color:'#9b8adb', modelStr:'Weak power-law', bg:'rgba(25,15,45,0.7)', bgFill:'#0c0819' },
+    { name:'Oobleck 2:1', n:2.0, K:12, color:'#e8c84a', modelStr:'Power-law n≈2', bg:'rgba(40,30,5,0.7)', bgFill:'#100d02' },
+    { name:'Dense oobleck', n:3.0, K:28, color:'#e87a1a', modelStr:'Power-law n≈3', bg:'rgba(40,15,5,0.7)', bgFill:'#120501' },
+  ];
+
+  let fi = 0;
+  const m=0.6, k=18, A=0.26;
+  let state = { x: A, v: 0 };
+  let history = [];
+  const maxHist = 600;
+
+  function getFluid(){ return FLUIDS[fi]; }
+
+  function deriv(x, v, fluid){
+    const dragMag = fluid.K * Math.pow(Math.abs(v), fluid.n-1);
+    const drag = -dragMag * v;
+    const spring = -k * x;
+    const a = (spring + drag) / m;
+    return { dx: v, dv: a };
+  }
+
+  function step(dt){
+    const f = getFluid();
+    const {x,v} = state;
+    const k1 = deriv(x, v, f);
+    const k2 = deriv(x+0.5*dt*k1.dx, v+0.5*dt*k1.dv, f);
+    const k3 = deriv(x+0.5*dt*k2.dx, v+0.5*dt*k2.dv, f);
+    const k4 = deriv(x+dt*k3.dx, v+dt*k3.dv, f);
+    state.x += dt*(k1.dx+2*k2.dx+2*k3.dx+k4.dx)/6;
+    state.v += dt*(k1.dv+2*k2.dv+2*k3.dv+k4.dv)/6;
+    history.push({x:state.x, v:state.v});
+    if(history.length>maxHist) history.shift();
+  }
+
+  function resize(){
+    W=cv.offsetWidth; H=300; cv.width=W; cv.height=H;
+    TW=tcv.offsetWidth; TH=120; tcv.width=TW; tcv.height=TH;
+  }
+
+  function drawFluid(){
+    const f = getFluid();
+    ctx.fillStyle = f.bgFill;
+    ctx.fillRect(0,0,W,H);
+
+    // fluid body
+    const fluidTop = H*0.18;
+    ctx.fillStyle = f.bg;
+    ctx.fillRect(0, fluidTop, W, H-fluidTop);
+    ctx.strokeStyle = f.color+'44';
+    ctx.lineWidth=1;
+    ctx.strokeRect(0, fluidTop, W, H-fluidTop);
+
+    // spring
+    const anchorX = W/2, anchorY = 14;
+    const massY = H*0.18 + 30 + (0.5 - state.x)*(H*0.55);
+    const massR = 18;
+
+    // spring coils
+    const coils=14;
+    ctx.beginPath();
+    for(let i=0;i<=coils*8;i++){
+      const frac=i/(coils*8);
+      const sx = anchorX + 10*Math.sin(frac*coils*Math.PI*2);
+      const sy = anchorY + frac*(massY-anchorY-massR);
+      i===0?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy);
+    }
+    ctx.strokeStyle='#666'; ctx.lineWidth=1.5; ctx.stroke();
+
+    // mass
+    ctx.beginPath();
+    ctx.arc(anchorX, massY, massR, 0, Math.PI*2);
+    ctx.fillStyle='#2a2a2a';
+    ctx.fill();
+    ctx.strokeStyle=f.color;
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    // velocity arrow
+    if(Math.abs(state.v)>0.01){
+      const arrowLen = Math.min(40, Math.abs(state.v)*20);
+      const dir = Math.sign(state.v);
+      ctx.beginPath();
+      ctx.moveTo(anchorX+massR+4, massY);
+      ctx.lineTo(anchorX+massR+4+arrowLen, massY);
+      ctx.strokeStyle=f.color+'cc'; ctx.lineWidth=2; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(anchorX+massR+4+arrowLen, massY-5);
+      ctx.lineTo(anchorX+massR+4+arrowLen+5*dir, massY);
+      ctx.lineTo(anchorX+massR+4+arrowLen, massY+5);
+      ctx.fillStyle=f.color+'cc'; ctx.fill();
+    }
+
+    // equilibrium
+    const eqY = H*0.18+30+0.5*(H*0.55);
+    ctx.setLineDash([4,5]);
+    ctx.beginPath(); ctx.moveTo(30,eqY); ctx.lineTo(W-30,eqY);
+    ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.setLineDash([]);
+
+    // fluid label
+    ctx.font='11px IBM Plex Mono'; ctx.fillStyle=f.color+'99';
+    ctx.fillText(f.name, 10, fluidTop+16);
+
+    // x label
+    ctx.fillStyle='rgba(201,168,76,0.6)';
+    ctx.fillText('x = '+state.x.toFixed(3)+'m', W-110, 16);
+  }
+
+  function drawTrace(){
+    tctx.clearRect(0,0,TW,TH);
+    tctx.fillStyle='#080808'; tctx.fillRect(0,0,TW,TH);
+    const f = getFluid();
+    tctx.beginPath();
+    for(let i=0;i<history.length;i++){
+      const px=(i/maxHist)*TW;
+      const py=TH/2 - history[i].x*(TH*0.85)/2;
+      i===0?tctx.moveTo(px,py):tctx.lineTo(px,py);
+    }
+    tctx.strokeStyle=f.color;
+    tctx.lineWidth=1.5; tctx.stroke();
+
+    tctx.setLineDash([3,4]);
+    tctx.beginPath(); tctx.moveTo(0,TH/2); tctx.lineTo(TW,TH/2);
+    tctx.strokeStyle='rgba(255,255,255,0.07)'; tctx.lineWidth=1; tctx.stroke();
+    tctx.setLineDash([]);
+
+    tctx.font='10px IBM Plex Mono'; tctx.fillStyle='rgba(201,168,76,0.5)';
+    tctx.fillText('x(t)', 4, 12);
+  }
+
+  function updateInfo(){
+    const f = getFluid();
+    document.getElementById('fluidModel').textContent = f.modelStr;
+    document.getElementById('fluidN').textContent = f.n === 1 ? '1 (linear)' : f.n.toFixed(1);
+    const omega0=Math.sqrt(k/m);
+    const regime = f.K===0 ? 'Underdamped (no drag)' : (f.n===1 ? (f.K>2*Math.sqrt(m*k)?'Overdamped':'Underdamped') : 'Nonlinear — regime varies');
+    document.getElementById('fluidRegime').textContent = regime;
+  }
+
+  let lastTime = null;
+  function tick(ts){
+    if(playing){
+      if(lastTime) step(Math.min((ts-lastTime)/1000, 0.02));
+      lastTime=ts;
+    } else { lastTime=null; }
+    drawFluid(); drawTrace();
+    requestAnimationFrame(tick);
+  }
+
+  window.setFluid = function(idx){
+    fi = idx;
+    state = { x: A, v: 0 };
+    history = [];
+    document.querySelectorAll('.fluid-btn').forEach((b,i)=>b.classList.toggle('sel', i===idx));
+    updateInfo();
+  };
+
+  window.toggleFluid = function(){
+    playing=!playing;
+    document.getElementById('fluidPlayBtn').textContent=playing?'Pause':'Play';
+    document.getElementById('fluidPlayBtn').classList.toggle('active',playing);
+  };
+  window.resetFluid = function(){ state={x:A,v:0}; history=[]; lastTime=null; };
+
+  window.addEventListener('resize',()=>{ resize(); });
+  resize(); updateInfo();
+  requestAnimationFrame(tick);
+})();
+
+/* ══════════════════════════════════════════════════════
+   SIMULATOR 4 — Phase portrait
+══════════════════════════════════════════════════════ */
+(function(){
+  const pcv = document.getElementById('phaseCanvas');
+  const pctx = pcv.getContext('2d');
+  const xcv = document.getElementById('phaseTrace');
+  const xctx = xcv.getContext('2d');
+  const vcv = document.getElementById('phaseVTrace');
+  const vctx = vcv.getContext('2d');
+
+  let W,H,XW,XH,VW,VH, playing=true, t=0;
+  let b=1.0, A=0.25;
+  const m=0.5, k=15;
+  const trail = [];
+  const maxT = 300;
+
+  function resize(){
+    W=pcv.offsetWidth; H=pcv.offsetHeight||280; pcv.width=W; pcv.height=H;
+    XW=xcv.offsetWidth; XH=140; xcv.width=XW; xcv.height=XH;
+    VW=vcv.offsetWidth; VH=140; vcv.width=VW; vcv.height=VH;
+  }
+
+  function getState(tt){
+    const omega0=Math.sqrt(k/m);
+    const gamma=b/(2*m);
+    const zeta=b/(2*Math.sqrt(m*k));
+    if(zeta<1){
+      const omD=Math.sqrt(Math.max(0,omega0*omega0-gamma*gamma));
+      const x=A*Math.exp(-gamma*tt)*Math.cos(omD*tt);
+      const v=-A*Math.exp(-gamma*tt)*(gamma*Math.cos(omD*tt)+omD*Math.sin(omD*tt));
+      return {x,v};
+    }
+    const r1=-gamma+Math.sqrt(Math.max(0,gamma*gamma-omega0*omega0));
+    const r2=-gamma-Math.sqrt(Math.max(0,gamma*gamma-omega0*omega0));
+    const denom=r1===r2?1:r1-r2;
+    const x = r1===r2 ? A*Math.exp(-gamma*tt)*(1+gamma*tt)
+                       : A/denom*(r1*Math.exp(r2*tt)-r2*Math.exp(r1*tt));
+    const v = r1===r2 ? -A*gamma*Math.exp(-gamma*tt)*(1+gamma*tt)+A*gamma*Math.exp(-gamma*tt)
+                       : A/denom*(r1*r2*Math.exp(r2*tt)-r2*r1*Math.exp(r1*tt));
+    return {x,v};
+  }
+
+  function draw(){
+    const maxX=A*1.1, maxV=A*Math.sqrt(k/m)*1.3;
+
+    // Phase portrait
+    pctx.fillStyle='#080808'; pctx.fillRect(0,0,W,H);
+    pctx.strokeStyle='rgba(255,255,255,0.07)'; pctx.lineWidth=0.8;
+    pctx.beginPath(); pctx.moveTo(W/2,0); pctx.lineTo(W/2,H); pctx.stroke();
+    pctx.beginPath(); pctx.moveTo(0,H/2); pctx.lineTo(W,H/2); pctx.stroke();
+    pctx.font='10px IBM Plex Mono'; pctx.fillStyle='rgba(201,168,76,0.4)';
+    pctx.fillText('x →', W-26, H/2-5);
+    pctx.fillText('↑ v', W/2+4, 12);
+
+    if(trail.length>1){
+      for(let i=1;i<trail.length;i++){
+        const alpha = i/trail.length;
+        const {x:x0,v:v0}=trail[i-1];
+        const {x:x1,v:v1}=trail[i];
+        const px0=W/2+x0/maxX*(W/2-10);
+        const py0=H/2-v0/maxV*(H/2-10);
+        const px1=W/2+x1/maxX*(W/2-10);
+        const py1=H/2-v1/maxV*(H/2-10);
+        pctx.beginPath(); pctx.moveTo(px0,py0); pctx.lineTo(px1,py1);
+        pctx.strokeStyle=`rgba(201,168,76,${alpha*0.85})`;
+        pctx.lineWidth=1.5; pctx.stroke();
+      }
+    }
+
+    const {x,v}=getState(t);
+    const cpx=W/2+x/maxX*(W/2-10);
+    const cpy=H/2-v/maxV*(H/2-10);
+    pctx.beginPath(); pctx.arc(cpx,cpy,5,0,Math.PI*2);
+    pctx.fillStyle='#c9a84c'; pctx.fill();
+
+    // x trace
+    xctx.fillStyle='#080808'; xctx.fillRect(0,0,XW,XH);
+    xctx.beginPath();
+    for(let i=0;i<trail.length;i++){
+      const px=(i/maxT)*XW;
+      const py=XH/2-trail[i].x/maxX*(XH/2-6);
+      i===0?xctx.moveTo(px,py):xctx.lineTo(px,py);
+    }
+    xctx.strokeStyle='#c9a84c'; xctx.lineWidth=1.5; xctx.stroke();
+    xctx.setLineDash([3,4]);
+    xctx.beginPath(); xctx.moveTo(0,XH/2); xctx.lineTo(XW,XH/2);
+    xctx.strokeStyle='rgba(255,255,255,0.07)'; xctx.lineWidth=1; xctx.stroke();
+    xctx.setLineDash([]);
+    xctx.font='10px IBM Plex Mono'; xctx.fillStyle='rgba(201,168,76,0.5)';
+    xctx.fillText('x(t)', 4, 12);
+
+    // v trace
+    vctx.fillStyle='#080808'; vctx.fillRect(0,0,VW,VH);
+    vctx.beginPath();
+    for(let i=0;i<trail.length;i++){
+      const px=(i/maxT)*VW;
+      const py=VH/2-trail[i].v/maxV*(VH/2-6);
+      i===0?vctx.moveTo(px,py):vctx.lineTo(px,py);
+    }
+    vctx.strokeStyle='#3498db'; vctx.lineWidth=1.5; vctx.stroke();
+    vctx.setLineDash([3,4]);
+    vctx.beginPath(); vctx.moveTo(0,VH/2); vctx.lineTo(VW,VH/2);
+    vctx.strokeStyle='rgba(255,255,255,0.07)'; vctx.lineWidth=1; vctx.stroke();
+    vctx.setLineDash([]);
+    vctx.font='10px IBM Plex Mono'; vctx.fillStyle='rgba(52,152,219,0.5)';
+    vctx.fillText('v(t)', 4, 12);
+  }
+
+  function tick(){
+    if(playing){
+      t+=0.04;
+      const s=getState(t);
+      trail.push(s);
+      if(trail.length>maxT) trail.shift();
+    }
+    draw();
+    requestAnimationFrame(tick);
+  }
+
+  function updateParams(){
+    b=+document.getElementById('phaseB').value;
+    A=+document.getElementById('phaseA').value;
+    document.getElementById('pdbVal').textContent=b.toFixed(1);
+    document.getElementById('pdaVal').textContent=A.toFixed(2);
+  }
+  ['phaseB','phaseA'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ updateParams(); resetPhase(); }));
+
+  window.togglePhase=function(){ playing=!playing; document.getElementById('phasePlayBtn').textContent=playing?'Pause':'Play'; document.getElementById('phasePlayBtn').classList.toggle('active',playing); };
+  window.resetPhase=function(){ t=0; trail.length=0; };
+
+  window.addEventListener('resize',()=>{ resize(); resetPhase(); });
+  resize(); updateParams(); tick();
+})();
+</script>
+</body>
+</html>
