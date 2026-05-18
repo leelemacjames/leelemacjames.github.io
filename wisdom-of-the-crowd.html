@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wisdom of the Crowd — Seed Estimation</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-dim: #8a6f2e;
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e8e0d0;
+    --text-dim: #888;
+    --red: #c94c4c;
+    --green: #4caa6e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  header {
+    max-width: 760px;
+    margin: 0 auto 3rem;
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 1.5rem;
+  }
+
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  header .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .container { max-width: 760px; margin: 0 auto; }
+
+  /* Stage nav */
+  .stage-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .stage-btn {
+    flex: 1;
+    background: var(--bg2);
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.75rem 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .stage-btn:last-child { border-right: none; }
+  .stage-btn.active {
+    background: var(--gold);
+    color: var(--bg);
+    font-weight: 400;
+  }
+  .stage-btn.done { color: var(--gold-dim); }
+  .stage-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadein 0.3s ease; }
+
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 300;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+
+  .panel-intro {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 1.8rem;
+    max-width: 600px;
+  }
+
+  .concept-box {
+    background: var(--bg2);
+    border-left: 3px solid var(--gold);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.83rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+  .concept-box em {
+    color: var(--gold);
+    font-style: normal;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05em;
+  }
+
+  /* Input groups */
+  .input-group {
+    margin-bottom: 1.2rem;
+  }
+
+  label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+  }
+
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    padding: 0.65rem 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input:focus { border-color: var(--gold); }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .input-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+
+  button.action {
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.8rem 2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+  }
+  button.action:hover { background: #e0b85c; }
+  button.action.secondary {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-dim);
+  }
+  button.action.secondary:hover { border-color: var(--gold); color: var(--gold); background: transparent; }
+
+  /* Results */
+  .result-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.4rem;
+    margin-top: 1rem;
+  }
+
+  .result-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .result-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }
+
+  .result-note {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: 0.6rem;
+    line-height: 1.6;
+  }
+
+  /* Crowd table */
+  .crowd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+  }
+  .crowd-table th {
+    text-align: left;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+  .crowd-table td {
+    padding: 0.45rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .crowd-table tr.outlier td { color: var(--red); }
+  .crowd-table tr.mean-row td { color: var(--gold); background: rgba(201,168,76,0.07); }
+
+  /* Estimate grid */
+  .estimate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  .estimate-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1rem;
+  }
+  .estimate-card .val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .estimate-card .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }
+  .estimate-card .method {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+    font-style: italic;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  /* Error */
+  .error { color: var(--red); font-size: 0.8rem; margin-top: 0.3rem; font-family: 'IBM Plex Mono', monospace; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  footer {
+    max-width: 760px;
+    margin: 4rem auto 0;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(201,168,76,0.12);
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .formula {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--gold);
+    margin: 0.8rem 0;
+    letter-spacing: 0.03em;
+  }
+
+  .crowd-add-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.8rem;
+    align-items: end;
+    margin-bottom: 0.8rem;
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .vis-bar-wrap {
+    margin-top: 1rem;
+  }
+  .vis-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+  .vis-bar-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.4rem; }
+  .vis-bar-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-dim); width: 80px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .vis-bar { height: 18px; background: var(--gold); transition: width 0.4s; min-width: 2px; }
+  .vis-bar.mean-bar { background: var(--green); }
+  .vis-bar-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Statistical Estimation · Proportional Sampling</div>
+  <h1>Wisdom of the Crowd</h1>
+  <div class="subtitle">Estimating seeds by weighing · a learner</div>
+</header>
+
+<div class="container">
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:25%"></div>
+  </div>
+
+  <div class="stage-nav">
+    <button class="stage-btn active" id="btn0" onclick="goStage(0)">① Guess</button>
+    <button class="stage-btn" id="btn1" onclick="goStage(1)" disabled>② Crowd</button>
+    <button class="stage-btn" id="btn2" onclick="goStage(2)" disabled>③ Weigh</button>
+    <button class="stage-btn" id="btn3" onclick="goStage(3)" disabled>④ Estimate</button>
+  </div>
+
+  <!-- STAGE 0: Your initial guess -->
+  <div class="panel active" id="panel0">
+    <div class="panel-title">Your First Guess</div>
+    <div class="panel-intro">
+      Before any measurement, make a gut estimate. How many seeds do you think are in the bag?
+      This is your prior — raw intuition before data.
+    </div>
+
+    <div class="concept-box">
+      <em>Why guess first?</em> Anchoring affects estimation. By committing a number before seeing others' guesses,
+      you avoid being influenced — keeping each guess statistically independent, which is what makes the crowd powerful.
+    </div>
+
+    <div class="input-group">
+      <label>Your name or initials</label>
+      <input type="text" id="yourName" placeholder="e.g. LMJ" maxlength="20">
+    </div>
+    <div class="input-group">
+      <label>Your seed count estimate</label>
+      <input type="number" id="yourGuess" placeholder="e.g. 3500" min="1">
+    </div>
+    <div id="stage0err" class="error"></div>
+    <div class="nav-btns">
+      <button class="action" onclick="stage0next()">Next: Collect the crowd →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 1: Crowd guesses -->
+  <div class="panel" id="panel1">
+    <div class="panel-title">Collect the Crowd</div>
+    <div class="panel-intro">
+      Ask others to guess. Each person should give a number independently — no conferring.
+      Add their guesses below. You need at least 3 to see the effect.
+    </div>
+
+    <div class="concept-box">
+      <em>The wisdom of crowds</em> (Galton, 1907) — when many independent estimates are aggregated,
+      random errors tend to cancel out. The mean of the crowd often beats most individuals,
+      including experts. Variance tells us how spread the crowd is.
+    </div>
+
+    <div id="crowdList"></div>
+
+    <div class="crowd-add-row">
+      <div class="input-group" style="margin:0">
+        <label>Add another guess (optional name : count)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
+          <input type="text" id="addName" placeholder="Name / initials" maxlength="20">
+          <input type="number" id="addGuess" placeholder="Estimate" min="1">
+        </div>
+      </div>
+      <button class="action secondary" style="margin:0;white-space:nowrap" onclick="addCrowdEntry()">+ Add</button>
+    </div>
+
+    <div id="stage1err" class="error"></div>
+
+    <div id="crowdStats" style="display:none">
+      <hr class="divider">
+      <div class="vis-bar-wrap" id="crowdVis"></div>
+      <div class="estimate-grid" id="crowdStatCards"></div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="action secondary" onclick="goStage(0)">← Back</button>
+      <button class="action" onclick="stage1next()">Next: Weigh the samples →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 2: Weighing -->
+  <div class="panel" id="panel2">
+    <div class="panel-title">Weigh &amp; Count</div>
+    <div class="panel-intro">
+      Weigh the whole bag. Then take small countable samples — weigh each and count the seeds.
+      More samples give a better ratio estimate.
+    </div>
+
+    <div class="concept-box">
+      <em>Proportional estimation:</em> if a sample of <em>m</em> grams contains <em>n</em> seeds,
+      then the whole bag of mass <em>M</em> contains roughly <em>N = n × M/m</em> seeds.
+      Each sample gives an independent ratio; averaging them reduces measurement noise.
+    </div>
+
+    <div class="formula">N ≈ (1/k) × Σᵢ [ nᵢ × M / mᵢ ]</div>
+
+    <div class="input-group">
+      <label>Total bag mass (g)</label>
+      <input type="number" id="bagMass" placeholder="e.g. 850" min="0.1" step="0.1">
+    </div>
+
+    <hr class="divider">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--gold-dim);margin-bottom:0.8rem;">Sample measurements</div>
+
+    <div id="sampleList"></div>
+
+    <div class="input-row-3" style="margin-bottom:0.8rem">
+      <div class="input-group" style="margin:0">
+        <label>Sample mass (g)</label>
+        <input type="number" id="sampleMass" placeholder="e.g. 12.4" min="0.01" step="0.01">
+      </div>
+      <div class="input-group" style="margin:0">
+        <label>Seed count</label>
+        <input type="number" id="sampleCount" placeholder="e.g. 48" min="1">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="action secondary" style="margin:0;width:100%" onclick="addSample()">+ Add</button>
+      </div>
+    </div>
+
+    <div id="stage2err" class="error"></div>
+
+    <div id="sampleStats" style="display:none">
+      <hr class="divider">
+      <div class="vis-bar-wrap" id="sampleVis"></div>
+      <div class="estimate-grid" id="sampleStatCards"></div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="action secondary" onclick="goStage(1)">← Back</button>
+      <button class="action" onclick="stage2next()">Next: Final estimate →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 3: Final synthesis -->
+  <div class="panel" id="panel3">
+    <div class="panel-title">The Final Estimate</div>
+    <div class="panel-intro">
+      All methods compared. The measured estimate is your most reliable figure —
+      but see how it relates to what the crowd guessed.
+    </div>
+
+    <div id="finalCards"></div>
+
+    <hr class="divider">
+
+    <div id="finalAnalysis"></div>
+
+    <div class="concept-box" id="wisdomVerdict" style="display:none">
+      <em>Verdict</em> — <span id="verdictText"></span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="concept-box">
+      <em>Why this matters:</em> The crowd mean aggregates independent information.
+      The measurement gives ground truth. In practice — polling, financial forecasting,
+      medical diagnosis — neither pure intuition nor pure measurement stands alone.
+      Each corrects the other.
+    </div>
+
+    <div class="nav-btns">
+      <button class="action secondary" onclick="goStage(2)">← Back</button>
+      <button class="action" onclick="reset()">↺ Start again</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+const state = {
+  yourName: '',
+  yourGuess: null,
+  crowd: [],       // [{name, guess}]
+  bagMass: null,
+  samples: [],     // [{mass, count, ratio}]
+};
+
+// ── Navigation ─────────────────────────────────────────────────────────
+function goStage(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => {
+    p.classList.toggle('active', i === n);
+  });
+  document.querySelectorAll('.stage-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === n);
+  });
+  document.getElementById('progressFill').style.width = `${(n+1)*25}%`;
+}
+
+function enableStage(n) {
+  document.getElementById('btn' + n).disabled = false;
+  document.getElementById('btn' + n).classList.add('done');
+}
+
+// ── Stage 0 ────────────────────────────────────────────────────────────
+function stage0next() {
+  const name = document.getElementById('yourName').value.trim() || 'You';
+  const g = parseFloat(document.getElementById('yourGuess').value);
+  const err = document.getElementById('stage0err');
+  if (!g || g <= 0) { err.textContent = 'Enter a positive estimate.'; return; }
+  err.textContent = '';
+  state.yourName = name;
+  state.yourGuess = g;
+  // Seed crowd with their guess
+  state.crowd = state.crowd.filter(c => c.name !== name);
+  state.crowd.unshift({ name, guess: g, isYou: true });
+  renderCrowdList();
+  enableStage(1);
+  goStage(1);
+}
+
+// ── Stage 1 ────────────────────────────────────────────────────────────
+function renderCrowdList() {
+  const stats = crowdStats();
+  const el = document.getElementById('crowdList');
+  if (state.crowd.length === 0) { el.innerHTML = ''; return; }
+
+  let rows = state.crowd.map((c,i) => {
+    const dev = stats ? Math.abs(c.guess - stats.mean) : 0;
+    const outlier = stats && stats.n > 3 && dev > 1.5 * stats.sd;
+    return `<tr class="${outlier ? 'outlier' : ''}" title="${outlier ? '⚠ Possible outlier (>1.5σ from mean)' : ''}">
+      <td>${c.name}${c.isYou ? ' ★' : ''}</td>
+      <td>${c.guess.toLocaleString()}</td>
+      ${stats ? `<td style="color:var(--text-dim)">${(c.guess - stats.mean).toFixed(0).replace(/^(\d)/,'+$1')}</td>` : '<td></td>'}
+      <td><button onclick="removeCrowd(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  if (stats) {
+    rows += `<tr class="mean-row">
+      <td>CROWD MEAN</td><td>${stats.mean.toFixed(0)}</td><td>—</td><td></td>
+    </tr>`;
+  }
+
+  el.innerHTML = `<table class="crowd-table">
+    <thead><tr><th>Name</th><th>Guess</th><th>Δ mean</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  if (stats) {
+    document.getElementById('crowdStats').style.display = 'block';
+    renderCrowdVis(stats);
+    renderCrowdStatCards(stats);
+  }
+}
+
+function crowdStats() {
+  if (state.crowd.length < 2) return null;
+  const vals = state.crowd.map(c => c.guess);
+  const n = vals.length;
+  const mean = vals.reduce((a,b)=>a+b,0)/n;
+  const median = [...vals].sort((a,b)=>a-b)[Math.floor(n/2)];
+  const sd = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/n);
+  return { n, mean, median, sd, min: Math.min(...vals), max: Math.max(...vals) };
+}
+
+function renderCrowdVis(stats) {
+  const vals = state.crowd.map(c=>c.guess);
+  const max = Math.max(...vals, stats.mean);
+  const bars = state.crowd.map(c => `
+    <div class="vis-bar-row">
+      <div class="vis-bar-name" title="${c.name}">${c.name}</div>
+      <div class="vis-bar" style="width:${(c.guess/max*260).toFixed(1)}px"></div>
+      <div class="vis-bar-val">${c.guess.toLocaleString()}</div>
+    </div>`).join('');
+  const meanBar = `
+    <div class="vis-bar-row">
+      <div class="vis-bar-name" style="color:var(--green)">MEAN</div>
+      <div class="vis-bar mean-bar" style="width:${(stats.mean/max*260).toFixed(1)}px"></div>
+      <div class="vis-bar-val" style="color:var(--green)">${stats.mean.toFixed(0)}</div>
+    </div>`;
+  document.getElementById('crowdVis').innerHTML = `<div class="vis-label">Guesses (scaled)</div>${bars}${meanBar}`;
+}
+
+function renderCrowdStatCards(stats) {
+  document.getElementById('crowdStatCards').innerHTML = `
+    <div class="estimate-card"><div class="val">${stats.mean.toFixed(0)}</div><div class="lbl">Crowd mean</div></div>
+    <div class="estimate-card"><div class="val">${stats.median.toFixed(0)}</div><div class="lbl">Crowd median</div></div>
+    <div class="estimate-card"><div class="val">±${stats.sd.toFixed(0)}</div><div class="lbl">Std deviation</div></div>
+    <div class="estimate-card"><div class="val">${stats.n}</div><div class="lbl">Participants</div></div>
+  `;
+}
+
+function addCrowdEntry() {
+  const name = document.getElementById('addName').value.trim() || `Person ${state.crowd.length+1}`;
+  const g = parseFloat(document.getElementById('addGuess').value);
+  const err = document.getElementById('stage1err');
+  if (!g || g <= 0) { err.textContent = 'Enter a valid guess.'; return; }
+  err.textContent = '';
+  state.crowd.push({ name, guess: g });
+  document.getElementById('addName').value = '';
+  document.getElementById('addGuess').value = '';
+  renderCrowdList();
+}
+
+function removeCrowd(i) {
+  if (state.crowd[i].isYou) return; // can't remove yourself
+  state.crowd.splice(i, 1);
+  renderCrowdList();
+}
+
+function stage1next() {
+  const err = document.getElementById('stage1err');
+  if (state.crowd.length < 2) { err.textContent = 'Add at least one more guess.'; return; }
+  err.textContent = '';
+  enableStage(2);
+  goStage(2);
+}
+
+// ── Stage 2 ────────────────────────────────────────────────────────────
+function addSample() {
+  const m = parseFloat(document.getElementById('sampleMass').value);
+  const c = parseFloat(document.getElementById('sampleCount').value);
+  const err = document.getElementById('stage2err');
+  if (!m || m <= 0 || !c || c <= 0) { err.textContent = 'Enter positive mass and count.'; return; }
+  err.textContent = '';
+  const bagM = parseFloat(document.getElementById('bagMass').value);
+  state.samples.push({ mass: m, count: c, ratio: c/m }); // seeds per gram
+  document.getElementById('sampleMass').value = '';
+  document.getElementById('sampleCount').value = '';
+  renderSamples(bagM);
+}
+
+function removeSample(i) {
+  state.samples.splice(i, 1);
+  const bagM = parseFloat(document.getElementById('bagMass').value);
+  renderSamples(bagM);
+}
+
+function renderSamples(bagMass) {
+  const el = document.getElementById('sampleList');
+  if (state.samples.length === 0) { el.innerHTML = ''; document.getElementById('sampleStats').style.display='none'; return; }
+  const rows = state.samples.map((s,i) => {
+    const est = bagMass ? (s.ratio * bagMass).toFixed(0) : '—';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${s.mass}g</td>
+      <td>${s.count}</td>
+      <td>${s.ratio.toFixed(3)} /g</td>
+      <td>${est}</td>
+      <td><button onclick="removeSample(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  const ratios = state.samples.map(s=>s.ratio);
+  const meanRatio = ratios.reduce((a,b)=>a+b,0)/ratios.length;
+  const sdRatio = Math.sqrt(ratios.reduce((a,b)=>a+(b-meanRatio)**2,0)/ratios.length);
+  const measuredEst = bagMass ? meanRatio * bagMass : null;
+
+  el.innerHTML = `<table class="crowd-table" style="margin-bottom:0.5rem">
+    <thead><tr><th>#</th><th>Mass</th><th>Count</th><th>Ratio (n/g)</th><th>Bag estimate</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  if (bagMass) {
+    document.getElementById('sampleStats').style.display = 'block';
+    document.getElementById('sampleVis').innerHTML = `
+      <div class="vis-label">Per-sample bag estimates</div>
+      ${state.samples.map((s,i) => {
+        const est = s.ratio * bagMass;
+        const max = Math.max(...state.samples.map(x=>x.ratio*bagMass), measuredEst||0);
+        return `<div class="vis-bar-row">
+          <div class="vis-bar-name">Sample ${i+1}</div>
+          <div class="vis-bar" style="width:${(est/max*260).toFixed(1)}px"></div>
+          <div class="vis-bar-val">${est.toFixed(0)}</div>
+        </div>`;
+      }).join('')}
+      <div class="vis-bar-row">
+        <div class="vis-bar-name" style="color:var(--green)">MEAN EST</div>
+        <div class="vis-bar mean-bar" style="width:260px"></div>
+        <div class="vis-bar-val" style="color:var(--green)">${measuredEst.toFixed(0)}</div>
+      </div>`;
+    document.getElementById('sampleStatCards').innerHTML = `
+      <div class="estimate-card"><div class="val">${measuredEst.toFixed(0)}</div><div class="lbl">Measured estimate</div></div>
+      <div class="estimate-card"><div class="val">${meanRatio.toFixed(3)}</div><div class="lbl">Mean ratio (seeds/g)</div></div>
+      <div class="estimate-card"><div class="val">±${sdRatio.toFixed(3)}</div><div class="lbl">Ratio std dev</div></div>
+      <div class="estimate-card"><div class="val">${state.samples.length}</div><div class="lbl">Samples taken</div></div>
+    `;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('bagMass').addEventListener('input', () => {
+    const m = parseFloat(document.getElementById('bagMass').value);
+    if (m > 0) renderSamples(m);
+  });
+});
+
+function stage2next() {
+  const bagMass = parseFloat(document.getElementById('bagMass').value);
+  const err = document.getElementById('stage2err');
+  if (!bagMass || bagMass <= 0) { err.textContent = 'Enter the total bag mass.'; return; }
+  if (state.samples.length < 1) { err.textContent = 'Add at least one sample.'; return; }
+  err.textContent = '';
+  state.bagMass = bagMass;
+  buildFinalStage();
+  enableStage(3);
+  goStage(3);
+}
+
+// ── Stage 3 ────────────────────────────────────────────────────────────
+function buildFinalStage() {
+  const cs = crowdStats();
+  const ratios = state.samples.map(s=>s.ratio);
+  const meanRatio = ratios.reduce((a,b)=>a+b,0)/ratios.length;
+  const measuredEst = Math.round(meanRatio * state.bagMass);
+  const crowdMean = Math.round(cs.mean);
+  const yourGuess = Math.round(state.yourGuess);
+
+  // Uncertainty: ±1 sd of ratio estimates × bagMass
+  const sdRatio = Math.sqrt(ratios.reduce((a,b)=>a+(b-meanRatio)**2,0)/ratios.length);
+  const uncertainty = Math.round(sdRatio * state.bagMass);
+
+  document.getElementById('finalCards').innerHTML = `
+    <div class="estimate-grid">
+      <div class="estimate-card">
+        <div class="val">${measuredEst.toLocaleString()}</div>
+        <div class="lbl">Measured estimate</div>
+        <div class="method">Proportional sampling<br>±${uncertainty > 0 ? uncertainty.toLocaleString() : '?'}</div>
+      </div>
+      <div class="estimate-card">
+        <div class="val">${crowdMean.toLocaleString()}</div>
+        <div class="lbl">Crowd mean</div>
+        <div class="method">${cs.n} participants<br>σ = ${cs.sd.toFixed(0)}</div>
+      </div>
+      <div class="estimate-card">
+        <div class="val">${yourGuess.toLocaleString()}</div>
+        <div class="lbl">Your initial guess</div>
+        <div class="method">${state.yourName}<br>raw intuition</div>
+      </div>
+    </div>
+  `;
+
+  // Analysis text
+  const crowdErr = Math.abs(crowdMean - measuredEst);
+  const yourErr  = Math.abs(yourGuess - measuredEst);
+  const crowdPct = (crowdErr / measuredEst * 100).toFixed(1);
+  const yourPct  = (yourErr  / measuredEst * 100).toFixed(1);
+
+  document.getElementById('finalAnalysis').innerHTML = `
+    <div class="result-card">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--gold-dim);margin-bottom:0.8rem;">Accuracy relative to measured estimate</div>
+      <div style="margin-bottom:0.6rem">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold)">Crowd mean</span>
+        <span style="font-family:'IBM Plex Mono',monospace;color:var(--text-dim);font-size:0.8rem"> — off by ${crowdErr.toLocaleString()} seeds (${crowdPct}%)</span>
+      </div>
+      <div>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold)">Your guess</span>
+        <span style="font-family:'IBM Plex Mono',monospace;color:var(--text-dim);font-size:0.8rem"> — off by ${yourErr.toLocaleString()} seeds (${yourPct}%)</span>
+      </div>
+    </div>
+  `;
+
+  // Verdict
+  const crowdBetter = crowdErr < yourErr;
+  const verdictEl = document.getElementById('wisdomVerdict');
+  verdictEl.style.display = 'block';
+  document.getElementById('verdictText').textContent = crowdBetter
+    ? `The crowd outperformed your individual guess — ${crowdPct}% vs ${yourPct}% error. Collective wisdom wins.`
+    : `Your individual guess was sharper than the crowd mean — ${yourPct}% vs ${crowdPct}% error. The crowd needs more participants, or includes outliers pulling the mean.`;
+}
+
+function reset() {
+  state.yourName = '';
+  state.yourGuess = null;
+  state.crowd = [];
+  state.bagMass = null;
+  state.samples = [];
+  document.getElementById('yourName').value = '';
+  document.getElementById('yourGuess').value = '';
+  document.getElementById('bagMass').value = '';
+  document.getElementById('crowdList').innerHTML = '';
+  document.getElementById('crowdStats').style.display = 'none';
+  document.getElementById('sampleList').innerHTML = '';
+  document.getElementById('sampleStats').style.display = 'none';
+  ['btn1','btn2','btn3'].forEach(id => {
+    const b = document.getElementById(id);
+    b.disabled = true;
+    b.classList.remove('done');
+  });
+  goStage(0);
+}
+</script>
+</body>
+</html>
