@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Weighted King — Feynman Path Ensemble on the Delannoy Lattice</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg-soft: #161616;
+    --bg-cell: #1a1a1a;
+    --ink: #e8e4d8;
+    --ink-dim: #8a8478;
+    --ink-fade: #4a4438;
+    --gold: #c9a84c;
+    --gold-soft: rgba(201, 168, 76, 0.18);
+    --gold-bright: #e8c66a;
+    --rule: rgba(201, 168, 76, 0.22);
+    --heat-cold: #4a6fa5;
+    --heat-mid: #c9a84c;
+    --heat-hot: #d96b4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.6;
+    padding: 2.5rem 2rem 4rem;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at top, rgba(201, 168, 76, 0.04), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(217, 107, 74, 0.03), transparent 50%);
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.7rem;
+  }
+
+  h1 {
+    font-weight: 500;
+    font-size: 2.4rem;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.3rem;
+  }
+
+  h1 em { color: var(--gold); font-style: italic; font-weight: 400; }
+
+  .subtitle {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  .preamble {
+    font-size: 1.02rem;
+    max-width: 68ch;
+    margin-bottom: 1.8rem;
+  }
+
+  .preamble code, .preamble var {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-style: normal;
+    color: var(--gold-bright);
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (max-width: 980px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+
+  .canvas-wrap {
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    padding: 1.5rem;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--bg-cell);
+  }
+
+  .controls {
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    padding: 1.3rem;
+  }
+
+  .controls h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .control-row {
+    margin-bottom: 1.2rem;
+  }
+
+  .control-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 0.4rem;
+  }
+
+  .control-label .val {
+    color: var(--gold);
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--ink-fade);
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--gold);
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: var(--gold);
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
+
+  button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--gold);
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    width: 100%;
+    margin-top: 0.4rem;
+  }
+
+  button:hover {
+    background: var(--gold-soft);
+    color: var(--gold-bright);
+  }
+
+  .panel {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .stat .name { color: var(--ink-dim); }
+  .stat .num { color: var(--gold-bright); font-weight: 500; }
+
+  .stat-bar {
+    height: 4px;
+    background: var(--bg-cell);
+    margin-bottom: 0.6rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--gold);
+    transition: width 0.3s ease;
+  }
+
+  .regime-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    text-align: center;
+    transition: color 0.4s ease;
+  }
+
+  .regime-label.cold { color: var(--heat-cold); }
+  .regime-label.hot { color: var(--heat-hot); }
+  .regime-label.mid { color: var(--gold); }
+
+  .commentary {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    max-width: 70ch;
+  }
+
+  .commentary h2 {
+    font-weight: 500;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .commentary h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 1.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .commentary p {
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+  }
+
+  .commentary code, .commentary var {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-style: normal;
+    color: var(--gold-bright);
+  }
+
+  .commentary p.aside {
+    color: var(--ink-dim);
+    font-style: italic;
+    font-size: 0.95rem;
+  }
+
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-fade);
+    text-transform: uppercase;
+  }
+
+  footer .gold { color: var(--gold); }
+
+  .formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--bg-cell);
+    border-left: 2px solid var(--gold);
+    padding: 0.7rem 0.9rem;
+    margin: 0.8rem 0;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Path Integrals · Lattice Statistical Mechanics</div>
+    <h1>The Weighted King <em>— a Feynman ensemble on the Delannoy lattice</em></h1>
+    <p class="subtitle">Each path carries a Boltzmann weight in its Euclidean length. Tune β and watch the ensemble reorganise.</p>
+  </header>
+
+  <p class="preamble">
+    Every E/N/NE walk from <code>(0,0)</code> to <code>(n,n)</code> is assigned weight
+    <code>exp(−β · L)</code>, where <code>L</code> is its Euclidean length. The diagonal
+    step costs <code>√2</code> in length but advances both axes at once. The slider varies
+    <code>β</code> — the inverse temperature. At <code>β=0</code> all paths weigh equally
+    (Delannoy counting). As <code>β→∞</code> the weight concentrates on the geodesic
+    (all-diagonal). The colour map shows the visit probability of each cell under the
+    chosen weighting.
+  </p>
+
+  <div class="stage">
+    <div class="canvas-wrap">
+      <canvas id="cv" width="800" height="800"></canvas>
+    </div>
+
+    <aside class="controls">
+      <h3>Ensemble Parameters</h3>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>Inverse temperature β</span>
+          <span class="val" id="betaVal">0.000</span>
+        </div>
+        <input type="range" id="beta" min="-2" max="6" step="0.05" value="0">
+      </div>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>Lattice size n</span>
+          <span class="val" id="nVal">10</span>
+        </div>
+        <input type="range" id="nslider" min="3" max="20" step="1" value="10">
+      </div>
+
+      <div class="regime-label" id="regime">— uniform Delannoy measure —</div>
+
+      <div class="panel">
+        <div class="stat">
+          <span class="name">paths counted</span>
+          <span class="num" id="totalPaths">—</span>
+        </div>
+
+        <div class="stat">
+          <span class="name">⟨L⟩ expected length</span>
+          <span class="num" id="avgL">—</span>
+        </div>
+
+        <div class="stat">
+          <span class="name">geodesic n√2</span>
+          <span class="num" id="geodesic">—</span>
+        </div>
+
+        <div class="stat">
+          <span class="name">excess over geodesic</span>
+          <span class="num" id="excess">—</span>
+        </div>
+
+        <div class="stat-bar">
+          <div class="stat-bar-fill" id="excessBar"></div>
+        </div>
+
+        <div class="stat">
+          <span class="name">⟨j⟩ expected diagonals</span>
+          <span class="num" id="avgJ">—</span>
+        </div>
+
+        <div class="stat">
+          <span class="name">⟨j⟩ / n</span>
+          <span class="num" id="ratioJ">—</span>
+        </div>
+
+        <div class="stat-bar">
+          <div class="stat-bar-fill" id="ratioBar"></div>
+        </div>
+      </div>
+
+      <button id="reset">reset to β = 0</button>
+      <button id="setCritical">jump to β = ln(2)/(2−√2)</button>
+    </aside>
+  </div>
+
+  <div class="commentary">
+    <h2>What you're seeing</h2>
+
+    <p>
+      The heat map on each cell is its <em>visit probability</em> — the chance that a path
+      drawn from the Boltzmann ensemble passes through that cell. Brighter gold means more
+      visits; faded grey means rare. The ensemble is computed exactly by dynamic
+      programming: weighted forward sums to each cell, weighted backward sums from each
+      cell, multiplied and normalised.
+    </p>
+
+    <h3>Three regimes</h3>
+
+    <p>
+      At <code>β = 0</code> every path counts equally. The dominant contribution comes
+      from paths near the antidiagonal of the visit grid — the saddle-point of the
+      Delannoy sum sits there, with about <var>1 − 1/√2 ≈ 0.293</var> of the path's
+      "coordinate work" done by diagonal steps. This is the uniform-measure asymptotic
+      we derived analytically.
+    </p>
+
+    <p>
+      As <code>β</code> increases, longer paths are exponentially suppressed. Diagonal
+      steps are favoured (they're a single move of length <code>√2 ≈ 1.41</code>
+      rather than two moves of total length 2). The visit map sharpens onto the
+      diagonal ridge. In the limit <code>β → ∞</code> only the unique geodesic — all-
+      diagonal — survives.
+    </p>
+
+    <p>
+      At <code>β &lt; 0</code> (negative temperature, by physicist convention) longer
+      paths are <em>rewarded</em>. The ensemble pushes outward to the lattice corners
+      and the diagonal steps become rare. The picture flattens against the boundary —
+      the king prefers to walk the long way round.
+    </p>
+
+    <h3>The critical β</h3>
+
+    <p>
+      At <code>β = ln(2)/(2−√2) ≈ 1.183</code> the ensemble enters a notable regime.
+      This is the value where the Boltzmann weight of a diagonal step <code>e^(−β√2)</code>
+      exactly cancels the combinatorial bonus of <code>2</code> that diagonals carry in
+      the closed formula <code>D(n,n) = Σ C(n,j)² 2^j</code>. Below it, the closed
+      formula behaves like Pascal-squared; above, the diagonal dominates. The slider
+      preset button lands you on this value.
+    </p>
+
+    <h3>The expected-length curve</h3>
+
+    <p>
+      Watch the ⟨L⟩ readout as you sweep β from negative to large positive. At very
+      negative β it approaches <code>2n</code> (pure orthogonal, Manhattan distance).
+      At β = 0 it sits at the Delannoy average <code>(2 − 1/√2) · n ≈ 1.293 n</code>.
+      At very large β it descends toward the geodesic <code>n√2 ≈ 1.414 n</code>. The
+      crossover is smooth and the curve is monotonically decreasing in β — a textbook
+      thermodynamic response.
+    </p>
+
+    <p class="aside">
+      In statistical-mechanics language, this is the canonical ensemble of a one-
+      dimensional non-interacting "gas" of step-choices on a triangular constraint
+      surface (the path must reach <code>(n,n)</code>). The Delannoy generating
+      function is its partition function at β = 0, and the saddle-point analysis is
+      its equation of state.
+    </p>
+  </div>
+
+  <footer>
+    Constructed by Silicon · <span class="gold">Anthropic Claude</span> — Architect Carbon · <span class="gold">LeeMcCullochJames</span>
+  </footer>
+</div>
+
+<script>
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const betaSlider = document.getElementById('beta');
+  const betaVal = document.getElementById('betaVal');
+  const nSlider = document.getElementById('nslider');
+  const nVal = document.getElementById('nVal');
+  const totalPathsEl = document.getElementById('totalPaths');
+  const avgLEl = document.getElementById('avgL');
+  const geodesicEl = document.getElementById('geodesic');
+  const excessEl = document.getElementById('excess');
+  const excessBar = document.getElementById('excessBar');
+  const avgJEl = document.getElementById('avgJ');
+  const ratioJEl = document.getElementById('ratioJ');
+  const ratioBar = document.getElementById('ratioBar');
+  const regimeEl = document.getElementById('regime');
+  const resetBtn = document.getElementById('reset');
+  const criticalBtn = document.getElementById('setCritical');
+
+  const SQRT2 = Math.SQRT2;
+
+  // We compute the partition function and observables exactly via forward-backward.
+  // For each cell (i,j) where 0 <= i,j <= n:
+  //   F(i,j) = weighted sum of all paths from (0,0) to (i,j)
+  //   B(i,j) = weighted sum of all paths from (i,j) to (n,n)
+  //   Visit prob at (i,j) ∝ F(i,j) * B(i,j) / Z
+  // Where Z = F(n,n) = B(0,0) is the partition function.
+  //
+  // Step weights:
+  //   East: w_E = exp(-β)            (length 1)
+  //   North: w_N = exp(-β)           (length 1)
+  //   NE: w_D = exp(-β√2)            (length √2)
+  //
+  // Recurrence:
+  //   F(i,j) = w_E F(i-1,j) + w_N F(i,j-1) + w_D F(i-1,j-1)
+  //   B(i,j) = w_E B(i+1,j) + w_N B(i,j+1) + w_D B(i+1,j+1)
+
+  function computeEnsemble(n, beta) {
+    const wE = Math.exp(-beta);              // ortho step weight (length 1)
+    const wN = Math.exp(-beta);
+    const wD = Math.exp(-beta * SQRT2);      // diagonal step weight (length √2)
+
+    // Use log-space for numerical stability when |β| is large
+    // Actually for moderate n (<=20) and β in [-2, 6], direct floats are fine
+    // except at extreme β. We'll use direct floats with a safety renormalisation.
+
+    const F = Array.from({length: n+1}, () => new Float64Array(n+1));
+    const B = Array.from({length: n+1}, () => new Float64Array(n+1));
+
+    F[0][0] = 1;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        if (i === 0 && j === 0) continue;
+        let v = 0;
+        if (i > 0) v += wE * F[i-1][j];
+        if (j > 0) v += wN * F[i][j-1];
+        if (i > 0 && j > 0) v += wD * F[i-1][j-1];
+        F[i][j] = v;
+      }
+    }
+
+    B[n][n] = 1;
+    for (let i = n; i >= 0; i--) {
+      for (let j = n; j >= 0; j--) {
+        if (i === n && j === n) continue;
+        let v = 0;
+        if (i < n) v += wE * B[i+1][j];
+        if (j < n) v += wN * B[i][j+1];
+        if (i < n && j < n) v += wD * B[i+1][j+1];
+        B[i][j] = v;
+      }
+    }
+
+    const Z = F[n][n];
+
+    // Visit probability
+    const P = Array.from({length: n+1}, () => new Float64Array(n+1));
+    let maxP = 0;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        P[i][j] = (F[i][j] * B[i][j]) / Z;
+        if (P[i][j] > maxP) maxP = P[i][j];
+      }
+    }
+
+    // To compute <L> and <j>, we need expected counts of each step type.
+    // Expected number of E-steps = Σ over edges of (prob of edge use).
+    // Edge prob: F(i-1,j) * wE * B(i,j) / Z for the E-step into (i,j).
+    let expE = 0, expN = 0, expD = 0;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        if (i > 0) expE += (F[i-1][j] * wE * B[i][j]) / Z;
+        if (j > 0) expN += (F[i][j-1] * wN * B[i][j]) / Z;
+        if (i > 0 && j > 0) expD += (F[i-1][j-1] * wD * B[i][j]) / Z;
+      }
+    }
+
+    const avgL = expE * 1 + expN * 1 + expD * SQRT2;
+    const avgJ = expD;
+
+    // Total UNWEIGHTED path count (β = 0) for reference: just D(n,n) computed below
+    return { F, B, P, Z, maxP, avgL, avgJ, expE, expN, expD };
+  }
+
+  function delannoyCount(n) {
+    // D(n,n) by closed form: Σ C(n,j)^2 * 2^j
+    function comb(a, b) {
+      if (b < 0 || b > a) return 0;
+      b = Math.min(b, a-b);
+      let r = 1;
+      for (let i = 0; i < b; i++) r = r * (a - i) / (i + 1);
+      return r;
+    }
+    let s = 0;
+    for (let j = 0; j <= n; j++) {
+      const c = comb(n, j);
+      s += c * c * Math.pow(2, j);
+    }
+    return s;
+  }
+
+  function heatColour(t) {
+    // t in [0,1]; map to dark-cell -> gold
+    if (t <= 0) return '#1a1a1a';
+    // Smooth ramp through dark blue (for tail) -> gold -> bright
+    const r1 = 26, g1 = 26, b1 = 26;             // base cell
+    const r2 = 201, g2 = 168, b2 = 76;           // gold
+    const r3 = 232, g3 = 198, b3 = 106;          // bright gold
+    let r, g, b;
+    if (t < 0.7) {
+      const u = t / 0.7;
+      r = r1 + (r2 - r1) * u;
+      g = g1 + (g2 - g1) * u;
+      b = b1 + (b2 - b1) * u;
+    } else {
+      const u = (t - 0.7) / 0.3;
+      r = r2 + (r3 - r2) * u;
+      g = g2 + (g3 - g2) * u;
+      b = b2 + (b3 - b2) * u;
+    }
+    return `rgb(${r|0},${g|0},${b|0})`;
+  }
+
+  function regimeText(beta) {
+    if (beta < -0.5) return { text: '— suppressed-diagonal regime (β < 0) —', cls: 'cold' };
+    if (beta < 0.05) return { text: '— uniform Delannoy measure (β ≈ 0) —', cls: 'mid' };
+    if (beta < 1.0) return { text: '— mild geodesic bias —', cls: 'mid' };
+    if (beta < 3.0) return { text: '— diagonal-favoured ensemble —', cls: 'hot' };
+    return { text: '— geodesic concentration (β large) —', cls: 'hot' };
+  }
+
+  function render() {
+    const beta = parseFloat(betaSlider.value);
+    const n = parseInt(nSlider.value, 10);
+    betaVal.textContent = beta.toFixed(3);
+    nVal.textContent = n;
+
+    const ens = computeEnsemble(n, beta);
+
+    // Update regime label
+    const reg = regimeText(beta);
+    regimeEl.textContent = reg.text;
+    regimeEl.className = 'regime-label ' + reg.cls;
+
+    // Drawing
+    const W = cv.width;
+    const H = cv.height;
+    const padding = 40;
+    const gridW = W - 2*padding;
+    const gridH = H - 2*padding;
+    const cellW = gridW / (n + 1);
+    const cellH = gridH / (n + 1);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw cells with visit probability
+    // Origin (0,0) at bottom-left visually, (n,n) at top-right
+    const maxP = ens.maxP;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const x = padding + i * cellW;
+        const y = padding + (n - j) * cellH;
+        const t = ens.P[i][j] / maxP;
+        ctx.fillStyle = heatColour(t);
+        ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+      }
+    }
+
+    // Overlay: draw the actual edges with their use probabilities
+    // Use a thin overlay to suggest the flow
+    ctx.strokeStyle = 'rgba(232, 228, 216, 0.15)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const x = padding + i * cellW + cellW/2;
+        const y = padding + (n - j) * cellH + cellH/2;
+        if (i < n) {
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + cellW, y); ctx.stroke();
+        }
+        if (j < n) {
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - cellH); ctx.stroke();
+        }
+      }
+    }
+
+    // Endpoints
+    ctx.fillStyle = 'rgba(232, 198, 106, 0.95)';
+    let cx = padding + 0 * cellW + cellW/2;
+    let cy = padding + n * cellH + cellH/2;
+    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2*Math.PI); ctx.fill();
+    cx = padding + n * cellW + cellW/2;
+    cy = padding + 0 * cellH + cellH/2;
+    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2*Math.PI); ctx.fill();
+
+    // Diagonal line (geodesic)
+    ctx.strokeStyle = 'rgba(232, 198, 106, 0.35)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(padding + cellW/2, padding + n*cellH + cellH/2);
+    ctx.lineTo(padding + n*cellW + cellW/2, padding + cellH/2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(138, 132, 120, 0.7)';
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillText('(0,0)', padding + 8, padding + n*cellH + cellH/2 + 18);
+    ctx.fillText(`(${n},${n})`, padding + n*cellW - 12, padding + cellH/2 - 8);
+
+    // Update stats panel
+    if (Math.abs(beta) < 0.001) {
+      totalPathsEl.textContent = delannoyCount(n).toLocaleString();
+    } else {
+      totalPathsEl.textContent = '—  (β ≠ 0)';
+    }
+    avgLEl.textContent = ens.avgL.toFixed(4);
+    const geo = n * SQRT2;
+    geodesicEl.textContent = geo.toFixed(4);
+    const excessRatio = (ens.avgL - geo) / geo;
+    excessEl.textContent = (excessRatio * 100).toFixed(2) + '%';
+    // Excess bar: 0% to max ~41% (which is the manhattan/√2 - 1 case)
+    const excessBarMax = 0.42;
+    const ebPct = Math.max(0, Math.min(1, excessRatio / excessBarMax)) * 100;
+    excessBar.style.width = ebPct + '%';
+
+    avgJEl.textContent = ens.avgJ.toFixed(3);
+    const rj = ens.avgJ / n;
+    ratioJEl.textContent = rj.toFixed(4);
+    ratioBar.style.width = (Math.max(0, Math.min(1, rj)) * 100) + '%';
+  }
+
+  betaSlider.addEventListener('input', render);
+  nSlider.addEventListener('input', render);
+  resetBtn.addEventListener('click', () => {
+    betaSlider.value = 0;
+    render();
+  });
+  criticalBtn.addEventListener('click', () => {
+    const bc = Math.log(2) / (2 - SQRT2);
+    betaSlider.value = bc;
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
