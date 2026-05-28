@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bidiagonal Lab: L<sub>n</sub> as the operator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg-elev: #161616;
+    --bg-elev-2: #1d1d1d;
+    --ink: #e8e4d8;
+    --ink-dim: #9a9588;
+    --ink-faint: #5a5650;
+    --gold: #c9a84c;
+    --gold-dim: #8a7434;
+    --rule: #2a2722;
+    --warn: #c46a4c;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Menlo', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 18px; line-height: 1.55; }
+  .container { max-width: 1240px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 { font-family: var(--serif); font-weight: 500; font-style: italic; font-size: 2.4rem; letter-spacing: 0.01em; margin: 0 0 0.3rem 0; color: var(--ink); }
+  h1 .gold { color: var(--gold); font-style: normal; font-weight: 600; }
+  .subtitle { font-family: var(--sans); font-size: 0.85rem; color: var(--ink-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+  h2 { font-family: var(--serif); font-weight: 600; font-size: 1.4rem; color: var(--gold); margin: 2.2rem 0 0.8rem; letter-spacing: 0.005em; }
+  h3 { font-family: var(--sans); font-weight: 500; font-size: 0.78rem; color: var(--ink-dim); letter-spacing: 0.15em; text-transform: uppercase; margin: 1.2rem 0 0.6rem; }
+  p { margin: 0.6rem 0; color: var(--ink); }
+  .lede { font-size: 1.05rem; color: var(--ink-dim); font-style: italic; }
+  code, .mono { font-family: var(--mono); font-size: 0.9em; color: var(--gold); }
+  .panel { background: var(--bg-elev); border: 1px solid var(--rule); padding: 1.4rem 1.6rem; margin: 1.2rem 0; }
+
+  /* Preset bar */
+  .preset-bar { display: flex; gap: 0; margin: 1rem 0 1.5rem; border: 1px solid var(--rule); }
+  .preset-btn { flex: 1; background: var(--bg-elev); color: var(--ink-dim); border: none; border-right: 1px solid var(--rule); padding: 0.85rem 1rem; font-family: var(--sans); font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .preset-btn:last-child { border-right: none; }
+  .preset-btn:hover { background: var(--bg-elev-2); color: var(--ink); }
+  .preset-btn.active { background: var(--gold); color: var(--bg); font-weight: 600; }
+
+  /* Equation block */
+  .eqn { background: var(--bg); border-left: 2px solid var(--gold); padding: 0.8rem 1rem; margin: 0.6rem 0; font-family: var(--mono); font-size: 0.9rem; color: var(--gold); line-height: 1.5; overflow-x: auto; }
+  .eqn .var { color: var(--ink); }
+  .eqn .op { color: var(--ink-dim); }
+
+  /* Layout */
+  .lab { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5rem; align-items: start; }
+  @media (max-width: 920px) { .lab { grid-template-columns: 1fr; } }
+
+  /* Coefficient editor */
+  .coef-row { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 0.6rem; align-items: center; margin: 0.5rem 0; }
+  .coef-label { font-family: var(--mono); font-size: 0.85rem; color: var(--ink-dim); }
+  .coef-label .which { color: var(--gold); font-weight: 600; }
+  .coef-input { background: var(--bg); border: 1px solid var(--rule); color: var(--gold); font-family: var(--mono); font-size: 0.9rem; padding: 0.4rem 0.6rem; outline: none; }
+  .coef-input:focus { border-color: var(--gold); color: var(--ink); }
+  .coef-input.error { border-color: var(--warn); color: var(--warn); }
+  /* Seed editor */
+  .seed-editor { margin: 0.6rem 0; }
+  .seed-input-row { display: flex; gap: 0.4rem; align-items: center; }
+  .seed-input-row input {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+    width: 50px;
+    text-align: center;
+    outline: none;
+  }
+  .seed-input-row input:focus { border-color: var(--gold); }
+  .seed-bracket { color: var(--ink-dim); font-family: var(--mono); }
+
+  /* Toggle */
+  .toggle-row { display: flex; gap: 0.6rem; align-items: center; margin: 0.6rem 0; }
+  .toggle-row input[type="checkbox"] { accent-color: var(--gold); }
+  .toggle-row label { font-family: var(--sans); font-size: 0.85rem; color: var(--ink-dim); cursor: pointer; }
+
+  /* Numeric L_n display */
+  .Lmat-wrap { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+  .Lmat-controls { display: flex; gap: 0.6rem; align-items: center; margin: 0.5rem 0; font-family: var(--sans); font-size: 0.82rem; color: var(--ink-dim); }
+  .Lmat-controls input[type="range"] { flex: 1; accent-color: var(--gold); }
+  .Lmat-controls .nval { color: var(--gold); font-family: var(--mono); min-width: 36px; text-align: center; }
+  .Lmat { display: inline-grid; gap: 2px; margin-top: 0.5rem; background: var(--rule); padding: 2px; border: 1px solid var(--rule); }
+  .Lcell {
+    width: 38px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); color: var(--ink-faint);
+    font-family: var(--mono); font-size: 0.78rem;
+  }
+  .Lcell.nz { color: var(--gold); background: var(--bg-elev-2); }
+  .Lcell.diag { color: var(--ink); background: var(--bg-elev); }
+  .Lcell.sub { color: var(--gold); background: var(--bg-elev-2); }
+  .Lmat-caption { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); margin-top: 0.4rem; }
+
+  /* Controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; margin: 1rem 0 0; padding-top: 1rem; border-top: 1px solid var(--rule); }
+  .control { display: flex; align-items: center; gap: 0.5rem; font-family: var(--sans); font-size: 0.82rem; color: var(--ink-dim); }
+  .control input[type="number"] { width: 56px; background: var(--bg); border: 1px solid var(--rule); color: var(--gold); font-family: var(--mono); font-size: 0.9rem; padding: 0.25rem 0.4rem; text-align: center; }
+  .control select { background: var(--bg); border: 1px solid var(--rule); color: var(--gold); font-family: var(--mono); font-size: 0.85rem; padding: 0.25rem 0.4rem; }
+  .control button { background: transparent; color: var(--ink-dim); border: 1px solid var(--rule); padding: 0.35rem 0.8rem; font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+  .control button:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Triangle display */
+  .triangle-wrap { padding: 1.2rem; overflow-x: auto; }
+  .triangle { display: flex; flex-direction: column; align-items: flex-start; gap: 0.22rem; font-family: var(--mono); padding: 0.5rem 0; }
+  .trow { display: flex; gap: 0.25rem; align-items: center; }
+  .tcell { min-width: 44px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--rule); font-size: 0.85rem; color: var(--gold); padding: 0 0.4rem; }
+  .tcell.zero { color: var(--ink-faint); }
+  .tcell.large { font-size: 0.72rem; }
+  .tcell.xlarge { font-size: 0.62rem; }
+  .tcell.huge { font-size: 0.54rem; padding: 0 0.2rem; }
+  .tcell.highlight { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
+  .tcell.current-n { border-color: var(--gold-dim); }
+  .rowlabel { font-family: var(--mono); font-size: 0.7rem; color: var(--ink-faint); width: 36px; text-align: right; padding-right: 0.4rem; }
+  .rowlabel.current-n { color: var(--gold); }
+
+  /* Spines */
+  .spine-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+  .spine-row { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.4rem 0; font-family: var(--mono); font-size: 0.82rem; }
+  .spine-name { color: var(--ink-dim); width: 140px; font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .spine-vals { color: var(--gold); overflow-x: auto; white-space: nowrap; }
+
+  /* Details */
+  details { margin: 0.8rem 0; border: 1px solid var(--rule); background: var(--bg-elev-2); }
+  details summary { cursor: pointer; padding: 0.7rem 1rem; font-family: var(--sans); font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); list-style: none; user-select: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: "▸ "; color: var(--gold-dim); }
+  details[open] summary::before { content: "▾ "; }
+  details .body { padding: 0 1rem 1rem; font-size: 0.95rem; color: var(--ink-dim); }
+  details .body p { color: var(--ink-dim); }
+  details .body .mono { color: var(--gold); }
+
+  .error-text { color: var(--warn); font-family: var(--mono); font-size: 0.78rem; margin-top: 0.5rem; min-height: 1em; }
+
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.05em; text-align: center; line-height: 1.6; }
+  footer .gold { color: var(--gold-dim); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Bidiagonal <span class="gold">Lab</span></h1>
+  <div class="subtitle">L<sub>n</sub> as the operator &nbsp;·&nbsp; Pascal · Eulerian · Delannoy</div>
+</header>
+
+<p class="lede">Treat each row of the triangle as a vector. The row-to-row map is a lower bidiagonal matrix. Change the matrix, watch the triangle.</p>
+
+<details open>
+<summary>The framing</summary>
+<div class="body">
+<p>Let v<sub>n</sub> = (T(n,0), T(n,1), T(n,2), ...)<sup>T</sup> be row n as a column vector. The recurrence T(n,k) = α(n,k)·T(n−1,k) + β(n,k)·T(n−1,k−1) says v<sub>n</sub> = L<sub>n</sub> v<sub>n−1</sub>, where L<sub>n</sub> is a lower bidiagonal matrix with L<sub>n</sub>[k,k] = α(n,k) on the main diagonal and L<sub>n</sub>[k,k−1] = β(n,k) on the subdiagonal.</p>
+<p>That is the entire operator. The triangle is its orbit on a seed vector v<sub>0</sub>.</p>
+<p>Some triangles need more. Delannoy's recurrence references the same row it is filling (the T(n, k−1) term), which means the row-to-row map post-composes the bidiagonal with a cumulative-sum operator U. Pascal then row-accumulation gives Delannoy. The toggle below switches that on.</p>
+</div>
+</details>
+
+<div class="preset-bar">
+  <button class="preset-btn active" data-preset="pascal">Pascal</button>
+  <button class="preset-btn" data-preset="eulerian">Eulerian / Worpitzky</button>
+  <button class="preset-btn" data-preset="delannoy">Delannoy</button>
+  <button class="preset-btn" data-preset="stirling2">Stirling (2nd kind)</button>
+  <button class="preset-btn" data-preset="custom">Custom</button>
+</div>
+
+<div class="lab">
+
+  <div class="panel">
+    <h3>The bidiagonal L<sub>n</sub></h3>
+    <div class="eqn">v<sub class="var">n</sub> <span class="op">=</span> <span class="var">L<sub>n</sub></span> v<sub class="var">n−1</sub></div>
+
+    <div class="coef-row">
+      <div class="coef-label">α(n,k) <span style="font-size:0.75em;color:var(--ink-faint)">main diag</span></div>
+      <input class="coef-input" id="alpha-input" value="1">
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--ink-faint)">on T(n−1, k)</div>
+    </div>
+    <div class="coef-row">
+      <div class="coef-label">β(n,k) <span style="font-size:0.75em;color:var(--ink-faint)">subdiag</span></div>
+      <input class="coef-input" id="beta-input" value="1">
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--ink-faint)">on T(n−1, k−1)</div>
+    </div>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="accum-toggle">
+      <label for="accum-toggle">Post-compose with row accumulator U &nbsp;<span style="color:var(--ink-faint);font-family:var(--mono);font-size:0.78rem">(v<sub>n</sub> = U L<sub>n</sub> v<sub>n−1</sub>)</span></label>
+    </div>
+
+    <div class="eqn" id="full-recurrence" style="margin-top:0.6rem"></div>
+
+    <h3>Seed row v<sub>0</sub></h3>
+    <div class="seed-editor">
+      <div class="seed-input-row" id="seed-row"></div>
+      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--ink-faint);margin-top:0.3rem">Entries beyond what you set default to 0.</div>
+    </div>
+
+    <div class="error-text" id="error"></div>
+
+    <details>
+      <summary>Reading the presets</summary>
+      <div class="body">
+        <p><strong>Pascal</strong>: α=1, β=1, no accumulator. Seed (1, 0, 0, ...).</p>
+        <p><strong>Eulerian / Worpitzky</strong>: α = k+1, β = n−k, no accumulator. Seed (1, 0, 0, ...). Bidiagonal but the entries depend on (n, k).</p>
+        <p><strong>Delannoy</strong>: α=1, β=1, accumulator ON. Seed (1, 1, 1, ...). Pascal composed with cumulative sum, on a different seed. Riordan factorisation made visible.</p>
+        <p><strong>Stirling 2nd kind</strong>: α = k, β = 1, no accumulator. Seed (1, 0, 0, ...). Counts set partitions; row sums are Bell numbers.</p>
+      </div>
+    </details>
+
+    <div class="Lmat-wrap">
+      <h3>L<sub>n</sub> at chosen n</h3>
+      <div class="Lmat-controls">
+        <span>n =</span>
+        <input type="range" id="nslider" min="1" max="8" value="3">
+        <span class="nval" id="nval">3</span>
+      </div>
+      <div id="Lmat"></div>
+      <div class="Lmat-caption">Numeric entries of L<sub>n</sub> at the chosen row index n. Constant for Pascal; varies with n for Eulerian.</div>
+    </div>
+
+    <div class="controls">
+      <div class="control">
+        <label>Rows</label>
+        <input type="number" id="nrows" value="9" min="3" max="14">
+      </div>
+      <div class="control">
+        <label>Layout</label>
+        <select id="layout">
+          <option value="triangle" selected>Triangle</option>
+          <option value="square">Square</option>
+        </select>
+      </div>
+      <div class="control">
+        <button id="resetbtn">Reset preset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel triangle-wrap">
+    <h3>Generated array T(n,k)</h3>
+    <div class="triangle" id="triangle"></div>
+
+    <div class="spine-section">
+      <h3>Spines</h3>
+      <div class="spine-row">
+        <span class="spine-name">Row sums</span>
+        <span class="spine-vals" id="rowsums"></span>
+      </div>
+      <div class="spine-row">
+        <span class="spine-name" id="mainspine-label">Central col</span>
+        <span class="spine-vals" id="mainspine"></span>
+      </div>
+      <div class="spine-row">
+        <span class="spine-name">Left edge</span>
+        <span class="spine-vals" id="leftedge"></span>
+      </div>
+      <div class="spine-row">
+        <span class="spine-name" id="shallow-label">Shallow diag</span>
+        <span class="spine-vals" id="shallowdiag"></span>
+      </div>
+    </div>
+
+    <details>
+      <summary>What the spines see</summary>
+      <div class="body">
+        <p>A spine is a sequence read along a line through the array. Each spine has its own recurrence, derived from L<sub>n</sub> by projection. Pascal row sums are 2<sup>n</sup>. Eulerian row sums are n!. Delannoy main diagonal is 1, 3, 13, 63, 321, 1683, ... Stirling row sums are Bell numbers 1, 1, 2, 5, 15, 52, 203, ...</p>
+      </div>
+    </details>
+  </div>
+
+</div>
+
+<details>
+<summary>What changes between the three classical cases</summary>
+<div class="body">
+<p>Pascal is the base case: bidiagonal, constant entries, single seed. Eulerian varies one thing: the entries of L<sub>n</sub> become functions of (n, k) rather than constants. The bidiagonal structure survives. Delannoy varies a different thing: it post-composes L<sub>n</sub> with a row-accumulator U and lifts the seed to all ones. The entries of L<sub>n</sub> stay constant. Pascal and Delannoy share L<sub>n</sub>; Pascal and Eulerian share both the seed and the absence of U; Delannoy and Eulerian share nothing structurally except the bidiagonal stencil itself.</p>
+<p>That is the actual statement of how these three relate. Not three pretty arrays with similar-looking recurrences. Three points in a small structured space: (entries of L<sub>n</sub>: constant or affine in (n,k)) × (post-compose with U: yes or no) × (seed: e<sub>0</sub> or 1).</p>
+<p>Stirling sits in the same space at (α=k, β=1, no U, seed e<sub>0</sub>). It belongs.</p>
+</div>
+</details>
+
+<footer>
+Constructed by Silicon <span class="gold">·</span> Anthropic Claude &nbsp;—&nbsp; Architect Carbon <span class="gold">·</span> LeeMcCullochJames
+</footer>
+
+</div>
+
+<script>
+"use strict";
+
+// ---------- Expression parser ----------
+function parseExpr(s) {
+  s = String(s).trim();
+  if (s === "") return {c: 0, n: 0, k: 0};
+  const tokens = [];
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === " ") { i++; continue; }
+    if ("+-*()".indexOf(ch) >= 0) { tokens.push(ch); i++; continue; }
+    if (/[0-9]/.test(ch)) {
+      let j = i;
+      while (j < s.length && /[0-9]/.test(s[j])) j++;
+      tokens.push({type: "num", val: parseInt(s.slice(i,j),10)});
+      i = j; continue;
+    }
+    if (ch === "n" || ch === "k") { tokens.push({type:"var", val:ch}); i++; continue; }
+    return null;
+  }
+  let pos = 0;
+  function peek() { return tokens[pos]; }
+  function eat() { return tokens[pos++]; }
+  function parseTerm() {
+    let factors = [];
+    while (pos < tokens.length) {
+      const t = peek();
+      if (t === "+" || t === "-" || t === ")") break;
+      if (t === "*") { eat(); continue; }
+      if (t === "(") {
+        eat();
+        const sub = parseExpr2();
+        if (peek() !== ")") return null;
+        eat();
+        factors.push(sub);
+      } else if (typeof t === "object" && t.type === "num") {
+        eat();
+        factors.push({c: t.val, n: 0, k: 0});
+      } else if (typeof t === "object" && t.type === "var") {
+        eat();
+        if (t.val === "n") factors.push({c:0, n:1, k:0});
+        else factors.push({c:0, n:0, k:1});
+      } else { return null; }
+    }
+    let acc = {c: 1, n: 0, k: 0};
+    for (const f of factors) {
+      const newC = acc.c * f.c;
+      const newN = acc.c * f.n + acc.n * f.c;
+      const newK = acc.c * f.k + acc.k * f.c;
+      if (acc.n * f.n !== 0 || acc.k * f.k !== 0 || acc.n*f.k + acc.k*f.n !== 0) return null;
+      acc = {c: newC, n: newN, k: newK};
+    }
+    return acc;
+  }
+  function parseExpr2() {
+    let sign = 1;
+    if (peek() === "+") eat();
+    else if (peek() === "-") { eat(); sign = -1; }
+    let acc = parseTerm();
+    if (acc === null) return null;
+    acc = {c: acc.c*sign, n: acc.n*sign, k: acc.k*sign};
+    while (pos < tokens.length && (peek() === "+" || peek() === "-")) {
+      const op = eat();
+      const term = parseTerm();
+      if (term === null) return null;
+      const s = (op === "+") ? 1 : -1;
+      acc = {c: acc.c + s*term.c, n: acc.n + s*term.n, k: acc.k + s*term.k};
+    }
+    return acc;
+  }
+  const result = parseExpr2();
+  if (pos !== tokens.length) return null;
+  return result;
+}
+
+function evalWeight(coef, n, k) {
+  if (!coef) return 0;
+  return coef.c + coef.n * n + coef.k * k;
+}
+
+function exprToString(coef) {
+  if (!coef) return "0";
+  const parts = [];
+  if (coef.c !== 0) parts.push(String(coef.c));
+  if (coef.n !== 0) parts.push((coef.n === 1 ? "" : coef.n === -1 ? "-" : coef.n + "*") + "n");
+  if (coef.k !== 0) parts.push((coef.k === 1 ? "" : coef.k === -1 ? "-" : coef.k + "*") + "k");
+  if (parts.length === 0) return "0";
+  return parts.join(" + ").replace(/\+ -/g, "- ");
+}
+
+// ---------- Presets ----------
+const PRESETS = {
+  pascal:    { alpha: "1",   beta: "1",   accum: false, seed: [1], layout: "triangle" },
+  eulerian:  { alpha: "k+1", beta: "n-k", accum: false, seed: [1], layout: "triangle" },
+  delannoy:  { alpha: "1",   beta: "1",   accum: true,  seed: [1,1,1,1,1,1,1,1,1,1,1,1,1,1], layout: "square" },
+  stirling2: { alpha: "k",   beta: "1",   accum: false, seed: [1], layout: "triangle" },
+  custom:    { alpha: "1",   beta: "1",   accum: false, seed: [1], layout: "triangle" },
+};
+
+// ---------- State ----------
+let state = {
+  preset: "pascal",
+  alphaStr: "1",
+  betaStr: "1",
+  accum: false,
+  seed: [1],
+  nRows: 9,
+  layout: "triangle",
+  Lmat_n: 3,
+};
+
+function reparse() {
+  state.alphaCoef = parseExpr(state.alphaStr);
+  state.betaCoef = parseExpr(state.betaStr);
+  const alphaErr = state.alphaCoef === null;
+  const betaErr = state.betaCoef === null;
+  document.getElementById("alpha-input").classList.toggle("error", alphaErr);
+  document.getElementById("beta-input").classList.toggle("error", betaErr);
+  const errs = [];
+  if (alphaErr) errs.push("α");
+  if (betaErr) errs.push("β");
+  document.getElementById("error").textContent = errs.length ? "Could not parse " + errs.join(" and ") + ". Try expressions like  1,  k+1,  n-k,  2*n-1." : "";
+}
+
+function loadPreset(name) {
+  const p = PRESETS[name];
+  state.preset = name;
+  state.alphaStr = p.alpha;
+  state.betaStr = p.beta;
+  state.accum = p.accum;
+  state.seed = p.seed.slice();
+  state.layout = p.layout;
+  document.getElementById("alpha-input").value = p.alpha;
+  document.getElementById("beta-input").value = p.beta;
+  document.getElementById("accum-toggle").checked = p.accum;
+  document.getElementById("layout").value = p.layout;
+  reparse();
+  renderAll();
+}
+
+// ---------- Compute the array ----------
+function computeT() {
+  const N = state.nRows;
+  const M = (state.layout === "triangle") ? N : N;  // column count
+  // We extend the seed to length M with zeros if shorter
+  let v = new Array(M).fill(0);
+  // Seed expansion: pad/truncate or extend with last value for "all ones" style
+  // Use the user-given seed; pad with 0s.
+  for (let i = 0; i < M && i < state.seed.length; i++) v[i] = state.seed[i];
+  // For Delannoy preset (seed all ones), the user seed may be [1,1,1,...,1] but truncated.
+  // Detect "all ones" pattern: if seed has length >= 2 and all entries are 1 and accum is true,
+  // extend with 1s. Otherwise pad with 0.
+  const isAllOnes = state.seed.length >= 2 && state.seed.every(x => x === 1);
+  if (isAllOnes) {
+    for (let i = state.seed.length; i < M; i++) v[i] = 1;
+  }
+
+  const T = [v.slice()];
+  for (let n = 1; n < N; n++) {
+    const vNew = new Array(M).fill(0);
+    // Apply L_n: vNew[k] = alpha(n,k) * v[k] + beta(n,k) * v[k-1]
+    for (let k = 0; k < M; k++) {
+      const a = evalWeight(state.alphaCoef, n, k);
+      const b = evalWeight(state.betaCoef, n, k);
+      let val = a * v[k];
+      if (k - 1 >= 0) val += b * v[k-1];
+      vNew[k] = val;
+    }
+    // Optionally apply U: cumulative sum along the row
+    let row;
+    if (state.accum) {
+      row = new Array(M).fill(0);
+      let s = 0;
+      for (let k = 0; k < M; k++) { s += vNew[k]; row[k] = s; }
+    } else {
+      row = vNew;
+    }
+    T.push(row);
+    v = row;
+  }
+  return T;
+}
+
+// ---------- Rendering ----------
+function renderFullRecurrence() {
+  const a = state.alphaCoef, b = state.betaCoef;
+  if (!a || !b) { document.getElementById("full-recurrence").textContent = "—"; return; }
+  const aStr = exprToString(a);
+  const bStr = exprToString(b);
+  const fmt = (s) => (s === "1") ? "" : (/[nk+\-*]/.test(s) ? "(" + s + ")·" : s + "·");
+  const baseRec = "v_n(k) = " + fmt(aStr) + "v_{n-1}(k) + " + fmt(bStr) + "v_{n-1}(k-1)";
+  let txt = baseRec;
+  if (state.accum) {
+    txt += "   ;   then  T(n, k) = Σ_{j=0..k} v_n(j)";
+  } else {
+    txt += "   ;   T(n, k) = v_n(k)";
+  }
+  document.getElementById("full-recurrence").textContent = txt;
+}
+
+function renderSeed() {
+  const wrap = document.getElementById("seed-row");
+  wrap.innerHTML = "";
+  const bopen = document.createElement("span"); bopen.className = "seed-bracket"; bopen.textContent = "( ";
+  wrap.appendChild(bopen);
+  // Show up to 6 input slots; rest indicated by ellipsis
+  const NSLOTS = 6;
+  for (let i = 0; i < NSLOTS; i++) {
+    const inp = document.createElement("input");
+    inp.type = "number";
+    inp.value = (i < state.seed.length) ? state.seed[i] : 0;
+    inp.addEventListener("input", (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isFinite(v)) return;
+      while (state.seed.length <= i) state.seed.push(0);
+      state.seed[i] = v;
+      state.preset = "custom";
+      updatePresetButtons();
+      renderTriangle();
+    });
+    wrap.appendChild(inp);
+    if (i < NSLOTS - 1) {
+      const c = document.createElement("span"); c.className = "seed-bracket"; c.textContent = ","; wrap.appendChild(c);
+    }
+  }
+  const trail = document.createElement("span"); trail.className = "seed-bracket";
+  // If seed is "all ones" (accum mode), say so
+  const isAllOnes = state.seed.length >= 2 && state.seed.every(x => x === 1);
+  trail.textContent = isAllOnes ? ", 1, 1, ... )" : ", 0, 0, ... )";
+  wrap.appendChild(trail);
+}
+
+function renderLmat() {
+  const wrap = document.getElementById("Lmat");
+  wrap.innerHTML = "";
+  const a = state.alphaCoef, b = state.betaCoef;
+  if (!a || !b) return;
+  const n = state.Lmat_n;
+  const size = 6;
+  const grid = document.createElement("div");
+  grid.className = "Lmat";
+  grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const cell = document.createElement("div");
+      cell.className = "Lcell";
+      let v = 0;
+      if (row === col) { v = evalWeight(a, n, row); if (v !== 0) cell.classList.add("diag"); }
+      else if (col === row - 1) { v = evalWeight(b, n, row); if (v !== 0) cell.classList.add("sub"); }
+      if (v !== 0 && !cell.classList.contains("diag") && !cell.classList.contains("sub")) cell.classList.add("nz");
+      cell.textContent = (v === 0) ? "·" : String(v);
+      grid.appendChild(cell);
+    }
+  }
+  wrap.appendChild(grid);
+  document.getElementById("nval").textContent = String(n);
+}
+
+function renderTriangle() {
+  const wrap = document.getElementById("triangle");
+  wrap.innerHTML = "";
+  const T = computeT();
+  const N = T.length;
+  for (let n = 0; n < N; n++) {
+    const row = document.createElement("div");
+    row.className = "trow";
+    const rl = document.createElement("div");
+    rl.className = "rowlabel" + (n === state.Lmat_n ? " current-n" : "");
+    rl.textContent = "n=" + n;
+    row.appendChild(rl);
+    const kmax = (state.layout === "triangle") ? n : N - 1;
+    for (let k = 0; k <= kmax; k++) {
+      const c = document.createElement("div");
+      c.className = "tcell";
+      if (n === state.Lmat_n) c.classList.add("current-n");
+      const v = T[n][k];
+      const absv = Math.abs(v);
+      if (absv >= 100000000) c.classList.add("huge");
+      else if (absv >= 10000000) c.classList.add("xlarge");
+      else if (absv >= 100000) c.classList.add("large");
+      if (v === 0) c.classList.add("zero");
+      if (state.layout === "triangle" && n > 0 && 2*k === n) c.classList.add("highlight");
+      if (state.layout === "square" && n > 0 && k === n) c.classList.add("highlight");
+      c.textContent = formatNum(v);
+      row.appendChild(c);
+    }
+    wrap.appendChild(row);
+  }
+  renderSpines(T);
+}
+
+function formatNum(v) {
+  if (!isFinite(v)) return "∞";
+  if (Number.isInteger(v)) {
+    if (Math.abs(v) >= 1e12) return v.toExponential(2);
+    return String(v);
+  }
+  return v.toFixed(2);
+}
+
+function renderSpines(T) {
+  const layout = state.layout;
+  const N = T.length;
+  const rowsums = [];
+  const mainspine = [];
+  const leftedge = [];
+  const shallow = [];
+  for (let n = 0; n < N; n++) {
+    const kmax = (layout === "triangle") ? n : N - 1;
+    let s = 0;
+    for (let k = 0; k <= kmax; k++) s += T[n][k];
+    rowsums.push(s);
+    leftedge.push(T[n][0]);
+  }
+  if (layout === "triangle") {
+    for (let n = 0; n < N; n++) if (n % 2 === 0) mainspine.push(T[n][n/2]);
+  } else {
+    for (let n = 0; n < N; n++) mainspine.push(T[n][n]);
+  }
+  for (let n = 0; n < N; n++) {
+    let s = 0;
+    for (let i = 0; 2*i <= n; i++) {
+      const r = n - i;
+      if (r >= 0 && r < N && i < T[r].length) s += T[r][i];
+    }
+    shallow.push(s);
+  }
+  document.getElementById("mainspine-label").textContent = (layout === "triangle") ? "Central col" : "Main diagonal";
+  document.getElementById("shallow-label").textContent = (layout === "triangle") ? "Shallow diag" : "Antidiagonal";
+  document.getElementById("rowsums").textContent = rowsums.slice(0, 10).map(formatNum).join(", ");
+  document.getElementById("mainspine").textContent = mainspine.slice(0, 8).map(formatNum).join(", ");
+  document.getElementById("leftedge").textContent = leftedge.slice(0, 10).map(formatNum).join(", ");
+  document.getElementById("shallowdiag").textContent = shallow.slice(0, 10).map(formatNum).join(", ");
+}
+function updatePresetButtons() {
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.preset === state.preset);
+  });
+}
+
+function renderAll() {
+  renderFullRecurrence();
+  renderSeed();
+  renderLmat();
+  renderTriangle();
+  updatePresetButtons();
+}
+
+// ---------- Wire up ----------
+document.querySelectorAll(".preset-btn").forEach(btn => {
+  btn.addEventListener("click", () => loadPreset(btn.dataset.preset));
+});
+document.getElementById("alpha-input").addEventListener("input", (e) => {
+  state.alphaStr = e.target.value;
+  state.preset = "custom"; updatePresetButtons();
+  reparse(); renderFullRecurrence(); renderLmat(); renderTriangle();
+});
+document.getElementById("beta-input").addEventListener("input", (e) => {
+  state.betaStr = e.target.value;
+  state.preset = "custom"; updatePresetButtons();
+  reparse(); renderFullRecurrence(); renderLmat(); renderTriangle();
+});
+document.getElementById("accum-toggle").addEventListener("change", (e) => {
+  state.accum = e.target.checked;
+  state.preset = "custom"; updatePresetButtons();
+  renderFullRecurrence(); renderTriangle();
+});
+document.getElementById("nslider").addEventListener("input", (e) => {
+  state.Lmat_n = parseInt(e.target.value, 10);
+  renderLmat();
+  renderTriangle();  // refreshes the current-n highlight
+});
+document.getElementById("nrows").addEventListener("input", (e) => {
+  const v = parseInt(e.target.value, 10);
+  if (v >= 3 && v <= 14) { state.nRows = v; renderTriangle(); }
+});
+document.getElementById("layout").addEventListener("change", (e) => {
+  state.layout = e.target.value;
+  renderTriangle();
+});
+document.getElementById("resetbtn").addEventListener("click", () => {
+  loadPreset(state.preset === "custom" ? "pascal" : state.preset);
+});
+
+loadPreset("pascal");
+</script>
+</body>
+</html>
