@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Failure of Total Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d; --bg-elev: #161616; --ink: #e8e4d8; --ink-dim: #9a9588;
+    --ink-faint: #5a5650; --gold: #c9a84c; --gold-dim: #8a7434; --rule: #2a2722;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Menlo', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.65; }
+  .container { max-width: 720px; margin: 0 auto; padding: 4rem 2rem 5rem; }
+  header { margin-bottom: 3rem; }
+  .kicker { font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.8rem; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 2.8rem; line-height: 1.1; letter-spacing: -0.005em; margin: 0 0 1rem 0; color: var(--ink); }
+  h1 em { color: var(--gold); font-style: italic; font-weight: 500; }
+  .standfirst { font-family: var(--serif); font-style: italic; font-size: 1.2rem; color: var(--ink-dim); line-height: 1.5; margin: 0; max-width: 580px; }
+  .byline { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-faint); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); letter-spacing: 0.05em; }
+  .byline a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-dim); }
+  h2 { font-family: var(--serif); font-weight: 600; font-style: italic; font-size: 1.55rem; color: var(--gold); margin: 3rem 0 1rem; }
+  p { margin: 0 0 1.1rem 0; }
+  .dropcap::first-letter { font-family: var(--serif); font-size: 4.2rem; float: left; line-height: 0.9; padding-right: 0.6rem; padding-top: 0.3rem; color: var(--gold); font-weight: 600; }
+  code, .mono { font-family: var(--mono); font-size: 0.92em; color: var(--gold); }
+  .pull { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--gold); line-height: 1.4; margin: 2rem 0; padding: 0 0 0 1.4rem; border-left: 1px solid var(--gold-dim); }
+  table.compact { width: 100%; border-collapse: collapse; margin: 1.4rem 0; font-family: var(--mono); font-size: 0.8rem; }
+  table.compact th, table.compact td { padding: 0.6rem 0.6rem; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.compact th { font-family: var(--sans); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); font-weight: 500; border-bottom: 1px solid var(--gold-dim); }
+  table.compact td:first-child { color: var(--ink); font-family: var(--serif); font-style: italic; font-size: 1rem; }
+  table.compact code { color: var(--gold); }
+  sup.fn { color: var(--gold); font-size: 0.7em; }
+  .footnote { font-size: 0.92rem; color: var(--ink-dim); border-top: 1px solid var(--rule); margin-top: 3rem; padding-top: 1.4rem; }
+  .footnote h3 { font-family: var(--sans); font-weight: 500; font-size: 0.74rem; color: var(--ink-faint); letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 0.6rem; }
+  .footnote ol { padding-left: 1.4rem; }
+  .footnote ol li { margin-bottom: 0.6rem; font-family: var(--serif); }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); text-align: center; letter-spacing: 0.05em; line-height: 1.6; }
+  footer .gold { color: var(--gold-dim); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="kicker">McMurmerings &nbsp;·&nbsp; Mathematics &nbsp;·&nbsp; Probability</div>
+  <h1>The Failure of <em>Total Order</em></h1>
+  <p class="standfirst">Each of the famous triangles is the exact distribution of a natural random variable. The one that refuses to be a univariate distribution refuses for the same reason it refuses to be a triangle: it carries the tie.</p>
+  <div class="byline">Architect Carbon · Lee McCulloch-James &nbsp;·&nbsp; fourth, after the trilogy on triangles, operators, and the characteristic equation</div>
+</header>
+
+<p class="dropcap">The earlier essays in this sequence treated the combinatorial triangles as algebraic objects: orbits of operators, presentations of a characteristic equation. There is a second life these same objects lead, and it is probabilistic. Each triangle, suitably normalised, is the exact probability distribution of a random variable that arises without any contrivance. This is not a loose analogy. The triangles are the distributions, entry for entry. What makes the observation worth an essay is not the individual correspondences, striking as some of them are, but the pattern across them, and in particular the one triangle that breaks the pattern, and why.</p>
+
+<figure style="margin: 2.4rem 0 2rem; text-align: center;">
+<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 720px;">
+  <style>
+    .nodec { fill: #161616; stroke: #5a5650; stroke-width: 1; }
+    .nodec-active { fill: #161616; stroke: #c9a84c; stroke-width: 1.5; }
+    .nodet { fill: #e8e4d8; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-anchor: middle; dominant-baseline: middle; }
+    .edge { stroke: #8a7434; stroke-width: 1; fill: none; }
+    .edge-gold { stroke: #c9a84c; stroke-width: 2; fill: none; }
+    .lbl { fill: #c9a84c; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 14px; text-anchor: middle; }
+    .wlbl { fill: #9a9588; font-family: 'IBM Plex Mono', monospace; font-size: 8px; text-anchor: middle; }
+  </style>
+  <!-- Pascal: binary tree, weights 1,1 -->
+  <g transform="translate(0,0)">
+    <text x="80" y="20" class="lbl">Pascal</text>
+    <text x="80" y="36" class="wlbl">two branches, weight 1</text>
+    <line x1="80" y1="55" x2="55" y2="90" class="edge"/>
+    <line x1="80" y1="55" x2="105" y2="90" class="edge"/>
+    <line x1="55" y1="100" x2="35" y2="135" class="edge"/>
+    <line x1="55" y1="100" x2="75" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="85" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="125" y2="135" class="edge"/>
+    <line x1="35" y1="145" x2="20" y2="180" class="edge"/>
+    <line x1="35" y1="145" x2="50" y2="180" class="edge"/>
+    <line x1="75" y1="145" x2="65" y2="180" class="edge"/>
+    <line x1="75" y1="145" x2="85" y2="180" class="edge"/>
+    <line x1="85" y1="145" x2="75" y2="180" class="edge"/>
+    <line x1="85" y1="145" x2="95" y2="180" class="edge"/>
+    <line x1="125" y1="145" x2="110" y2="180" class="edge"/>
+    <line x1="125" y1="145" x2="140" y2="180" class="edge"/>
+    <circle cx="80" cy="50" r="7" class="nodec"/><text x="80" y="50" class="nodet">1</text>
+    <circle cx="55" cy="95" r="7" class="nodec"/><text x="55" y="95" class="nodet">1</text>
+    <circle cx="105" cy="95" r="7" class="nodec"/><text x="105" y="95" class="nodet">1</text>
+    <circle cx="35" cy="140" r="7" class="nodec"/><text x="35" y="140" class="nodet">1</text>
+    <circle cx="80" cy="140" r="7" class="nodec"/><text x="80" y="140" class="nodet">2</text>
+    <circle cx="125" cy="140" r="7" class="nodec"/><text x="125" y="140" class="nodet">1</text>
+    <text x="80" y="210" class="wlbl">row sums: 2ⁿ</text>
+  </g>
+  <!-- Stirling: variable branching count -->
+  <g transform="translate(180,0)">
+    <text x="80" y="20" class="lbl">Stirling</text>
+    <text x="80" y="36" class="wlbl">branch count varies</text>
+    <!-- root -->
+    <line x1="80" y1="55" x2="80" y2="90" class="edge"/>
+    <line x1="80" y1="100" x2="50" y2="135" class="edge"/>
+    <line x1="80" y1="100" x2="110" y2="135" class="edge"/>
+    <!-- from (2,1) only one branch: -->
+    <line x1="50" y1="145" x2="35" y2="180" class="edge"/>
+    <line x1="50" y1="145" x2="65" y2="180" class="edge"/>
+    <!-- from (2,2) three branches: 2 join + 1 new -->
+    <line x1="110" y1="145" x2="90" y2="180" class="edge"/>
+    <line x1="110" y1="145" x2="110" y2="180" class="edge"/>
+    <line x1="110" y1="145" x2="130" y2="180" class="edge"/>
+    <text x="58" y="124" class="wlbl">1</text>
+    <text x="102" y="124" class="wlbl">1</text>
+    <text x="43" y="167" class="wlbl">1</text>
+    <text x="57" y="167" class="wlbl">1</text>
+    <text x="98" y="167" class="wlbl">2</text>
+    <text x="110" y="170" class="wlbl">2</text>
+    <text x="122" y="167" class="wlbl">1</text>
+    <circle cx="80" cy="50" r="7" class="nodec"/><text x="80" y="50" class="nodet">1</text>
+    <circle cx="80" cy="95" r="7" class="nodec"/><text x="80" y="95" class="nodet">1</text>
+    <circle cx="50" cy="140" r="7" class="nodec"/><text x="50" y="140" class="nodet">1</text>
+    <circle cx="110" cy="140" r="7" class="nodec"/><text x="110" y="140" class="nodet">1</text>
+    <text x="80" y="210" class="wlbl">row sums: Bell</text>
+  </g>
+  <!-- Eulerian: both weights vary -->
+  <g transform="translate(360,0)">
+    <text x="80" y="20" class="lbl">Eulerian</text>
+    <text x="80" y="36" class="wlbl">both weights vary</text>
+    <line x1="80" y1="55" x2="55" y2="90" class="edge"/>
+    <line x1="80" y1="55" x2="105" y2="90" class="edge"/>
+    <line x1="55" y1="100" x2="35" y2="135" class="edge"/>
+    <line x1="55" y1="100" x2="75" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="85" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="125" y2="135" class="edge"/>
+    <text x="62" y="76" class="wlbl">1</text>
+    <text x="98" y="76" class="wlbl">1</text>
+    <text x="40" y="120" class="wlbl">1</text>
+    <text x="68" y="120" class="wlbl">2</text>
+    <text x="92" y="120" class="wlbl">1</text>
+    <text x="120" y="120" class="wlbl">2</text>
+    <circle cx="80" cy="50" r="7" class="nodec"/><text x="80" y="50" class="nodet">1</text>
+    <circle cx="55" cy="95" r="7" class="nodec"/><text x="55" y="95" class="nodet">1</text>
+    <circle cx="105" cy="95" r="7" class="nodec"/><text x="105" y="95" class="nodet">1</text>
+    <circle cx="35" cy="140" r="7" class="nodec"/><text x="35" y="140" class="nodet">1</text>
+    <circle cx="80" cy="140" r="7" class="nodec"/><text x="80" y="140" class="nodet">4</text>
+    <circle cx="125" cy="140" r="7" class="nodec"/><text x="125" y="140" class="nodet">1</text>
+    <text x="80" y="210" class="wlbl">row sums: n!</text>
+  </g>
+  <!-- Delannoy: third branch added -->
+  <g transform="translate(540,0)">
+    <text x="80" y="20" class="lbl">Delannoy</text>
+    <text x="80" y="36" class="wlbl">a third branch added</text>
+    <line x1="80" y1="55" x2="55" y2="90" class="edge"/>
+    <line x1="80" y1="55" x2="105" y2="90" class="edge"/>
+    <line x1="80" y1="55" x2="80" y2="135" class="edge-gold"/>
+    <line x1="55" y1="100" x2="35" y2="135" class="edge"/>
+    <line x1="55" y1="100" x2="75" y2="135" class="edge"/>
+    <line x1="55" y1="100" x2="55" y2="180" class="edge-gold"/>
+    <line x1="105" y1="100" x2="85" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="125" y2="135" class="edge"/>
+    <line x1="105" y1="100" x2="105" y2="180" class="edge-gold"/>
+    <circle cx="80" cy="50" r="7" class="nodec"/><text x="80" y="50" class="nodet">1</text>
+    <circle cx="55" cy="95" r="7" class="nodec"/><text x="55" y="95" class="nodet">1</text>
+    <circle cx="105" cy="95" r="7" class="nodec"/><text x="105" y="95" class="nodet">1</text>
+    <circle cx="35" cy="140" r="7" class="nodec"/><text x="35" y="140" class="nodet">1</text>
+    <circle cx="80" cy="140" r="7" class="nodec-active"/><text x="80" y="140" class="nodet">3</text>
+    <circle cx="125" cy="140" r="7" class="nodec"/><text x="125" y="140" class="nodet">1</text>
+    <text x="80" y="210" class="wlbl">third branch: gold</text>
+  </g>
+</svg>
+<figcaption style="margin-top: 0.8rem; font-style: italic; color: var(--ink-dim); font-size: 0.92rem; max-width: 640px; margin-left: auto; margin-right: auto;">Four trees, four distributions. Pascal's bifurcation with both weights one. Stirling with the number of branches varying by state. Eulerian with both edge weights varying by position. Delannoy with a third branch added, drawn in gold; the third branch is the move that takes the array out of one dimension.</figcaption>
+</figure>
+
+<h2>Pascal is the binomial distribution</h2>
+
+<p>The least surprising case first, because it sets the template. Row <code>n</code> of Pascal's triangle, divided by <code>2<sup>n</sup></code>, is the probability mass function of the binomial distribution with <code>n</code> trials and success probability one half. Row four is <code>1, 4, 6, 4, 1</code>; divided by sixteen it is the distribution of the number of heads in four fair coin tosses, with mean two. The entries of the triangle are not merely proportional to the probabilities. They are the probabilities, scaled by the row total. The binomial coefficient <code>C(n,k)</code> counts the orderings in which <code>k</code> successes can fall among <code>n</code> trials, and counting orderings is the whole of what the distribution does.</p>
+
+<h2>Eulerian is the ascent distribution, and the uniform sum</h2>
+
+<p>The Eulerian triangle is the distribution of a different and equally natural variable. Take a random permutation of <code>{1, 2, ..., n}</code> and count its ascents, the positions where a value is followed by a larger one. The number of permutations with exactly <code>k</code> ascents is the Eulerian number <code>⟨n,k⟩</code>, so the row, divided by <code>n!</code>, is the exact distribution of the ascent count. For <code>n = 4</code> the row is <code>1, 11, 11, 1</code>, summing to <code>24 = 4!</code>, and the ascent count of a random permutation of four elements takes the values zero through three with those frequencies.</p>
+
+<p>This already has the same shape as the Pascal case: a counting statistic on a finite structure, normalised by the total count, giving a distribution. But the Eulerian numbers reach further, into the continuous, through a result of Tanny.<sup class="fn">1</sup> Let <code>U<sub>1</sub>, ..., U<sub>n</sub></code> be independent and uniform on the unit interval, and let <code>S = U<sub>1</sub> + ... + U<sub>n</sub></code> be their sum. Then the probability that <code>S</code> lies in the interval <code>[k, k+1)</code> is exactly <code>⟨n,k⟩ / n!</code>. The Eulerian numbers, the same integers that count ascents, are the masses of the integer slabs under the density of a sum of uniforms. For <code>n = 3</code> the probabilities are <code>1/6, 2/3, 1/6</code>; for <code>n = 4</code> they are <code>1/24, 11/24, 11/24, 1/24</code>.</p>
+
+<p>The distribution of that uniform sum is the Irwin–Hall distribution, also called the uniform sum distribution, and its density is a piecewise polynomial, a spline, whose pieces are assembled from Eulerian numbers.<sup class="fn">2</sup> So the same triangle that counts ascents in the discrete world governs the integer structure of a continuous density in the analytic world. A recent treatment makes the kinship with Pascal explicit, unifying the normalised binomial coefficients and the normalised Eulerian numbers, and their associated distributions, the binomial and the Irwin–Hall, under a single probabilistic construction.<sup class="fn">3</sup></p>
+
+<p class="pull">The discrete count and the continuous density are the same triangle, read in two registers.</p>
+
+<h2>Stirling and Bell: partitions and the Poisson</h2>
+
+<p>The Stirling triangle of the second kind counts partitions of a set into a fixed number of blocks; its row sums are the Bell numbers, the total partition counts. The probabilistic home here is the Poisson distribution. The <code>n</code>th moment of a Poisson random variable with mean one is exactly the Bell number <code>B<sub>n</sub></code>, a fact expressed by Dobinski's formula,<sup class="fn">4</sup>
+</p>
+
+<p style="text-align:center; font-family: var(--mono); color: var(--gold); font-size: 0.95rem;">B<sub>n</sub> = (1/e) · &Sigma;<sub>k≥0</sub> k<sup>n</sup> / k!</p>
+
+<p>which is precisely the <code>n</code>th moment written as the Poisson series. The integers that count the ways to partition a set are the moments that measure the spread of a Poisson process. The bridge is the exponential generating function <code>exp(e<sup>x</sup> − 1)</code>, whose form encodes the partition structure and the Poisson moment structure at once. The connection is subtler than the Pascal and Eulerian cases, running through moments rather than through a direct mass function, but the species is the same: a combinatorial triangle is the fingerprint of a standard distribution.</p>
+
+<h2>Delannoy refuses to be a distribution</h2>
+
+<p>Now the exception, which is the reason for the essay. The Delannoy numbers count lattice paths from one corner of a grid to the opposite corner using three kinds of step: east, north, and the diagonal north-east. They are the natural two-dimensional cousins of the binomial coefficients, which count the same paths using only east and north. One might expect, by the pattern established above, that the Delannoy numbers normalise to some named univariate distribution. They do not. And the failure is exact and instructive.</p>
+
+<p>Consider the two-sample rank test of Wilcoxon, Mann and Whitney, the standard nonparametric procedure for asking whether two samples are drawn from the same population. Its null distribution has a lattice-path interpretation that has been used to derive and explain the recurrences governing it.<sup class="fn">5</sup> Pool the two samples and walk through the combined ranking from smallest to largest, stepping east when the next value comes from the first sample and north when it comes from the second. Every interleaving of the two samples is a monotone lattice path, and the number of such paths using east and north steps is the binomial coefficient. The Mann–Whitney null distribution, when there are no ties, is counted by these two-step paths.</p>
+
+<p>Then a tie occurs. Two values, one from each sample, are equal. In the ranking they neither precede nor follow one another; they advance together. In the lattice that is a single diagonal step, north-east, consuming one unit from each sample at once. The moment ties are permitted, the two-step path count becomes the three-step path count, and the binomial numbers become the Delannoy numbers. For a two-by-two comparison the no-tie count is <code>C(4,2) = 6</code> and the with-tie count is the Delannoy number <code>13</code>; for three by three the counts are <code>20</code> and <code>63</code>.</p>
+
+<figure style="margin: 2rem 0; text-align: center;">
+<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 640px;">
+  <style>
+    .grid { stroke: #2a2722; stroke-width: 1; fill: none; }
+    .corner { fill: #161616; stroke: #5a5650; stroke-width: 1; }
+    .corner-end { fill: #161616; stroke: #c9a84c; stroke-width: 1.5; }
+    .path-east { stroke: #e8e4d8; stroke-width: 2.5; fill: none; }
+    .path-north { stroke: #e8e4d8; stroke-width: 2.5; fill: none; }
+    .path-tie { stroke: #c9a84c; stroke-width: 3.5; fill: none; }
+    .lbl { fill: #c9a84c; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; text-anchor: middle; }
+    .ax { fill: #9a9588; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+    .step { fill: #e8e4d8; font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; text-anchor: middle; }
+    .step-tie { fill: #c9a84c; font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; text-anchor: middle; }
+  </style>
+  <!-- LEFT panel: no ties -->
+  <g transform="translate(40,20)">
+    <text x="120" y="0" class="lbl">No ties — east or north only</text>
+    <text x="120" y="18" class="step">two branches at every step</text>
+    <!-- 3x3 grid -->
+    <g transform="translate(50,40)">
+      <path d="M0,0 L0,180 M60,0 L60,180 M120,0 L120,180 M180,0 L180,180" class="grid"/>
+      <path d="M0,0 L180,0 M0,60 L180,60 M0,120 L180,120 M0,180 L180,180" class="grid"/>
+      <!-- Path: east, north, east, north, east, north -->
+      <path d="M0,180 L60,180 L60,120 L120,120 L120,60 L180,60 L180,0" class="path-east" stroke-linejoin="round"/>
+      <circle cx="0" cy="180" r="4" class="corner"/>
+      <circle cx="180" cy="0" r="5" class="corner-end"/>
+    </g>
+    <text x="0" y="230" class="ax">start</text>
+    <text x="215" y="42" class="ax">end</text>
+    <text x="100" y="260" class="step">binomial paths: C(6,3) = 20</text>
+  </g>
+  <!-- RIGHT panel: with a tie -->
+  <g transform="translate(380,20)">
+    <text x="120" y="0" class="lbl">With one tie — diagonal step appears</text>
+    <text x="120" y="18" class="step">three branches available</text>
+    <g transform="translate(50,40)">
+      <path d="M0,0 L0,180 M60,0 L60,180 M120,0 L120,180 M180,0 L180,180" class="grid"/>
+      <path d="M0,0 L180,0 M0,60 L180,60 M0,120 L180,120 M0,180 L180,180" class="grid"/>
+      <!-- Path: east, north, DIAGONAL, north, east, north -->
+      <path d="M0,180 L60,180 L60,120" class="path-east" stroke-linejoin="round"/>
+      <path d="M60,120 L120,60" class="path-tie" stroke-linejoin="round"/>
+      <path d="M120,60 L120,0 L180,0" class="path-east" stroke-linejoin="round"/>
+      <circle cx="0" cy="180" r="4" class="corner"/>
+      <circle cx="180" cy="0" r="5" class="corner-end"/>
+      <!-- annotation arrow to the tie -->
+      <text x="160" y="95" class="step-tie">tie</text>
+      <path d="M150,93 L130,87" stroke="#c9a84c" stroke-width="1" fill="none"/>
+    </g>
+    <text x="0" y="230" class="ax">start</text>
+    <text x="215" y="42" class="ax">end</text>
+    <text x="100" y="260" class="step">Delannoy paths: D(3,3) = 63</text>
+  </g>
+</svg>
+<figcaption style="margin-top: 0.8rem; font-style: italic; color: var(--ink-dim); font-size: 0.92rem; max-width: 600px; margin-left: auto; margin-right: auto;">A tie in the rank ordering is geometrically a diagonal step in the lattice. Without ties the path uses east and north only, and the count is binomial. With ties the path may step diagonally, and the count is Delannoy. The third branch <em>is</em> the tie.</figcaption>
+</figure>
+
+<p class="pull">The diagonal step is the tie. The tie is the failure of total order.</p>
+
+<p>This is the structural heart of the matter. A univariate probability distribution is a one-dimensional object: a list of weights along a single index, arising from a process whose outcomes are totally ordered. Coin tosses are totally ordered by their count of heads. A random permutation is totally ordered by its ascent count. A set partition is totally ordered by its block count. Each of these supports a univariate distribution because the underlying statistic is a single number that admits no ambiguity of position. The Delannoy numbers count a process in which total order fails. The diagonal step is exactly the configuration in which two elements cannot be placed one before the other, because they are equal. Ties are partial order intruding upon total order, and a partial order does not collapse to a single index. It needs two.</p>
+
+<p>This is why Delannoy is a square array rather than a triangle, in the algebraic life examined in the earlier essays, and why it is a two-sample joint structure rather than a univariate distribution, in the probabilistic life examined here. These are the same fact wearing two costumes. The diagonal step that makes the array two-dimensional is the tie that makes the distribution bivariate. The geometry and the statistics agree because they are reporting the same underlying feature: the breakdown of a single linear ordering into the richer, weaker structure of a partial order in which some elements are incomparable.</p>
+
+<h2>The pattern and its exception together</h2>
+
+<p>The cleanest way to hold all of this is in one table, with the exception placed where it belongs, slightly apart from the rest.</p>
+
+<figure style="margin: 2rem 0; text-align: center;">
+<svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 820px;">
+  <style>
+    .bar { fill: #8a7434; }
+    .bar-axis { stroke: #5a5650; stroke-width: 1; fill: none; }
+    .tlbl { fill: #c9a84c; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; text-anchor: middle; }
+    .heat-bg { fill: #5a4818; opacity: 0.15; }
+    .cell { stroke: #2a2722; stroke-width: 0.5; }
+    .cellt { fill: #e8e4d8; font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-anchor: middle; dominant-baseline: middle; }
+    .note { fill: #9a9588; font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-anchor: middle; }
+  </style>
+  <!-- Three univariate distributions, each in a 170-wide slot -->
+  <g transform="translate(0,40)">
+    <text x="80" y="0" class="tlbl">Pascal → Binomial</text>
+    <line x1="25" y1="140" x2="135" y2="140" class="bar-axis"/>
+    <rect x="30" y="135" width="16" height="5" class="bar"/>
+    <rect x="50" y="120" width="16" height="20" class="bar"/>
+    <rect x="70" y="110" width="16" height="30" class="bar"/>
+    <rect x="90" y="120" width="16" height="20" class="bar"/>
+    <rect x="110" y="135" width="16" height="5" class="bar"/>
+    <text x="80" y="165" class="note">one axis</text>
+  </g>
+  <g transform="translate(170,40)">
+    <text x="80" y="0" class="tlbl">Eulerian → Ascents</text>
+    <line x1="25" y1="140" x2="135" y2="140" class="bar-axis"/>
+    <rect x="35" y="138" width="20" height="2" class="bar"/>
+    <rect x="57" y="113" width="20" height="27" class="bar"/>
+    <rect x="79" y="113" width="20" height="27" class="bar"/>
+    <rect x="101" y="138" width="20" height="2" class="bar"/>
+    <text x="80" y="165" class="note">one axis</text>
+  </g>
+  <g transform="translate(340,40)">
+    <text x="80" y="0" class="tlbl">Stirling → Poisson moments</text>
+    <line x1="25" y1="140" x2="135" y2="140" class="bar-axis"/>
+    <rect x="30" y="103" width="14" height="37" class="bar"/>
+    <rect x="47" y="103" width="14" height="37" class="bar"/>
+    <rect x="64" y="121" width="14" height="19" class="bar"/>
+    <rect x="81" y="134" width="14" height="6" class="bar"/>
+    <rect x="98" y="138" width="14" height="2" class="bar"/>
+    <rect x="115" y="139" width="14" height="1" class="bar"/>
+    <text x="80" y="165" class="note">one axis</text>
+  </g>
+  <!-- vertical dashed separator -->
+  <line x1="515" y1="20" x2="515" y2="220" stroke="#8a7434" stroke-width="0.7" stroke-dasharray="3,4"/>
+  <!-- Delannoy heatmap -->
+  <g transform="translate(550,40)">
+    <text x="85" y="0" class="tlbl">Delannoy → two-sample</text>
+    <rect x="20" y="20" width="120" height="120" class="heat-bg"/>
+    <g transform="translate(20,20)">
+      <rect x="0" y="90" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="30" y="90" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="60" y="90" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="90" y="90" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <text x="15" y="105" class="cellt">1</text><text x="45" y="105" class="cellt">1</text>
+      <text x="75" y="105" class="cellt">1</text><text x="105" y="105" class="cellt">1</text>
+      <rect x="0" y="60" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="30" y="60" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.30"/>
+      <rect x="60" y="60" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.40"/>
+      <rect x="90" y="60" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.50"/>
+      <text x="15" y="75" class="cellt">1</text><text x="45" y="75" class="cellt">3</text>
+      <text x="75" y="75" class="cellt">5</text><text x="105" y="75" class="cellt">7</text>
+      <rect x="0" y="30" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="30" y="30" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.40"/>
+      <rect x="60" y="30" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.65"/>
+      <rect x="90" y="30" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.80"/>
+      <text x="15" y="45" class="cellt">1</text><text x="45" y="45" class="cellt">5</text>
+      <text x="75" y="45" class="cellt">13</text><text x="105" y="45" class="cellt">25</text>
+      <rect x="0" y="0" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.15"/>
+      <rect x="30" y="0" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.50"/>
+      <rect x="60" y="0" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="0.80"/>
+      <rect x="90" y="0" width="30" height="30" class="cell" fill="#8a7434" fill-opacity="1.0"/>
+      <text x="15" y="15" class="cellt">1</text><text x="45" y="15" class="cellt">7</text>
+      <text x="75" y="15" class="cellt">25</text><text x="105" y="15" class="cellt">63</text>
+    </g>
+    <text x="80" y="180" class="note">two axes</text>
+  </g>
+</svg>
+<figcaption style="margin-top: 0.8rem; font-style: italic; color: var(--ink-dim); font-size: 0.92rem; max-width: 640px; margin-left: auto; margin-right: auto;">Three triangles compress to bars along a single axis. The fourth refuses, and lives in a square. The dashed line separates the conforming three from the exception, which sits in the dimension above.</figcaption>
+</figure>
+
+<table class="compact">
+<thead>
+<tr><th>Triangle</th><th>Counts</th><th>Distribution</th><th>Order structure</th></tr>
+</thead>
+<tbody>
+<tr><td>Pascal</td><td>orderings of successes</td><td>Binomial</td><td>total</td></tr>
+<tr><td>Eulerian</td><td>ascents of a permutation</td><td>Ascent count; Irwin–Hall</td><td>total</td></tr>
+<tr><td>Stirling / Bell</td><td>set partitions</td><td>Poisson moments</td><td>total</td></tr>
+<tr><td>Delannoy</td><td>paths with diagonal steps</td><td>two-sample rank test with ties (not univariate)</td><td>partial (ties)</td></tr>
+</tbody>
+</table>
+
+<p>The first three triangles correspond to totally ordered processes and yield univariate distributions. The fourth corresponds to a process in which total order fails, and yields a bivariate joint structure instead. The discordance of Delannoy, its refusal to sit alongside the others as a tidy named distribution, is not a defect in the analogy. It is the analogy working correctly. Delannoy is discordant in precisely the way its mathematics requires, because it alone carries the diagonal step, and the diagonal step is the tie, and the tie is where one ordering becomes two.</p>
+
+<p>There is a lesson here about discordant objects in general, worth stating beyond the particular case. When a member of an otherwise uniform family refuses to conform, the refusal is information. The temptation is to force the outlier into the pattern or to set it aside as an exception that proves nothing. The more useful move is to ask what structural feature the outlier carries that the others lack, and to recognise that the very feature responsible for its discordance in one setting is responsible for its discordance in every setting. Delannoy will not be a triangle and will not be a univariate distribution and will not lose its extra step, and these are one refusal, not three. The object is telling us, consistently across every lens, that it lives one dimension up.</p>
+
+<p>That consistency is itself a kind of good explanation in the sense the previous essay borrowed from Deutsch. The claim that Delannoy is intrinsically two-dimensional is hard to vary, because it is forced simultaneously by the lattice geometry, by the square-versus-triangular shape of the array, by the bivariate structure of the rank test, and by the partial order that ties introduce. No one of these could be adjusted to make Delannoy univariate without contradicting the others. The four constraints lock together. The object is two-dimensional because everything about it is two-dimensional, and the agreement among the constraints is what tells us the two-dimensionality is real rather than an artefact of one chosen description.</p>
+
+<div class="footnote">
+<h3>Notes and sources</h3>
+<ol>
+<li>S. Tanny, ``A probabilistic interpretation of Eulerian numbers,'' <em>Duke Mathematical Journal</em> 40 (1973), 717–722. Tanny proved that <code>(1/n!)A(n,k)</code> equals the probability that the sum of <code>n</code> independent uniform <code>[0,1]</code> variables lies in <code>[k, k+1)</code>. The ascent-count and floor-of-uniform-sum values were both verified numerically for this essay; the floor probabilities for <code>n = 3, 4</code> are <code>1/6, 2/3, 1/6</code> and <code>1/24, 11/24, 11/24, 1/24</code> respectively, matching the Eulerian rows.</li>
+<li>The Irwin–Hall distribution, named for J. O. Irwin and P. Hall (1927), is the distribution of a sum of independent standard uniform variables; its density is a piecewise-polynomial spline with Eulerian-number coefficients. For <code>n = 1</code> it is uniform, for <code>n = 2</code> triangular, and it tends to the normal as <code>n</code> grows, by the central limit theorem.</li>
+<li>The explicit unification of normalised binomial coefficients and normalised Eulerian numbers, with their associated binomial and Irwin–Hall distributions, under a single renewal-theoretic construction appears in a 2020 paper in <em>Discrete Mathematics</em> (``Limits of sums for binomial and Eulerian numbers and their associated distributions''). It is a useful reference for a reader who wants the Pascal–Eulerian parallel made rigorous rather than merely asserted.</li>
+<li>Dobinski's formula, <code>B<sub>n</sub> = (1/e) &Sigma;<sub>k≥0</sub> k<sup>n</sup>/k!</code>, expresses the <code>n</code>th Bell number as the <code>n</code>th moment of a Poisson random variable of mean one. The first few values <code>B<sub>3</sub> = 5</code>, <code>B<sub>4</sub> = 15</code>, <code>B<sub>5</sub> = 52</code> were checked against the truncated series for this essay.</li>
+<li>The lattice-path interpretation of the Wilcoxon–Mann–Whitney null distribution, including its use to derive and explain the distribution's recurrences, is developed in work on the combinatorics of the two-sample test (see, e.g., the treatment in <em>Journal of Statistical Planning and Inference</em>, 1999, linking the Mann–Whitney statistic to lattice paths and integer partitions). The identification of the diagonal step with a tied observation, and hence of the tied-case path count with the Delannoy numbers, follows directly: with ties forbidden the paths use east and north steps and are counted by binomial coefficients; with ties permitted a tie contributes a north-east step and the count becomes Delannoy. The path counts <code>C(4,2) = 6</code> against Delannoy <code>13</code>, and <code>C(6,3) = 20</code> against Delannoy <code>63</code>, were verified for this essay.</li>
+</ol>
+</div>
+
+<footer>
+Constructed by Silicon <span class="gold">·</span> Anthropic Claude &nbsp;—&nbsp; Architect Carbon <span class="gold">·</span> LeeMcCullochJames
+</footer>
+
+</div>
+</body>
+</html>
