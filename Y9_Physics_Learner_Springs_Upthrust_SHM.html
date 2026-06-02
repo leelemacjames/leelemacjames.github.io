@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Y9 Physics · Springs, Upthrust & SHM</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --ink:      #1a2030;
+  --ink2:     #3d4d62;
+  --paper:    #f5f2eb;
+  --cream:    #ede9df;
+  --rule:     #c8c0b0;
+  --red:      #b82030;
+  --blue:     #1a5fa8;
+  --teal:     #1a8a7a;
+  --amber:    #c07820;
+  --green:    #287a38;
+  --spring-col: #c07820;
+  --water-col:  #3a90d0;
+  --mono: 'Courier New', monospace;
+}
+
+/* ── RESET & BASE ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Georgia', serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 28px 40px 22px;
+  border-bottom: 3px solid var(--red);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap;
+}
+header h1 {
+  font-size: 1.3rem; font-weight: normal; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+header span { font-size: 0.78rem; color: #9aabbb; letter-spacing: 0.12em; }
+nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+nav a {
+  color: #9aabbb; text-decoration: none; font-size: 0.75rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid #3a4a5a;
+  transition: all 0.2s;
+}
+nav a:hover { color: var(--paper); border-color: var(--paper); }
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+main { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+
+section { margin-bottom: 64px; }
+
+.section-label {
+  font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--red); border-top: 2px solid var(--red);
+  padding-top: 6px; margin-bottom: 8px;
+}
+section > h2 {
+  font-size: 1.8rem; font-weight: normal;
+  color: var(--ink); margin-bottom: 4px;
+}
+.lead {
+  font-size: 1.05rem; color: var(--ink2); margin-bottom: 24px;
+  border-left: 3px solid var(--rule); padding-left: 14px;
+}
+
+/* ── FORMULA BOX ────────────────────────────────────── */
+.formula-strip {
+  background: var(--ink); color: var(--paper);
+  padding: 14px 20px; margin: 16px 0;
+  display: flex; flex-wrap: wrap; gap: 24px; align-items: center;
+  font-family: var(--mono); font-size: 0.95rem;
+}
+.formula-strip .f { color: #ffd080; }
+.formula-strip .note { font-size: 0.78rem; color: #9aabbb; font-family: Georgia, serif; }
+
+/* ── CONCEPT CARDS ──────────────────────────────────── */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 16px; margin: 20px 0; }
+.card {
+  background: var(--cream); border: 1px solid var(--rule);
+  padding: 18px 20px;
+}
+.card h4 { font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink2); margin-bottom: 6px; }
+.card p { font-size: 0.93rem; }
+.card.blue  { border-left: 4px solid var(--blue); }
+.card.red   { border-left: 4px solid var(--red); }
+.card.teal  { border-left: 4px solid var(--teal); }
+.card.amber { border-left: 4px solid var(--amber); }
+
+/* ── TOGGLE PANELS ──────────────────────────────────── */
+.toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.tog {
+  padding: 7px 18px; font-size: 0.82rem; letter-spacing: 0.08em;
+  text-transform: uppercase; border: 1.5px solid var(--ink2);
+  background: transparent; color: var(--ink2); cursor: pointer;
+  font-family: Georgia, serif; transition: all 0.18s;
+}
+.tog:hover  { background: var(--ink2); color: var(--paper); }
+.tog.active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+.panel { display: none; }
+.panel.visible { display: block; }
+
+/* ── INTERACTIVE CANVAS AREAS ───────────────────────── */
+.sim-wrap {
+  background: var(--cream); border: 1px solid var(--rule);
+  padding: 20px; margin: 20px 0;
+}
+.sim-title {
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink2); margin-bottom: 12px;
+}
+canvas { display: block; }
+
+/* ── SLIDERS ─────────────────────────────────────────── */
+.ctrl-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-top: 14px; }
+.ctrl { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+.ctrl label { font-size: 0.78rem; color: var(--ink2); letter-spacing: 0.06em; }
+.ctrl input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  background: var(--rule); outline: none; cursor: pointer;
+}
+.ctrl input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--ink); border-radius: 50%;
+}
+.ctrl .val {
+  font-family: var(--mono); font-size: 0.85rem;
+  color: var(--red); font-weight: bold;
+}
+
+/* ── READOUT TABLE ───────────────────────────────────── */
+.readout {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+  gap: 10px; margin-top: 14px;
+}
+.readout-item {
+  background: var(--ink); color: var(--paper);
+  padding: 10px 14px;
+}
+.readout-item .rl { font-size: 0.7rem; letter-spacing: 0.1em; color: #9aabbb; text-transform: uppercase; }
+.readout-item .rv { font-family: var(--mono); font-size: 1.1rem; color: #ffd080; }
+
+/* ── SERIES/PARALLEL DIAGRAM ────────────────────────── */
+.sp-wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin: 16px 0; }
+.sp-box {
+  flex: 1; min-width: 220px; background: var(--cream);
+  border: 1px solid var(--rule); padding: 16px;
+  text-align: center;
+}
+.sp-box h4 { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink2); margin-bottom: 10px; }
+.sp-box canvas { margin: 0 auto; }
+.sp-box .verdict {
+  margin-top: 10px; font-family: var(--mono); font-size: 0.88rem;
+  background: var(--ink); color: #ffd080; padding: 6px 10px;
+}
+
+/* ── SHM PHASE DIAGRAM ───────────────────────────────── */
+.phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+@media(max-width:600px){ .phase-grid { grid-template-columns: 1fr; } }
+.phase-box { background: var(--cream); border: 1px solid var(--rule); padding: 14px; }
+.phase-box h4 { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink2); margin-bottom: 8px; }
+
+/* ── MISCONCEPTION BOX ───────────────────────────────── */
+.misconception {
+  border: 2px dashed var(--red); padding: 14px 18px; margin: 20px 0;
+  position: relative;
+}
+.misconception::before {
+  content: '⚠ Common Error';
+  position: absolute; top: -11px; left: 12px;
+  background: var(--paper); padding: 0 6px;
+  font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red);
+}
+.misconception p { font-size: 0.93rem; }
+
+/* ── WORKED EXAMPLE ──────────────────────────────────── */
+.worked {
+  background: var(--cream); border: 1px solid var(--rule);
+  padding: 18px 20px; margin: 16px 0;
+}
+.worked-title {
+  font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 10px;
+}
+.worked ol { padding-left: 20px; }
+.worked ol li { margin-bottom: 6px; font-size: 0.93rem; }
+.worked .ans {
+  font-family: var(--mono); background: var(--ink); color: #ffd080;
+  display: inline-block; padding: 2px 8px; margin-top: 4px;
+}
+
+/* ── FOOTER ──────────────────────────────────────────── */
+footer {
+  background: var(--ink); color: #9aabbb;
+  text-align: center; padding: 20px;
+  font-size: 0.72rem; letter-spacing: 0.1em;
+  border-top: 2px solid var(--red);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Y9 Physics</h1>
+  <span>Springs · Upthrust · SHM</span>
+  <nav>
+    <a href="#springs">Springs</a>
+    <a href="#series">Series/Parallel</a>
+    <a href="#upthrust">Upthrust</a>
+    <a href="#floating">Floating</a>
+    <a href="#shm">SHM</a>
+    <a href="#energy">Energy</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 1 — HOOKE'S LAW
+     ════════════════════════════════════════════════════ -->
+<section id="springs">
+  <div class="section-label">Section 1</div>
+  <h2>Hooke's Law</h2>
+  <p class="lead">The extension of a spring is directly proportional to the applied force — as long as the elastic limit is not exceeded.</p>
+
+  <div class="formula-strip">
+    <span class="f">F = k x</span>
+    <span class="note">F = force (N) · k = spring constant (N m⁻¹) · x = extension (m)</span>
+    <span class="f">E = ½ k x²</span>
+    <span class="note">elastic potential energy (J)</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card amber">
+      <h4>Spring Constant k</h4>
+      <p>The <em>gradient</em> of an F–x graph. Steeper = stiffer spring = larger k. Units: N m⁻¹.</p>
+    </div>
+    <div class="card red">
+      <h4>Elastic Limit</h4>
+      <p>Beyond this point the spring is permanently deformed. Hooke's law no longer holds; the F–x graph curves away from the origin.</p>
+    </div>
+    <div class="card blue">
+      <h4>Work done = area</h4>
+      <p>The area under an F–x graph equals the elastic PE stored — a triangle = ½ × base × height = ½Fx = ½kx².</p>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE SPRING SIM -->
+  <div class="sim-wrap">
+    <div class="sim-title">Interactive — drag the slider to apply a load</div>
+    <canvas id="springCanvas" width="700" height="260"></canvas>
+    <div class="ctrl-row">
+      <div class="ctrl">
+        <label>Spring constant k (N m⁻¹)</label>
+        <input type="range" id="kSlider" min="20" max="200" value="80" step="5">
+        <span class="val" id="kVal">80 N m⁻¹</span>
+      </div>
+      <div class="ctrl">
+        <label>Applied force F (N)</label>
+        <input type="range" id="fSlider" min="0" max="40" value="10" step="1">
+        <span class="val" id="fVal">10 N</span>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="readout-item"><div class="rl">Extension x</div><div class="rv" id="extOut">—</div></div>
+      <div class="readout-item"><div class="rl">Elastic PE</div><div class="rv" id="peOut">—</div></div>
+      <div class="readout-item"><div class="rl">New length</div><div class="rv" id="lenOut">—</div></div>
+    </div>
+  </div>
+
+  <div class="misconception">
+    <p>The spring constant is a property of <strong>that spring</strong> — it does not change when you change the load. Only extension changes with load.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 2 — SERIES & PARALLEL
+     ════════════════════════════════════════════════════ -->
+<section id="series">
+  <div class="section-label">Section 2</div>
+  <h2>Springs in Series &amp; Parallel</h2>
+  <p class="lead">Combining springs changes the effective spring constant of the system — often in a counterintuitive direction.</p>
+
+  <!-- TOGGLE PANEL -->
+  <div class="toggle-row">
+    <button class="tog active" onclick="showSP('series')">Series</button>
+    <button class="tog"        onclick="showSP('parallel')">Parallel</button>
+    <button class="tog"        onclick="showSP('compare')">Side-by-side comparison</button>
+  </div>
+
+  <!-- SERIES PANEL -->
+  <div class="panel visible" id="panel-series">
+    <div class="sp-wrap">
+      <div class="sp-box" style="flex:1.2">
+        <h4>Springs in Series (end-to-end)</h4>
+        <canvas id="seriesCanvas" width="200" height="260"></canvas>
+        <div class="verdict" id="seriesVerdict">k_eff = ?</div>
+      </div>
+      <div style="flex:2; min-width:240px">
+        <div class="formula-strip" style="margin-top:8px">
+          <span class="f">1/k_eff = 1/k₁ + 1/k₂</span>
+          <span class="note">for two springs in series</span>
+        </div>
+        <div class="card amber" style="margin-top:12px">
+          <h4>Why weaker?</h4>
+          <p>Each spring stretches independently. The same force F causes extension x₁ in spring 1 and x₂ in spring 2. Total extension = x₁ + x₂ — so you get <em>more</em> extension for the same force. More extension per newton = smaller k.</p>
+        </div>
+        <div class="worked">
+          <div class="worked-title">Worked example</div>
+          <ol>
+            <li>k₁ = 100 N m⁻¹, k₂ = 100 N m⁻¹ in series</li>
+            <li>1/k_eff = 1/100 + 1/100 = 2/100</li>
+            <li>k_eff = 100/2 <span class="ans">= 50 N m⁻¹</span></li>
+            <li>Two identical springs in series → half the spring constant</li>
+          </ol>
+        </div>
+        <div class="ctrl-row" style="margin-top:10px">
+          <div class="ctrl">
+            <label>k₁ (N m⁻¹)</label>
+            <input type="range" id="k1s" min="20" max="300" value="100" step="10" oninput="updateSeries()">
+            <span class="val" id="k1sVal">100</span>
+          </div>
+          <div class="ctrl">
+            <label>k₂ (N m⁻¹)</label>
+            <input type="range" id="k2s" min="20" max="300" value="100" step="10" oninput="updateSeries()">
+            <span class="val" id="k2sVal">100</span>
+          </div>
+          <div class="ctrl">
+            <label>Force F (N)</label>
+            <input type="range" id="fseries" min="1" max="30" value="10" step="1" oninput="updateSeries()">
+            <span class="val" id="fseriesVal">10</span>
+          </div>
+        </div>
+        <div class="readout" style="margin-top:10px">
+          <div class="readout-item"><div class="rl">k_eff</div><div class="rv" id="keffSeries">—</div></div>
+          <div class="readout-item"><div class="rl">x₁</div><div class="rv" id="x1Series">—</div></div>
+          <div class="readout-item"><div class="rl">x₂</div><div class="rv" id="x2Series">—</div></div>
+          <div class="readout-item"><div class="rl">x_total</div><div class="rv" id="xtotalSeries">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARALLEL PANEL -->
+  <div class="panel" id="panel-parallel">
+    <div class="sp-wrap">
+      <div class="sp-box" style="flex:1.2">
+        <h4>Springs in Parallel (side-by-side)</h4>
+        <canvas id="parallelCanvas" width="200" height="260"></canvas>
+        <div class="verdict" id="parallelVerdict">k_eff = ?</div>
+      </div>
+      <div style="flex:2; min-width:240px">
+        <div class="formula-strip" style="margin-top:8px">
+          <span class="f">k_eff = k₁ + k₂</span>
+          <span class="note">for two springs in parallel</span>
+        </div>
+        <div class="card teal" style="margin-top:12px">
+          <h4>Why stiffer?</h4>
+          <p>Both springs share the load. Each only carries F/2. But both experience the same extension x. The combined force for extension x is k₁x + k₂x = (k₁+k₂)x — so the system behaves as a single spring with k_eff = k₁ + k₂.</p>
+        </div>
+        <div class="ctrl-row" style="margin-top:10px">
+          <div class="ctrl">
+            <label>k₁ (N m⁻¹)</label>
+            <input type="range" id="k1p" min="20" max="200" value="80" step="10" oninput="updateParallel()">
+            <span class="val" id="k1pVal">80</span>
+          </div>
+          <div class="ctrl">
+            <label>k₂ (N m⁻¹)</label>
+            <input type="range" id="k2p" min="20" max="200" value="80" step="10" oninput="updateParallel()">
+            <span class="val" id="k2pVal">80</span>
+          </div>
+          <div class="ctrl">
+            <label>Force F (N)</label>
+            <input type="range" id="fparallel" min="1" max="40" value="10" step="1" oninput="updateParallel()">
+            <span class="val" id="fparallelVal">10</span>
+          </div>
+        </div>
+        <div class="readout" style="margin-top:10px">
+          <div class="readout-item"><div class="rl">k_eff</div><div class="rv" id="keffParallel">—</div></div>
+          <div class="readout-item"><div class="rl">x (shared)</div><div class="rv" id="xParallel">—</div></div>
+          <div class="readout-item"><div class="rl">F₁ on spring 1</div><div class="rv" id="f1Parallel">—</div></div>
+          <div class="readout-item"><div class="rl">F₂ on spring 2</div><div class="rv" id="f2Parallel">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARE PANEL -->
+  <div class="panel" id="panel-compare">
+    <canvas id="compareCanvas" width="680" height="300" style="margin:0 auto;display:block;max-width:100%"></canvas>
+    <div class="readout" style="margin-top:14px">
+      <div class="readout-item"><div class="rl">Single spring k</div><div class="rv" id="cmpSingle">—</div></div>
+      <div class="readout-item"><div class="rl">Series k_eff</div><div class="rv" id="cmpSeries">—</div></div>
+      <div class="readout-item"><div class="rl">Parallel k_eff</div><div class="rv" id="cmpParallel">—</div></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl">
+        <label>Spring constant k (N m⁻¹)</label>
+        <input type="range" id="kCompare" min="20" max="200" value="80" step="10" oninput="updateCompare()">
+        <span class="val" id="kCompareVal">80</span>
+      </div>
+      <div class="ctrl">
+        <label>Applied load F (N)</label>
+        <input type="range" id="fCompare" min="2" max="30" value="10" step="1" oninput="updateCompare()">
+        <span class="val" id="fCompareVal">10</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 3 — UPTHRUST
+     ════════════════════════════════════════════════════ -->
+<section id="upthrust">
+  <div class="section-label">Section 3</div>
+  <h2>Upthrust &amp; Archimedes' Principle</h2>
+  <p class="lead">Any object submerged in a fluid experiences a net upward force — because pressure increases with depth, so the upward force on the bottom face always exceeds the downward force on the top.</p>
+
+  <div class="formula-strip">
+    <span class="f">F_up = V · ρ_fluid · g</span>
+    <span class="note">V = submerged volume (m³) · ρ = fluid density (kg m⁻³)</span>
+    <span class="f">P = hρg</span>
+    <span class="note">pressure at depth h</span>
+  </div>
+
+  <!-- TOGGLE -->
+  <div class="toggle-row">
+    <button class="tog active" onclick="showUT('mechanism')">Pressure mechanism</button>
+    <button class="tog"        onclick="showUT('archimedes')">Archimedes' principle</button>
+    <button class="tog"        onclick="showUT('calculator')">Upthrust calculator</button>
+  </div>
+
+  <div class="panel visible" id="panel-mechanism">
+    <div class="sim-wrap">
+      <div class="sim-title">Pressure difference → net upward force</div>
+      <canvas id="upthrustCanvas" width="680" height="280" style="max-width:100%"></canvas>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Depth of top face h₁ (m)</label>
+          <input type="range" id="h1Slider" min="0.1" max="2.5" value="0.5" step="0.1" oninput="updateUpthrust()">
+          <span class="val" id="h1Val">0.5 m</span>
+        </div>
+        <div class="ctrl">
+          <label>Block height Δh (m)</label>
+          <input type="range" id="dhSlider" min="0.1" max="1.0" value="0.3" step="0.05" oninput="updateUpthrust()">
+          <span class="val" id="dhVal">0.3 m</span>
+        </div>
+        <div class="ctrl">
+          <label>Block face area A (m²)</label>
+          <input type="range" id="aSlider" min="0.01" max="0.5" value="0.1" step="0.01" oninput="updateUpthrust()">
+          <span class="val" id="aVal">0.10 m²</span>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="readout-item"><div class="rl">P_top (Pa)</div><div class="rv" id="ptopOut">—</div></div>
+        <div class="readout-item"><div class="rl">P_bottom (Pa)</div><div class="rv" id="pbotOut">—</div></div>
+        <div class="readout-item"><div class="rl">ΔP (Pa)</div><div class="rv" id="dpOut">—</div></div>
+        <div class="readout-item"><div class="rl">Upthrust (N)</div><div class="rv" id="upOut">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-archimedes">
+    <div class="card-grid">
+      <div class="card blue">
+        <h4>Archimedes' Principle</h4>
+        <p>The upthrust equals the <strong>weight of fluid displaced</strong>. So F_up = V_submerged × ρ_fluid × g.</p>
+      </div>
+      <div class="card teal">
+        <h4>Key insight</h4>
+        <p>Upthrust depends <em>only</em> on the volume of fluid displaced — not on the object's density, material, or weight.</p>
+      </div>
+      <div class="card amber">
+        <h4>Depth doesn't matter</h4>
+        <p>Once fully submerged, pushing the object deeper does <em>not</em> increase the upthrust — the pressure difference ΔP = ρgΔh stays the same regardless of depth.</p>
+      </div>
+    </div>
+    <div class="misconception">
+      <p>Upthrust does <strong>not</strong> depend on how deep the object is (once fully submerged). It depends only on the <strong>volume</strong> of fluid displaced and the <strong>density of that fluid</strong>.</p>
+    </div>
+    <div class="worked">
+      <div class="worked-title">Worked example — steel sphere in water</div>
+      <ol>
+        <li>Volume of sphere = 50 cm³ = 50 × 10⁻⁶ m³</li>
+        <li>Upthrust = V × ρ_water × g = 50×10⁻⁶ × 1000 × 10</li>
+        <li><span class="ans">Upthrust = 0.50 N</span></li>
+        <li>Weight of steel sphere ≈ 3.9 N → net downward → sphere sinks</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-calculator">
+    <div class="sim-wrap">
+      <div class="sim-title">Upthrust calculator — vary object and fluid</div>
+      <canvas id="archCanvas" width="680" height="240" style="max-width:100%"></canvas>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Object volume V (cm³)</label>
+          <input type="range" id="vSlider" min="10" max="2000" value="200" step="10" oninput="updateArch()">
+          <span class="val" id="vVal">200 cm³</span>
+        </div>
+        <div class="ctrl">
+          <label>Object density ρ_obj (kg m⁻³)</label>
+          <input type="range" id="rhoObjSlider" min="100" max="8000" value="700" step="50" oninput="updateArch()">
+          <span class="val" id="rhoObjVal">700 kg m⁻³</span>
+        </div>
+        <div class="ctrl">
+          <label>Fluid density ρ_fl (kg m⁻³)</label>
+          <input type="range" id="rhoFlSlider" min="700" max="13500" value="1000" step="50" oninput="updateArch()">
+          <span class="val" id="rhoFlVal">1000 kg m⁻³</span>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="readout-item"><div class="rl">Weight of object</div><div class="rv" id="weightOut">—</div></div>
+        <div class="readout-item"><div class="rl">Upthrust</div><div class="rv" id="upOut2">—</div></div>
+        <div class="readout-item"><div class="rl">Net force</div><div class="rv" id="netOut">—</div></div>
+        <div class="readout-item"><div class="rl">Verdict</div><div class="rv" id="verdictOut">—</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 4 — FLOATING
+     ════════════════════════════════════════════════════ -->
+<section id="floating">
+  <div class="section-label">Section 4</div>
+  <h2>Floating &amp; Sinking</h2>
+  <p class="lead">An object floats when upthrust exactly equals its weight. The fraction submerged equals the ratio of densities.</p>
+
+  <div class="formula-strip">
+    <span class="f">submerged fraction = ρ_object / ρ_fluid</span>
+    <span class="note">floats when ρ_object &lt; ρ_fluid</span>
+  </div>
+
+  <!-- TOGGLE -->
+  <div class="toggle-row">
+    <button class="tog active" onclick="showFL('density')">Density comparison</button>
+    <button class="tog"        onclick="showFL('fraction')">Submerged fraction</button>
+    <button class="tog"        onclick="showFL('ship')">Ship / hollow object</button>
+  </div>
+
+  <div class="panel visible" id="panel-density">
+    <div class="sim-wrap">
+      <div class="sim-title">Does it float? — adjust densities</div>
+      <canvas id="floatCanvas" width="680" height="240" style="max-width:100%"></canvas>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Object density (kg m⁻³)</label>
+          <input type="range" id="floatRhoObj" min="100" max="2500" value="700" step="50" oninput="updateFloat()">
+          <span class="val" id="floatRhoObjVal">700</span>
+        </div>
+        <div class="ctrl">
+          <label>Fluid density (kg m⁻³)</label>
+          <input type="range" id="floatRhoFl" min="700" max="13500" value="1000" step="50" oninput="updateFloat()">
+          <span class="val" id="floatRhoFlVal">1000</span>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="readout-item"><div class="rl">Submerged fraction</div><div class="rv" id="subFrac">—</div></div>
+        <div class="readout-item"><div class="rl">% above surface</div><div class="rv" id="aboveFrac">—</div></div>
+        <div class="readout-item"><div class="rl">Outcome</div><div class="rv" id="floatVerdict">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-fraction">
+    <div class="card-grid">
+      <div class="card blue">
+        <h4>Wood in water (ρ = 700)</h4>
+        <p>Fraction submerged = 700/1000 = <strong>70%</strong>. The wood displaces 70% of its volume of water, generating upthrust = weight.</p>
+      </div>
+      <div class="card teal">
+        <h4>Ice in water (ρ = 917)</h4>
+        <p>Fraction submerged = 917/1000 = <strong>91.7%</strong>. About 8% of an iceberg is visible — matching the classic "9/10 below surface" rule.</p>
+      </div>
+      <div class="card amber">
+        <h4>Wood in meths (ρ = 800)</h4>
+        <p>Fraction = 700/800 = <strong>87.5%</strong>. The same block sinks deeper in a less dense fluid — more volume needed to displace enough weight.</p>
+      </div>
+      <div class="card red">
+        <h4>Iron in water (ρ = 7800)</h4>
+        <p>Fraction = 7800/1000 = 7.8 — <strong>greater than 1</strong>. Can't float. Even fully submerged the upthrust is less than the weight.</p>
+      </div>
+    </div>
+    <div class="misconception">
+      <p>When ice melts in water, the water level does <strong>not</strong> rise. Floating ice displaces exactly its own mass of water. When it melts it becomes that same mass of water — precisely filling the volume it displaced.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-ship">
+    <div class="card-grid">
+      <div class="card blue">
+        <h4>Why does a steel ship float?</h4>
+        <p>The ship's <em>average</em> density (steel hull + enclosed air) is less than water. The large air volume means the ship displaces a huge volume of water before fully submerging — enough to equal its weight.</p>
+      </div>
+      <div class="card amber">
+        <h4>Ballast tanks</h4>
+        <p>A submarine pumps water in (heavier → sinks) or out (lighter → rises). At hover, weight = upthrust exactly.</p>
+      </div>
+    </div>
+    <div class="worked">
+      <div class="worked-title">Ship calculation</div>
+      <ol>
+        <li>Ship mass M = 8 × 10⁶ kg, seawater ρ = 1025 kg m⁻³</li>
+        <li>For floating: Upthrust = Weight → V_disp × 1025 × 10 = M × 10</li>
+        <li>V_disp = M / ρ_sea = 8×10⁶ / 1025 <span class="ans">≈ 7 805 m³</span></li>
+        <li>Remove 2×10⁶ kg of cargo → new V_disp = 6×10⁶/1025 <span class="ans">≈ 5 854 m³</span> → ship rises</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 5 — SHM
+     ════════════════════════════════════════════════════ -->
+<section id="shm">
+  <div class="section-label">Section 5</div>
+  <h2>Simple Harmonic Motion</h2>
+  <p class="lead">SHM occurs whenever there is a restoring force proportional to, and directed towards, the displacement from equilibrium.</p>
+
+  <div class="formula-strip">
+    <span class="f">a = −ω²x</span>
+    <span class="note">defines SHM</span>
+    <span class="f">ω = √(k/m)</span>
+    <span class="f">T = 2π√(m/k)</span>
+    <span class="f">v_max = ωA</span>
+  </div>
+
+  <!-- TOGGLE -->
+  <div class="toggle-row">
+    <button class="tog active" onclick="showSHM('motion')">Mass–spring animation</button>
+    <button class="tog"        onclick="showSHM('graphs')">Displacement/velocity/acceleration graphs</button>
+    <button class="tog"        onclick="showSHM('phase')">Phase relationships</button>
+  </div>
+
+  <div class="panel visible" id="panel-motion">
+    <div class="sim-wrap">
+      <div class="sim-title">SHM oscillator — watch x, v, a update in real time</div>
+      <canvas id="shmCanvas" width="680" height="220" style="max-width:100%"></canvas>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Mass m (kg)</label>
+          <input type="range" id="massSlider" min="0.1" max="2.0" value="0.5" step="0.1" oninput="updateSHMparams()">
+          <span class="val" id="massVal">0.50 kg</span>
+        </div>
+        <div class="ctrl">
+          <label>Spring constant k (N m⁻¹)</label>
+          <input type="range" id="kSHM" min="10" max="300" value="80" step="10" oninput="updateSHMparams()">
+          <span class="val" id="kSHMVal">80 N m⁻¹</span>
+        </div>
+        <div class="ctrl">
+          <label>Amplitude A (cm)</label>
+          <input type="range" id="ampSlider" min="1" max="8" value="4" step="0.5" oninput="updateSHMparams()">
+          <span class="val" id="ampVal">4.0 cm</span>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="readout-item"><div class="rl">ω (rad s⁻¹)</div><div class="rv" id="omegaOut">—</div></div>
+        <div class="readout-item"><div class="rl">Period T (s)</div><div class="rv" id="periodOut">—</div></div>
+        <div class="readout-item"><div class="rl">f (Hz)</div><div class="rv" id="freqOut">—</div></div>
+        <div class="readout-item"><div class="rl">v_max (m s⁻¹)</div><div class="rv" id="vmaxOut">—</div></div>
+        <div class="readout-item"><div class="rl">a_max (m s⁻²)</div><div class="rv" id="amaxOut">—</div></div>
+      </div>
+    </div>
+    <div class="misconception">
+      <p>The <strong>period</strong> of a mass–spring SHM system is <strong>independent of amplitude</strong>. Doubling A makes the mass travel twice as far at twice the max speed — it still takes the same time. Period depends only on m and k.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-graphs">
+    <div class="sim-wrap">
+      <div class="sim-title">x(t), v(t) and a(t) — note the phase shifts</div>
+      <canvas id="graphsCanvas" width="680" height="300" style="max-width:100%"></canvas>
+      <div class="card-grid" style="margin-top:12px">
+        <div class="card blue"><h4>Displacement x</h4><p>x = A cos(ωt) — starts at maximum, sinusoidal.</p></div>
+        <div class="card teal"><h4>Velocity v</h4><p>v = −Aω sin(ωt) — <strong>90° ahead</strong> of displacement. Max when x = 0.</p></div>
+        <div class="card red"><h4>Acceleration a</h4><p>a = −Aω² cos(ωt) — <strong>180° (anti-phase)</strong> with displacement. Max when x = ±A.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-phase">
+    <div class="phase-grid">
+      <div class="phase-box">
+        <h4>x vs t</h4>
+        <canvas id="phaseXT" width="280" height="140"></canvas>
+      </div>
+      <div class="phase-box">
+        <h4>v vs t</h4>
+        <canvas id="phaseVT" width="280" height="140"></canvas>
+      </div>
+      <div class="phase-box">
+        <h4>a vs t</h4>
+        <canvas id="phaseAT" width="280" height="140"></canvas>
+      </div>
+      <div class="phase-box">
+        <h4>v vs x (phase portrait)</h4>
+        <canvas id="phaseVX" width="280" height="140"></canvas>
+        <p style="font-size:0.78rem;margin-top:6px;color:var(--ink2)">The circular orbit shows that when |x| is max, v = 0, and vice versa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 6 — ENERGY IN SHM
+     ════════════════════════════════════════════════════ -->
+<section id="energy">
+  <div class="section-label">Section 6</div>
+  <h2>Energy in SHM</h2>
+  <p class="lead">Kinetic and elastic potential energy exchange continuously. Their sum — total mechanical energy — remains constant in ideal (undamped) SHM.</p>
+
+  <div class="formula-strip">
+    <span class="f">E_total = ½kA²</span>
+    <span class="f">PE = ½kx²</span>
+    <span class="f">KE = ½k(A²−x²)</span>
+    <span class="note">KE = PE when x = A/√2 ≈ 0.707A</span>
+  </div>
+
+  <div class="sim-wrap">
+    <div class="sim-title">Energy vs displacement — watch KE and PE interchange</div>
+    <canvas id="energyCanvas" width="680" height="300" style="max-width:100%"></canvas>
+    <div class="ctrl-row">
+      <div class="ctrl">
+        <label>Spring constant k (N m⁻¹)</label>
+        <input type="range" id="kEnergy" min="10" max="300" value="80" step="10" oninput="updateEnergy()">
+        <span class="val" id="kEnergyVal">80</span>
+      </div>
+      <div class="ctrl">
+        <label>Amplitude A (cm)</label>
+        <input type="range" id="aEnergy" min="1" max="10" value="5" step="0.5" oninput="updateEnergy()">
+        <span class="val" id="aEnergyVal">5.0 cm</span>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="readout-item"><div class="rl">E_total</div><div class="rv" id="eTotalOut">—</div></div>
+      <div class="readout-item"><div class="rl">x where KE=PE</div><div class="rv" id="xCrossOut">—</div></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <h4>At equilibrium (x = 0)</h4>
+      <p>PE = 0. All energy is kinetic. Speed is at its maximum = ωA.</p>
+    </div>
+    <div class="card red">
+      <h4>At amplitude (x = ±A)</h4>
+      <p>KE = 0. All energy is elastic PE = ½kA². Velocity = 0 momentarily.</p>
+    </div>
+    <div class="card teal">
+      <h4>KE = PE crossover</h4>
+      <p>Occurs at x = A/√2 ≈ 0.707A. Half the total energy is kinetic, half is potential.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude &mdash; Architect Carbon · LeeMcCullochJames &nbsp;|&nbsp; Dwight School London · Y9 Physics
+</footer>
+
+<!-- ════════════════════════════════════════════════════
+     JAVASCRIPT
+     ════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+// ── COLOUR PALETTE ──────────────────────────────────
+const C = {
+  ink:    '#1a2030', ink2: '#3d4d62', paper: '#f5f2eb',
+  cream:  '#ede9df', rule: '#c8c0b0',
+  red:    '#b82030', blue: '#1a5fa8', teal: '#1a8a7a',
+  amber:  '#c07820', green: '#287a38',
+  spring: '#c07820', water: '#3a90d0', waterLight: 'rgba(58,144,208,0.22)'
+};
+
+// ── HELPERS ──────────────────────────────────────────
+function fmt(n, dp=2){ return n.toFixed(dp); }
+function sci(n){ return n < 0.001 ? n.toExponential(2) : n.toFixed(4); }
+
+function drawSpringCoil(ctx, x, y, w, totalH, coils=8, col='#c07820', lw=2.5){
+  const seg = totalH / (coils * 2 + 2);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + seg);
+  for(let i = 0; i < coils; i++){
+    ctx.lineTo(x + w, y + seg + (2*i+1)*seg);
+    ctx.lineTo(x - w, y + seg + (2*i+2)*seg);
+  }
+  ctx.lineTo(x, y + seg + coils*2*seg);
+  ctx.lineTo(x, y + totalH);
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.stroke();
+}
+
+function drawArrow(ctx, x1,y1,x2,y2,col='#b82030',lw=2){
+  const ang = Math.atan2(y2-y1, x2-x1);
+  const hs = 9;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hs*Math.cos(ang-0.4), y2-hs*Math.sin(ang-0.4));
+  ctx.lineTo(x2-hs*Math.cos(ang+0.4), y2-hs*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fillStyle=col; ctx.fill();
+}
+
+// ── PANEL TOGGLES ────────────────────────────────────
+function showSP(id){
+  ['series','parallel','compare'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.toggle('visible', p===id);
+  });
+  document.querySelectorAll('#series .tog').forEach((b,i)=>{
+    b.classList.toggle('active', ['series','parallel','compare'][i]===id);
+  });
+  if(id==='series')   updateSeries();
+  if(id==='parallel') updateParallel();
+  if(id==='compare')  updateCompare();
+}
+function showUT(id){
+  ['mechanism','archimedes','calculator'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.toggle('visible', p===id);
+  });
+  document.querySelectorAll('#upthrust .tog').forEach((b,i)=>{
+    b.classList.toggle('active', ['mechanism','archimedes','calculator'][i]===id);
+  });
+  if(id==='calculator') updateArch();
+  if(id==='mechanism')  updateUpthrust();
+}
+function showFL(id){
+  ['density','fraction','ship'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.toggle('visible', p===id);
+  });
+  document.querySelectorAll('#floating .tog').forEach((b,i)=>{
+    b.classList.toggle('active', ['density','fraction','ship'][i]===id);
+  });
+  if(id==='density') updateFloat();
+}
+function showSHM(id){
+  ['motion','graphs','phase'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.toggle('visible', p===id);
+  });
+  document.querySelectorAll('#shm .tog').forEach((b,i)=>{
+    b.classList.toggle('active', ['motion','graphs','phase'][i]===id);
+  });
+  if(id==='phase') drawPhaseGraphs();
+  if(id==='graphs') startGraphLoop();
+}
+
+// ═══════════════════════════════════════════════
+// SECTION 1 — SPRING SIM
+// ═══════════════════════════════════════════════
+const springCvs = document.getElementById('springCanvas');
+const sCtx = springCvs.getContext('2d');
+const NATURAL_LEN = 80; // px at rest
+
+function updateSpring(){
+  const k = +document.getElementById('kSlider').value;
+  const F = +document.getElementById('fSlider').value;
+  document.getElementById('kVal').textContent = k+' N m⁻¹';
+  document.getElementById('fVal').textContent = F+' N';
+  const x  = F / k;          // metres
+  const E  = 0.5 * k * x*x;
+  const NL = 0.12;            // natural length 12cm
+  document.getElementById('extOut').textContent = (x*100).toFixed(1)+' cm';
+  document.getElementById('peOut').textContent  = E.toFixed(3)+' J';
+  document.getElementById('lenOut').textContent = ((NL+x)*100).toFixed(1)+' cm';
+
+  drawSpring(k, F, x);
+}
+
+function drawSpring(k, F, x){
+  const cv = springCvs;
+  const ctx = sCtx;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const W = cv.width, H = cv.height;
+
+  // ceiling
+  ctx.fillStyle = C.ink;
+  ctx.fillRect(0, 0, W, 12);
+
+  // spring geometry
+  const cx = W/2;
+  const sprNatH = 100;
+  const maxExt  = 120; // px
+  const xPx     = Math.min((x / (40/k)) * maxExt, maxExt);
+  const sprH    = sprNatH + xPx;
+
+  drawSpringCoil(ctx, cx, 12, 18, sprH, 10, C.spring, 2.5);
+
+  // mass block
+  const blockW = 80, blockH = 40;
+  const by = 12 + sprH;
+  ctx.fillStyle = C.ink;
+  ctx.fillRect(cx-blockW/2, by, blockW, blockH);
+  ctx.fillStyle = '#fff';
+  ctx.font = '11px Georgia'; ctx.textAlign='center';
+  ctx.fillText('Load', cx, by+26);
+
+  // arrows
+  if(F > 0){
+    const arrowLen = Math.min(F*3, 80);
+    drawArrow(ctx, cx+50, by+20, cx+50, by+20+arrowLen, C.red, 2.5);
+    ctx.fillStyle = C.red; ctx.font='11px Georgia'; ctx.textAlign='left';
+    ctx.fillText('F = '+F+' N', cx+56, by+20+arrowLen/2);
+    // upward tension
+    drawArrow(ctx, cx-50, by, cx-50, by-arrowLen, C.teal, 2);
+    ctx.fillStyle = C.teal;
+    ctx.fillText('T = '+F+' N', cx-44, by-arrowLen/2);
+  }
+
+  // extension bracket
+  if(xPx > 0){
+    const bx = cx + 80;
+    ctx.strokeStyle = C.amber; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    ctx.moveTo(bx, 12+sprNatH); ctx.lineTo(bx+15, 12+sprNatH);
+    ctx.moveTo(bx, 12+sprH);    ctx.lineTo(bx+15, 12+sprH);
+    ctx.moveTo(bx+7, 12+sprNatH); ctx.lineTo(bx+7, 12+sprH);
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.amber; ctx.font='11px Georgia'; ctx.textAlign='left';
+    ctx.fillText('x = '+(x*100).toFixed(1)+' cm', bx+18, 12+(sprNatH+sprH)/2+4);
+  }
+
+  // F-x graph (small)
+  drawFxGraph(ctx, W-175, 20, 155, 110, k, F, x);
+}
+
+function drawFxGraph(ctx, ox, oy, gw, gh, k, F, x){
+  ctx.save();
+  ctx.fillStyle = C.cream;
+  ctx.fillRect(ox, oy, gw, gh);
+  ctx.strokeStyle = C.rule; ctx.lineWidth=1;
+  ctx.strokeRect(ox, oy, gw, gh);
+
+  const maxF = 50, maxX = maxF/k;
+  // axes
+  ctx.strokeStyle = C.ink2; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(ox+24, oy+gh-20); ctx.lineTo(ox+gw-4, oy+gh-20); // x-axis
+  ctx.moveTo(ox+24, oy+4);     ctx.lineTo(ox+24, oy+gh-20);   // y-axis
+  ctx.stroke();
+  ctx.fillStyle=C.ink2; ctx.font='9px Georgia'; ctx.textAlign='center';
+  ctx.fillText('x', ox+gw/2+10, oy+gh-2);
+  ctx.textAlign='right'; ctx.fillText('F', ox+22, oy+14);
+
+  // Hooke line
+  ctx.beginPath();
+  ctx.moveTo(ox+24, oy+gh-20);
+  ctx.lineTo(ox+gw-4, oy+gh-20 - (gh-24)*(maxF/maxF));
+  ctx.strokeStyle = C.spring; ctx.lineWidth=2; ctx.stroke();
+
+  // current point
+  const px = ox+24 + (gw-28)*(x/maxX);
+  const py = oy+gh-20 - (gh-24)*(F/maxF);
+  if(F>0){
+    ctx.beginPath(); ctx.arc(Math.min(px, ox+gw-8), Math.max(py, oy+4), 4, 0, Math.PI*2);
+    ctx.fillStyle=C.red; ctx.fill();
+  }
+
+  ctx.fillStyle=C.ink; ctx.font='8px Georgia'; ctx.textAlign='left';
+  ctx.fillText('F–x graph', ox+28, oy+12);
+  ctx.restore();
+}
+
+document.getElementById('kSlider').addEventListener('input', updateSpring);
+document.getElementById('fSlider').addEventListener('input', updateSpring);
+
+// ═══════════════════════════════════════════════
+// SECTION 2 — SERIES
+// ═══════════════════════════════════════════════
+function updateSeries(){
+  const k1 = +document.getElementById('k1s').value;
+  const k2 = +document.getElementById('k2s').value;
+  const F  = +document.getElementById('fseries').value;
+  document.getElementById('k1sVal').textContent = k1;
+  document.getElementById('k2sVal').textContent = k2;
+  document.getElementById('fseriesVal').textContent = F;
+  const keff = 1/(1/k1 + 1/k2);
+  const x1 = F/k1, x2 = F/k2, xt = x1+x2;
+  document.getElementById('keffSeries').textContent = keff.toFixed(1)+' N m⁻¹';
+  document.getElementById('x1Series').textContent   = (x1*100).toFixed(1)+' cm';
+  document.getElementById('x2Series').textContent   = (x2*100).toFixed(1)+' cm';
+  document.getElementById('xtotalSeries').textContent = (xt*100).toFixed(1)+' cm';
+  document.getElementById('seriesVerdict').textContent = 'k_eff = '+keff.toFixed(1)+' N m⁻¹';
+  drawSeriesCanvas(k1,k2,F);
+}
+
+function drawSeriesCanvas(k1,k2,F){
+  const cv = document.getElementById('seriesCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const cx=cv.width/2;
+  ctx.fillStyle=C.ink; ctx.fillRect(0,0,cv.width,12);
+
+  const maxK = Math.max(k1,k2,300);
+  const baseH = 60, extScale = 50;
+  const h1 = baseH + (F/k1)*extScale;
+  const h2 = baseH + (F/k2)*extScale;
+  drawSpringCoil(ctx,cx,12,14,h1,6,C.spring,2);
+  // join ring
+  ctx.beginPath(); ctx.arc(cx, 12+h1, 5,0,Math.PI*2);
+  ctx.fillStyle=C.ink; ctx.fill();
+  drawSpringCoil(ctx,cx,12+h1,14,h2,6,'#287a38',2);
+
+  // mass
+  const by = 12+h1+h2;
+  ctx.fillStyle=C.ink; ctx.fillRect(cx-25, by, 50, 30);
+  // labels
+  ctx.fillStyle=C.spring; ctx.font='9px Georgia'; ctx.textAlign='right';
+  ctx.fillText('k₁='+k1, cx-18, 12+h1/2+4);
+  ctx.fillStyle='#287a38';
+  ctx.fillText('k₂='+k2, cx-18, 12+h1+h2/2+4);
+}
+
+// ── PARALLEL ──────────────────────────────────
+function updateParallel(){
+  const k1 = +document.getElementById('k1p').value;
+  const k2 = +document.getElementById('k2p').value;
+  const F  = +document.getElementById('fparallel').value;
+  document.getElementById('k1pVal').textContent = k1;
+  document.getElementById('k2pVal').textContent = k2;
+  document.getElementById('fparallelVal').textContent = F;
+  const keff = k1+k2;
+  const x  = F/keff;
+  const f1 = k1*x, f2 = k2*x;
+  document.getElementById('keffParallel').textContent = keff+' N m⁻¹';
+  document.getElementById('xParallel').textContent    = (x*100).toFixed(2)+' cm';
+  document.getElementById('f1Parallel').textContent   = f1.toFixed(2)+' N';
+  document.getElementById('f2Parallel').textContent   = f2.toFixed(2)+' N';
+  document.getElementById('parallelVerdict').textContent = 'k_eff = '+keff+' N m⁻¹';
+  drawParallelCanvas(k1,k2,F);
+}
+
+function drawParallelCanvas(k1,k2,F){
+  const cv = document.getElementById('parallelCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const W=cv.width;
+  ctx.fillStyle=C.ink; ctx.fillRect(0,0,W,12);
+  const keff=k1+k2, x=F/keff;
+  const baseH=60, h = baseH + x*80;
+  const cx1=W/3, cx2=2*W/3;
+  drawSpringCoil(ctx,cx1,12,12,h,7,C.spring,2);
+  drawSpringCoil(ctx,cx2,12,12,h,7,'#287a38',2);
+  // shared bar at bottom
+  ctx.fillStyle=C.ink; ctx.fillRect(cx1-20, 12+h, cx2-cx1+40, 10);
+  ctx.fillRect(W/2-25, 12+h+10, 50, 28);
+  // labels
+  ctx.fillStyle=C.spring; ctx.font='9px Georgia'; ctx.textAlign='center';
+  ctx.fillText('k₁='+k1, cx1, 12+h/2);
+  ctx.fillStyle='#287a38';
+  ctx.fillText('k₂='+k2, cx2, 12+h/2);
+}
+
+// ── COMPARE ──────────────────────────────────
+function updateCompare(){
+  const k = +document.getElementById('kCompare').value;
+  const F = +document.getElementById('fCompare').value;
+  document.getElementById('kCompareVal').textContent = k;
+  document.getElementById('fCompareVal').textContent = F;
+  const ks = k/2, kp = k*2;
+  document.getElementById('cmpSingle').textContent  = k+' N m⁻¹';
+  document.getElementById('cmpSeries').textContent  = ks+' N m⁻¹';
+  document.getElementById('cmpParallel').textContent = kp+' N m⁻¹';
+  drawCompareCanvas(k,F);
+}
+
+function drawCompareCanvas(k,F){
+  const cv = document.getElementById('compareCanvas');
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=C.ink; ctx.fillRect(0,0,W,12);
+
+  const labels=['SERIES\nk/2','SINGLE\nk','PARALLEL\n2k'];
+  const kvals=[k/2, k, k*2];
+  const cols=[C.red, C.amber, C.teal];
+  const positions=[W/6, W/2, 5*W/6];
+  const maxH = 200;
+
+  for(let i=0;i<3;i++){
+    const cx=positions[i];
+    const x = F/kvals[i];
+    const h = Math.min(12 + x*1500, maxH);
+    drawSpringCoil(ctx, cx, 12, 14, h, 8, cols[i], 2);
+    // block
+    ctx.fillStyle=C.ink; ctx.fillRect(cx-22,12+h,44,24);
+    ctx.fillStyle=cols[i]; ctx.font='bold 9px Georgia'; ctx.textAlign='center';
+    const lparts = labels[i].split('\n');
+    ctx.fillText(lparts[0], cx, 12+h+36+12);
+    ctx.fillStyle=C.ink2; ctx.font='9px Georgia';
+    ctx.fillText(lparts[1], cx, 12+h+50+12);
+    // extension annotation
+    ctx.fillStyle=cols[i]; ctx.font='9px Georgia';
+    ctx.fillText('x='+(x*100).toFixed(1)+'cm', cx, 12+h+65+12);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SECTION 3 — UPTHRUST MECHANISM
+// ═══════════════════════════════════════════════
+function updateUpthrust(){
+  const h1 = +document.getElementById('h1Slider').value;
+  const dh = +document.getElementById('dhSlider').value;
+  const A  = +document.getElementById('aSlider').value;
+  document.getElementById('h1Val').textContent = h1.toFixed(1)+' m';
+  document.getElementById('dhVal').textContent = dh.toFixed(2)+' m';
+  document.getElementById('aVal').textContent  = A.toFixed(2)+' m²';
+
+  const rho=1000, g=10;
+  const pt  = h1*rho*g;
+  const pb  = (h1+dh)*rho*g;
+  const dp  = pb-pt;
+  const Fup = dp*A;
+
+  document.getElementById('ptopOut').textContent = pt.toFixed(0)+' Pa';
+  document.getElementById('pbotOut').textContent = pb.toFixed(0)+' Pa';
+  document.getElementById('dpOut').textContent   = dp.toFixed(0)+' Pa';
+  document.getElementById('upOut').textContent   = Fup.toFixed(2)+' N';
+  drawUpthrustCanvas(h1,dh,A,pt,pb,Fup);
+}
+
+function drawUpthrustCanvas(h1,dh,A,pt,pb,Fup){
+  const cv=document.getElementById('upthrustCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  // water background
+  ctx.fillStyle=C.waterLight;
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(58,144,208,0.12)';
+  ctx.fillRect(0,0,W,H);
+
+  // water surface
+  ctx.strokeStyle=C.water; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,30); ctx.lineTo(W,30); ctx.stroke();
+  ctx.fillStyle=C.blue; ctx.font='10px Georgia';
+  ctx.fillText('Water surface', 8, 24);
+
+  // depth scale
+  const scale = (H-60)/(h1+dh+0.5);
+  const surfY = 30;
+
+  // block
+  const bTop  = surfY + h1*scale;
+  const bBot  = surfY + (h1+dh)*scale;
+  const bH    = bBot-bTop;
+  const bW    = Math.min(120, W/3);
+  const bx    = W/2 - bW/2;
+
+  ctx.fillStyle='rgba(28,35,45,0.85)';
+  ctx.fillRect(bx, bTop, bW, bH);
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.5;
+  ctx.strokeRect(bx, bTop, bW, bH);
+  ctx.fillStyle='#fff'; ctx.font='10px Georgia'; ctx.textAlign='center';
+  ctx.fillText('Object', W/2, (bTop+bBot)/2+4);
+
+  // pressure labels
+  ctx.fillStyle=C.red; ctx.textAlign='left'; ctx.font='11px Georgia';
+  ctx.fillText('P_top = '+pt.toFixed(0)+' Pa', bx+bW+12, bTop+4);
+  ctx.fillText('↓ F_down = P_top×A = '+(pt*parseFloat(document.getElementById('aSlider').value)).toFixed(1)+' N', bx+bW+12, bTop+18);
+
+  ctx.fillStyle=C.teal;
+  ctx.fillText('P_bot = '+pb.toFixed(0)+' Pa', bx+bW+12, bBot-14);
+  ctx.fillText('↑ F_up = P_bot×A = '+(pb*parseFloat(document.getElementById('aSlider').value)).toFixed(1)+' N', bx+bW+12, bBot);
+
+  // net arrow
+  const arrowH = Math.min(Fup*0.8, 60);
+  drawArrow(ctx, W/2-bW/2-22, bBot, W/2-bW/2-22, bBot-arrowH, C.teal, 3);
+  ctx.fillStyle=C.teal; ctx.font='bold 10px Georgia'; ctx.textAlign='right';
+  ctx.fillText('Net upthrust: '+Fup.toFixed(2)+'N', W/2-bW/2-28, bBot-arrowH/2);
+
+  // depth annotations
+  ctx.strokeStyle=C.amber; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(bx-8,surfY); ctx.lineTo(bx-8, bTop); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.amber; ctx.textAlign='right'; ctx.font='10px Georgia';
+  ctx.fillText('h₁='+h1.toFixed(1)+'m', bx-12, (surfY+bTop)/2+4);
+
+  ctx.setLineDash([3,3]); ctx.strokeStyle=C.amber;
+  ctx.beginPath(); ctx.moveTo(bx-8,bTop); ctx.lineTo(bx-8, bBot); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillText('Δh='+dh.toFixed(2)+'m', bx-12, (bTop+bBot)/2+4);
+}
+
+// ── ARCHIMEDES CALCULATOR ─────────────────────
+function updateArch(){
+  const V_cm3  = +document.getElementById('vSlider').value;
+  const rhoObj = +document.getElementById('rhoObjSlider').value;
+  const rhoFl  = +document.getElementById('rhoFlSlider').value;
+  document.getElementById('vVal').textContent      = V_cm3+' cm³';
+  document.getElementById('rhoObjVal').textContent = rhoObj+' kg m⁻³';
+  document.getElementById('rhoFlVal').textContent  = rhoFl+' kg m⁻³';
+
+  const V   = V_cm3 * 1e-6;
+  const W   = rhoObj * V * 10;
+  const Fup = rhoFl  * V * 10;
+  const net = W - Fup;
+  const verdict = net > 0.001 ? '↓ SINKS' : net < -0.001 ? '↑ RISES' : '≈ NEUTRAL';
+
+  document.getElementById('weightOut').textContent  = W.toFixed(3)+' N';
+  document.getElementById('upOut2').textContent     = Fup.toFixed(3)+' N';
+  document.getElementById('netOut').textContent     = (net>=0?'+':'')+net.toFixed(3)+' N';
+  document.getElementById('verdictOut').textContent = verdict;
+  drawArchCanvas(V_cm3, rhoObj, rhoFl, W, Fup, net);
+}
+
+function drawArchCanvas(V_cm3, rhoObj, rhoFl, W, Fup, net){
+  const cv=document.getElementById('archCanvas');
+  const ctx=cv.getContext('2d');
+  const W_=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W_,H);
+
+  // water tank
+  ctx.fillStyle=C.waterLight;
+  ctx.fillRect(0,0,W_,H);
+  ctx.strokeStyle=C.water; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,40); ctx.lineTo(W_,40); ctx.stroke();
+  ctx.fillStyle=C.blue; ctx.font='10px Georgia';
+  ctx.fillText('Fluid (ρ='+rhoFl+' kg m⁻³)', 8,32);
+
+  const sz = Math.min(80, Math.max(24, Math.cbrt(V_cm3)*3.5));
+  const cx=W_/2, cy=H/2+20;
+
+  // block
+  ctx.fillStyle='rgba(28,35,45,0.80)';
+  ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz);
+  ctx.fillStyle='#fff'; ctx.font='9px Georgia'; ctx.textAlign='center';
+  ctx.fillText('ρ='+rhoObj, cx, cy+4);
+
+  // arrows
+  const maxLen=80;
+  const wLen = Math.min(W*4, maxLen);
+  const uLen = Math.min(Fup*4, maxLen);
+
+  drawArrow(ctx, cx+sz/2+20, cy, cx+sz/2+20, cy+wLen, C.red, 2.5);
+  ctx.fillStyle=C.red; ctx.font='10px Georgia'; ctx.textAlign='left';
+  ctx.fillText('W='+W.toFixed(2)+'N', cx+sz/2+26, cy+wLen/2+4);
+
+  drawArrow(ctx, cx-sz/2-20, cy, cx-sz/2-20, cy-uLen, C.teal, 2.5);
+  ctx.fillStyle=C.teal; ctx.textAlign='right';
+  ctx.fillText('F_up='+Fup.toFixed(2)+'N', cx-sz/2-26, cy-uLen/2+4);
+
+  // verdict
+  const vc = net>0.001 ? C.red : net<-0.001 ? C.teal : C.amber;
+  ctx.fillStyle=vc; ctx.font='bold 13px Georgia'; ctx.textAlign='center';
+  ctx.fillText(net>0.001?'↓ SINKS': net<-0.001?'↑ RISES':'≈ NEUTRAL', cx, H-10);
+}
+
+// ═══════════════════════════════════════════════
+// SECTION 4 — FLOATING
+// ═══════════════════════════════════════════════
+function updateFloat(){
+  const rhoObj = +document.getElementById('floatRhoObj').value;
+  const rhoFl  = +document.getElementById('floatRhoFl').value;
+  document.getElementById('floatRhoObjVal').textContent = rhoObj;
+  document.getElementById('floatRhoFlVal').textContent  = rhoFl;
+
+  const frac = rhoObj / rhoFl;
+  const floats = frac <= 1;
+  document.getElementById('subFrac').textContent    = floats ? (frac*100).toFixed(1)+'%' : '100% (SINKS)';
+  document.getElementById('aboveFrac').textContent  = floats ? ((1-frac)*100).toFixed(1)+'%' : '0%';
+  document.getElementById('floatVerdict').textContent = floats ? 'FLOATS' : 'SINKS';
+  drawFloatCanvas(rhoObj, rhoFl, frac, floats);
+}
+
+function drawFloatCanvas(rhoObj, rhoFl, frac, floats){
+  const cv=document.getElementById('floatCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  // water
+  const wTop=60;
+  ctx.fillStyle=C.waterLight;
+  ctx.fillRect(0,wTop,W,H-wTop);
+  ctx.strokeStyle=C.water; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,wTop); ctx.lineTo(W,wTop); ctx.stroke();
+  ctx.fillStyle=C.blue; ctx.font='11px Georgia'; ctx.textAlign='left';
+  ctx.fillText('Fluid  ρ = '+rhoFl+' kg m⁻³', 10, wTop-6);
+
+  const blkH=80, blkW=100;
+  const bx=(W-blkW)/2;
+
+  if(floats){
+    const subH = frac * blkH;
+    const abvH = blkH - subH;
+    const topY = wTop - abvH;
+    ctx.fillStyle='rgba(28,35,45,0.85)';
+    ctx.fillRect(bx, topY, blkW, blkH);
+    // water line visual
+    ctx.fillStyle=C.waterLight;
+    ctx.fillRect(bx+1, wTop, blkW-2, subH);
+    ctx.strokeStyle=C.ink; ctx.lineWidth=1.5;
+    ctx.strokeRect(bx, topY, blkW, blkH);
+    // labels
+    ctx.fillStyle=C.paper; ctx.font='10px Georgia'; ctx.textAlign='center';
+    ctx.fillText('ρ='+rhoObj, bx+blkW/2, topY+blkH/2+4);
+    // bracket for submerged fraction
+    ctx.strokeStyle=C.teal; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(bx+blkW+8,wTop); ctx.lineTo(bx+blkW+8,wTop+subH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=C.teal; ctx.textAlign='left'; ctx.font='10px Georgia';
+    ctx.fillText((frac*100).toFixed(0)+'% submerged', bx+blkW+14, wTop+subH/2+4);
+  } else {
+    // sinks to bottom
+    const topY = H - blkH - 10;
+    ctx.fillStyle='rgba(28,35,45,0.85)';
+    ctx.fillRect(bx, topY, blkW, blkH);
+    ctx.strokeStyle=C.red; ctx.lineWidth=2;
+    ctx.strokeRect(bx, topY, blkW, blkH);
+    ctx.fillStyle=C.paper; ctx.font='10px Georgia'; ctx.textAlign='center';
+    ctx.fillText('ρ='+rhoObj, bx+blkW/2, topY+blkH/2);
+    ctx.fillText('SINKS', bx+blkW/2, topY+blkH/2+14);
+    drawArrow(ctx, bx+blkW/2, topY-10, bx+blkW/2, topY-50, C.red, 2);
+    ctx.fillStyle=C.red; ctx.font='10px Georgia';
+    ctx.fillText('Net downward force', bx+blkW/2, topY-54);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SECTION 5 — SHM ANIMATION
+// ═══════════════════════════════════════════════
+let shmAnim=null, shmT=0;
+let shmOmega=12, shmA=0.04, shmM=0.5, shmK=80;
+
+function updateSHMparams(){
+  shmM = +document.getElementById('massSlider').value;
+  shmK = +document.getElementById('kSHM').value;
+  shmA = +document.getElementById('ampSlider').value / 100;
+  document.getElementById('massVal').textContent = shmM.toFixed(2)+' kg';
+  document.getElementById('kSHMVal').textContent = shmK+' N m⁻¹';
+  document.getElementById('ampVal').textContent  = (shmA*100).toFixed(1)+' cm';
+  shmOmega = Math.sqrt(shmK/shmM);
+  const T = 2*Math.PI/shmOmega;
+  const f = 1/T;
+  document.getElementById('omegaOut').textContent = shmOmega.toFixed(2)+' rad s⁻¹';
+  document.getElementById('periodOut').textContent = T.toFixed(3)+' s';
+  document.getElementById('freqOut').textContent   = f.toFixed(2)+' Hz';
+  document.getElementById('vmaxOut').textContent   = (shmOmega*shmA).toFixed(3)+' m s⁻¹';
+  document.getElementById('amaxOut').textContent   = (shmOmega*shmOmega*shmA).toFixed(2)+' m s⁻²';
+}
+
+function shmLoop(ts){
+  shmT = ts * 0.001;
+  const cv=document.getElementById('shmCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const x = shmA * Math.cos(shmOmega * shmT);
+  const v = -shmA * shmOmega * Math.sin(shmOmega * shmT);
+  const a = -shmOmega*shmOmega * x;
+
+  // ceiling
+  ctx.fillStyle=C.ink; ctx.fillRect(40,0,W-80,12);
+
+  // spring
+  const eq=100, px = W/2 + x*800;
+  const sprLen = Math.abs(px - 40) * 0.8;
+  // horizontal spring on left side
+  // Actually draw vertical spring:
+  const equilY=eq, massY=equilY + x*600;
+  const springPx = Math.max(30, 80 + x*600);
+  drawSpringCoil(ctx, W/3, 12, 14, springPx, 9, C.spring, 2);
+
+  // mass
+  ctx.fillStyle=C.ink;
+  ctx.fillRect(W/3-24, 12+springPx, 48, 36);
+  ctx.fillStyle=C.paper; ctx.font='10px Georgia'; ctx.textAlign='center';
+  ctx.fillText('m='+shmM+'kg', W/3, 12+springPx+22);
+
+  // equilibrium line
+  const eqY = 12+80;
+  ctx.strokeStyle=C.amber; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(W/3+40, eqY); ctx.lineTo(W/3+100, eqY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.amber; ctx.font='9px Georgia'; ctx.textAlign='left';
+  ctx.fillText('equilibrium', W/3+44, eqY-2);
+
+  // live readouts on canvas
+  const rx=W*0.58, ry=30;
+  ctx.fillStyle=C.cream;
+  ctx.fillRect(rx,10,W-rx-10,H-20);
+  ctx.strokeStyle=C.rule; ctx.lineWidth=1; ctx.strokeRect(rx,10,W-rx-10,H-20);
+
+  function readLine(label, val, col, row){
+    ctx.fillStyle=col; ctx.font='bold 10px Courier New'; ctx.textAlign='left';
+    ctx.fillText(label+' = '+val, rx+10, ry+row*22);
+  }
+  readLine('x', (x*100).toFixed(2)+' cm', C.blue, 0);
+  readLine('v', (v*100).toFixed(2)+' cm/s', C.teal, 1);
+  readLine('a', (a).toFixed(2)+' m/s²', C.red, 2);
+  readLine('KE', (0.5*shmM*v*v).toFixed(4)+' J', C.green, 3);
+  readLine('PE', (0.5*shmK*x*x).toFixed(4)+' J', C.amber, 4);
+
+  // velocity arrow on mass
+  const vy = 12+springPx+18;
+  const vScale = 150;
+  if(Math.abs(v)>0.001){
+    drawArrow(ctx, W/3+30, vy, W/3+30, vy + v*vScale, C.teal, 2);
+  }
+
+  shmAnim = requestAnimationFrame(shmLoop);
+}
+
+function startSHMAnim(){
+  if(shmAnim) cancelAnimationFrame(shmAnim);
+  shmAnim = requestAnimationFrame(shmLoop);
+}
+
+// ── GRAPHS (x,v,a vs t) ──────────────────────
+let graphAnim=null, graphRunning=false;
+
+function startGraphLoop(){
+  if(graphRunning) return;
+  graphRunning=true;
+  let t=0;
+  function loop(){
+    drawGraphs(t);
+    t += 0.025;
+    graphAnim = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function drawGraphs(t){
+  const cv=document.getElementById('graphsCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const rows=[0,1,2];
+  const cols=[C.blue, C.teal, C.red];
+  const labels=['x (displacement)','v (velocity)','a (acceleration)'];
+  const rowH = H/3;
+
+  rows.forEach((r, ri)=>{
+    const oy = r*rowH + rowH*0.5;
+    const amp = rowH*0.4;
+    // axis
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(50,oy); ctx.lineTo(W-10,oy); ctx.stroke();
+
+    // label
+    ctx.fillStyle=cols[ri]; ctx.font='9px Georgia'; ctx.textAlign='left';
+    ctx.fillText(labels[ri], 52, r*rowH+14);
+
+    // wave
+    ctx.beginPath();
+    ctx.strokeStyle=cols[ri]; ctx.lineWidth=2;
+    for(let i=0;i<W-60;i++){
+      const tt = (i/(W-60))*4*Math.PI + t;
+      let y;
+      if(ri===0) y = -Math.cos(tt)*amp;
+      if(ri===1) y = Math.sin(tt)*amp;
+      if(ri===2) y = Math.cos(tt)*amp;
+      if(i===0) ctx.moveTo(50+i, oy+y);
+      else      ctx.lineTo(50+i, oy+y);
+    }
+    ctx.stroke();
+  });
+
+  // current time line
+  const tx = 50 + (t % (4*Math.PI)) / (4*Math.PI) * (W-60);
+  if(tx < W-10){
+    ctx.strokeStyle=C.amber; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(tx,0); ctx.lineTo(tx,H); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// ── PHASE GRAPHS ─────────────────────────────
+function drawPhaseGraphs(){
+  const cvs=['phaseXT','phaseVT','phaseAT','phaseVX'];
+  const W=280, H=140, A=0.06, om=10;
+
+  function setup(id){
+    const cv=document.getElementById(id);
+    const ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    return ctx;
+  }
+
+  // x vs t
+  (function(){
+    const ctx=setup('phaseXT');
+    const oy=H/2;
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(20,oy); ctx.lineTo(W-10,oy); ctx.stroke();
+    ctx.strokeStyle=C.blue; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<W-30;i++){
+      const t=i/(W-30)*2*Math.PI;
+      const y=oy - A/0.06*(H/2-16)*Math.cos(t);
+      i===0 ? ctx.moveTo(20+i,y) : ctx.lineTo(20+i,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle=C.blue; ctx.font='9px Georgia'; ctx.textAlign='center';
+    ctx.fillText('x = A cos(ωt)', W/2, 12);
+  })();
+
+  // v vs t
+  (function(){
+    const ctx=setup('phaseVT');
+    const oy=H/2;
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(20,oy); ctx.lineTo(W-10,oy); ctx.stroke();
+    ctx.strokeStyle=C.teal; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<W-30;i++){
+      const t=i/(W-30)*2*Math.PI;
+      const y=oy + (H/2-16)*Math.sin(t);
+      i===0 ? ctx.moveTo(20+i,y) : ctx.lineTo(20+i,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle=C.teal; ctx.font='9px Georgia'; ctx.textAlign='center';
+    ctx.fillText('v = −Aω sin(ωt)', W/2, 12);
+    ctx.fillStyle=C.ink2; ctx.font='8px Georgia';
+    ctx.fillText('90° ahead of x', W/2, H-4);
+  })();
+
+  // a vs t
+  (function(){
+    const ctx=setup('phaseAT');
+    const oy=H/2;
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(20,oy); ctx.lineTo(W-10,oy); ctx.stroke();
+    ctx.strokeStyle=C.red; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<W-30;i++){
+      const t=i/(W-30)*2*Math.PI;
+      const y=oy + (H/2-16)*Math.cos(t);
+      i===0 ? ctx.moveTo(20+i,y) : ctx.lineTo(20+i,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle=C.red; ctx.font='9px Georgia'; ctx.textAlign='center';
+    ctx.fillText('a = −Aω² cos(ωt)', W/2, 12);
+    ctx.fillStyle=C.ink2; ctx.font='8px Georgia';
+    ctx.fillText('180° (anti-phase) with x', W/2, H-4);
+  })();
+
+  // v vs x (phase portrait — ellipse)
+  (function(){
+    const ctx=setup('phaseVX');
+    const cx=W/2, cy=H/2;
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(20,cy); ctx.lineTo(W-10,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,10); ctx.lineTo(cx,H-10); ctx.stroke();
+    ctx.strokeStyle=C.amber; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<=360;i++){
+      const t=i*Math.PI/180;
+      const x=cx+(cx-24)*Math.cos(t);
+      const y=cy+(cy-18)*Math.sin(t);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle=C.amber; ctx.font='9px Georgia'; ctx.textAlign='center';
+    ctx.fillText('v vs x → ellipse', W/2, 12);
+    ctx.fillStyle=C.ink2; ctx.font='8px Georgia';
+    ctx.fillText('v=0 at x=±A  |  v=max at x=0', W/2, H-4);
+  })();
+}
+
+// ═══════════════════════════════════════════════
+// SECTION 6 — ENERGY
+// ═══════════════════════════════════════════════
+function updateEnergy(){
+  const k = +document.getElementById('kEnergy').value;
+  const A = +document.getElementById('aEnergy').value / 100;
+  document.getElementById('kEnergyVal').textContent = k;
+  document.getElementById('aEnergyVal').textContent = (A*100).toFixed(1)+' cm';
+  const Etotal = 0.5*k*A*A;
+  const xCross = A/Math.sqrt(2);
+  document.getElementById('eTotalOut').textContent  = Etotal.toFixed(4)+' J';
+  document.getElementById('xCrossOut').textContent  = (xCross*100).toFixed(2)+' cm';
+  drawEnergyCanvas(k, A, Etotal, xCross);
+}
+
+function drawEnergyCanvas(k, A, Etotal, xCross){
+  const cv=document.getElementById('energyCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const ox=50, oy=H-40, gw=W-70, gh=H-60;
+
+  // axes
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(ox, oy-gh); ctx.lineTo(ox, oy); ctx.lineTo(ox+gw, oy);
+  ctx.stroke();
+
+  // labels
+  ctx.fillStyle=C.ink; ctx.font='11px Georgia'; ctx.textAlign='center';
+  ctx.fillText('Displacement x', ox+gw/2, H-10);
+  ctx.save(); ctx.translate(16, oy-gh/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Energy (J)', 0, 0); ctx.restore();
+
+  // x-axis ticks
+  const xScale = gw / (2*A);
+  const yScale = gh / Etotal;
+  [-A,-A/2,0,A/2,A].forEach(xv=>{
+    const px=ox + (xv+A)*xScale;
+    ctx.strokeStyle=C.rule; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,oy-gh); ctx.stroke();
+    ctx.fillStyle=C.ink2; ctx.font='9px Georgia'; ctx.textAlign='center';
+    const lbl = xv===0?'0': xv===A?'+A': xv===-A?'−A': xv===A/2?'+A/2':'−A/2';
+    ctx.fillText(lbl, px, oy+14);
+  });
+
+  // PE curve: ½kx²
+  ctx.beginPath(); ctx.strokeStyle=C.amber; ctx.lineWidth=2.5;
+  for(let i=0;i<=200;i++){
+    const xv = -A + (2*A)*(i/200);
+    const pe = 0.5*k*xv*xv;
+    const px=ox+(xv+A)*xScale, py=oy-pe*yScale;
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.fillStyle=C.amber; ctx.font='bold 10px Georgia'; ctx.textAlign='left';
+  ctx.fillText('PE = ½kx²', ox+5, oy-gh*0.55);
+
+  // KE curve: ½k(A²−x²)
+  ctx.beginPath(); ctx.strokeStyle=C.blue; ctx.lineWidth=2.5;
+  for(let i=0;i<=200;i++){
+    const xv = -A + (2*A)*(i/200);
+    const ke = 0.5*k*(A*A-xv*xv);
+    const px=ox+(xv+A)*xScale, py=oy-ke*yScale;
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.fillStyle=C.blue; ctx.font='bold 10px Georgia'; ctx.textAlign='right';
+  ctx.fillText('KE = ½k(A²−x²)', ox+gw-4, oy-gh*0.55);
+
+  // Total energy line
+  ctx.strokeStyle=C.red; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(ox, oy-gh); ctx.lineTo(ox+gw, oy-gh); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.red; ctx.font='10px Georgia'; ctx.textAlign='right';
+  ctx.fillText('E_total = '+Etotal.toFixed(3)+'J', ox+gw, oy-gh-5);
+
+  // crossover markers at x = ±xCross
+  [xCross, -xCross].forEach(xv=>{
+    const px=ox+(xv+A)*xScale;
+    const py=oy-Etotal/2*yScale;
+    ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2);
+    ctx.fillStyle=C.red; ctx.fill();
+    ctx.strokeStyle=C.red; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(px,oy); ctx.lineTo(px,py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=C.red; ctx.font='8px Georgia'; ctx.textAlign='center';
+    ctx.fillText('KE=PE', px, py-8);
+    ctx.fillText('x='+(xv*100).toFixed(1)+'cm', px, py-18);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  updateSpring();
+  updateSeries();
+  updateParallel();
+  updateCompare();
+  updateUpthrust();
+  updateArch();
+  updateFloat();
+  updateSHMparams();
+  startSHMAnim();
+  updateEnergy();
+  drawPhaseGraphs();
+});
+</script>
+</body>
+</html>
