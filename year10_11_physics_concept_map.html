@@ -1,0 +1,659 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: #f5f2eb;
+    color: #2c2a24;
+    padding: 0;
+  }
+
+  .map-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 36px;
+  }
+
+  .map-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #1e1c18;
+    margin-bottom: 4px;
+  }
+
+  .map-sub {
+    font-size: 13px;
+    color: #6e6b62;
+    margin-bottom: 22px;
+    font-weight: 300;
+  }
+
+  /* Year banner */
+  .year-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .year-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .y10-label { background: #e8e2d4; color: #3a3428; border-left: 4px solid #8b7355; }
+  .y11-label { background: #dce8e8; color: #1e3434; border-left: 4px solid #4a8080; }
+
+  /* Unit grid */
+  .units-row {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .units-y10 { grid-template-columns: repeat(5, 1fr); }
+  .units-y11 { grid-template-columns: repeat(6, 1fr); }
+
+  .unit-card {
+    border-radius: 10px;
+    padding: 12px 10px 10px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    min-height: 138px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .unit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  /* Y10 card colours */
+  .card-matter    { background: #f0ebe0; border: 1.5px solid #c8bb9e; }
+  .card-energy    { background: #fdf0e6; border: 1.5px solid #e0b878; }
+  .card-electric  { background: #fce8e2; border: 1.5px solid #d89080; }
+  .card-forces    { background: #e8f0e8; border: 1.5px solid #8aac8a; }
+  .card-climate   { background: #e4edf5; border: 1.5px solid #7ea8c4; }
+
+  /* Y11 card colours */
+  .card-motion    { background: #f5f0e8; border: 1.5px solid #b8a880; }
+  .card-waves     { background: #e8f5f5; border: 1.5px solid #70aaa8; }
+  .card-fields    { background: #ede8f5; border: 1.5px solid #9878c4; }
+  .card-em        { background: #f5e8ee; border: 1.5px solid #c48098; }
+  .card-nuclear   { background: #f0ede0; border: 1.5px solid #a89868; }
+  .card-space     { background: #e0e8f0; border: 1.5px solid #6888ac; }
+
+  .unit-num {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 4px;
+  }
+
+  .unit-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+
+  .unit-q {
+    font-size: 10.5px;
+    font-weight: 300;
+    color: #555048;
+    line-height: 1.4;
+    font-style: italic;
+    flex: 1;
+  }
+
+  .unit-tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .tag {
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.2px;
+  }
+
+  .tag-phys { background: #d8e8ff; color: #1e4a7a; }
+  .tag-chem { background: #ffe8d0; color: #7a3800; font-style: italic; }
+  .tag-ib   { background: #e8ffe8; color: #1a5a1a; }
+
+  /* Crossover banner */
+  .crossover-strip {
+    background: linear-gradient(90deg, #ffe8c8, #ffd8b0, #ffe0c0);
+    border: 1.5px solid #d4904a;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .crossover-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7a4010;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  .crossover-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .crossover-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #fff4e8;
+    border: 1px solid #d08040;
+    color: #5a3010;
+    font-weight: 400;
+  }
+
+  /* Big ideas row */
+  .big-ideas {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .idea-card {
+    background: #f0ede6;
+    border: 1px solid #ccc5b2;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .idea-icon { font-size: 16px; margin-bottom: 3px; }
+
+  .idea-name {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #3d3a30;
+  }
+
+  /* Concept progression table */
+  .prog-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11.5px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #d0c8b8;
+    margin-bottom: 14px;
+  }
+
+  .prog-table th {
+    background: #e0d8c8;
+    color: #3a3428;
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .prog-table td {
+    padding: 6px 12px;
+    border-top: 1px solid #e0d8c8;
+    vertical-align: top;
+    line-height: 1.4;
+  }
+
+  .prog-table tr:nth-child(even) td { background: #f8f4ee; }
+  .prog-table tr:nth-child(odd) td { background: #faf8f4; }
+
+  .prog-table .col-idea { font-weight: 600; color: #3a3428; width: 18%; }
+  .prog-table .col-y10  { color: #5a4e38; width: 41%; }
+  .prog-table .col-y11  { color: #2a4a4a; width: 41%; }
+
+  .footer-stamp {
+    margin-top: 20px;
+    font-size: 10px;
+    color: #aaa89a;
+    text-align: center;
+    letter-spacing: 0.5px;
+    font-weight: 300;
+  }
+
+  /* Chem crossover highlight on unit cards */
+  .has-chem::after {
+    content: '⚗';
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    font-size: 12px;
+    opacity: 0.55;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: #fff;
+    border: 1.5px solid #d0c8b8;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .detail-panel.visible { display: block; }
+
+  .detail-panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .detail-panel-q {
+    font-size: 12px;
+    font-style: italic;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  .detail-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    font-size: 11.5px;
+  }
+
+  .detail-col-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 5px;
+  }
+
+  .detail-col ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .detail-col li {
+    padding: 2px 0;
+    color: #3a3428;
+    line-height: 1.4;
+  }
+
+  .detail-col li::before {
+    content: '·';
+    margin-right: 5px;
+    color: #aaa;
+  }
+
+  .detail-close {
+    float: right;
+    font-size: 11px;
+    color: #999;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  .detail-close:hover { color: #444; }
+</style>
+
+<div class="map-wrap">
+  <div class="map-title">Year 10–11 Physics · Concept Map</div>
+  <div class="map-sub">MYP 4–5 · IB Continuum · Dwight School London · Department of Natural & Unnatural Sciences</div>
+
+  <!-- Big ideas -->
+  <div class="big-ideas">
+    <div class="idea-card"><div class="idea-icon">🔬</div><div class="idea-name">Models</div></div>
+    <div class="idea-card"><div class="idea-icon">⚡</div><div class="idea-name">Interactions</div></div>
+    <div class="idea-card"><div class="idea-icon">🔋</div><div class="idea-name">Energy</div></div>
+    <div class="idea-card"><div class="idea-icon">♾</div><div class="idea-name">Conservation</div></div>
+    <div class="idea-card"><div class="idea-icon">📐</div><div class="idea-name">Proportionality</div></div>
+    <div class="idea-card"><div class="idea-icon">🌌</div><div class="idea-name">Scale</div></div>
+  </div>
+
+  <!-- Chemistry crossover banner -->
+  <div class="crossover-strip">
+    <div class="crossover-label">⚗ Chemistry<br>crossover</div>
+    <div class="crossover-items">
+      <span class="crossover-pill">Particle model</span>
+      <span class="crossover-pill">Atomic structure</span>
+      <span class="crossover-pill">Energy in reactions</span>
+      <span class="crossover-pill">Bonding & electrons</span>
+      <span class="crossover-pill">Electrolysis</span>
+      <span class="crossover-pill">Carbon cycle & climate</span>
+      <span class="crossover-pill">Radiation & isotopes</span>
+    </div>
+  </div>
+
+  <!-- Year 10 -->
+  <div class="year-row">
+    <div class="year-label y10-label">Year 10 · MYP 4 · Heavy Chemistry integration</div>
+    <div></div>
+  </div>
+
+  <div class="units-row units-y10" id="y10-row">
+    <div class="unit-card card-matter has-chem" onclick="showDetail('u1')">
+      <div class="unit-num">Unit 1</div>
+      <div class="unit-title">Models of Matter</div>
+      <div class="unit-q">How can invisible particles explain visible behaviour?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Particle model</span>
+        <span class="tag tag-phys">Pressure</span>
+        <span class="tag tag-chem">Atomic structure</span>
+        <span class="tag tag-chem">Periodic table</span>
+        <span class="tag tag-ib">Models · Scale</span>
+      </div>
+    </div>
+    <div class="unit-card card-energy has-chem" onclick="showDetail('u2')">
+      <div class="unit-num">Unit 2</div>
+      <div class="unit-title">Energy as a Conserved Quantity</div>
+      <div class="unit-q">Why does energy appear in so many forms?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">SHC · Power · Efficiency</span>
+        <span class="tag tag-chem">Exo/endothermic</span>
+        <span class="tag tag-chem">Bond energy</span>
+        <span class="tag tag-ib">Conservation</span>
+      </div>
+    </div>
+    <div class="unit-card card-electric has-chem" onclick="showDetail('u3')">
+      <div class="unit-num">Unit 3</div>
+      <div class="unit-title">Electricity, Atoms & Bonding</div>
+      <div class="unit-q">How do charged particles explain electricity and chemistry?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Current · Resistance</span>
+        <span class="tag tag-chem">Ionic · Covalent · Metallic</span>
+        <span class="tag tag-chem">Electrolysis</span>
+        <span class="tag tag-ib">Systems</span>
+      </div>
+    </div>
+    <div class="unit-card card-forces" onclick="showDetail('u4')">
+      <div class="unit-num">Unit 4</div>
+      <div class="unit-title">Forces & Interactions</div>
+      <div class="unit-q">Why do objects change motion?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Newton's Laws</span>
+        <span class="tag tag-phys">Vectors · Work</span>
+        <span class="tag tag-ib">Cause & effect</span>
+        <span class="tag tag-ib">Proportionality</span>
+      </div>
+    </div>
+    <div class="unit-card card-climate has-chem" onclick="showDetail('u5')">
+      <div class="unit-num">Unit 5</div>
+      <div class="unit-title">Climate, Atmosphere & Sustainability</div>
+      <div class="unit-q">How does science inform environmental decisions?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">IR radiation</span>
+        <span class="tag tag-phys">Energy balance</span>
+        <span class="tag tag-chem">Carbon cycle</span>
+        <span class="tag tag-chem">Pollutants</span>
+        <span class="tag tag-ib">Global context</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Year 11 -->
+  <div class="year-row" style="margin-top:8px;">
+    <div class="year-label y11-label">Year 11 · MYP 5 / Pre-DP · Abstract mathematical models</div>
+    <div></div>
+  </div>
+
+  <div class="units-row units-y11">
+    <div class="unit-card card-motion" onclick="showDetail('u6')">
+      <div class="unit-num">Unit 6</div>
+      <div class="unit-title">Motion & Mathematical Models</div>
+      <div class="unit-q">How can motion be represented mathematically?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">v-t graphs</span>
+        <span class="tag tag-phys">Kinematics</span>
+        <span class="tag tag-ib">Mathematical modelling</span>
+      </div>
+    </div>
+    <div class="unit-card card-waves" onclick="showDetail('u7')">
+      <div class="unit-num">Unit 7</div>
+      <div class="unit-title">Waves as a Universal Model</div>
+      <div class="unit-q">How can one model explain sound, light and communications?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">EM spectrum</span>
+        <span class="tag tag-phys">Refraction · Reflection</span>
+        <span class="tag tag-ib">Models · Patterns</span>
+      </div>
+    </div>
+    <div class="unit-card card-fields" onclick="showDetail('u8')">
+      <div class="unit-num">Unit 8</div>
+      <div class="unit-title">Fields & Action at a Distance</div>
+      <div class="unit-q">How can objects influence each other without touching?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Gravitational</span>
+        <span class="tag tag-phys">Electric · Magnetic</span>
+        <span class="tag tag-ib">Differences drive change</span>
+      </div>
+    </div>
+    <div class="unit-card card-em" onclick="showDetail('u9')">
+      <div class="unit-num">Unit 9</div>
+      <div class="unit-title">Electromagnetism & the Modern World</div>
+      <div class="unit-q">How is electricity generated and distributed?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Motors · Generators</span>
+        <span class="tag tag-phys">Transformers · Grid</span>
+        <span class="tag tag-ib">Energy transfer</span>
+      </div>
+    </div>
+    <div class="unit-card card-nuclear has-chem" onclick="showDetail('u10')">
+      <div class="unit-num">Unit 10</div>
+      <div class="unit-title">Nuclear Physics & Evidence</div>
+      <div class="unit-q">How do we know what atoms look like?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Radioactivity · Fission</span>
+        <span class="tag tag-chem">Isotopes · Nuclear eqns</span>
+        <span class="tag tag-ib">Nature of science</span>
+      </div>
+    </div>
+    <div class="unit-card card-space" onclick="showDetail('u11')">
+      <div class="unit-num">Unit 11</div>
+      <div class="unit-title">Space Physics</div>
+      <div class="unit-q">How do the same laws apply across the universe?</div>
+      <div class="unit-tags">
+        <span class="tag tag-phys">Orbits · Stars · Fusion</span>
+        <span class="tag tag-ib">Universality · Scale</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail panel -->
+  <div class="detail-panel" id="detail-panel">
+    <span class="detail-close" onclick="closeDetail()">✕ close</span>
+    <div class="detail-panel-title" id="dp-title"></div>
+    <div class="detail-panel-q" id="dp-q"></div>
+    <div class="detail-cols">
+      <div class="detail-col">
+        <div class="detail-col-title">Physics content</div>
+        <ul id="dp-phys"></ul>
+      </div>
+      <div class="detail-col">
+        <div class="detail-col-title">Chemistry links</div>
+        <ul id="dp-chem"></ul>
+      </div>
+      <div class="detail-col">
+        <div class="detail-col-title">IB concepts · Labs</div>
+        <ul id="dp-ib"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept progression table -->
+  <table class="prog-table">
+    <thead>
+      <tr>
+        <th>Big idea</th>
+        <th>Year 10 treatment</th>
+        <th>Year 11 treatment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-idea">Models</td>
+        <td class="col-y10">Particle model — explains state changes, pressure, density</td>
+        <td class="col-y11">Wave model, field model — same idea, new contexts</td>
+      </tr>
+      <tr>
+        <td class="col-idea">Cause & effect</td>
+        <td class="col-y10">Forces → changes in motion; temperature → particle energy</td>
+        <td class="col-y11">Nuclear decay chains; EM induction (flux → emf → current)</td>
+      </tr>
+      <tr>
+        <td class="col-idea">Conservation</td>
+        <td class="col-y10">Energy stores and transfers; charge in circuits</td>
+        <td class="col-y11">Momentum ideas; mass-energy in nuclear reactions</td>
+      </tr>
+      <tr>
+        <td class="col-idea">Proportionality</td>
+        <td class="col-y10">Hooke's law; density; F = ma</td>
+        <td class="col-y11">Wave equation; transformer ratios; orbital periods</td>
+      </tr>
+      <tr>
+        <td class="col-idea">Scale</td>
+        <td class="col-y10">Molecules → atoms → molar scale</td>
+        <td class="col-y11">Nuclei → planets → stellar distances</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer-stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+</div>
+
+<script>
+const units = {
+  u1: {
+    title: 'Unit 1 · Models of Matter',
+    q: 'How can invisible particles explain visible behaviour?',
+    phys: ['Particle model', 'Solids, liquids, gases', 'Density', 'Pressure in gases', 'Temperature & particle motion', 'Changes of state'],
+    chem: ['Atomic structure', 'Elements', 'Periodic table intro', 'Isotopes'],
+    ib: ['Models', 'Evidence', 'Scale', '— Labs —', 'Density of solids', 'Gas pressure demos', 'Brownian motion video']
+  },
+  u2: {
+    title: 'Unit 2 · Energy as a Conserved Quantity',
+    q: 'Why does energy appear in so many different forms?',
+    phys: ['Stores and transfers', 'Conservation of energy', 'Heating & SHC (qualitative)', 'Power', 'Efficiency'],
+    chem: ['Exothermic & endothermic', 'Bond breaking and making', 'Reaction profiles', 'Activation energy'],
+    ib: ['Conservation', 'Systems', '— Thread —', 'Chem energy ↔ thermal', '↔ mechanical energy']
+  },
+  u3: {
+    title: 'Unit 3 · Electricity, Atoms & Bonding',
+    q: 'How do charged particles explain both electricity and chemistry?',
+    phys: ['Charge', 'Current & potential difference', 'Resistance', 'Series circuits'],
+    chem: ['Electronic structure', 'Ionic bonding', 'Metallic bonding', 'Covalent bonding', 'Electrolysis'],
+    ib: ['Systems', '— Labs —', 'Electrolysis practical', 'Conductivity of materials', 'I-V characteristics']
+  },
+  u4: {
+    title: 'Unit 4 · Forces & Interactions',
+    q: 'Why do objects change motion?',
+    phys: ['Forces as vectors', 'Newton\'s Laws', 'Weight vs mass', 'Work done', 'Hooke\'s Law & springs'],
+    chem: ['— No chemistry link —'],
+    ib: ['Cause & effect', 'Proportionality', '— Labs —', 'Spring extension', 'Force & acceleration']
+  },
+  u5: {
+    title: 'Unit 5 · Climate, Atmosphere & Sustainability',
+    q: 'How does science inform environmental decisions?',
+    phys: ['Infrared radiation', 'Energy balance', 'Greenhouse effect'],
+    chem: ['Carbon cycle', 'Climate evidence', 'Atmospheric evolution', 'Pollutants'],
+    ib: ['Global contexts', 'Sustainability', '— Project —', 'Interdisciplinary project on climate science']
+  },
+  u6: {
+    title: 'Unit 6 · Motion & Mathematical Models',
+    q: 'How can motion be represented mathematically?',
+    phys: ['Speed, velocity, acceleration', 'Distance-time graphs', 'Velocity-time graphs', 'Equations of motion'],
+    chem: ['— No chemistry link —'],
+    ib: ['Mathematical modelling', 'Interpretation of evidence', '— Emphasis —', 'Extract meaning from graphs, not just substitution']
+  },
+  u7: {
+    title: 'Unit 7 · Waves as a Universal Model',
+    q: 'How can one model explain sound, light and communications?',
+    phys: ['Wave properties', 'Sound', 'Reflection & refraction', 'EM spectrum'],
+    chem: ['— No chemistry link —'],
+    ib: ['Models', 'Patterns', '— Thread —', 'Hearing, vision, comms, medical imaging all one model']
+  },
+  u8: {
+    title: 'Unit 8 · Fields & Action at a Distance',
+    q: 'How can objects influence one another without touching?',
+    phys: ['Gravitational fields', 'Electric fields', 'Magnetic fields', 'Field as primary object — forces arise from interactions'],
+    chem: ['— No chemistry link —'],
+    ib: ['Differences drive change', '— Key idea —', 'Field is the explanation; forces are consequences']
+  },
+  u9: {
+    title: 'Unit 9 · Electromagnetism & the Modern World',
+    q: 'How is electricity generated and distributed?',
+    phys: ['Solenoids & electromagnets', 'Motors', 'Generators', 'Transformers', 'National Grid'],
+    chem: ['— No chemistry link —'],
+    ib: ['Energy transfer', 'Systems', '— Project —', 'Design an electrical transmission network']
+  },
+  u10: {
+    title: 'Unit 10 · Nuclear Physics & Evidence',
+    q: 'How do we know what atoms look like?',
+    phys: ['Rutherford experiment', 'Nuclear model', 'Radioactivity', 'Half-life', 'Fission & Fusion', 'Sun\'s energy source'],
+    chem: ['Isotopes', 'Nuclear equations'],
+    ib: ['Nature of science', 'Evidence', 'Model revision', '— Best unit for showing how science changes']
+  },
+  u11: {
+    title: 'Unit 11 · Space Physics',
+    q: 'How do the same laws apply across the universe?',
+    phys: ['Solar system', 'Orbits & gravity', 'Stars & life cycles', 'Stellar fusion'],
+    chem: ['— No chemistry link —'],
+    ib: ['Scale', 'Universality', '— Synthesis —', 'Revisits forces, energy, waves, nuclear physics']
+  }
+};
+
+function showDetail(id) {
+  const u = units[id];
+  document.getElementById('dp-title').textContent = u.title;
+  document.getElementById('dp-q').textContent = u.q;
+
+  function fillList(elId, arr) {
+    const el = document.getElementById(elId);
+    el.innerHTML = arr.map(i => `<li>${i}</li>`).join('');
+  }
+
+  fillList('dp-phys', u.phys);
+  fillList('dp-chem', u.chem);
+  fillList('dp-ib', u.ib);
+
+  const panel = document.getElementById('detail-panel');
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('visible');
+}
+</script>
