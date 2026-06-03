@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pump work experiment — HG-450</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --border: rgba(255,255,255,0.09);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8e6e0;
+    --muted: #888780;
+    --blue: #378ADD;
+    --blue-dim: rgba(55,138,221,0.15);
+    --teal: #1D9E75;
+    --teal-dim: rgba(29,158,117,0.12);
+    --amber: #BA7517;
+    --amber-dim: rgba(186,117,23,0.12);
+    --coral: #D85A30;
+    --radius: 10px;
+    --font: 'IBM Plex Sans', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.6;
+    padding: 2rem 1rem 4rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500&display=swap');
+
+  h1 { font-size: 1.3rem; font-weight: 500; letter-spacing: -0.01em; margin-bottom: .25rem; }
+  h2 { font-size: .8rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  h3 { font-size: .85rem; font-weight: 500; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .75rem; border-bottom: 0.5px solid var(--border); padding-bottom: .5rem; }
+
+  .header { margin-bottom: 2rem; border-bottom: 0.5px solid var(--border); padding-bottom: 1.25rem; }
+  .chip { display: inline-block; font-size: .72rem; font-family: var(--mono); padding: 2px 8px; border-radius: 4px; background: var(--bg3); border: 0.5px solid var(--border2); color: var(--muted); margin-left: .5rem; vertical-align: middle; }
+
+  .section { margin-bottom: 2rem; }
+  .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .75rem; }
+
+  .metric { background: var(--bg3); border-radius: 7px; padding: .7rem .9rem; }
+  .metric-label { font-size: .72rem; color: var(--muted); margin-bottom: 3px; font-family: var(--mono); }
+  .metric-val { font-size: 1.25rem; font-weight: 500; font-family: var(--mono); }
+  .metric-unit { font-size: .72rem; color: var(--muted); margin-left: 3px; }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: .7rem; }
+  .slider-row label { font-size: .8rem; color: var(--muted); min-width: 150px; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+  .slider-val { font-size: .8rem; font-family: var(--mono); font-weight: 500; min-width: 60px; text-align: right; color: var(--text); }
+
+  .entry-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .entry-row span.lbl { font-size: .78rem; color: var(--muted); }
+  .entry-row span.num { font-size: .75rem; font-family: var(--mono); color: var(--blue); min-width: 100px; }
+  .entry-row input[type=number] {
+    width: 82px; padding: 5px 8px; font-size: .8rem;
+    border: 0.5px solid var(--border2); border-radius: 6px;
+    background: var(--bg3); color: var(--text); font-family: var(--mono);
+  }
+  .entry-row input:focus { outline: none; border-color: var(--blue); }
+  .delbtn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: .8rem; padding: 2px 6px; }
+  .delbtn:hover { color: var(--coral); }
+
+  button.add { background: none; border: 0.5px solid var(--border2); border-radius: 6px; padding: 6px 14px; font-size: .8rem; color: var(--text); cursor: pointer; margin-top: 4px; }
+  button.add:hover { background: var(--bg3); }
+
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: .75rem; color: var(--muted); margin-bottom: .6rem; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .swatch { width: 22px; height: 2px; border-radius: 1px; display: inline-block; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+  th { text-align: left; font-weight: 500; color: var(--muted); padding: 4px 8px; border-bottom: 0.5px solid var(--border); font-family: var(--mono); font-size: .72rem; }
+  td { padding: 5px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); font-family: var(--mono); }
+  tr:last-child td { border-bottom: none; }
+
+  .note { font-size: .75rem; color: var(--muted); margin-top: .6rem; line-height: 1.5; }
+  .eq { font-family: var(--mono); font-size: .8rem; color: var(--blue); margin-top: .4rem; }
+
+  .footer { font-size: .68rem; color: var(--muted); text-align: center; margin-top: 3rem; border-top: 0.5px solid var(--border); padding-top: 1rem; letter-spacing: .04em; }
+
+  svg text { font-family: var(--font); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pump work experiment <span class="chip">HG-450 · 60W · 240V · h_max 3m</span></h1>
+  <h2>Flow rate vs lift height — work done by the pump</h2>
+</div>
+
+<!-- ── APPARATUS DIAGRAM ── -->
+<div class="section">
+  <h3>Apparatus</h3>
+  <div class="card" style="padding: 1rem;">
+<svg width="100%" viewBox="0 0 760 520" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Lab apparatus diagram</title>
+  <desc>Pump in sink below bench; tube rises h1 to bench then h2 to open cylinder; Geopacks meter at cylinder base; water returns to sink.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Floor -->
+  <line x1="40" y1="490" x2="520" y2="490" stroke="#888780" stroke-width="1" opacity="0.3"/>
+
+  <!-- Bench surface -->
+  <rect x="40" y="295" width="300" height="11" rx="2" fill="#888780" opacity="0.18"/>
+  <line x1="40" y1="295" x2="340" y2="295" stroke="#888780" stroke-width="1" opacity="0.45"/>
+  <!-- Bench legs -->
+  <rect x="55" y="306" width="9" height="184" rx="2" fill="#888780" opacity="0.1"/>
+  <rect x="305" y="306" width="9" height="184" rx="2" fill="#888780" opacity="0.1"/>
+
+  <!-- Sink walls -->
+  <rect x="95" y="370" width="185" height="118" rx="5" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.3"/>
+  <rect x="95" y="370" width="185" height="118" rx="5" fill="#378ADD" opacity="0.03"/>
+  <!-- Water surface -->
+  <line x1="99" y1="435" x2="276" y2="435" stroke="#378ADD" stroke-width="1" stroke-dasharray="4 3" opacity="0.4"/>
+  <text x="190" y="475" text-anchor="middle" font-size="11" fill="#888780" opacity="0.6">sink</text>
+
+  <!-- Pump body -->
+  <rect x="153" y="437" width="68" height="32" rx="7" fill="#1e1e1e" stroke="#888780" stroke-width="1" opacity="0.9"/>
+  <text x="187" y="457" text-anchor="middle" font-size="11" fill="#e8e6e0" font-weight="500">pump</text>
+
+  <!-- Tube: pump → bench (h1) -->
+  <line x1="182" y1="437" x2="182" y2="295" stroke="#378ADD" stroke-width="3" stroke-linecap="round"/>
+  <line x1="190" y1="437" x2="190" y2="295" stroke="#378ADD" stroke-width="1" opacity="0.3" stroke-linecap="round"/>
+
+  <!-- Tube: bench → cylinder top (h2) -->
+  <line x1="182" y1="295" x2="182" y2="110" stroke="#378ADD" stroke-width="3" stroke-linecap="round"/>
+  <line x1="190" y1="295" x2="190" y2="110" stroke="#378ADD" stroke-width="1" opacity="0.3" stroke-linecap="round"/>
+
+  <!-- Cylinder (open tube) -->
+  <rect x="158" y="85" width="54" height="145" rx="4" fill="#378ADD" opacity="0.1" stroke="#378ADD" stroke-width="1.5"/>
+  <!-- open top dashes -->
+  <line x1="158" y1="85" x2="212" y2="85" stroke="#378ADD" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>
+  <text x="185" y="78" text-anchor="middle" font-size="10" fill="#378ADD" opacity="0.7">open top</text>
+  <!-- water level in cylinder -->
+  <rect x="160" y="170" width="50" height="58" rx="2" fill="#378ADD" opacity="0.2"/>
+  <line x1="160" y1="170" x2="210" y2="170" stroke="#378ADD" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+
+  <!-- Geopacks meter -->
+  <rect x="222" y="215" width="100" height="34" rx="7" fill="#1D9E75" opacity="0.18" stroke="#1D9E75" stroke-width="1"/>
+  <text x="272" y="227" text-anchor="middle" font-size="10" fill="#1D9E75" font-weight="500">Geopacks meter</text>
+  <text x="272" y="241" text-anchor="middle" font-size="10" fill="#1D9E75">catches outflow</text>
+  <!-- leader -->
+  <line x1="222" y1="232" x2="212" y2="232" stroke="#1D9E75" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.6"/>
+
+  <!-- Return flow arrow -->
+  <path d="M272 249 Q272 280 245 305 Q225 320 210 370" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.5" marker-end="url(#arr)"/>
+  <text x="285" y="300" font-size="10" fill="#888780">return flow</text>
+
+  <!-- Faucet (separate scenario on bench) -->
+  <rect x="264" y="262" width="38" height="22" rx="4" fill="#1e1e1e" stroke="#888780" stroke-width="0.8" opacity="0.7"/>
+  <text x="283" y="277" text-anchor="middle" font-size="10" fill="#888780">tap</text>
+  <line x1="283" y1="284" x2="283" y2="306" stroke="#888780" stroke-width="1" stroke-dasharray="3 3" opacity="0.4" marker-end="url(#arr)"/>
+  <text x="292" y="300" font-size="10" fill="#888780" opacity="0.6">faucet scenario</text>
+
+  <!-- ── Dimension arrows ── -->
+  <!-- h1 -->
+  <line x1="128" y1="437" x2="128" y2="295" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.55" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="120" y="370" text-anchor="middle" font-size="11" fill="#888780" transform="rotate(-90,120,370)">h₁ fixed</text>
+
+  <!-- h2 -->
+  <line x1="128" y1="295" x2="128" y2="85" stroke="#D85A30" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.7" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="120" y="190" text-anchor="middle" font-size="11" fill="#D85A30" transform="rotate(-90,120,190)">h₂ variable</text>
+
+  <!-- h total -->
+  <line x1="90" y1="437" x2="90" y2="85" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.3" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <text x="82" y="261" text-anchor="middle" font-size="10" fill="#888780" opacity="0.5" transform="rotate(-90,82,261)">h = h₁+h₂</text>
+
+  <!-- bench level ref -->
+  <line x1="55" y1="295" x2="145" y2="295" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.25"/>
+
+  <!-- ── Legend / callout box ── -->
+  <rect x="480" y="60" width="260" height="175" rx="9" fill="#161616" stroke="#888780" stroke-width="0.5" opacity="0.8"/>
+  <text x="495" y="82" font-size="11" fill="#888780" font-weight="500" opacity="0.9">Key</text>
+  <line x1="495" y1="97" x2="530" y2="97" stroke="#378ADD" stroke-width="2.5"/>
+  <text x="537" y="101" font-size="11" fill="#888780">pressurised (pump)</text>
+  <line x1="495" y1="117" x2="530" y2="117" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="537" y="121" font-size="11" fill="#888780">return / gravity</text>
+  <line x1="495" y1="137" x2="530" y2="137" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text x="537" y="141" font-size="11" fill="#D85A30">h₂ — you adjust this</text>
+  <line x1="495" y1="157" x2="530" y2="157" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.6"/>
+  <text x="537" y="161" font-size="11" fill="#888780">h₁ — measure once</text>
+
+  <rect x="488" y="172" width="244" height="52" rx="6" fill="#0f0f0f" stroke="#D85A30" stroke-width="0.7" opacity="0.8"/>
+  <text x="610" y="188" text-anchor="middle" font-size="11" fill="#e8e6e0">Total lift h = h₁ + h₂</text>
+  <text x="610" y="204" text-anchor="middle" font-size="11" fill="#378ADD">W = ρg(h₁+h₂)·V</text>
+  <text x="610" y="218" text-anchor="middle" font-size="10" fill="#888780">h₁ is always in play</text>
+
+  <!-- annotation labels -->
+  <text x="370" y="100" font-size="11" fill="#e8e6e0" opacity="0.8">cylinder</text>
+  <line x1="365" y1="103" x2="214" y2="130" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 2" opacity="0.4" marker-end="url(#arr)"/>
+
+  <text x="370" y="233" font-size="11" fill="#1D9E75" opacity="0.9">flow meter</text>
+  <line x1="368" y1="230" x2="322" y2="230" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="3 2" opacity="0.5" marker-end="url(#arr)"/>
+
+  <text x="370" y="455" font-size="11" fill="#e8e6e0" opacity="0.7">pump</text>
+  <line x1="368" y1="452" x2="221" y2="452" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 2" opacity="0.4" marker-end="url(#arr)"/>
+</svg>
+  </div>
+</div>
+
+<!-- ── SETUP INPUTS ── -->
+<div class="section">
+  <h3>Step 1 — one-off setup measurements</h3>
+  <div class="card">
+    <div class="slider-row">
+      <label>h₁ — sink floor to bench (m)</label>
+      <input type="range" id="h1" min="0.05" max="1.5" step="0.05" value="0.30">
+      <span class="slider-val" id="h1out">0.30 m</span>
+    </div>
+    <div class="slider-row" style="margin-bottom:0">
+      <label>Time per reading (s)</label>
+      <input type="range" id="dur" min="10" max="300" step="10" value="60">
+      <span class="slider-val" id="durout">60 s</span>
+    </div>
+    <p class="note">Measure h₁ with a tape measure from the pump outlet up to the bench surface. It stays fixed throughout — the calculator adds it to every reading automatically.</p>
+  </div>
+</div>
+
+<!-- ── READINGS ── -->
+<div class="section">
+  <h3>Step 2 — enter readings</h3>
+  <div class="card">
+    <p class="note" style="margin-bottom:.9rem">For each cylinder height, measure h₂ (bench surface to top of cylinder) with a ruler. Read Q from the Geopacks meter in L/min.</p>
+    <div style="display:grid;grid-template-columns:18px 90px 1fr 90px 1fr 28px;gap:6px 8px;align-items:center;font-size:.72rem;color:var(--muted);font-family:var(--mono);margin-bottom:6px;padding-bottom:6px;border-bottom:0.5px solid var(--border);">
+      <span>#</span><span>h₂ (m)</span><span>h total</span><span>Q (L/min)</span><span></span><span></span>
+    </div>
+    <div id="entries"></div>
+    <button class="add" onclick="addRow()">+ add reading</button>
+  </div>
+</div>
+
+<!-- ── PUMP MODEL ── -->
+<div class="section">
+  <h3>Pump model — predicted curve</h3>
+  <div class="card">
+    <p class="note" style="margin-bottom:.8rem">The model uses a linear pump curve. Calibrate Q_max from your first reading at the lowest h₂ (ideally h₂ = 0, cylinder resting on bench).</p>
+    <div class="slider-row">
+      <label>Q_max — free flow (L/min)</label>
+      <input type="range" id="qmax" min="5" max="60" step="1" value="25">
+      <span class="slider-val" id="qmaxout">25 L/min</span>
+    </div>
+    <div class="slider-row" style="margin-bottom:0">
+      <label>h_max — stall height (m)</label>
+      <input type="range" id="hmax" min="1" max="5" step="0.1" value="3.0">
+      <span class="slider-val" id="hmaxout">3.0 m</span>
+    </div>
+    <p class="eq">Q(h) = Q_max · (1 − h / h_max)</p>
+  </div>
+</div>
+
+<!-- ── CHART ── -->
+<div class="section">
+  <h3>Q and W vs total lift height h</h3>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--blue)"></span>predicted Q (L/min)</span>
+    <span><span class="dot" style="background:var(--coral)"></span>measured Q</span>
+    <span><span class="dot" style="background:var(--teal)"></span>work done W (J)</span>
+  </div>
+  <div style="position:relative;height:300px">
+    <canvas id="chart" role="img" aria-label="Flow rate Q and work W versus total lift height h. Predicted Q falls linearly; W peaks at mid-range h.">Q decreases with height; W peaks at intermediate height.</canvas>
+  </div>
+</div>
+
+<!-- ── RESULTS TABLE ── -->
+<div class="section" id="restable" style="display:none">
+  <h3>Results summary</h3>
+  <div class="card" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>h₂ (m)</th><th>h total (m)</th><th>Q (L/min)</th>
+          <th>Volume (L)</th><th>W (J)</th><th>P useful (W)</th><th>η (%)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p class="note" style="margin-top:.8rem">η = useful mechanical power ÷ 60 W electrical input. Real efficiency is lower due to motor heat and pipe friction.</p>
+  </div>
+</div>
+
+<div class="footer">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+
+<script>
+const rho = 1000, g = 9.81, P_in = 60;
+let chart = null, rows = [], rid = 0;
+
+function el(id) { return document.getElementById(id); }
+function v(id) { return +el(id).value; }
+
+function qPred(h) { return Math.max(0, v('qmax') * (1 - h / v('hmax'))); }
+
+function getMeas() {
+  return rows.map(r => {
+    const h2 = +r.h2i.value, Q = +r.qi.value;
+    if (isNaN(h2) || isNaN(Q) || h2 < 0 || Q < 0) return null;
+    return { h2, h: parseFloat((h2 + v('h1')).toFixed(3)), Q, t: v('dur') };
+  }).filter(Boolean);
+}
+
+function buildCurve() {
+  const hmax = v('hmax'), pts = [];
+  for (let i = 0; i <= 60; i++) {
+    const h = hmax * i / 60;
+    pts.push({ x: parseFloat(h.toFixed(3)), y: parseFloat(qPred(h).toFixed(3)) });
+  }
+  return pts;
+}
+
+function calcW(p) {
+  const Qm3s = p.Q / 60 / 1000;
+  const V = Qm3s * p.t;
+  const W = rho * g * p.h * V;
+  return { V: V * 1000, W, Pu: W / p.t, eff: (W / p.t) / P_in * 100 };
+}
+
+function update() {
+  el('h1out').textContent = v('h1').toFixed(2) + ' m';
+  el('durout').textContent = v('dur') + ' s';
+  el('qmaxout').textContent = v('qmax') + ' L/min';
+  el('hmaxout').textContent = v('hmax').toFixed(1) + ' m';
+
+  rows.forEach(r => {
+    const h2 = +r.h2i.value;
+    r.htotSpan.textContent = isNaN(h2) ? '' : '→ h = ' + (h2 + v('h1')).toFixed(2) + ' m';
+  });
+
+  const meas = getMeas();
+  const curve = buildCurve();
+  const wpts = meas.map(p => { const c = calcW(p); return { x: p.h, y: parseFloat(c.W.toFixed(1)) }; });
+
+  if (!chart) {
+    chart = new Chart(el('chart'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          { label: 'Predicted Q', data: curve, type: 'line', yAxisID: 'yQ', borderColor: '#378ADD', backgroundColor: 'transparent', pointRadius: 0, borderWidth: 2, tension: 0, order: 3 },
+          { label: 'Measured Q', data: meas.map(p => ({ x: p.h, y: p.Q })), yAxisID: 'yQ', backgroundColor: '#D85A30', pointRadius: 6, borderColor: '#993C1D', borderWidth: 1.5, order: 1 },
+          { label: 'Work W', data: wpts, yAxisID: 'yW', backgroundColor: '#1D9E75', pointRadius: 6, borderColor: '#0F6E56', borderWidth: 1.5, order: 2 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: p => {
+            if (p.datasetIndex === 0) return ` pred Q = ${p.parsed.y.toFixed(1)} L/min`;
+            if (p.datasetIndex === 1) return ` h = ${p.parsed.x.toFixed(2)} m   Q = ${p.parsed.y.toFixed(1)} L/min`;
+            return ` h = ${p.parsed.x.toFixed(2)} m   W = ${p.parsed.y.toFixed(0)} J`;
+          }}}
+        },
+        scales: {
+          x: { title: { display: true, text: 'Total lift height h (m)', color: '#888780' }, min: 0, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888780' } },
+          yQ: { title: { display: true, text: 'Q (L/min)', color: '#378ADD' }, min: 0, position: 'left', grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#378ADD' } },
+          yW: { title: { display: true, text: 'Work W (J)', color: '#1D9E75' }, min: 0, position: 'right', grid: { display: false }, ticks: { color: '#1D9E75' } }
+        }
+      }
+    });
+  } else {
+    chart.data.datasets[0].data = curve;
+    chart.data.datasets[1].data = meas.map(p => ({ x: p.h, y: p.Q }));
+    chart.data.datasets[2].data = wpts;
+    chart.update('none');
+  }
+
+  if (meas.length === 0) { el('restable').style.display = 'none'; return; }
+  el('restable').style.display = 'block';
+  el('tbody').innerHTML = meas.map((p, i) => {
+    const c = calcW(p);
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${p.h2.toFixed(2)}</td>
+      <td>${p.h.toFixed(2)}</td>
+      <td>${p.Q.toFixed(1)}</td>
+      <td>${c.V.toFixed(1)}</td>
+      <td>${c.W.toFixed(0)}</td>
+      <td>${c.Pu.toFixed(1)}</td>
+      <td>${c.eff.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function addRow() {
+  const id = rid++;
+  const div = document.createElement('div');
+  div.className = 'entry-row';
+  div.innerHTML = `
+    <span class="lbl" style="min-width:18px;color:var(--muted);font-size:.75rem">${rows.length + 1}.</span>
+    <span class="lbl">h₂</span>
+    <input type="number" id="h2-${id}" min="0" max="2.5" step="0.05" placeholder="m">
+    <span class="num" id="htot-${id}"></span>
+    <span class="lbl">Q</span>
+    <input type="number" id="q-${id}" min="0" max="60" step="0.1" placeholder="L/min">
+    <button class="delbtn" onclick="removeRow(${id})" aria-label="Remove">✕</button>`;
+  el('entries').appendChild(div);
+  const h2i = document.getElementById('h2-' + id);
+  const qi = document.getElementById('q-' + id);
+  const htotSpan = document.getElementById('htot-' + id);
+  rows.push({ id, div, h2i, qi, htotSpan });
+  h2i.addEventListener('input', update);
+  qi.addEventListener('input', update);
+  update();
+}
+
+function removeRow(id) {
+  rows = rows.filter(r => { if (r.id === id) { r.div.remove(); return false; } return true; });
+  update();
+}
+
+['h1', 'dur', 'qmax', 'hmax'].forEach(id => el(id).addEventListener('input', update));
+
+addRow(); addRow(); addRow();
+update();
+</script>
+</body>
+</html>
