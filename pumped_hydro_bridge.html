@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From bench to grid — pumped-storage hydroelectricity</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+
+:root {
+  --bg:     #0d0d0d;
+  --bg2:    #141414;
+  --bg3:    #1a1a1a;
+  --bg4:    #202020;
+  --border: rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
+  --text:   #dedad2;
+  --muted:  #7a7872;
+  --faint:  #3a3830;
+  --blue:   #4a9eda;
+  --teal:   #2aaa80;
+  --amber:  #c98a1a;
+  --coral:  #d05a38;
+  --green:  #5a9e40;
+  --sans:   'IBM Plex Sans', system-ui, sans-serif;
+  --mono:   'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.65;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.25rem 5rem;
+}
+
+/* ── Typography ── */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  margin-bottom: .35rem;
+}
+.page-sub {
+  font-size: .85rem;
+  color: var(--muted);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+.section-label {
+  font-size: .7rem;
+  font-family: var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: .6rem;
+  letter-spacing: -.01em;
+}
+p { font-size: .9rem; color: var(--text); line-height: 1.7; }
+p + p { margin-top: .6rem; }
+em { font-style: italic; color: var(--muted); }
+
+/* ── Layout ── */
+header {
+  padding: 2.5rem 0 1.5rem;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+.stage {
+  margin-bottom: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 0.5px solid var(--border);
+}
+.stage:last-child { border-bottom: none; }
+
+.card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: .9rem;
+}
+.card-accent-blue  { border-left: 2px solid var(--blue);  border-radius: 0 10px 10px 0; }
+.card-accent-teal  { border-left: 2px solid var(--teal);  border-radius: 0 10px 10px 0; }
+.card-accent-amber { border-left: 2px solid var(--amber); border-radius: 0 10px 10px 0; }
+.card-accent-coral { border-left: 2px solid var(--coral); border-radius: 0 10px 10px 0; }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .75rem; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .75rem; }
+
+/* ── Metric tiles ── */
+.tile {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+}
+.tile-label {
+  font-size: .68rem;
+  font-family: var(--mono);
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: .3rem;
+}
+.tile-val {
+  font-size: 1.4rem;
+  font-weight: 500;
+  font-family: var(--mono);
+  line-height: 1.1;
+}
+.tile-unit {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-left: 3px;
+  font-family: var(--mono);
+}
+.tile-sub {
+  font-size: .7rem;
+  color: var(--muted);
+  margin-top: .25rem;
+  font-family: var(--mono);
+}
+.col-blue  { color: var(--blue); }
+.col-teal  { color: var(--teal); }
+.col-amber { color: var(--amber); }
+.col-coral { color: var(--coral); }
+.col-green { color: var(--green); }
+
+/* ── Inputs ── */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: .65rem;
+}
+.input-row label {
+  font-size: .8rem;
+  color: var(--muted);
+  min-width: 180px;
+  font-family: var(--mono);
+}
+.input-row input[type=range] {
+  flex: 1;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+.input-row input[type=number] {
+  width: 90px;
+  padding: 5px 9px;
+  font-size: .82rem;
+  font-family: var(--mono);
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+}
+.input-row input:focus { outline: none; border-color: var(--blue); }
+.val-out {
+  font-size: .82rem;
+  font-family: var(--mono);
+  font-weight: 500;
+  min-width: 72px;
+  text-align: right;
+  color: var(--text);
+}
+
+/* ── Efficiency bar ── */
+.eff-track {
+  background: var(--bg4);
+  border-radius: 4px;
+  height: 22px;
+  overflow: hidden;
+  position: relative;
+  margin: .5rem 0;
+}
+.eff-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  transition: width .35s ease;
+  font-size: .72rem;
+  font-family: var(--mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.eff-label { font-size: .72rem; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; }
+
+/* ── Flow diagram ── */
+.flow-strip {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 1rem 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.flow-box {
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 8px;
+  padding: .55rem .8rem;
+  font-size: .75rem;
+  font-family: var(--mono);
+  white-space: nowrap;
+  text-align: center;
+  flex-shrink: 0;
+}
+.flow-arrow {
+  font-size: .9rem;
+  color: var(--muted);
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.flow-loss {
+  font-size: .65rem;
+  color: var(--coral);
+  font-family: var(--mono);
+  text-align: center;
+  margin-top: 3px;
+}
+
+/* ── Highlight box ── */
+.highlight {
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  margin: 1rem 0;
+}
+.highlight-q {
+  font-size: .88rem;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.65;
+}
+.highlight-q::before { content: '"'; color: var(--muted); }
+.highlight-q::after  { content: '"'; color: var(--muted); }
+
+/* ── Sankey-style energy bar ── */
+.energy-bar-wrap { margin: .8rem 0; }
+.energy-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.energy-bar-name { font-size: .72rem; font-family: var(--mono); color: var(--muted); min-width: 120px; }
+.energy-bar-track { flex: 1; background: var(--bg4); border-radius: 3px; height: 16px; overflow: hidden; }
+.energy-bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.energy-bar-num { font-size: .72rem; font-family: var(--mono); min-width: 52px; text-align: right; }
+
+/* ── Scale comparison ── */
+.scale-row {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  padding: .55rem 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: .82rem;
+}
+.scale-row:last-child { border-bottom: none; }
+.scale-key { font-family: var(--mono); color: var(--muted); min-width: 160px; font-size: .75rem; }
+.scale-val { font-family: var(--mono); font-weight: 500; font-size: .95rem; }
+
+/* ── Tension cards ── */
+.tension-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .75rem;
+  margin-top: .8rem;
+}
+.tension-card {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: 9px;
+  padding: .9rem 1rem;
+}
+.tension-head {
+  font-size: .7rem;
+  font-family: var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .5rem;
+}
+.tension-body { font-size: .82rem; color: var(--muted); line-height: 1.55; }
+
+/* ── Chip ── */
+.chip {
+  display: inline-block;
+  font-size: .68rem;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  color: var(--muted);
+  vertical-align: middle;
+  margin-left: 5px;
+}
+.chip-blue  { border-color: var(--blue);  color: var(--blue); }
+.chip-teal  { border-color: var(--teal);  color: var(--teal); }
+.chip-amber { border-color: var(--amber); color: var(--amber); }
+
+/* ── Footer ── */
+footer {
+  font-size: .65rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 3rem;
+  border-top: 0.5px solid var(--border);
+  padding-top: 1rem;
+  letter-spacing: .05em;
+  font-family: var(--mono);
+}
+
+/* ── Eq display ── */
+.eq {
+  font-family: var(--mono);
+  font-size: .82rem;
+  color: var(--blue);
+  background: var(--bg3);
+  border-radius: 6px;
+  padding: .4rem .8rem;
+  display: inline-block;
+  margin: .3rem 0;
+}
+
+@media (max-width: 600px) {
+  .grid3, .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .tension-grid { grid-template-columns: 1fr; }
+  .input-row label { min-width: 130px; font-size: .72rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="page-sub">MYP Sciences · Energy &amp; Conservation</p>
+  <h1 class="page-title">From bench to grid</h1>
+  <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">Your two experiments — pump and motor — are the same machine as a pumped-storage hydroelectric station. This tool connects the numbers.</p>
+</header>
+
+<!-- ══════════════════════════════════
+     STAGE 1 — YOUR EXPERIMENTS
+     ══════════════════════════════════ -->
+<div class="stage">
+  <p class="section-label">Stage 1</p>
+  <h2 class="section-title">What your experiments measured</h2>
+
+  <p>In both experiments, electrical energy was converted to gravitational potential energy. The pump moved water; the motor lifted a mass. Neither was perfectly efficient — some energy left the system as heat and sound.</p>
+
+  <div class="flow-strip" style="margin:1.2rem 0">
+    <div class="flow-box" style="border-color:var(--blue);color:var(--blue)">Electrical<br>energy in</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Motor /<br>pump</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--teal);color:var(--teal)">Gravitational<br>PE gained</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box" style="border-color:var(--coral);color:var(--coral)">Heat &amp;<br>sound lost</div>
+  </div>
+
+  <div class="card card-accent-blue" style="margin-bottom:.75rem">
+    <p class="section-label" style="color:var(--blue)">Experiment A — pump lifting water</p>
+    <div class="input-row">
+      <label>Pump efficiency η_pump</label>
+      <input type="range" id="etaPump" min="1" max="60" step="1" value="12">
+      <span class="val-out" id="etaPumpOut">12 %</span>
+    </div>
+    <div class="input-row" style="margin-bottom:0">
+      <label>Flow rate Q measured</label>
+      <input type="range" id="qMeas" min="1" max="30" step="0.5" value="8">
+      <span class="val-out" id="qMeasOut">8.0 L/min</span>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">η = (ρgQh) ÷ P_input × 100. Enter the value your experiment gave.</p>
+  </div>
+
+  <div class="card card-accent-teal">
+    <p class="section-label" style="color:var(--teal)">Experiment B — motor lifting mass</p>
+    <div class="input-row">
+      <label>Motor efficiency η_motor</label>
+      <input type="range" id="etaMotor" min="1" max="95" step="1" value="45">
+      <span class="val-out" id="etaMotorOut">45 %</span>
+    </div>
+    <div class="input-row" style="margin-bottom:0">
+      <label>Motor power input</label>
+      <input type="range" id="motorPow" min="1" max="30" step="0.5" value="6">
+      <span class="val-out" id="motorPowOut">6.0 W</span>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">η = (mgh/t) ÷ P_input × 100. A small hobby motor typically lands between 30–60%.</p>
+  </div>
+
+  <div class="card" style="margin-top:.5rem">
+    <p class="section-label">Energy breakdown — where did the input go?</p>
+    <p class="eff-label">Pump (60 W input)</p>
+    <div class="energy-bar-wrap">
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Useful (PE of water)</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill col-blue" id="barPumpUseful" style="background:var(--blue)"></div></div>
+        <span class="energy-bar-num col-blue" id="barPumpUsefulN">—</span>
+      </div>
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Lost (heat / friction)</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill" id="barPumpLost" style="background:var(--coral)"></div></div>
+        <span class="energy-bar-num col-coral" id="barPumpLostN">—</span>
+      </div>
+    </div>
+    <p class="eff-label" style="margin-top:.6rem">Motor (<span id="motorPowLabel">6.0</span> W input)</p>
+    <div class="energy-bar-wrap">
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Useful (PE of mass)</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill" id="barMotorUseful" style="background:var(--teal)"></div></div>
+        <span class="energy-bar-num col-teal" id="barMotorUsefulN">—</span>
+      </div>
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Lost (heat / friction)</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill" id="barMotorLost" style="background:var(--coral)"></div></div>
+        <span class="energy-bar-num col-coral" id="barMotorLostN">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     STAGE 2 — THE SAME PHYSICS, SCALED
+     ══════════════════════════════════ -->
+<div class="stage">
+  <p class="section-label">Stage 2</p>
+  <h2 class="section-title">The same machine, 10<sup>9</sup> times bigger</h2>
+
+  <p>A pumped-storage hydroelectric station is your two experiments run back-to-back. At night — when demand is low and wind or nuclear generation is high — surplus electricity pumps water uphill into a reservoir. During the day — when demand peaks — water flows back down through turbines to regenerate electricity.</p>
+
+  <p style="margin-top:.6rem">The reservoir is a <em>gravitational battery</em>. The physics is identical to your bench experiment: W = ρghV. The only differences are scale and round-trip efficiency.</p>
+
+  <div class="flow-strip" style="margin:1.4rem 0">
+    <div class="flow-box" style="border-color:var(--blue);color:var(--blue)">Grid surplus<br>(night)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Pump<br>motors</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--teal);color:var(--teal)">Upper<br>reservoir</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Turbines<br>+ generators</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--blue);color:var(--blue)">Grid output<br>(peak day)</div>
+  </div>
+
+  <div class="card card-accent-amber">
+    <p class="section-label" style="color:var(--amber)">Dinorwig — the UK's largest pumped-storage station</p>
+    <div class="grid3" style="margin-bottom:.9rem">
+      <div class="tile">
+        <p class="tile-label">Head height</p>
+        <p class="tile-val col-amber">494<span class="tile-unit">m</span></p>
+        <p class="tile-sub">upper to lower lake</p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Upper reservoir vol.</p>
+        <p class="tile-val col-amber">7<span class="tile-unit">million m³</span></p>
+        <p class="tile-sub">Marchlyn Mawr</p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Output capacity</p>
+        <p class="tile-val col-amber">1.728<span class="tile-unit">GW</span></p>
+        <p class="tile-sub">for ~5–6 hours</p>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="tile">
+        <p class="tile-label">Round-trip efficiency</p>
+        <p class="tile-val col-teal">~75<span class="tile-unit">%</span></p>
+        <p class="tile-sub">pump × turbine</p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Energy stored</p>
+        <p class="tile-val col-amber">~9.1<span class="tile-unit">GWh</span></p>
+        <p class="tile-sub">W = ρghV</p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Location</p>
+        <p class="tile-val" style="font-size:.95rem;color:var(--text)">Snowdonia</p>
+        <p class="tile-sub">National Park, Wales</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-label">Round-trip efficiency — where the 25% goes</p>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem">Pump phase losses + turbine phase losses + transmission losses. Your pump experiment gives you intuition for why this is hard to minimise.</p>
+    <div class="input-row">
+      <label>η_pump_station</label>
+      <input type="range" id="etaStation" min="50" max="92" step="1" value="75">
+      <span class="val-out" id="etaStationOut">75 %</span>
+    </div>
+    <div class="energy-bar-wrap" style="margin-top:.4rem">
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Returned to grid</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill" id="barStUseful" style="background:var(--teal)"></div></div>
+        <span class="energy-bar-num col-teal" id="barStUsefulN">—</span>
+      </div>
+      <div class="energy-bar-row">
+        <span class="energy-bar-name">Lost (heat / turbulence)</span>
+        <div class="energy-bar-track"><div class="energy-bar-fill" id="barStLost" style="background:var(--coral)"></div></div>
+        <span class="energy-bar-num col-coral" id="barStLostN">—</span>
+      </div>
+    </div>
+    <p class="eq" style="margin-top:.6rem">Energy out = 9.1 GWh × η = <span id="energyOut">6.8</span> GWh</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     STAGE 3 — SCALING YOUR NUMBERS
+     ══════════════════════════════════ -->
+<div class="stage">
+  <p class="section-label">Stage 3</p>
+  <h2 class="section-title">Scaling your bench results to Dinorwig</h2>
+
+  <p>Your pump ran at 60 W. Dinorwig's six pump-turbine units run at a combined ~1.8 GW when pumping. The physics equation is unchanged — only V, h, and P differ.</p>
+
+  <div class="card" style="margin-top:.9rem">
+    <p class="section-label">How much water stores one hour of UK average grid demand?</p>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.9rem">UK average grid demand ≈ 35 GW. Adjust below and see what volume of water would store it at Dinorwig's head height of 494 m.</p>
+
+    <div class="input-row">
+      <label>Grid demand (GW)</label>
+      <input type="range" id="gridDemand" min="10" max="60" step="1" value="35">
+      <span class="val-out" id="gridDemandOut">35 GW</span>
+    </div>
+    <div class="input-row">
+      <label>Storage duration (hours)</label>
+      <input type="range" id="storageHours" min="1" max="12" step="1" value="1">
+      <span class="val-out" id="storageHoursOut">1 hr</span>
+    </div>
+    <div class="input-row" style="margin-bottom:0">
+      <label>Head height h (m)</label>
+      <input type="range" id="headH" min="50" max="800" step="10" value="494">
+      <span class="val-out" id="headHOut">494 m</span>
+    </div>
+
+    <div class="grid3" style="margin-top:1rem">
+      <div class="tile">
+        <p class="tile-label">Energy needed</p>
+        <p class="tile-val col-blue" id="energyNeeded">35.0<span class="tile-unit">GWh</span></p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Volume of water</p>
+        <p class="tile-val col-amber" id="volumeNeeded">—<span class="tile-unit">million m³</span></p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Dinorwig reservoirs needed</p>
+        <p class="tile-val col-coral" id="dinorwigNeeded">—</p>
+        <p class="tile-sub">@ 7 million m³ each</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-accent-blue" style="margin-top:.5rem">
+    <p class="section-label" style="color:var(--blue)">Your experiment vs Dinorwig — same equation, different scale</p>
+    <div class="scale-row">
+      <span class="scale-key">Power input</span>
+      <span class="scale-val col-blue">60 W</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ your pump</span>
+    </div>
+    <div class="scale-row">
+      <span class="scale-key">Power input</span>
+      <span class="scale-val col-amber">~1,800,000,000 W</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ Dinorwig pumping</span>
+    </div>
+    <div class="scale-row">
+      <span class="scale-key">Head height</span>
+      <span class="scale-val col-blue">~0.3–1.5 m</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ your cylinder</span>
+    </div>
+    <div class="scale-row">
+      <span class="scale-key">Head height</span>
+      <span class="scale-val col-amber">494 m</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ Dinorwig</span>
+    </div>
+    <div class="scale-row">
+      <span class="scale-key">Efficiency</span>
+      <span class="scale-val col-coral" id="yourEff">—</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ your pump</span>
+    </div>
+    <div class="scale-row">
+      <span class="scale-key">Efficiency</span>
+      <span class="scale-val col-teal">~75 %</span>
+      <span style="color:var(--muted);font-size:.78rem;font-family:var(--mono);margin-left:.5rem">→ Dinorwig round-trip</span>
+    </div>
+    <div class="scale-row" style="border-bottom:none">
+      <span class="scale-key">W = ρghV</span>
+      <span class="scale-val" style="color:var(--muted)">same equation throughout</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     STAGE 4 — CRITERION D TENSIONS
+     ══════════════════════════════════ -->
+<div class="stage">
+  <p class="section-label">Stage 4 · Criterion D</p>
+  <h2 class="section-title">Is it a green battery?</h2>
+
+  <p>Pumped hydro is often described as a "green battery" for the grid. Your experiment gives you the physics to interrogate that claim precisely — not just agree or disagree with it, but ask <em>under what conditions</em> it is or isn't true.</p>
+
+  <div class="highlight" style="margin:1rem 0">
+    <p class="highlight-q">The reservoir stores energy losslessly in the form of gravitational potential energy of water. The losses happen at the pump and turbine stages, not in storage itself. So the 25% round-trip loss is a machine problem, not a physics problem — in principle it could be reduced further.</p>
+  </div>
+
+  <p>But conservation of energy also means the electricity used to pump has to come from somewhere. If the grid at 2 a.m. is still partly running on gas, then "charging" the reservoir is partly a gas process — and the 25% round-trip loss makes it less efficient than simply burning the gas directly at peak time.</p>
+
+  <div class="tension-grid">
+    <div class="tension-card" style="border-left:2px solid var(--teal)">
+      <p class="tension-head col-teal">The case for</p>
+      <p class="tension-body">Enables large-scale storage of genuinely renewable energy (wind, nuclear). Responds to grid demand within 16 seconds. No carbon emitted during discharge. Dinorwig's upper lake was an existing natural feature — minimal new flooding. Stores energy for hours, unlike batteries.</p>
+    </div>
+    <div class="tension-card" style="border-left:2px solid var(--coral)">
+      <p class="tension-head col-coral">The case against</p>
+      <p class="tension-body">25% round-trip loss means 1 kWh pumped returns only ~0.75 kWh. Greenness depends entirely on the energy source used for pumping. New sites require flooding valleys — habitat destruction, community displacement. Geology constrains where it can be built.</p>
+    </div>
+    <div class="tension-card" style="border-left:2px solid var(--amber)">
+      <p class="tension-head col-amber">The local / global tension</p>
+      <p class="tension-body">Dinorwig sits inside Snowdonia National Park. The tunnels were bored through the mountain; the infrastructure is hidden. Globally, large dams (Three Gorges, Kariba, Aswan) displaced hundreds of thousands. The scale of the solution changes who bears the cost.</p>
+    </div>
+    <div class="tension-card" style="border-left:2px solid var(--blue)">
+      <p class="tension-head col-blue">What your numbers say</p>
+      <p class="tension-body">Your pump reached <span id="yourEffTension" style="color:var(--blue);font-family:var(--mono)">—</span> efficiency. Dinorwig achieves ~75%. The gap exists because of better engineering — larger pipes, smoother impellers, higher head. Conservation of energy sets the ceiling at 100%; friction sets the real limit.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.2rem">
+    <p class="section-label">The question your data can anchor</p>
+    <div class="highlight" style="margin:.5rem 0 0">
+      <p class="highlight-q">Using your experimental measurements of efficiency and the concept of conservation of energy, evaluate the claim that pumped-storage hydroelectricity is a green battery for the national grid. In your answer, consider the physics of energy losses, the scale of water volumes required, and at least two impacts on people or environments beyond the power station itself.</p>
+    </div>
+  </div>
+</div>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+function el(id) { return document.getElementById(id); }
+function v(id)  { return +el(id).value; }
+function pct(x) { return x.toFixed(1) + ' %'; }
+
+const P_PUMP = 60;
+const DIN_STORED = 9.1;
+const DIN_VOL = 7;
+const rho = 1000, g = 9.81;
+
+function setBar(fillId, numId, pctVal, maxW, unit) {
+  const fill = el(fillId);
+  const num  = el(numId);
+  const w = Math.min(100, pctVal);
+  fill.style.width = w + '%';
+  num.textContent = pctVal.toFixed(1) + (unit || ' %');
+}
+
+function update() {
+  const etaPump   = v('etaPump');
+  const etaMotor  = v('etaMotor');
+  const motorPow  = v('motorPow');
+  const etaSt     = v('etaStation');
+  const gridDem   = v('gridDemand');
+  const storeHrs  = v('storageHours');
+  const headH     = v('headH');
+
+  el('etaPumpOut').textContent   = etaPump + ' %';
+  el('etaMotorOut').textContent  = etaMotor + ' %';
+  el('motorPowOut').textContent  = motorPow.toFixed(1) + ' W';
+  el('etaStationOut').textContent= etaSt + ' %';
+  el('gridDemandOut').textContent= gridDem + ' GW';
+  el('storageHoursOut').textContent = storeHrs + (storeHrs === 1 ? ' hr' : ' hrs');
+  el('headHOut').textContent     = headH + ' m';
+  el('motorPowLabel').textContent= motorPow.toFixed(1);
+
+  // Pump energy bars
+  setBar('barPumpUseful', 'barPumpUsefulN', etaPump, 100, ' %');
+  setBar('barPumpLost',   'barPumpLostN',   100 - etaPump, 100, ' %');
+
+  // Motor energy bars
+  setBar('barMotorUseful', 'barMotorUsefulN', etaMotor, 100, ' %');
+  setBar('barMotorLost',   'barMotorLostN',   100 - etaMotor, 100, ' %');
+
+  // Station energy bars
+  const energyOut = (DIN_STORED * etaSt / 100);
+  const energyLost = DIN_STORED - energyOut;
+  setBar('barStUseful', 'barStUsefulN', etaSt, 100, ' %');
+  setBar('barStLost',   'barStLostN',   100 - etaSt, 100, ' %');
+  el('energyOut').textContent = energyOut.toFixed(2) + ' GWh';
+
+  // Scaling calculation
+  // Energy needed = grid demand (GW) × hours = GWh
+  const energyGWh = gridDem * storeHrs;
+  // W = ρghV → V = W / (ρgh)
+  // W in joules: energyGWh × 3.6e12 J
+  const W_J = energyGWh * 3.6e12;
+  const V_m3 = W_J / (rho * g * headH);
+  const V_mill = V_m3 / 1e6;
+  const nDin = V_mill / DIN_VOL;
+
+  el('energyNeeded').innerHTML   = energyGWh.toFixed(1) + '<span class="tile-unit">GWh</span>';
+  el('volumeNeeded').innerHTML   = V_mill.toFixed(1) + '<span class="tile-unit">million m³</span>';
+  el('dinorwigNeeded').textContent = nDin.toFixed(1) + '×';
+
+  // Scale comparison row
+  el('yourEff').textContent = etaPump + ' %';
+  el('yourEffTension').textContent = etaPump + '%';
+}
+
+['etaPump','etaMotor','motorPow','etaStation','gridDemand','storageHours','headH']
+  .forEach(id => el(id).addEventListener('input', update));
+
+update();
+</script>
+</body>
+</html>
