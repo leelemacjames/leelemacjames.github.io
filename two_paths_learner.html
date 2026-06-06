@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Paths from C · Discrete Arithmetic Learner III · McMurmerings</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg:        #0c0d10;
+    --bg-2:      #14161b;
+    --bg-3:      #1a1d24;
+    --ink:       #e8e3d6;
+    --ink-2:     #b8b1a0;
+    --ink-3:     #6e695d;
+    --gold:      #c9a557;
+    --gold-2:    #8b7340;
+    --rose:      #b87878;
+    --rule:      #2a2d35;
+    --grid:      rgba(201,165,87,0.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background: var(--bg); color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 19px; line-height: 1.65;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+
+  nav.toc{
+    position: sticky; top:0; z-index:100;
+    background: rgba(12,13,16,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  nav.toc .inner{
+    max-width: 1100px; margin:0 auto; padding: 0 32px;
+    display: flex; gap: 28px; flex-wrap: wrap; align-items: baseline;
+  }
+  nav.toc .brand{ color: var(--gold); font-weight: 600; letter-spacing: 0.18em; }
+  nav.toc a{ color: var(--ink-2); text-decoration: none; transition: color 0.2s; }
+  nav.toc a:hover{ color: var(--gold); }
+
+  main{ max-width: 880px; margin: 0 auto; padding: 80px 32px 120px; }
+
+  header.hero{
+    margin-bottom: 88px; padding-bottom: 48px;
+    border-bottom: 1px solid var(--rule); position: relative;
+  }
+  header.hero::after{
+    content:''; position:absolute; bottom:-1px; left:0;
+    width: 80px; height: 1px; background: var(--gold);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 28px;
+  }
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 64px;
+    line-height: 1.05; letter-spacing: -0.015em;
+    margin-bottom: 22px; color: var(--ink);
+  }
+  h1 em{ font-style: italic; color: var(--gold); font-weight: 400; }
+  .subtitle{
+    font-size: 22px; line-height: 1.45;
+    color: var(--ink-2); font-style: italic;
+    max-width: 640px; margin-bottom: 32px;
+  }
+  .byline{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.12em;
+    color: var(--ink-3); text-transform: uppercase;
+  }
+
+  section{ margin: 88px 0; }
+  section > .num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em;
+    color: var(--gold-2); margin-bottom: 14px; display: block;
+  }
+  h2{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 38px;
+    line-height: 1.15; margin-bottom: 32px;
+    color: var(--ink); letter-spacing: -0.005em;
+  }
+  h3{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-style: italic;
+    font-size: 24px; margin: 36px 0 18px;
+    color: var(--gold);
+  }
+  p{ margin: 0 0 18px; }
+  p + p{ text-indent: 1.6em; }
+  em{ color: var(--ink); font-style: italic; }
+  strong{ color: var(--gold); font-weight: 600; }
+
+  .prompt{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 22px; line-height: 1.5;
+    color: var(--ink);
+    border-left: 2px solid var(--gold);
+    padding: 4px 0 4px 24px;
+    margin: 32px 0; max-width: 660px;
+  }
+
+  code{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.86em; color: var(--gold);
+    background: var(--bg-2); padding: 1px 6px; border-radius: 2px;
+  }
+
+  .panel{
+    background: var(--bg-2); border: 1px solid var(--rule);
+    padding: 32px; margin: 36px 0; position: relative;
+  }
+  .panel::before{
+    content: attr(data-label); position: absolute;
+    top: -10px; left: 24px; background: var(--bg); padding: 0 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  table{
+    width: 100%; border-collapse: collapse; margin: 28px 0;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 14.5px;
+  }
+  th{
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold);
+    padding: 14px 16px; border-bottom: 1px solid var(--gold-2);
+    font-weight: 500;
+  }
+  td{
+    padding: 14px 16px; border-bottom: 1px solid var(--rule);
+    color: var(--ink-2); vertical-align: top;
+  }
+  td.hl{ color: var(--ink); }
+  tr:hover td{ background: rgba(201,165,87,0.03); }
+
+  .board-wrap{
+    background: var(--bg-2); border: 1px solid var(--rule);
+    padding: 28px; margin: 32px 0;
+  }
+  .board-title{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .board-sub{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 16px;
+    color: var(--ink-2); margin-bottom: 22px;
+  }
+  .board-svg{
+    display: block; width: 100%; height: auto;
+    background: var(--bg-3); border: 1px solid var(--rule);
+  }
+  .board-controls{
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 18px; align-items: center;
+  }
+  .btn{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; background: transparent;
+    color: var(--ink-2); border: 1px solid var(--rule);
+    padding: 8px 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn:hover{ border-color: var(--gold); color: var(--gold); }
+  .btn.active{ background: var(--gold); color: var(--bg); border-color: var(--gold); }
+  .readout{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px; color: var(--gold);
+    margin-top: 16px; padding: 12px 16px;
+    background: var(--bg-3); border-left: 2px solid var(--gold);
+    min-height: 44px;
+  }
+  .readout .small{
+    color: var(--ink-3); font-size: 11px;
+    margin-top: 4px; display: block;
+  }
+
+  aside.note{
+    margin: 28px 0; padding: 18px 22px;
+    background: var(--bg-2); border-left: 2px solid var(--rose);
+    font-size: 17px; color: var(--ink-2);
+  }
+  aside.note .label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--rose);
+    display: block; margin-bottom: 6px;
+  }
+
+  .eq{
+    margin: 28px 0; padding: 24px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--gold-2);
+    border-bottom: 1px solid var(--gold-2);
+    font-size: 18px; overflow-x: auto;
+  }
+
+  /* count panels for the dimension comparison */
+  .dim-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 32px 0;
+  }
+  .dim-card{
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 24px;
+  }
+  .dim-card .badge{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .dim-card .formula{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px; color: var(--ink);
+    padding: 14px; background: var(--bg-3);
+    border-left: 2px solid var(--gold-2);
+    margin: 14px 0;
+  }
+  .dim-card .verdict{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--rose);
+    margin-top: 12px;
+  }
+  .dim-card.success .verdict{ color: var(--gold); }
+
+  footer{
+    max-width: 880px; margin: 80px auto 60px;
+    padding: 28px 32px; border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3);
+    text-align: center;
+  }
+  footer .silicon{ color: var(--gold); }
+  footer .carbon{ color: var(--ink-2); }
+
+  @media (max-width: 720px){
+    body{ font-size: 17px; }
+    h1{ font-size: 44px; }
+    h2{ font-size: 30px; }
+    main{ padding: 56px 22px 80px; }
+    .panel{ padding: 22px 18px; }
+    nav.toc .inner{ gap: 16px; padding: 0 22px; }
+    .dim-grid{ grid-template-columns: 1fr; }
+  }
+  ::selection{ background: var(--gold); color: var(--bg); }
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <div class="inner">
+    <span class="brand">McMurmerings</span>
+    <a href="#open">Opening</a>
+    <a href="#dichotomy">Two starts</a>
+    <a href="#gaussian">Gaussian path</a>
+    <a href="#eisenstein">Eisenstein path</a>
+    <a href="#arithmetic">The arithmetic</a>
+    <a href="#dimensions">Why dimensions</a>
+    <a href="#polytopes">Polytopes</a>
+    <a href="#review">Review</a>
+  </div>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">A Self-Contained Learner · Part III of III · Discrete Arithmetic</div>
+  <h1>Two paths from <em>$\mathbb{C}$</em></h1>
+  <p class="subtitle">Why the Eisenstein integers lift to the $24$-unit Hurwitz order
+  while the Gaussian integers do not lift to anything analogous: the arithmetic
+  identity $4 \cdot (\tfrac{1}{2})^2 = 1$ that holds only in $4$ dimensions, and
+  what it forces about discrete subrings of quaternion algebras.</p>
+  <p class="byline">L. McCulloch-James · Working Note · v1</p>
+</header>
+
+<!-- ============================================================ -->
+<section id="open">
+<span class="num">§ 1</span>
+<h2>The question this learner answers</h2>
+
+<p>
+Parts I and II established the Hurwitz order $\mathbb{H}_{\mathrm{H}}$
+by adjoining $\rho = \tfrac{1}{2}(1+i+j+k)$ to the Lipschitz order $L$,
+producing $24$ unit-norm elements out of $L$'s $8$. Part II also flagged
+that the construction depends on the arithmetic identity
+$4 \cdot (\tfrac{1}{2})^2 = 1$ that holds exactly in $4$ dimensions.
+The natural follow-up question: <em>why doesn't a similar half-integer
+refinement work for the Gaussian integers in $2$ dimensions?</em>
+</p>
+
+<p>
+This learner answers the question directly. We start from the two
+distinguished commutative arithmetic settings — the Gaussian integers
+$\mathbb{Z}[i]$ and the Eisenstein integers $\mathbb{Z}[\omega]$ — and
+ask what the natural non-commutative analogue of each looks like. The
+Eisenstein path leads to $\mathbb{H}_{\mathrm{H}}$ with $24$ units. The
+Gaussian path runs into an arithmetic obstruction: there is no analogous
+maximal-order extension because $2 \cdot (\tfrac{1}{2})^2 = \tfrac{1}{2}$,
+not $1$. The Gaussian arithmetic does not lift.
+</p>
+
+<p>
+This is not merely a technical curiosity. It is the reason the Hurwitz
+unit group has order $24$ and not, say, $16$ or $48$. The arithmetic is
+forced by the geometry of $\mathbb{R}^4$ — specifically by the fact that
+the half-integer corner $\tfrac{1}{2}(\pm 1, \pm 1, \pm 1, \pm 1)$ sits
+exactly on the unit sphere in 4 dimensions and nowhere else.
+</p>
+
+<p class="prompt">
+The question to keep in view: which arithmetic structures of $\mathbb{C}$
+have non-commutative analogues, and what determines whether such a
+lifting is possible? The answer turns out to be a very simple counting
+fact about half-integers and dimensions.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="dichotomy">
+<span class="num">§ 2</span>
+<h2>Two natural starting points</h2>
+
+<p>
+The complex numbers $\mathbb{C}$ contain exactly two imaginary quadratic
+rings of class number one with non-trivial unit groups (Part I §2):
+</p>
+
+<table>
+  <thead>
+    <tr><th>Ring</th><th>Generator</th><th>Unit group</th><th>Order</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hl">$\mathbb{Z}[i]$</td>
+      <td>$i$, with $i^2 = -1$</td>
+      <td>$\{\pm 1, \pm i\}$</td>
+      <td>$4$</td>
+    </tr>
+    <tr>
+      <td class="hl">$\mathbb{Z}[\omega]$</td>
+      <td>$\omega = e^{2\pi i/3}$, with $\omega^2 + \omega + 1 = 0$</td>
+      <td>$\{\pm 1, \pm \omega, \pm \omega^2\}$</td>
+      <td>$6$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+Both are maximal orders in their respective number fields
+$\mathbb{Q}(i)$ and $\mathbb{Q}(\omega)$. The Gaussian path has the
+square lattice with $4$ units; the Eisenstein path has the triangular
+lattice with $6$ units. The structural difference: the Eisenstein unit
+group contains a $\mathbb{Z}_3$ subgroup (the cube roots of unity)
+beyond the universal $\mathbb{Z}_2$ of charge conjugation; the Gaussian
+unit group does not.
+</p>
+
+<p>
+Now we ask: what is the natural quaternionic analogue of each? Both
+paths run through the rational quaternion algebra
+$\mathbb{Q}\otimes\mathbb{H}$, but they reach different destinations.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="gaussian">
+<span class="num">§ 3</span>
+<h2>The Gaussian path: Lipschitz</h2>
+
+<p>
+The Gaussian integers $\mathbb{Z}[i]$ have "two perpendicular axes" in
+$\mathbb{C}$: the real and imaginary directions, generated by $1$ and
+$i$. The obvious quaternionic version is to add the perpendicular
+axes $j$ and $k$ as well, producing
+</p>
+
+<div class="eq">
+$$
+L \;=\; \mathbb{Z}\langle 1, i, j, k\rangle \;=\;
+\{a + bi + cj + dk : a, b, c, d \in \mathbb{Z}\}.
+$$
+</div>
+
+<p>
+This is the Lipschitz order. Its unit group is
+</p>
+
+<div class="eq">
+$$
+L^\times \;=\; \{\pm 1, \pm i, \pm j, \pm k\} \;\cong\; Q_8,
+\qquad |Q_8| = 8.
+$$
+</div>
+
+<p>
+The Lipschitz order is the natural quaternionic analogue of the Gaussian
+integers in two precise senses. First, structurally: it adds two more
+"$\mathbb{Z}[i]$-like" axes to the original Gaussian basis. Second,
+group-theoretically: $Q_8$ is the smallest non-abelian quaternionic
+group, and it contains $\mathbb{Z}_4 = \{\pm 1, \pm i\} = U(\mathbb{Z}[i])$
+as a subgroup (twice over: also $\{\pm 1, \pm j\}$ and $\{\pm 1, \pm k\}$).
+So $L$ has three commuting copies of $\mathbb{Z}[i]$ glued together
+non-commutatively, and the original Gaussian unit group sits as a
+distinguished maximal cyclic subgroup of $L^\times$.
+</p>
+
+<h3>Now try to enlarge</h3>
+
+<p>
+Part II's construction adjoined a half-integer point $\rho$ to $L$ to
+get a larger order with $24$ units. Can we do an analogous half-integer
+adjoining for the pure Gaussian case in $\mathbb{C}$ — adjoining
+$\sigma = \tfrac{1}{2}(1 + i)$ to $\mathbb{Z}[i]$ — to obtain a richer
+arithmetic? Let's check.
+</p>
+
+<div class="dim-grid">
+  <div class="dim-card">
+    <div class="badge">Attempt · $\mathbb{Z}[i] + \mathbb{Z}\sigma$</div>
+    <p style="margin-top:8px;color:var(--ink-2);font-size:16px">
+      Adjoin $\sigma = \tfrac{1}{2}(1+i)$ to $\mathbb{Z}[i]$. Check the
+      norm of $\sigma$:
+    </p>
+    <div class="formula">
+      $N(\sigma) = |\sigma|^2 = \tfrac{1}{4}(1^2 + 1^2) = \tfrac{1}{2}$
+    </div>
+    <p style="margin-top:8px;color:var(--ink-2);font-size:15px">
+      Not an integer. So $\sigma$ is not an algebraic integer, and
+      adjoining it produces a ring containing $\tfrac{1}{2}$:
+    </p>
+    <div class="formula">
+      $\sigma^2 = \tfrac{1}{4}(1+i)^2 = \tfrac{1}{4}(2i) = \tfrac{i}{2}$
+      <br/>
+      $\Rightarrow \tfrac{i}{2} \in \mathbb{Z}[i,\sigma]$, hence $\tfrac{1}{2}$ too.
+    </div>
+    <div class="verdict">
+      Verdict: fails to be an order.
+    </div>
+  </div>
+
+  <div class="dim-card success">
+    <div class="badge">Comparison · $L + \mathbb{Z}\rho$ in $\mathbb{H}$</div>
+    <p style="margin-top:8px;color:var(--ink-2);font-size:16px">
+      Adjoin $\rho = \tfrac{1}{2}(1+i+j+k)$ to $L$. Check the norm:
+    </p>
+    <div class="formula">
+      $N(\rho) = \tfrac{1}{4}(1^2 + 1^2 + 1^2 + 1^2) = 1$
+    </div>
+    <p style="margin-top:8px;color:var(--ink-2);font-size:15px">
+      Exactly $1$. So $\rho$ is unit-norm, integral over $\mathbb{Z}$
+      (minimal polynomial $x^2 - x + 1$), and the resulting ring
+      $\mathbb{H}_{\mathrm{H}} = L + \mathbb{Z}\rho$ is a maximal order
+      with $24$ units.
+    </p>
+    <div class="verdict">
+      Verdict: succeeds. The Hurwitz order.
+    </div>
+  </div>
+</div>
+
+<p>
+The Gaussian path stops at $\mathbb{Z}[i]$, with its quaternionic
+extension stopping at $L$. The half-integer trick that worked in $4$
+dimensions to produce $\mathbb{H}_{\mathrm{H}}$ does <em>not</em> work
+in $2$ dimensions: it produces a ring without integrality, which is no
+longer an order. The Lipschitz order is the end of the Gaussian path,
+not a stepping stone.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="eisenstein">
+<span class="num">§ 4</span>
+<h2>The Eisenstein path: Hurwitz</h2>
+
+<p>
+The Eisenstein integers $\mathbb{Z}[\omega]$ have an extra structural
+feature compared with $\mathbb{Z}[i]$: the half-integer point
+$\omega = \tfrac{1}{2}(-1 + i\sqrt{3})$. The Eisenstein lattice is
+<em>triangular</em>, not square, because the basis vectors $1$ and
+$\omega$ are at $120°$ rather than $90°$. The two extra unit-norm points
+$\{\pm\omega, \pm\omega^2\}$ that the Eisenstein integers have over the
+Gaussians come from this half-integer structure.
+</p>
+
+<p>
+The Eisenstein arithmetic lifts to the quaternions via the cyclic
+permutation of $i, j, k$. The element $\rho = \tfrac{1}{2}(1+i+j+k)$
+generates a $\mathbb{Z}_6$ subgroup of
+$(\mathbb{Q}\otimes\mathbb{H})^\times$, with $\rho^2$ generating
+$\mathbb{Z}_3$, and the Eisenstein subring sits inside
+$\mathbb{H}_{\mathrm{H}}$ via $\omega \mapsto \rho^2$. So the Eisenstein
+$\mathbb{Z}_3$ is faithfully preserved in the lift; it is what we earlier
+called the "internalisation" of the planar $\mathbb{Z}_3$ as the spatial
+cyclic permutation $i \to j \to k$.
+</p>
+
+<p>
+The unit count works as follows. We start from the Lipschitz order's
+$Q_8$ (8 units) and act on it by the new $\mathbb{Z}_3$ (a 3-cycle), which
+"triples" the orbit structure:
+</p>
+
+<div class="eq">
+$$
+|\twoT| \;=\; |Q_8 \rtimes \mathbb{Z}_3| \;=\; |Q_8| \cdot |\mathbb{Z}_3|
+\;=\; 8 \cdot 3 \;=\; 24.
+$$
+</div>
+
+<p>
+This is the semidirect product structure noted in Part II §7. The Hurwitz
+unit group's order $24$ is the product of $8$ (the size of the Lipschitz
+core) and $3$ (the size of the Eisenstein cyclic permutation), which is
+why we sometimes write $24 = 3 \times 8$. The factorisation is not a
+cyclotomic field extension count; it is a semidirect product of two
+genuinely different group-theoretic ingredients.
+</p>
+
+<aside class="note">
+  <span class="label">A misleading reading worth avoiding</span>
+  <p style="margin-top:10px">
+    One might be tempted to read $24 = 3 \times 8$ as a statement about
+    cyclotomic field extensions: $24$ is the order of the unit group of
+    $\mathbb{Z}[e^{2\pi i/24}]$, or $24$ as the dimension of some
+    representation, etc. None of these readings is right. The $24$ is
+    the order of the unit group $\twoT$ of the Hurwitz order, and the
+    factorisation $24 = 8 \times 3$ specifically reflects $\twoT \cong
+    Q_8 \rtimes \mathbb{Z}_3$. The $\mathbb{Z}_3$ comes from
+    $\langle\rho^2\rangle$, the embedded Eisenstein $\mathbb{Z}_3$
+    acting on the three quaternionic directions.
+  </p>
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="arithmetic">
+<span class="num">§ 5</span>
+<h2>The arithmetic identity that does it all</h2>
+
+<p>
+We can now state the core arithmetic fact that explains why the
+Eisenstein path produces a $24$-unit Hurwitz order but the Gaussian
+path does not produce anything comparable.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">The dimensional count</div>
+  <div class="board-sub">
+    For $n$-dimensional vectors with half-integer coordinates $\pm\tfrac{1}{2}$
+    in each slot, what is the squared norm?
+  </div>
+
+<table>
+  <thead>
+    <tr>
+      <th>$n$</th>
+      <th>Algebra</th>
+      <th>$\sum (\tfrac{1}{2})^2$</th>
+      <th>Half-integer count on unit sphere</th>
+      <th>Refinement possible?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hl">$1$</td>
+      <td>$\mathbb{R}$</td>
+      <td>$\tfrac{1}{4}$</td>
+      <td>$0$</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td class="hl">$2$</td>
+      <td>$\mathbb{C}$</td>
+      <td>$\tfrac{1}{2}$</td>
+      <td>$0$</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td class="hl">$3$</td>
+      <td>$\mathrm{Im}(\mathbb{H})$</td>
+      <td>$\tfrac{3}{4}$</td>
+      <td>$0$</td>
+      <td>No</td>
+    </tr>
+    <tr style="background: rgba(201,165,87,0.08)">
+      <td class="hl" style="color:var(--gold)"><strong>$4$</strong></td>
+      <td class="hl" style="color:var(--gold)">$\mathbb{H}$</td>
+      <td class="hl" style="color:var(--gold)"><strong>$1$</strong></td>
+      <td class="hl" style="color:var(--gold)"><strong>$2^4 = 16$</strong></td>
+      <td class="hl" style="color:var(--gold)"><strong>Yes (Hurwitz)</strong></td>
+    </tr>
+    <tr>
+      <td class="hl">$5$</td>
+      <td>—</td>
+      <td>$\tfrac{5}{4}$</td>
+      <td>$0$</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td class="hl">$6$</td>
+      <td>—</td>
+      <td>$\tfrac{3}{2}$</td>
+      <td>$0$</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td class="hl">$8$</td>
+      <td>$\mathbb{O}$</td>
+      <td>$2$</td>
+      <td>$0$ (no unit; norm $\sqrt{2}$)</td>
+      <td>No (need different vectors)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+The table reveals the structural point: <em>half-integer corner points
+have squared norm exactly $1$ in $4$ dimensions, and in no other
+dimension</em>. In every other dimension the squared norm is
+either too small (less than $1$, so the point sits inside the unit
+sphere and cannot be a unit) or too large (greater than $1$, so the
+point sits outside the unit sphere). Only at $n = 4$ does the all-corner
+half-integer sit exactly on the unit sphere.
+</p>
+
+<aside class="note">
+  <span class="label">A side remark on the octonions</span>
+  <p style="margin-top:10px">
+    The octonions $\mathbb{O}$ have a different but related story: their
+    "Hurwitz integers" (the Cayley integers, or $E_8$ root lattice) are
+    obtained not by half-integer corners (which give squared norm $2$)
+    but by allowing both unit-norm integer points and additional
+    half-integer points with even sign-counts. The result is the
+    $240$-vertex configuration of the $E_8$ root system. So while the
+    Hurwitz construction is special to $4$ dimensions, similar
+    arithmetic-lattice refinements exist for $\mathbb{O}$, just with
+    different specifics. The general phenomenon is "exceptional
+    arithmetic structures in the division algebras"; the quaternion
+    case is the simplest non-trivial one.
+  </p>
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="dimensions">
+<span class="num">§ 6</span>
+<h2>Why $4$ dimensions is special</h2>
+
+<p>
+The arithmetic identity $4 \cdot (\tfrac{1}{2})^2 = 1$ is a tiny piece
+of arithmetic, but it has dramatic structural consequences. We pause to
+record what makes $4$ dimensions special:
+</p>
+
+<table>
+  <thead>
+    <tr><th>Feature of $n = 4$</th><th>Consequence</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hl">$4 \cdot (\tfrac{1}{2})^2 = 1$</td>
+      <td>Half-integer corners sit on the unit sphere</td>
+    </tr>
+    <tr>
+      <td class="hl">$24 = 8 + 16$</td>
+      <td>Total norm-$1$ lattice points (integer + half-integer)</td>
+    </tr>
+    <tr>
+      <td class="hl">$24$-cell exists in $\mathbb{R}^4$</td>
+      <td>Self-dual regular polytope unique to 4 dimensions</td>
+    </tr>
+    <tr>
+      <td class="hl">$F_4$ Lie group has rank $4$</td>
+      <td>Hurwitz lattice = short roots of $F_4$</td>
+    </tr>
+    <tr>
+      <td class="hl">$\HH$ is a $4$-D division algebra</td>
+      <td>Quaternionic multiplication exists exactly here</td>
+    </tr>
+    <tr>
+      <td class="hl">$\mathrm{SO}(4) \cong (\mathrm{SU}(2)\times\mathrm{SU}(2))/\mathbb{Z}_2$</td>
+      <td>Chirality structure unique to 4 dimensions</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+None of these is logically independent of the others. They are different
+faces of the same arithmetic-geometric fact: $\mathbb{R}^4$ is the
+dimension where the half-integer lattice and the integer lattice
+coexist coherently on the unit sphere. The structural consequence is the
+$24$-cell, with vertices that form both a maximal order in the
+quaternion algebra and a root system of an exceptional Lie group.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="polytopes">
+<span class="num">§ 7</span>
+<h2>Hexagon and $24$-cell side by side</h2>
+
+<p>
+The geometric companion to the arithmetic table of §5: the unit-norm
+points in $\mathbb{Z}[\omega]$ form a <em>regular hexagon</em> in
+$\mathbb{R}^2$, while the unit-norm points in $\mathbb{H}_{\mathrm{H}}$
+form a <em>regular 24-cell</em> in $\mathbb{R}^4$. These are the
+configurations that the discrete arithmetic produces.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Side by side · hexagon vs 24-cell</div>
+  <div class="board-sub">
+    Left: the $6$ unit-norm points of $\mathbb{Z}[\omega]$ as vertices of
+    a regular hexagon. Right: the $24$ unit-norm points of
+    $\mathbb{H}_{\mathrm{H}}$, projected onto the
+    $(\mathrm{Re}, \mathrm{Im}_i)$ plane. The $24$-cell appears as
+    interleaved configurations of integer-coordinate units and
+    half-integer-coordinate units.
+  </div>
+  <svg class="board-svg" viewBox="0 0 800 400" id="hex-24cell-svg">
+    <!-- Hexagon -->
+    <text x="200" y="28" text-anchor="middle" fill="#c9a557"
+          font-family="IBM Plex Mono" font-size="11" letter-spacing="2"
+          style="text-transform:uppercase">
+      $\mathbb{Z}[\omega]$ — 6 units
+    </text>
+    <text x="200" y="46" text-anchor="middle" fill="#6e695d"
+          font-family="IBM Plex Mono" font-size="10">
+      regular hexagon
+    </text>
+    <circle cx="200" cy="210" r="100" fill="none" stroke="#8b7340" stroke-width="0.6"/>
+    <g id="hex-pts"></g>
+    <g id="hex-edges"></g>
+
+    <line x1="410" y1="60" x2="410" y2="380" stroke="#2a2d35" stroke-width="0.5"/>
+
+    <!-- 24-cell projection -->
+    <text x="600" y="28" text-anchor="middle" fill="#c9a557"
+          font-family="IBM Plex Mono" font-size="11" letter-spacing="2"
+          style="text-transform:uppercase">
+      $\mathbb{H}_{\mathrm{H}}$ — 24 units
+    </text>
+    <text x="600" y="46" text-anchor="middle" fill="#6e695d"
+          font-family="IBM Plex Mono" font-size="10">
+      24-cell, projected
+    </text>
+    <circle cx="600" cy="210" r="100" fill="none" stroke="#8b7340" stroke-width="0.6"/>
+    <circle cx="600" cy="210" r="70.7" fill="none" stroke="#8b7340" stroke-width="0.4" stroke-dasharray="2,3"/>
+    <g id="24cell-pts"></g>
+  </svg>
+  <div class="readout">
+    Both configurations are the vertex sets of regular polytopes — the
+    only regular polytopes whose vertex configuration coincides with
+    the unit group of a maximal arithmetic order.
+    <span class="small">In 2D, the hexagon's six vertices are the six Eisenstein units. In 4D, the $24$-cell's twenty-four vertices are the $24$ Hurwitz units. There is no analogous polytope/unit-group coincidence for the Gaussian integers; the Gaussian "polytope" is just the unit square, which is not a regular polytope in any structural sense beyond two dimensions.</span>
+  </div>
+</div>
+
+<p>
+The structural punchline of this comparison is that
+$\mathbb{Z}[\omega]$ and $\mathbb{H}_{\mathrm{H}}$ are <em>analogous</em>
+constructions in different dimensions: each is the maximal order in its
+respective algebra; each has a unit group sitting on a regular polytope;
+each has a half-integer point as the essential ingredient
+($\omega = \tfrac{1}{2}(-1+i\sqrt{3})$ and $\rho = \tfrac{1}{2}(1+i+j+k)$
+respectively). The Gaussian integers $\mathbb{Z}[i]$ are <em>not</em>
+analogous to either; they correspond to the Lipschitz order $L$, which
+is not maximal.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="review">
+<span class="num">§ 8</span>
+<h2>What this three-part learner has done</h2>
+
+<p>
+We started in Part I with the question "what is an order?", and built
+the Lipschitz order $L$ as the natural-looking quaternionic analogue of
+$\mathbb{Z}[i]$. We discovered that $L$ is <em>not</em> maximal, with a
+half-integer point $\rho$ sitting outside it. In Part II we adjoined
+$\rho$, verified the algebra ($\rho^3 = -1$, the minimal polynomial
+$x^2 - x + 1 = 0$), described the resulting Hurwitz order
+$\mathbb{H}_{\mathrm{H}}$ as the union of integer-coordinate and
+half-integer-coordinate quaternions, and counted its $24 = 8 + 16$
+unit-norm elements.
+</p>
+
+<p>
+In Part III we placed this construction in the comparison with the
+Gaussian path. The Lipschitz order $L$ is the natural quaternionic
+analogue of $\mathbb{Z}[i]$. The Hurwitz order $\mathbb{H}_{\mathrm{H}}$
+is the natural quaternionic analogue of $\mathbb{Z}[\omega]$. The two
+paths from $\mathbb{C}$ reach different non-commutative arithmetics
+because the arithmetic identity $n \cdot (\tfrac{1}{2})^2 = 1$ holds
+only at $n = 4$. The Gaussian path is structurally truncated at $L$,
+because there is no half-integer refinement available — and this is
+not a defect of the Gaussian path, but the structural reason the
+Hurwitz construction is uniquely available in $4$ dimensions.
+</p>
+
+<p>
+We have, throughout, kept everything discrete and lattice-based: the
+unit groups are finite, the lattices are finitely generated as
+$\mathbb{Z}$-modules, the half-integer refinements are explicit point
+sets in $\mathbb{R}^4$. None of the constructions appeal to continuous
+group theory, representation theory, or Lie algebra structure (those
+come later, in the main learner). What we have built is a precise
+discrete arithmetic substrate, on top of which the larger story can
+be told.
+</p>
+
+<aside class="note">
+  <span class="label">Where the story continues</span>
+  <p style="margin-top:10px">
+    The main <em>From Eisenstein to Hurwitz</em> learner picks up where
+    Part III ends. It builds the representation theory of $2T$, the
+    quadratic-invariant view of why the Hurwitz refinement is forced,
+    the stabiliser chains, and the irreducible representation table
+    that connects to the Standard Model fermion sector. The three
+    learners you have just worked through are the arithmetic
+    prerequisites for that more ambitious construction.
+  </p>
+</aside>
+
+</section>
+
+</main>
+
+<footer>
+  <span class="silicon">Constructed by Silicon · Anthropic Claude</span>
+  &nbsp;—&nbsp;
+  <span class="carbon">Architect Carbon · LeeMcCullochJames</span>
+</footer>
+
+<script>
+// =================================================================
+// Hexagon and 24-cell side by side
+// =================================================================
+(function(){
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const hexG = document.getElementById('hex-pts');
+  const hexEdges = document.getElementById('hex-edges');
+  const cellG = document.getElementById('24cell-pts');
+
+  function mk(tag, attrs){
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  // Hexagon: 6 vertices at angles 0, 60, 120, ... 
+  const HEX_LABELS = ['1','−ω²','−ω','−1','ω²','ω'];
+  for (let k = 0; k < 6; k++) {
+    const theta = k * Math.PI / 3;
+    const x = 200 + 100 * Math.cos(theta);
+    const y = 210 - 100 * Math.sin(theta);
+    hexG.appendChild(mk('circle', {
+      cx: x, cy: y, r: 6, fill: '#c9a557',
+      stroke: '#1a1d24', 'stroke-width': 0.6
+    }));
+    const lbl = mk('text', {
+      x: x + (Math.cos(theta) > 0 ? 12 : -10),
+      y: y + (Math.sin(theta) > 0 ? -8 : 14),
+      fill: '#e8e3d6',
+      'font-family': 'IBM Plex Mono',
+      'font-size': '11',
+      'text-anchor': Math.cos(theta) > 0 ? 'start' : 'end'
+    });
+    lbl.textContent = HEX_LABELS[k];
+    hexG.appendChild(lbl);
+  }
+  // Hexagon edges
+  for (let k = 0; k < 6; k++) {
+    const t1 = k * Math.PI / 3;
+    const t2 = (k+1) * Math.PI / 3;
+    hexEdges.appendChild(mk('line', {
+      x1: 200 + 100 * Math.cos(t1), y1: 210 - 100 * Math.sin(t1),
+      x2: 200 + 100 * Math.cos(t2), y2: 210 - 100 * Math.sin(t2),
+      stroke: '#8b7340', 'stroke-width': 0.8,
+      'stroke-opacity': 0.5
+    }));
+  }
+
+  // 24-cell projection onto (q0, q1)
+  // 8 Lipschitz units: ±1 → (±1, 0), ±i → (0, ±1); ±j, ±k → (0, 0) [collapsed]
+  // 16 half-integer units (±0.5, ±0.5, ±0.5, ±0.5) → 4 visible (±0.5, ±0.5) each x4
+  const CX = 600, CY = 210, R = 100;
+  const FAN = 0.10;
+
+  // Lipschitz visible in (q0, q1): ±1, ±i
+  [['1', 1, 0], ['−1', -1, 0], ['i', 0, 1], ['−i', 0, -1]].forEach(([lbl, a, b]) => {
+    cellG.appendChild(mk('circle', {
+      cx: CX + a*R, cy: CY - b*R, r: 6, fill: '#c9a557',
+      stroke: '#1a1d24', 'stroke-width': 0.6
+    }));
+    const t = mk('text', {
+      x: CX + a*R + (a > 0 ? 10 : (a < 0 ? -8 : 10)),
+      y: CY - b*R + (b > 0 ? -8 : (b < 0 ? 14 : 4)),
+      fill: '#e8e3d6',
+      'font-family': 'IBM Plex Mono', 'font-size': '11',
+      'text-anchor': a > 0 ? 'start' : (a < 0 ? 'end' : 'start')
+    });
+    t.textContent = lbl;
+    cellG.appendChild(t);
+  });
+
+  // Lipschitz ±j, ±k project to (0, 0) — denote with cluster around origin
+  for (let i = 0; i < 4; i++) {
+    const angle = i * Math.PI / 2 + Math.PI / 4;
+    const dx = 6 * Math.cos(angle);
+    const dy = 6 * Math.sin(angle);
+    cellG.appendChild(mk('circle', {
+      cx: CX + dx, cy: CY - dy, r: 4, fill: '#c9a557',
+      stroke: '#1a1d24', 'stroke-width': 0.5,
+      'fill-opacity': 0.7
+    }));
+  }
+  cellG.appendChild(mk('text', {
+    x: CX + 18, y: CY - 12,
+    fill: '#6e695d',
+    'font-family': 'IBM Plex Mono', 'font-size': '9'
+  })).textContent = '±j, ±k';
+
+  // 16 half-integer units: project to 4 visible positions × 4 multiplicity
+  for (let s0 = -1; s0 <= 1; s0 += 2) {
+    for (let s1 = -1; s1 <= 1; s1 += 2) {
+      for (let s2 = -1; s2 <= 1; s2 += 2) {
+        for (let s3 = -1; s3 <= 1; s3 += 2) {
+          // Project to (q0, q1) with fan from (q2, q3)
+          const x = CX + (s0 * 0.5 + FAN * s2) * R;
+          const y = CY - (s1 * 0.5 + FAN * s3) * R;
+          cellG.appendChild(mk('circle', {
+            cx: x, cy: y, r: 3.5, fill: '#8b7340'
+          }));
+        }
+      }
+    }
+  }
+
+  // Origin dot
+  cellG.appendChild(mk('circle', {
+    cx: CX, cy: CY, r: 1.5, fill: '#b87878'
+  }));
+})();
+</script>
+
+</body>
+</html>

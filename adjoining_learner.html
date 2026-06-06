@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adjoining ρ · Discrete Arithmetic Learner II · McMurmerings</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg:        #0c0d10;
+    --bg-2:      #14161b;
+    --bg-3:      #1a1d24;
+    --ink:       #e8e3d6;
+    --ink-2:     #b8b1a0;
+    --ink-3:     #6e695d;
+    --gold:      #c9a557;
+    --gold-2:    #8b7340;
+    --rose:      #b87878;
+    --rule:      #2a2d35;
+    --grid:      rgba(201,165,87,0.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background: var(--bg); color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 19px; line-height: 1.65;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+
+  nav.toc{
+    position: sticky; top:0; z-index:100;
+    background: rgba(12,13,16,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  nav.toc .inner{
+    max-width: 1100px; margin:0 auto; padding: 0 32px;
+    display: flex; gap: 28px; flex-wrap: wrap; align-items: baseline;
+  }
+  nav.toc .brand{ color: var(--gold); font-weight: 600; letter-spacing: 0.18em; }
+  nav.toc a{ color: var(--ink-2); text-decoration: none; transition: color 0.2s; }
+  nav.toc a:hover{ color: var(--gold); }
+
+  main{ max-width: 880px; margin: 0 auto; padding: 80px 32px 120px; }
+
+  header.hero{
+    margin-bottom: 88px; padding-bottom: 48px;
+    border-bottom: 1px solid var(--rule); position: relative;
+  }
+  header.hero::after{
+    content:''; position:absolute; bottom:-1px; left:0;
+    width: 80px; height: 1px; background: var(--gold);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 28px;
+  }
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 64px;
+    line-height: 1.05; letter-spacing: -0.015em;
+    margin-bottom: 22px; color: var(--ink);
+  }
+  h1 em{ font-style: italic; color: var(--gold); font-weight: 400; }
+  .subtitle{
+    font-size: 22px; line-height: 1.45;
+    color: var(--ink-2); font-style: italic;
+    max-width: 640px; margin-bottom: 32px;
+  }
+  .byline{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.12em;
+    color: var(--ink-3); text-transform: uppercase;
+  }
+
+  section{ margin: 88px 0; }
+  section > .num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em;
+    color: var(--gold-2); margin-bottom: 14px; display: block;
+  }
+  h2{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 38px;
+    line-height: 1.15; margin-bottom: 32px;
+    color: var(--ink); letter-spacing: -0.005em;
+  }
+  h3{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-style: italic;
+    font-size: 24px; margin: 36px 0 18px;
+    color: var(--gold);
+  }
+  p{ margin: 0 0 18px; }
+  p + p{ text-indent: 1.6em; }
+  em{ color: var(--ink); font-style: italic; }
+  strong{ color: var(--gold); font-weight: 600; }
+
+  .prompt{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 22px; line-height: 1.5;
+    color: var(--ink);
+    border-left: 2px solid var(--gold);
+    padding: 4px 0 4px 24px;
+    margin: 32px 0; max-width: 660px;
+  }
+
+  code{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.86em; color: var(--gold);
+    background: var(--bg-2); padding: 1px 6px; border-radius: 2px;
+  }
+
+  .panel{
+    background: var(--bg-2); border: 1px solid var(--rule);
+    padding: 32px; margin: 36px 0; position: relative;
+  }
+  .panel::before{
+    content: attr(data-label); position: absolute;
+    top: -10px; left: 24px; background: var(--bg); padding: 0 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  table{
+    width: 100%; border-collapse: collapse; margin: 28px 0;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 14.5px;
+  }
+  th{
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold);
+    padding: 14px 16px; border-bottom: 1px solid var(--gold-2);
+    font-weight: 500;
+  }
+  td{
+    padding: 14px 16px; border-bottom: 1px solid var(--rule);
+    color: var(--ink-2); vertical-align: top;
+  }
+  td.hl{ color: var(--ink); }
+  tr:hover td{ background: rgba(201,165,87,0.03); }
+
+  .board-wrap{
+    background: var(--bg-2); border: 1px solid var(--rule);
+    padding: 28px; margin: 32px 0;
+  }
+  .board-title{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .board-sub{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 16px;
+    color: var(--ink-2); margin-bottom: 22px;
+  }
+  .board-svg{
+    display: block; width: 100%; height: auto;
+    background: var(--bg-3); border: 1px solid var(--rule);
+  }
+  .board-controls{
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 18px; align-items: center;
+  }
+  .board-controls label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3);
+    margin-right: 8px;
+  }
+  .btn{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; background: transparent;
+    color: var(--ink-2); border: 1px solid var(--rule);
+    padding: 8px 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn:hover{ border-color: var(--gold); color: var(--gold); }
+  .btn.active{ background: var(--gold); color: var(--bg); border-color: var(--gold); }
+  .readout{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px; color: var(--gold);
+    margin-top: 16px; padding: 12px 16px;
+    background: var(--bg-3); border-left: 2px solid var(--gold);
+    min-height: 44px;
+  }
+  .readout .small{
+    color: var(--ink-3); font-size: 11px;
+    margin-top: 4px; display: block;
+  }
+
+  aside.note{
+    margin: 28px 0; padding: 18px 22px;
+    background: var(--bg-2); border-left: 2px solid var(--rose);
+    font-size: 17px; color: var(--ink-2);
+  }
+  aside.note .label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--rose);
+    display: block; margin-bottom: 6px;
+  }
+
+  .eq{
+    margin: 28px 0; padding: 24px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--gold-2);
+    border-bottom: 1px solid var(--gold-2);
+    font-size: 18px; overflow-x: auto;
+  }
+
+  /* Multiplication calculator */
+  .calc-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 24px 0;
+  }
+  .calc-cell{
+    background: var(--bg-3); border: 1px solid var(--rule);
+    padding: 14px; text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .calc-cell.input{ color: var(--ink-2); border-color: var(--gold-2); }
+  .calc-cell.op{ color: var(--gold); font-size: 18px; }
+  .calc-cell.result{ color: var(--gold); border-color: var(--gold); }
+
+  footer{
+    max-width: 880px; margin: 80px auto 60px;
+    padding: 28px 32px; border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3);
+    text-align: center;
+  }
+  footer .silicon{ color: var(--gold); }
+  footer .carbon{ color: var(--ink-2); }
+
+  @media (max-width: 720px){
+    body{ font-size: 17px; }
+    h1{ font-size: 44px; }
+    h2{ font-size: 30px; }
+    main{ padding: 56px 22px 80px; }
+    .panel{ padding: 22px 18px; }
+    nav.toc .inner{ gap: 16px; padding: 0 22px; }
+  }
+  ::selection{ background: var(--gold); color: var(--bg); }
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <div class="inner">
+    <span class="brand">McMurmerings</span>
+    <a href="#open">Opening</a>
+    <a href="#adjoining">Adjoining</a>
+    <a href="#why-rho">Why ρ</a>
+    <a href="#verify">Verifying</a>
+    <a href="#closure">Closure</a>
+    <a href="#growth">Growth</a>
+    <a href="#units">Units</a>
+    <a href="#review">Review</a>
+  </div>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">A Self-Contained Learner · Part II of III · Discrete Arithmetic</div>
+  <h1>Adjoining <em>ρ</em></h1>
+  <p class="subtitle">What it means to add a half-integer point to a lattice, why
+  $\rho = \tfrac{1}{2}(1+i+j+k)$ in particular is forced, and how the act of
+  adjoining it grows the Lipschitz order's $8$ unit-norm points to the Hurwitz
+  order's $24$.</p>
+  <p class="byline">L. McCulloch-James · Working Note · v1</p>
+</header>
+
+<!-- ============================================================ -->
+<section id="open">
+<span class="num">§ 1</span>
+<h2>What this learner does</h2>
+
+<p>
+Part I established that the Lipschitz order
+$L = \mathbb{Z}\langle 1, i, j, k\rangle$ fails to be maximal in
+$\mathbb{Q} \otimes \mathbb{H}$ because the element
+$\rho = \tfrac{1}{2}(1 + i + j + k)$ sits outside $L$ but is an algebraic
+integer of the algebra. This learner takes that observation and does the
+construction: we adjoin $\rho$ to $L$, verify that the result is closed
+under multiplication, count its unit-norm elements, and end with the
+$24$-element unit group $\mathbb{H}_{\mathrm{H}}^\times = 2T$ that the
+main learner takes as its starting point.
+</p>
+
+<p>
+The word "adjoining" gets used loosely. We will be careful: <em>adjoining</em>
+in ring theory means closing the original ring under multiplication and
+addition with a new element, not just adding the new element as an
+afterthought. So the result of adjoining $\rho$ to $L$ is the smallest
+ring containing both, which in general may be much bigger than just
+$L \cup \{\rho\}$. We will see whether the Hurwitz case is well-behaved.
+</p>
+
+<p class="prompt">
+The question to keep in view: when we adjoin a single new element to a
+lattice, what new elements get pulled in along with it by closure under
+multiplication? And does the result still satisfy the order conditions of
+Part I §4?
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="adjoining">
+<span class="num">§ 2</span>
+<h2>What "adjoining" means</h2>
+
+<p>
+The basic operation of adjoining $\alpha$ to a ring $R$ produces a new
+ring denoted $R[\alpha]$, consisting of all polynomial expressions in
+$\alpha$ with coefficients from $R$:
+</p>
+
+<div class="eq">
+$$
+R[\alpha] \;=\; \{r_0 + r_1 \alpha + r_2 \alpha^2 + \cdots :
+\text{finitely many } r_i \in R\}.
+$$
+</div>
+
+<p>
+In general this might be infinite-dimensional. But if $\alpha$ satisfies
+a polynomial relation $\alpha^n + c_{n-1}\alpha^{n-1} + \cdots + c_0 = 0$
+with coefficients $c_i \in R$, then all powers $\alpha^n, \alpha^{n+1}, \ldots$
+can be rewritten using lower powers, and $R[\alpha]$ collapses to
+$\{r_0 + r_1\alpha + \cdots + r_{n-1}\alpha^{n-1}\}$ — a free $R$-module of
+rank $n$.
+</p>
+
+<p>
+A few examples to make the operation tangible:
+</p>
+
+<table>
+  <thead><tr><th>Adjoining</th><th>To</th><th>Result</th><th>Relation</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="hl">$i$</td><td>$\mathbb{Z}$</td>
+      <td>$\mathbb{Z}[i]$, the Gaussian integers</td>
+      <td>$i^2 = -1$</td>
+    </tr>
+    <tr>
+      <td class="hl">$\omega$</td><td>$\mathbb{Z}$</td>
+      <td>$\mathbb{Z}[\omega]$, the Eisenstein integers</td>
+      <td>$\omega^2 + \omega + 1 = 0$</td>
+    </tr>
+    <tr>
+      <td class="hl">$\sqrt{2}$</td><td>$\mathbb{Z}$</td>
+      <td>$\mathbb{Z}[\sqrt{2}] = \{a + b\sqrt{2}\}$</td>
+      <td>$(\sqrt{2})^2 = 2$</td>
+    </tr>
+    <tr>
+      <td class="hl">$\tfrac{1}{2}$</td><td>$\mathbb{Z}$</td>
+      <td>$\mathbb{Z}[\tfrac{1}{2}]$, dyadic rationals</td>
+      <td>none — not an algebraic integer</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+The last example is the cautionary one: $\mathbb{Z}[\tfrac{1}{2}]$ contains
+$\tfrac{1}{4}, \tfrac{1}{8}, \tfrac{1}{16}, \ldots$ ad infinitum, because
+$\tfrac{1}{2}$ satisfies no monic polynomial over $\mathbb{Z}$. It is a ring,
+but not a lattice (not finitely generated as an additive group), so not an
+order in the sense of Part I §4.
+</p>
+
+<p>
+The condition that makes adjoining well-behaved is precisely
+<em>integrality</em>: $\alpha$ must satisfy a monic polynomial with
+$\mathbb{Z}$-coefficients (or more generally with $R$-coefficients). When
+this holds, $R[\alpha]$ stays a finite-rank module over $R$, and the order
+conditions of Part I are preserved.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="why-rho">
+<span class="num">§ 3</span>
+<h2>Why $\rho$, specifically</h2>
+
+<p>
+There are many quaternions with half-integer coordinates. Why is
+$\rho = \tfrac{1}{2}(1+i+j+k)$ the right one to adjoin? Three reasons,
+of increasing depth.
+</p>
+
+<h3>Reason 1: $\rho$ is on the unit sphere</h3>
+
+<p>
+The norm of $\rho$ is
+</p>
+
+<div class="eq">
+$$
+N(\rho) \;=\; \rho\bar{\rho} \;=\; \tfrac{1}{4}(1^2 + 1^2 + 1^2 + 1^2)
+\;=\; \tfrac{4}{4} \;=\; 1.
+$$
+</div>
+
+<p>
+So $\rho$ is a unit (norm-$1$ element) of $\mathbb{Q}\otimes\mathbb{H}$.
+If we are going to enlarge the Lipschitz unit group $Q_8$, $\rho$ is the
+sort of element we would want to add — something that already lives on
+the unit sphere.
+</p>
+
+<aside class="note">
+  <span class="label">Arithmetic miracle</span>
+  <p style="margin-top:10px">
+    The fact that $\tfrac{1}{4}(1+1+1+1) = 1$ depends crucially on
+    being in <em>four</em> dimensions. In two dimensions, the analogous
+    half-integer $\tfrac{1}{2}(1 + i) \in \mathbb{C}$ has norm
+    $\tfrac{1}{4}(1+1) = \tfrac{1}{2}$, which is not $1$. In four
+    dimensions there are <em>four</em> half-integer terms each
+    contributing $\tfrac{1}{4}$ to the norm, summing to exactly $1$. This
+    arithmetic feature is the reason the Hurwitz refinement exists in
+    $\mathbb{H}$ but not in $\mathbb{C}$. Part III makes this comparison
+    central.
+  </p>
+</aside>
+
+<h3>Reason 2: $\rho$ is an algebraic integer</h3>
+
+<p>
+The trace and norm of $\rho$ are integers:
+</p>
+
+<div class="eq">
+$$
+\rho + \bar{\rho} \;=\; \tfrac{1}{2}(1+i+j+k) + \tfrac{1}{2}(1-i-j-k) \;=\; 1,
+\qquad N(\rho) = 1.
+$$
+</div>
+
+<p>
+The minimal polynomial of any quaternion $q$ is
+$x^2 - (\text{tr}\, q)\,x + N(q) = 0$. For $\rho$ this is
+</p>
+
+<div class="eq">
+$$
+x^2 - x + 1 \;=\; 0,
+$$
+</div>
+
+<p>
+which is monic with integer coefficients. So $\rho$ is integral over
+$\mathbb{Z}$, the condition flagged at the end of §2 as the
+well-behavedness criterion for adjoining.
+</p>
+
+<p>
+Compare with attempting to adjoin
+$\sigma = \tfrac{1}{2}(1 + i)$ (a half-integer point with only two
+non-zero half-coordinates): $\sigma$ has norm
+$\tfrac{1}{4}(1+1) = \tfrac{1}{2}$, which is not an integer. Its minimal
+polynomial is $x^2 - x + \tfrac{1}{2} = 0$, which has the half-integer
+coefficient $\tfrac{1}{2}$. So $\sigma$ is not an algebraic integer, and
+adjoining it produces a ring containing $\tfrac{1}{2}$ — failing the
+integrality condition for orders.
+</p>
+
+<h3>Reason 3: half-integers in $\mathbb{H}$ are constrained</h3>
+
+<p>
+What other half-integer quaternions satisfy both conditions
+(unit norm <em>and</em> integral trace)? Direct enumeration of
+$\tfrac{1}{2}(\epsilon_0 + \epsilon_1 i + \epsilon_2 j + \epsilon_3 k)$
+with $\epsilon_i = \pm 1$: every such element has norm $1$ and trace
+$\tfrac{1}{2}\epsilon_0 + \tfrac{1}{2}(\text{conjugate terms}) =
+\tfrac{1}{2}\epsilon_0 + \tfrac{1}{2}\epsilon_0 = \epsilon_0$, an integer.
+So <em>all</em> $16$ such sign patterns are algebraic integers of
+$\mathbb{Q}\otimes\mathbb{H}$, and $\rho$ is just one of them.
+</p>
+
+<p>
+What is special about $\rho = \tfrac{1}{2}(1+i+j+k)$ is that it generates
+all $16$ via the action of $Q_8$ on it. Adjoining any one such half-integer
+to $L$ ends up generating the same Hurwitz order, because all $16$ are in
+the same $Q_8$-orbit. This is why we pick $\rho$ canonically: it has the
+all-plus sign pattern, and the Hurwitz order is the unique extension that
+contains it.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="verify">
+<span class="num">§ 4</span>
+<h2>Verifying $\rho^2$ and $\rho^3$</h2>
+
+<p>
+Two algebraic facts are essential to everything that follows. Both can
+be checked by direct calculation.
+</p>
+
+<h3>Fact A: $\rho^2 = \tfrac{1}{2}(-1 + i + j + k)$</h3>
+
+<p>
+Compute $\rho^2 = \tfrac{1}{4}(1+i+j+k)^2$. Expand:
+</p>
+
+<div class="eq">
+$$
+(1+i+j+k)^2 \;=\; \sum_{a,b \in \{1,i,j,k\}} ab.
+$$
+</div>
+
+<p>
+The diagonal terms $1, i^2, j^2, k^2$ give $1, -1, -1, -1$, summing to $-2$.
+The off-diagonal terms come in pairs $(ab, ba)$; using $ij = k$, $ji = -k$,
+$jk = i$, $kj = -i$, $ki = j$, $ik = -j$, each pair cancels except for
+the contributions from $1 \cdot i, i \cdot 1$ (and the analogous terms with
+$j$ and $k$), which give $2i, 2j, 2k$. So the off-diagonal sum is
+$2(i+j+k)$. Total:
+</p>
+
+<div class="eq">
+$$
+(1+i+j+k)^2 \;=\; -2 + 2(i+j+k) \;=\; 2(-1+i+j+k),
+$$
+</div>
+
+<p>
+and therefore
+</p>
+
+<div class="eq">
+$$
+\rho^2 \;=\; \tfrac{1}{4} \cdot 2(-1+i+j+k) \;=\; \tfrac{1}{2}(-1+i+j+k).
+$$
+</div>
+
+<h3>Fact B: $\rho^3 = -1$</h3>
+
+<p>
+This follows from Fact A and the minimal polynomial. From $\rho^2 - \rho + 1 = 0$
+(equivalently $\rho^2 = \rho - 1$) we have
+$\rho^3 = \rho \cdot \rho^2 = \rho(\rho - 1) = \rho^2 - \rho = (\rho - 1) - \rho = -1$.
+Direct calculation gives the same: multiplying out
+$\tfrac{1}{2}(1+i+j+k) \cdot \tfrac{1}{2}(-1+i+j+k)$ gives $-1$ after
+collecting terms.
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Verification · powers of $\rho$</div>
+  <div class="board-sub">
+    Click each row to verify the computation. All six powers of $\rho$ are
+    units of $\mathbb{Q}\otimes\mathbb{H}$.
+  </div>
+  <div id="powers-display">
+    <div class="calc-grid" style="grid-template-columns:60px 1fr 1.4fr">
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^0$</div>
+      <div class="calc-cell input" data-power="0">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px">order indicator</div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^1$</div>
+      <div class="calc-cell input" data-power="1">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^2$</div>
+      <div class="calc-cell input" data-power="2">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^3$</div>
+      <div class="calc-cell input" data-power="3">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^4$</div>
+      <div class="calc-cell input" data-power="4">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^5$</div>
+      <div class="calc-cell input" data-power="5">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+
+      <div class="calc-cell" style="color:var(--gold-2)">$\rho^6$</div>
+      <div class="calc-cell input" data-power="6">click</div>
+      <div class="calc-cell" style="color:var(--ink-3); font-size:11px"></div>
+    </div>
+  </div>
+  <div class="readout" id="powers-readout">
+    The element $\rho$ has multiplicative order $6$ in
+    $(\mathbb{Q}\otimes\mathbb{H})^\times$.
+    <span class="small">Equivalently $\langle \rho \rangle \cong \mathbb{Z}_6 = \mathbb{Z}_2 \times \mathbb{Z}_3$, with the $\mathbb{Z}_2$ being charge conjugation ($\rho^3 = -1$) and the $\mathbb{Z}_3$ being the Eisenstein cyclic structure ($\rho^2$ generates a 3-cycle: $\rho^2, \rho^4, \rho^6 = 1$).</span>
+  </div>
+</div>
+
+<p>
+The conclusion: $\rho$ is a sixth root of unity living inside
+$\mathbb{Q}\otimes\mathbb{H}$, with $\rho^3 = -1$ and $\rho$ generating
+a cyclic subgroup of order $6$. The cyclic group it generates is
+isomorphic to $\mathbb{Z}_6 = \mathbb{Z}_2 \times \mathbb{Z}_3$, just
+like the unit group of the Eisenstein integers $\mathbb{Z}[\omega]$.
+The Eisenstein subring $\mathbb{Z}[\omega] \hookrightarrow \mathbb{Q}\otimes\mathbb{H}$
+exists, via the embedding $\omega \mapsto \rho^2$ (or equivalently via
+$\omega \mapsto -\bar{\rho} = \tfrac{1}{2}(-1 + i + j + k)$, depending
+on conventions). So <em>the Hurwitz order contains the Eisenstein
+integers as a commutative subring</em>.
+</p>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="closure">
+<span class="num">§ 5</span>
+<h2>What gets pulled in by closure</h2>
+
+<p>
+We now do the adjoining proper. The Hurwitz order is the smallest subring
+of $\mathbb{Q}\otimes\mathbb{H}$ containing both $L$ and $\rho$. By the
+definition in §2, this is
+</p>
+
+<div class="eq">
+$$
+\mathbb{H}_{\mathrm{H}} \;=\; L[\rho]
+\;=\; \{r_0 + r_1\rho : r_0, r_1 \in L\} \big/ \text{relations}.
+$$
+</div>
+
+<p>
+Because $\rho^2 = \rho - 1$, all powers $\rho^n$ for $n \geq 2$ collapse
+to linear combinations of $1$ and $\rho$ with $\mathbb{Z}$-coefficients.
+So $\mathbb{H}_{\mathrm{H}}$ is a free $L$-module of rank $2$: every
+element is of the form $r_0 + r_1\rho$ with $r_0, r_1 \in L$.
+</p>
+
+<p>
+But this is not yet the right way to see the lattice. As a
+$\mathbb{Z}$-module, $\mathbb{H}_{\mathrm{H}}$ is generated by
+</p>
+
+<div class="eq">
+$$
+\{1, i, j, k, \rho\}
+$$
+</div>
+
+<p>
+because $L = \mathbb{Z}\langle 1,i,j,k\rangle$ contributes those four
+generators and we add $\rho$. Naively this would give a rank-5 lattice
+in 4-dimensional $\mathbb{H}$, but $\rho$ is linearly dependent on
+$1, i, j, k$ over $\mathbb{Q}$ (it is $\tfrac{1}{2}(1+i+j+k)$), so the
+generating set is over-complete. Picking a minimal $\mathbb{Z}$-basis
+requires a bit more care: it turns out that
+</p>
+
+<div class="eq">
+$$
+\mathbb{H}_{\mathrm{H}} \;=\;
+\{a + bi + cj + d\rho : a, b, c, d \in \mathbb{Z}\}
+\;=\; L + \mathbb{Z}\rho
+$$
+</div>
+
+<p>
+is the right description, with basis $\{1, i, j, \rho\}$ rather than the
+over-complete $\{1, i, j, k, \rho\}$. The element $k$ is recovered from
+$\rho$ via $k = 2\rho - 1 - i - j$.
+</p>
+
+<p>
+A concrete description of all elements: $\mathbb{H}_{\mathrm{H}}$
+consists of all $q = a + bi + cj + dk$ with
+</p>
+
+<div class="eq">
+$$
+\text{either all coordinates }(a,b,c,d) \in \mathbb{Z},
+\quad\text{or all coordinates} \in \mathbb{Z} + \tfrac{1}{2}.
+$$
+</div>
+
+<p>
+That is: either all four coordinates are integers (the Lipschitz part),
+or all four are half-integers ($\rho$ and its $Q_8$-translates). Mixed
+cases (some integer, some half-integer coordinates) are <em>not</em> in
+$\mathbb{H}_{\mathrm{H}}$. This is the precise constraint adjoining
+$\rho$ imposes.
+</p>
+
+<aside class="note">
+  <span class="label">Why mixed cases are excluded</span>
+  <p style="margin-top:10px">
+    Suppose $q = \tfrac{1}{2} + 1 \cdot i + 0 \cdot j + 0 \cdot k =
+    \tfrac{1}{2} + i$ had been in $\mathbb{H}_{\mathrm{H}}$. Then so
+    would $q - i = \tfrac{1}{2}$, by closure under subtraction. But
+    $\tfrac{1}{2}$ has norm $\tfrac{1}{4}$, not an integer — failing
+    integrality. So $\tfrac{1}{2}$ is not in any order containing $L$,
+    and mixed half-integer/integer quaternions cannot be elements of
+    $\mathbb{H}_{\mathrm{H}}$. The "all integer or all half-integer"
+    constraint follows from this.
+  </p>
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="growth">
+<span class="num">§ 6</span>
+<h2>How the lattice grows</h2>
+
+<p>
+Adjoining $\rho$ to $L$ <em>doubles</em> the lattice: every Lipschitz
+point $(a,b,c,d)$ with $a,b,c,d \in \mathbb{Z}$ gives rise to a Hurwitz-proper
+point $(a+\tfrac{1}{2}, b+\tfrac{1}{2}, c+\tfrac{1}{2}, d+\tfrac{1}{2})$
+shifted by $\rho$. The result is the body-centred cubic lattice in
+4 dimensions, also known as the $D_4$ root lattice (more precisely:
+the $F_4$ root lattice, which is the union $D_4 \cup (D_4 + \rho)$).
+</p>
+
+<div class="board-wrap">
+  <div class="board-title">Interactive · the lattice doubles</div>
+  <div class="board-sub">
+    Toggle between viewing only Lipschitz points (integer coordinates) and
+    viewing all Hurwitz points (integer or all-half-integer). The
+    visualisation projects the 4-dimensional lattice to the
+    $(\mathrm{Re}, \mathrm{Im}_i)$ plane; each visible point represents
+    a column of 4-D points sharing those two coordinates.
+  </div>
+  <svg class="board-svg" viewBox="0 0 600 400" id="growth-svg">
+    <text x="300" y="28" text-anchor="middle" fill="#c9a557"
+          font-family="IBM Plex Mono" font-size="11" letter-spacing="2"
+          style="text-transform:uppercase">
+      Projection to (Re, Im_i)
+    </text>
+    <g id="growth-grid"></g>
+    <g id="growth-pts"></g>
+    <!-- Unit circle at scale 60 -->
+    <circle cx="300" cy="210" r="60" fill="none" stroke="#8b7340" stroke-width="0.7"/>
+  </svg>
+  <div class="board-controls">
+    <button class="btn active" data-mode="lipschitz">Lipschitz only</button>
+    <button class="btn" data-mode="hurwitz">All Hurwitz</button>
+    <button class="btn" data-mode="diff">Hurwitz extra only</button>
+  </div>
+  <div class="readout" id="growth-readout">
+    Showing the integer-coordinate Lipschitz lattice $L$. The four
+    unit-norm points $\pm 1, \pm i$ sit on the unit circle in this
+    projection.
+    <span class="small">The other two Lipschitz units $\pm j, \pm k$ have $(q_0, q_1) = (0,0)$ and project to the origin (shown as a single point with multiplicity).</span>
+  </div>
+</div>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="units">
+<span class="num">§ 7</span>
+<h2>Counting unit-norm points</h2>
+
+<p>
+The unit-norm elements of $\mathbb{H}_{\mathrm{H}}$ are the quaternions
+$q$ with $N(q) = 1$ and either all-integer or all-half-integer coordinates.
+</p>
+
+<h3>Integer-coordinate units</h3>
+
+<p>
+With $a, b, c, d \in \mathbb{Z}$ and $a^2 + b^2 + c^2 + d^2 = 1$, exactly
+one coordinate is $\pm 1$ and the rest are zero. This gives
+$\{\pm 1, \pm i, \pm j, \pm k\}$: the Lipschitz unit group $Q_8$ of
+order $8$.
+</p>
+
+<h3>Half-integer-coordinate units</h3>
+
+<p>
+With $a, b, c, d \in \mathbb{Z} + \tfrac{1}{2}$ and
+$a^2 + b^2 + c^2 + d^2 = 1$, each coordinate squared is at least
+$\tfrac{1}{4}$ (the closest a half-integer can get to zero). Four
+half-integers squared summing to $1$: each must equal exactly
+$\tfrac{1}{4}$, i.e. each coordinate is exactly $\pm\tfrac{1}{2}$.
+Number of such tuples: $2^4 = 16$.
+</p>
+
+<p>
+So the total unit count is:
+</p>
+
+<div class="eq">
+$$
+|\mathbb{H}_{\mathrm{H}}^\times| \;=\; |Q_8| + 16 \;=\; 8 + 16 \;=\; 24.
+$$
+</div>
+
+<p>
+These $24$ unit-norm elements form the <strong>binary tetrahedral group</strong>
+$2T$, the unit group of the Hurwitz order. The full structural analysis of
+$2T$ — conjugacy classes, character table, subgroup lattice — is in the
+main learner. The arithmetic structure $2T \cong Q_8 \rtimes \mathbb{Z}_3$
+falls out of what we have already done: the $Q_8$ comes from the Lipschitz
+core, the $\mathbb{Z}_3$ from $\langle \rho^2 \rangle$ acting on $Q_8$
+by cyclic rotation $i \to j \to k \to i$.
+</p>
+
+<aside class="note">
+  <span class="label">A lattice-theoretic perspective</span>
+  <p style="margin-top:10px">
+    The $24$ unit-norm points of $\mathbb{H}_{\mathrm{H}}$ are the
+    vertices of the regular $24$-cell, the unique self-dual regular
+    polytope in $4$ dimensions. As a root system, they are the short
+    roots of $F_4$. So the Hurwitz refinement is geometrically the
+    statement: the densest finite configuration of unit-norm lattice
+    points in $\mathbb{Q}\otimes\mathbb{H}$ is the $24$-cell, achieved
+    exactly by adjoining $\rho$ to $L$.
+  </p>
+</aside>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="review">
+<span class="num">§ 8</span>
+<h2>What this learner has done</h2>
+
+<p>
+We started from the observation that the Lipschitz order
+$L = \mathbb{Z}\langle 1,i,j,k\rangle$ is not maximal because the
+algebraic integer $\rho = \tfrac{1}{2}(1+i+j+k)$ sits outside it. We
+defined the operation of adjoining $\rho$ to $L$ as the formation of
+the smallest subring containing both, which by integrality is a
+finite-rank lattice. We verified the algebraic relations
+$\rho^2 = \tfrac{1}{2}(-1+i+j+k)$, $\rho^3 = -1$, and
+$\rho^2 - \rho + 1 = 0$, identifying $\rho$ as a sixth root of unity
+generating $\mathbb{Z}_6$. We described the resulting Hurwitz order
+$\mathbb{H}_{\mathrm{H}}$ as the set of quaternions with either
+all-integer or all-half-integer coordinates, and counted its $24$
+unit-norm elements: the $8$ Lipschitz units plus $16$
+half-integer-coordinate units.
+</p>
+
+<p>
+What we have <em>not</em> done: shown that $\mathbb{H}_{\mathrm{H}}$ is
+the <em>unique</em> maximal order in $\mathbb{Q}\otimes\mathbb{H}$ up to
+conjugacy (this is Voight's theorem; we have taken it on trust); analysed
+the multiplicative structure of the $24$ units beyond noting $Q_8 \rtimes
+\mathbb{Z}_3$; addressed the question of why the Hurwitz construction
+works in $\mathbb{H}$ but not in $\mathbb{C}$ (this is Part III); or
+related the $24$ units to the irreducible representations of $2T$ (this
+is in the main learner).
+</p>
+
+<p>
+Part III takes up the comparison question directly. Why does adjoining
+$\rho$ work in 4 dimensions when no analogous refinement is possible for
+the Gaussian integers in 2 dimensions? The answer is purely arithmetic:
+in $4$D, $4 \times (\tfrac{1}{2})^2 = 1$ exactly. In $2$D, $2 \times
+(\tfrac{1}{2})^2 = \tfrac{1}{2} \neq 1$, so the corresponding
+half-integer construction yields a non-unit and the analogous refinement
+fails. This is the structural reason the Hurwitz refinement has no
+Gaussian analogue, and why $24$ units rather than some smaller count.
+</p>
+
+</section>
+
+</main>
+
+<footer>
+  <span class="silicon">Constructed by Silicon · Anthropic Claude</span>
+  &nbsp;—&nbsp;
+  <span class="carbon">Architect Carbon · LeeMcCullochJames</span>
+</footer>
+
+<script>
+// =================================================================
+// Powers of ρ display
+// =================================================================
+(function(){
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // ρ in (a, b, c, d) basis representing a + bi + cj + dk
+  const RHO = [0.5, 0.5, 0.5, 0.5];
+
+  function qmul(a, b) {
+    return [
+      a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3],
+      a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2],
+      a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1],
+      a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]
+    ];
+  }
+  function qnorm(q) {
+    return q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3];
+  }
+
+  // Compute ρ^n for n = 0..6
+  const powers = [[1,0,0,0]];
+  for (let n = 1; n <= 6; n++) powers.push(qmul(powers[n-1], RHO));
+
+  // Pretty-print quaternion
+  function fmt(q) {
+    const labels = ['1','i','j','k'];
+    const parts = [];
+    for (let i = 0; i < 4; i++) {
+      const v = q[i];
+      if (Math.abs(v) < 1e-9) continue;
+      let s = '';
+      if (parts.length === 0) {
+        if (v < 0) s = '−';
+      } else {
+        s = (v >= 0) ? ' + ' : ' − ';
+      }
+      const av = Math.abs(v);
+      if (Math.abs(av - 0.5) < 1e-9) s += '½';
+      else if (Math.abs(av - 1) < 1e-9) {}
+      else s += av;
+      if (i > 0) s += labels[i];
+      else if (Math.abs(av - 1) < 1e-9 && i === 0) s += '1';
+      parts.push(s);
+    }
+    if (parts.length === 0) return '0';
+    // For half-integers, factor out ½ if all 4 nonzero are ±½
+    const allHalf = q.every(v => Math.abs(Math.abs(v) - 0.5) < 1e-9);
+    if (allHalf) {
+      const signs = q.map(v => v > 0 ? '+' : '−');
+      const inner = signs.map((s, i) => {
+        const lbl = i === 0 ? '1' : labels[i];
+        return (i === 0 ? (s === '+' ? '' : '−') : ' ' + s + ' ') + lbl;
+      }).join('');
+      return '½(' + inner + ')';
+    }
+    return parts.join('');
+  }
+
+  const cells = document.querySelectorAll('#powers-display .input');
+  const readout = document.getElementById('powers-readout');
+  const indicatorCells = document.querySelectorAll('#powers-display .calc-cell:nth-child(3n)');
+
+  cells.forEach(cell => {
+    cell.addEventListener('click', () => {
+      const n = parseInt(cell.getAttribute('data-power'));
+      const q = powers[n];
+      cell.textContent = fmt(q);
+      cell.style.color = 'var(--gold)';
+      cell.style.borderColor = 'var(--gold)';
+
+      // Update indicator cell
+      const indicator = cell.nextElementSibling;
+      if (indicator) {
+        if (n === 0) indicator.textContent = 'identity';
+        else if (n === 3) indicator.textContent = 'order 2 (charge conj.)';
+        else if (n === 6) indicator.textContent = 'back to identity → ρ has order 6';
+        else if (n === 2 || n === 4) indicator.textContent = 'cube root of unity';
+        else indicator.textContent = '';
+      }
+    });
+  });
+
+  // Auto-reveal first row
+  if (cells[0]) cells[0].click();
+})();
+
+// =================================================================
+// Growth visualisation: Lipschitz → Hurwitz
+// =================================================================
+(function(){
+  const svg = document.getElementById('growth-svg');
+  if (!svg) return;
+  const grid = document.getElementById('growth-grid');
+  const pts = document.getElementById('growth-pts');
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  const CX = 300, CY = 210, SCALE = 60;
+
+  function mk(tag, attrs){
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  // Build grid lines
+  for (let i = -3; i <= 3; i++) {
+    grid.appendChild(mk('line', {
+      x1: CX + i*SCALE, y1: 60, x2: CX + i*SCALE, y2: 360,
+      stroke: '#2a2d35', 'stroke-width': 0.3, 'stroke-dasharray': '1,3'
+    }));
+    grid.appendChild(mk('line', {
+      x1: CX - 180, y1: CY + i*SCALE, x2: CX + 180, y2: CY + i*SCALE,
+      stroke: '#2a2d35', 'stroke-width': 0.3, 'stroke-dasharray': '1,3'
+    }));
+  }
+  grid.appendChild(mk('line', {
+    x1: CX - 180, y1: CY, x2: CX + 180, y2: CY,
+    stroke: '#2a2d35', 'stroke-width': 0.5
+  }));
+  grid.appendChild(mk('line', {
+    x1: CX, y1: 60, x2: CX, y2: 360,
+    stroke: '#2a2d35', 'stroke-width': 0.5
+  }));
+
+  // Project lattice points
+  function render(mode) {
+    while (pts.firstChild) pts.removeChild(pts.firstChild);
+    // Iterate over integer (a, b) pairs in range
+    for (let a = -3; a <= 3; a++) {
+      for (let b = -3; b <= 3; b++) {
+        // Lipschitz: integer-integer
+        const lipUnit = (a*a + b*b === 1);
+        if (mode === 'lipschitz' || mode === 'hurwitz') {
+          const x = CX + a*SCALE, y = CY - b*SCALE;
+          if (Math.abs(x - CX) <= 180 && Math.abs(y - CY) <= 150) {
+            pts.appendChild(mk('circle', {
+              cx: x, cy: y, r: lipUnit ? 5 : 2.5,
+              fill: lipUnit ? '#c9a557' : '#6e695d',
+              stroke: lipUnit ? '#1a1d24' : 'none',
+              'stroke-width': lipUnit ? 0.6 : 0
+            }));
+          }
+        }
+      }
+    }
+    // Hurwitz extras: half-integer coords. Project (a+½, b+½) ∈ [-2.5..2.5]
+    if (mode === 'hurwitz' || mode === 'diff') {
+      for (let a = -3; a <= 2; a++) {
+        for (let b = -3; b <= 2; b++) {
+          const ha = a + 0.5, hb = b + 0.5;
+          // Half-integer point in (Re, Im_i) plane.
+          // For this point to be a unit-norm Hurwitz, we'd need c=±0.5, d=±0.5 as well,
+          // giving |q|² = 4 · 0.25 = 1. So all 16 half-integer units project to
+          // 4 visible positions: (±0.5, ±0.5).
+          const isHalfUnit = (Math.abs(ha) === 0.5 && Math.abs(hb) === 0.5);
+          const x = CX + ha*SCALE, y = CY - hb*SCALE;
+          if (Math.abs(x - CX) <= 180 && Math.abs(y - CY) <= 150) {
+            pts.appendChild(mk('circle', {
+              cx: x, cy: y, r: isHalfUnit ? 4 : 2.5,
+              fill: isHalfUnit ? '#8b7340' : '#4a4e58',
+              stroke: 'none'
+            }));
+          }
+        }
+      }
+    }
+    // Origin marker
+    pts.appendChild(mk('circle', {
+      cx: CX, cy: CY, r: 2, fill: '#b87878'
+    }));
+  }
+
+  const readout = document.getElementById('growth-readout');
+  function updateReadout(mode) {
+    if (mode === 'lipschitz') {
+      readout.innerHTML = `Showing the integer-coordinate Lipschitz lattice $L$. The four
+        unit-norm points $\\pm 1, \\pm i$ sit on the unit circle in this projection.
+        <span class="small">The other two Lipschitz units $\\pm j, \\pm k$ have $(q_0, q_1) = (0,0)$ and project to the origin (shown as a single point with multiplicity).</span>`;
+    } else if (mode === 'hurwitz') {
+      readout.innerHTML = `Showing the full Hurwitz lattice $\\mathbb{H}_{\\mathrm{H}}$:
+        integer points (gold/grey) plus half-integer points (bronze).
+        <span class="small">Visible half-integer points sit at $(\\pm\\tfrac{1}{2}, \\pm\\tfrac{1}{2})$ — the four corner positions inside the unit circle. Each represents four 4-D half-integer units sharing those two coordinates.</span>`;
+    } else {
+      readout.innerHTML = `Showing only the Hurwitz-proper points: the half-integer
+        lattice $L + \\rho$ that gets added when we adjoin $\\rho$.
+        <span class="small">This is the shift of the Lipschitz lattice by $\\rho = \\tfrac{1}{2}(1,1,1,1)$, projected to the same plane. Visible unit-norm Hurwitz-proper points cluster at the four inner-circle corners $(\\pm\\tfrac{1}{2}, \\pm\\tfrac{1}{2})$.</span>`;
+    }
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([readout]);
+  }
+
+  const btns = svg.parentElement.querySelectorAll('.btn');
+  btns.forEach(b => {
+    b.addEventListener('click', () => {
+      btns.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const mode = b.getAttribute('data-mode');
+      render(mode);
+      updateReadout(mode);
+    });
+  });
+  render('lipschitz');
+})();
+</script>
+
+</body>
+</html>
