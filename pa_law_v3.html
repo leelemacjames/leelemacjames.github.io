@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The P/A Law · Lattice Perimeter and Area</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #f7f4ef;
+  --bg2:       #edeae3;
+  --bg3:       #e2dfd7;
+  --ink:       #1a1814;
+  --ink2:      #3a3730;
+  --ink3:      #7a7770;
+  --rule:      #c8c4bc;
+  --blue:      #1a4fa0;
+  --blue-l:    #dae4f5;
+  --blue-ll:   #eef4fc;
+  --green:     #1a6b3c;
+  --green-l:   #d4eddf;
+  --green-ll:  #edf8f2;
+  --orange:    #c24a1a;
+  --orange-l:  #fae0d4;
+  --gold:      #9a6b00;
+  --gold-l:    #fef0c7;
+  --serif:     'Crimson Pro', Georgia, serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  overflow-x: auto;
+}
+nav button {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  padding: 11px 18px;
+  border: none;
+  background: transparent;
+  color: var(--ink3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+nav button:hover { color: var(--ink2); }
+nav button.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* ── PAGES ── */
+.page { display: none; max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+.page.active { display: block; }
+
+/* ── TYPE ── */
+h1 { font-size: 2rem; font-weight: 300; line-height: 1.2; margin-bottom: .3rem; }
+h2 { font-size: 1.2rem; font-weight: 600; margin: 2rem 0 .5rem; color: var(--ink); }
+h3 { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin: 1.6rem 0 .5rem; }
+p  { color: var(--ink2); margin-bottom: .8rem; font-size: 1rem; }
+em { font-style: italic; color: var(--ink); }
+strong { font-weight: 600; color: var(--ink); }
+
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--bg3);
+  color: var(--ink3);
+  margin-bottom: .8rem;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1.2rem 0;
+  font-size: .93rem;
+}
+.callout.gold   { background: var(--gold-l);   border: 1px solid #e8d080; color: var(--gold); }
+.callout.blue   { background: var(--blue-ll);  border: 1px solid #9ab8e0; color: var(--blue); }
+.callout.green  { background: var(--green-ll); border: 1px solid #8fcfaa; color: var(--green); }
+.callout.orange { background: var(--orange-l); border: 1px solid #e8a070; color: var(--orange); }
+
+/* ── FORMULA ── */
+.formula {
+  font-family: var(--mono);
+  font-size: .88rem;
+  background: var(--bg2);
+  border-left: 3px solid var(--ink);
+  padding: 10px 18px;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+  color: var(--ink);
+}
+.formula.blue  { border-color: var(--blue);  background: var(--blue-ll);  color: var(--blue); }
+.formula.green { border-color: var(--green); background: var(--green-ll); color: var(--green); }
+.formula.gold  { border-color: var(--gold);  background: var(--gold-l);   color: var(--gold); }
+
+/* ── SVG WRAP ── */
+.svg-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin: 1.4rem 0;
+}
+
+/* ── TWO COL ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 1rem 0; }
+@media(max-width:560px){ .two-col{ grid-template-columns:1fr; } }
+
+/* ── STAT PANEL ── */
+.stat-panel {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.stat-panel .label { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink3); margin-bottom: 6px; }
+.stat-row-inner { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--rule); font-size: .9rem; }
+.stat-row-inner:last-child { border-bottom: none; }
+.stat-key { color: var(--ink3); font-family: var(--mono); font-size: 11px; }
+.stat-val { color: var(--ink); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+.stat-val.blue  { color: var(--blue); }
+.stat-val.green { color: var(--green); }
+.stat-val.gold  { color: var(--gold); }
+
+/* ── SLIDER ── */
+.slider-wrap { display: flex; align-items: center; gap: 12px; margin: 1rem 0; }
+.slider-wrap label { font-family: var(--mono); font-size: 11px; color: var(--ink3); white-space: nowrap; }
+.slider-wrap input[type=range] {
+  flex: 1; -webkit-appearance: none;
+  height: 3px; background: var(--bg3); border-radius: 2px; outline: none;
+}
+.slider-wrap input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--ink); cursor: pointer;
+}
+.slider-readout { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 40px; text-align: right; }
+
+/* ── TABLE ── */
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .9rem; }
+th { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink3); padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: left; }
+td { padding: 7px 10px; border-bottom: 1px solid var(--rule); color: var(--ink2); font-family: var(--mono); font-size: 11px; }
+td.hl { color: var(--ink); font-weight: 500; }
+td.blue { color: var(--blue); font-weight: 500; }
+td.green { color: var(--green); font-weight: 500; }
+
+/* ── CANVAS ── */
+canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; border-radius: 4px; }
+
+/* ── HINT ── */
+.hint { font-family: var(--mono); font-size: 11px; color: var(--ink3); text-align: center; margin: 6px 0 0; }
+
+/* ── NEXT BTN ── */
+.btn-next {
+  margin-top: 2rem;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .06em;
+  padding: 10px 22px; border: 1px solid var(--ink); border-radius: 4px;
+  background: transparent; color: var(--ink); cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.btn-next:hover { background: var(--ink); color: var(--bg); }
+
+/* ── LATTICE TOGGLE ── */
+.lattice-toggle { display: flex; gap: 8px; margin-bottom: 1rem; }
+.ltbtn {
+  font-family: var(--mono); font-size: 11px; padding: 6px 16px;
+  border-radius: 20px; border: 1px solid var(--rule);
+  background: var(--bg); color: var(--ink3); cursor: pointer; transition: all .15s;
+}
+.ltbtn:hover { background: var(--bg2); }
+.ltbtn.sel-sq  { background: var(--blue);  color: #fff; border-color: var(--blue); }
+.ltbtn.sel-ei  { background: var(--green); color: #fff; border-color: var(--green); }
+
+hr { border: none; border-top: 1px solid var(--rule); margin: 1.6rem 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="active" onclick="go(0)">1 · The P/A law</button>
+  <button onclick="go(1)">2 · Square lattice</button>
+  <button onclick="go(2)">3 · Eisenstein lattice</button>
+  <button onclick="go(3)">4 · Live explorer</button>
+  <button onclick="go(4)">5 · Convex polygons</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════ PAGE 0 -->
+<div class="page active" id="p0">
+  <span class="tag">Overview</span>
+  <h1>The perimeter-to-area law<br><em>P/A = 2/Δ</em></h1>
+  <p>Pick's theorem connects area to lattice point counts. Reading it in reverse reveals a universal law about how boundary and interior relate — and how the geometry of the lattice determines the ratio.</p>
+
+  <div class="formula gold">Pick's theorem (general): A = Δ · (I + B/2 − 1)</div>
+
+  <p>Here Δ is the area of the fundamental domain of the lattice — the determinant of the basis matrix. For large polygons where the interior dominates, this law emerges:</p>
+
+  <div class="formula">P/A → 2/Δ</div>
+
+  <p>where P = B is the boundary point count, which serves as the lattice-metric perimeter under the Chebyshev (king-move) metric on each lattice.</p>
+
+  <h2>Derivation in three lines</h2>
+  <p>For large polygons: I ≈ A/Δ (interior fills the area) and B ≪ I, so Pick gives A ≈ Δ·I. Rearranging Pick exactly:</p>
+  <div class="formula">B = 2(A/Δ − I + 1) &nbsp;→&nbsp; B/A = 2/Δ · (1 − ΔI/A + Δ/A)</div>
+  <p>As the polygon grows: ΔI/A → 1 and Δ/A → 0, giving <strong>B/A = P/A → 2/Δ</strong>.</p>
+
+  <div class="two-col">
+    <div class="stat-panel">
+      <div class="label">Square lattice ℤ²</div>
+      <div class="stat-row-inner"><span class="stat-key">Δ = det(M)</span><span class="stat-val blue">1</span></div>
+      <div class="stat-row-inner"><span class="stat-key">basis angle</span><span class="stat-val">90°</span></div>
+      <div class="stat-row-inner"><span class="stat-key">P/A limit</span><span class="stat-val blue">2/1 = 2.000</span></div>
+      <div class="stat-row-inner"><span class="stat-key">king directions</span><span class="stat-val">8</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="label">Eisenstein lattice ℤ[ω]</div>
+      <div class="stat-row-inner"><span class="stat-key">Δ = det(M)</span><span class="stat-val green">√3/2 ≈ 0.866</span></div>
+      <div class="stat-row-inner"><span class="stat-key">basis angle</span><span class="stat-val">60°</span></div>
+      <div class="stat-row-inner"><span class="stat-key">P/A limit</span><span class="stat-val green">4/√3 ≈ 2.309</span></div>
+      <div class="stat-row-inner"><span class="stat-key">hex directions</span><span class="stat-val">6</span></div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <strong>The surprise:</strong> the Eisenstein lattice has a smaller fundamental domain (denser packing) yet a <em>higher</em> P/A ratio. Density cuts both ways — a denser lattice packs more boundary points per unit area, so boundary is relatively more expensive. The law P/A = 2/Δ is Pick's theorem read as a statement about the lattice's intrinsic geometry.
+  </div>
+
+  <button class="btn-next" onclick="go(1)">Square lattice in detail →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ PAGE 1 -->
+<div class="page" id="p1">
+  <span class="tag">Square lattice</span>
+  <h1>Square lattice ℤ²<br><em>P/A → 2</em></h1>
+
+  <p>On the square lattice, the Chebyshev (king-move) metric assigns cost 1 to each of the 8 neighbour directions. Every boundary lattice point contributes one step, so P = B.</p>
+
+  <p>Pick's theorem here is A = I + B/2 − 1. Rearranging with P = B:</p>
+  <div class="formula blue">A = I + P/2 − 1 &nbsp;⟹&nbsp; P = 2(A − I + 1)</div>
+
+  <p>The ratio P/A depends on how much of the interior is filled:</p>
+  <div class="formula blue">P/A = 2(1 − I/A + 1/A)</div>
+
+  <p>As the polygon grows and I/A → 1:</p>
+  <div class="formula">P/A → 2</div>
+
+  <div class="svg-wrap">
+    <svg id="sq-diagram" width="100%" viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- grid -->
+      <g stroke="#c8c4bc" stroke-width="0.5">
+        <line x1="40" y1="20" x2="660" y2="20"/><line x1="40" y1="70" x2="660" y2="70"/>
+        <line x1="40" y1="120" x2="660" y2="120"/><line x1="40" y1="170" x2="660" y2="170"/>
+        <line x1="40" y1="220" x2="660" y2="220"/>
+        <line x1="40" y1="20" x2="40" y2="220"/><line x1="90" y1="20" x2="90" y2="220"/>
+        <line x1="140" y1="20" x2="140" y2="220"/><line x1="190" y1="20" x2="190" y2="220"/>
+        <line x1="240" y1="20" x2="240" y2="220"/><line x1="290" y1="20" x2="290" y2="220"/>
+        <line x1="340" y1="20" x2="340" y2="220"/><line x1="390" y1="20" x2="390" y2="220"/>
+        <line x1="440" y1="20" x2="440" y2="220"/><line x1="490" y1="20" x2="490" y2="220"/>
+        <line x1="540" y1="20" x2="540" y2="220"/><line x1="590" y1="20" x2="590" y2="220"/>
+        <line x1="640" y1="20" x2="640" y2="220"/>
+      </g>
+      <!-- polygon -->
+      <polygon points="140,20 390,20 490,70 540,120 440,220 140,220 90,120"
+        fill="#dae4f5" fill-opacity="0.55" stroke="#1a4fa0" stroke-width="2"/>
+      <!-- boundary dots -->
+      <g fill="#c24a1a">
+        <circle cx="140" cy="20" r="5"/><circle cx="190" cy="20" r="5"/>
+        <circle cx="240" cy="20" r="5"/><circle cx="290" cy="20" r="5"/>
+        <circle cx="340" cy="20" r="5"/><circle cx="390" cy="20" r="5"/>
+        <circle cx="440" cy="20" r="4.5" opacity=".8"/>
+        <circle cx="490" cy="70" r="5"/><circle cx="540" cy="120" r="5"/>
+        <circle cx="490" cy="170" r="4.5" opacity=".8"/>
+        <circle cx="440" cy="220" r="5"/><circle cx="390" cy="220" r="5"/>
+        <circle cx="340" cy="220" r="5"/><circle cx="290" cy="220" r="5"/>
+        <circle cx="240" cy="220" r="5"/><circle cx="190" cy="220" r="5"/>
+        <circle cx="140" cy="220" r="5"/><circle cx="90" cy="170" r="4.5" opacity=".8"/>
+        <circle cx="90" cy="120" r="5"/>
+      </g>
+      <!-- interior dots -->
+      <g fill="#1a4fa0">
+        <circle cx="140" cy="70" r="5"/><circle cx="190" cy="70" r="5"/>
+        <circle cx="240" cy="70" r="5"/><circle cx="290" cy="70" r="5"/>
+        <circle cx="340" cy="70" r="5"/><circle cx="390" cy="70" r="5"/>
+        <circle cx="440" cy="70" r="5"/>
+        <circle cx="140" cy="120" r="5"/><circle cx="190" cy="120" r="5"/>
+        <circle cx="240" cy="120" r="5"/><circle cx="290" cy="120" r="5"/>
+        <circle cx="340" cy="120" r="5"/><circle cx="390" cy="120" r="5"/>
+        <circle cx="440" cy="120" r="5"/><circle cx="490" cy="120" r="5"/>
+        <circle cx="140" cy="170" r="5"/><circle cx="190" cy="170" r="5"/>
+        <circle cx="240" cy="170" r="5"/><circle cx="290" cy="170" r="5"/>
+        <circle cx="340" cy="170" r="5"/><circle cx="390" cy="170" r="5"/>
+        <circle cx="440" cy="170" r="5"/>
+      </g>
+      <!-- king move arrows from one boundary point -->
+      <g stroke="#c24a1a" stroke-width="1" stroke-dasharray="3 2" opacity="0.6">
+        <line x1="490" y1="70" x2="540" y2="20"/><line x1="490" y1="70" x2="540" y2="70"/>
+        <line x1="490" y1="70" x2="540" y2="120"/><line x1="490" y1="70" x2="490" y2="20"/>
+        <line x1="490" y1="70" x2="440" y2="20"/><line x1="490" y1="70" x2="440" y2="70"/>
+      </g>
+      <!-- labels -->
+      <text x="570" y="60" font-family="'Crimson Pro',serif" font-size="13" fill="#1a4fa0">Interior I = 21</text>
+      <text x="570" y="82" font-family="'Crimson Pro',serif" font-size="13" fill="#c24a1a">Boundary B = 19</text>
+      <text x="570" y="110" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a1814">A = 21+19/2−1</text>
+      <text x="570" y="128" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a6b3c">= 29.5</text>
+      <text x="570" y="152" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a1814">P/A = 19/29.5</text>
+      <text x="570" y="170" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a6b3c">≈ 0.644 → 2 ✓</text>
+      <text x="460" y="108" font-family="'JetBrains Mono',monospace" font-size="9" fill="#c24a1a">8 king</text>
+      <text x="460" y="120" font-family="'JetBrains Mono',monospace" font-size="9" fill="#c24a1a">moves</text>
+    </svg>
+  </div>
+
+  <div class="callout blue">
+    <strong>What P = B means geometrically:</strong> on the square lattice, every adjacent pair of boundary lattice points is connected by exactly one king-move — a step of length 1 in the Chebyshev metric, regardless of direction (horizontal, vertical, or diagonal). So the boundary point count and the Chebyshev perimeter are the same number.
+  </div>
+  <button class="btn-next" onclick="go(2)">Eisenstein lattice →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ PAGE 2 -->
+<div class="page" id="p2">
+  <span class="tag">Eisenstein lattice</span>
+  <h1>Eisenstein lattice ℤ[ω]<br><em>P/A → 4/√3</em></h1>
+
+  <p>On the Eisenstein lattice the basis vectors meet at 60°, giving a triangular grid. Each lattice point has <strong>6 nearest neighbours</strong> (not 8), and the hex metric assigns cost 1 to each of these six directions.</p>
+
+  <p>The fundamental domain has area Δ = √3/2. Pick's theorem becomes:</p>
+  <div class="formula green">A = (√3/2) · (I + B/2 − 1) &nbsp;⟹&nbsp; P/A = (4/√3)(1 − I·Δ/A + Δ/A)</div>
+
+  <p>As the polygon grows:</p>
+  <div class="formula">P/A → 4/√3 = 4√3/3 ≈ 2.309</div>
+
+  <div class="svg-wrap">
+    <svg id="ei-diagram" width="100%" viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#c8c4bc" stroke-width="0.5" opacity="0.9"><line x1="-24.0" y1="260.0" x2="704.0" y2="260.0"/><line x1="2.0" y1="215.0" x2="730.0" y2="215.0"/><line x1="28.0" y1="169.9" x2="756.0" y2="169.9"/><line x1="54.0" y1="124.9" x2="782.0" y2="124.9"/><line x1="80.0" y1="79.9" x2="808.0" y2="79.9"/><line x1="106.0" y1="34.8" x2="834.0" y2="34.8"/><line x1="-24.0" y1="260.0" x2="106.0" y2="34.8"/><line x1="28.0" y1="260.0" x2="158.0" y2="34.8"/><line x1="80.0" y1="260.0" x2="210.0" y2="34.8"/><line x1="132.0" y1="260.0" x2="262.0" y2="34.8"/><line x1="184.0" y1="260.0" x2="314.0" y2="34.8"/><line x1="236.0" y1="260.0" x2="366.0" y2="34.8"/><line x1="288.0" y1="260.0" x2="418.0" y2="34.8"/><line x1="340.0" y1="260.0" x2="470.0" y2="34.8"/><line x1="392.0" y1="260.0" x2="522.0" y2="34.8"/><line x1="444.0" y1="260.0" x2="574.0" y2="34.8"/><line x1="496.0" y1="260.0" x2="626.0" y2="34.8"/><line x1="548.0" y1="260.0" x2="678.0" y2="34.8"/><line x1="600.0" y1="260.0" x2="730.0" y2="34.8"/><line x1="652.0" y1="260.0" x2="782.0" y2="34.8"/><line x1="704.0" y1="260.0" x2="834.0" y2="34.8"/><line x1="-154.0" y1="34.8" x2="-24.0" y2="260.0"/><line x1="-102.0" y1="34.8" x2="28.0" y2="260.0"/><line x1="-50.0" y1="34.8" x2="80.0" y2="260.0"/><line x1="2.0" y1="34.8" x2="132.0" y2="260.0"/><line x1="54.0" y1="34.8" x2="184.0" y2="260.0"/><line x1="106.0" y1="34.8" x2="236.0" y2="260.0"/><line x1="158.0" y1="34.8" x2="288.0" y2="260.0"/><line x1="210.0" y1="34.8" x2="340.0" y2="260.0"/><line x1="262.0" y1="34.8" x2="392.0" y2="260.0"/><line x1="314.0" y1="34.8" x2="444.0" y2="260.0"/><line x1="366.0" y1="34.8" x2="496.0" y2="260.0"/><line x1="418.0" y1="34.8" x2="548.0" y2="260.0"/><line x1="470.0" y1="34.8" x2="600.0" y2="260.0"/><line x1="522.0" y1="34.8" x2="652.0" y2="260.0"/><line x1="574.0" y1="34.8" x2="704.0" y2="260.0"/><line x1="626.0" y1="34.8" x2="756.0" y2="260.0"/><line x1="678.0" y1="34.8" x2="808.0" y2="260.0"/><line x1="730.0" y1="34.8" x2="860.0" y2="260.0"/><line x1="782.0" y1="34.8" x2="912.0" y2="260.0"/><line x1="834.0" y1="34.8" x2="964.0" y2="260.0"/></g>
+      <polygon points="158.0,215.0 314.0,215.0 470.0,124.9 444.0,79.9 288.0,79.9 132.0,169.9" fill="#d4eddf" fill-opacity="0.55" stroke="#1a6b3c" stroke-width="2"/>
+      <g fill="#1a6b3c"><circle cx="184.0" cy="169.9" r="5"/><circle cx="236.0" cy="169.9" r="5"/><circle cx="288.0" cy="169.9" r="5"/><circle cx="340.0" cy="169.9" r="5"/><circle cx="262.0" cy="124.9" r="5"/><circle cx="314.0" cy="124.9" r="5"/><circle cx="366.0" cy="124.9" r="5"/><circle cx="418.0" cy="124.9" r="5"/></g>
+      <g fill="#c24a1a"><circle cx="210.0" cy="215.0" r="5"/><circle cx="262.0" cy="215.0" r="5"/><circle cx="392.0" cy="169.9" r="5"/><circle cx="210.0" cy="124.9" r="5"/><circle cx="340.0" cy="79.9" r="5"/><circle cx="392.0" cy="79.9" r="5"/></g>
+      <g fill="#c24a1a"><circle cx="158.0" cy="215.0" r="5"/><circle cx="314.0" cy="215.0" r="5"/><circle cx="470.0" cy="124.9" r="5"/><circle cx="444.0" cy="79.9" r="5"/><circle cx="288.0" cy="79.9" r="5"/><circle cx="132.0" cy="169.9" r="5"/></g>
+      <g stroke="#c24a1a" stroke-width="1.3" stroke-dasharray="4 2" opacity="0.7"><line x1="288.0" y1="169.9" x2="340.0" y2="169.9"/><line x1="288.0" y1="169.9" x2="236.0" y2="169.9"/><line x1="288.0" y1="169.9" x2="314.0" y2="124.9"/><line x1="288.0" y1="169.9" x2="262.0" y2="215.0"/><line x1="288.0" y1="169.9" x2="314.0" y2="215.0"/><line x1="288.0" y1="169.9" x2="262.0" y2="124.9"/></g>
+      <text x="296" y="164" font-family="'JetBrains Mono',monospace" font-size="9" fill="#c24a1a">6 hex dirs</text>
+      <text x="490" y="55"  font-family="'Crimson Pro',serif" font-size="13" fill="#1a6b3c">Interior I = 8</text>
+      <text x="490" y="77"  font-family="'Crimson Pro',serif" font-size="13" fill="#c24a1a">Boundary B = 12</text>
+      <text x="490" y="105" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a1814">A=(√3/2)(8+12/2−1)</text>
+      <text x="490" y="123" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a6b3c">≈ 11.26</text>
+      <text x="490" y="147" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a1814">P/A = 12/11.26 = 1.066</text>
+      <text x="490" y="165" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1a6b3c">→ 2.309 as size grows</text>
+    </svg>    </svg>
+  </div>
+
+  <div class="callout green">
+    <strong>Why 4/√3 and not 2/√3?</strong> The factor comes from 2/Δ = 2/(√3/2) = 4/√3. The denominator √3/2 is the fundamental domain area — the area of the rhombus spanned by the two Eisenstein basis vectors. Pick's formula divides by Δ, and P/A inherits that reciprocal.
+  </div>
+
+  <div class="two-col">
+    <div class="stat-panel">
+      <div class="label">Derivation</div>
+      <div class="stat-row-inner"><span class="stat-key">Δ = √3/2</span><span class="stat-val">(basis det)</span></div>
+      <div class="stat-row-inner"><span class="stat-key">2/Δ</span><span class="stat-val">= 2/(√3/2)</span></div>
+      <div class="stat-row-inner"><span class="stat-key">= 4/√3</span><span class="stat-val green">≈ 2.3094</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="label">Ratio comparison</div>
+      <div class="stat-row-inner"><span class="stat-key">Square P/A</span><span class="stat-val blue">2.000</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Eisenstein P/A</span><span class="stat-val green">2.309</span></div>
+      <div class="stat-row-inner"><span class="stat-key">ratio</span><span class="stat-val">2/√3 = 1/Δ</span></div>
+    </div>
+  </div>
+  <button class="btn-next" onclick="go(3)">Live explorer →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ PAGE 3 -->
+<div class="page" id="p3">
+  <span class="tag">Interactive</span>
+  <h1>Live P/A explorer<br><em>draw polygons, watch the ratio</em></h1>
+  <p>Draw a polygon on either lattice. The boundary and interior points are counted automatically, Pick's formula is verified, and P/A is shown alongside the theoretical limit 2/Δ.</p>
+
+  <div class="lattice-toggle">
+    <button class="ltbtn sel-sq" id="btn-sq" onclick="setLattice('sq')">Square lattice (Δ=1)</button>
+    <button class="ltbtn" id="btn-ei" onclick="setLattice('ei')">Eisenstein lattice (Δ=√3/2)</button>
+  </div>
+
+  <div class="svg-wrap" style="padding:0.6rem">
+    <canvas id="explorer-canvas" width="740" height="340"></canvas>
+  </div>
+  <p class="hint">Drag vertices · Click empty lattice point to add · Double-click vertex to remove · Min 3 vertices</p>
+
+  <div class="two-col" style="margin-top:1rem">
+    <div class="stat-panel">
+      <div class="label" id="lattice-label">Square lattice · Δ = 1</div>
+      <div class="stat-row-inner"><span class="stat-key">Interior I</span><span class="stat-val blue" id="ex-I">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Boundary B = P</span><span class="stat-val" id="ex-B" style="color:var(--orange)">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Area (Pick)</span><span class="stat-val green" id="ex-A">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Shape</span><span class="stat-val" id="ex-convex">—</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="label">P/A analysis</div>
+      <div class="stat-row-inner"><span class="stat-key">Current P/A</span><span class="stat-val gold" id="ex-pa">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Asymptotic limit 2/Δ</span><span class="stat-val" id="ex-limit">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">Interior fill ΔI/A</span><span class="stat-val" id="ex-fill">—</span></div>
+      <div class="stat-row-inner"><span class="stat-key">P/A = (2/Δ)·(1 − ΔI/A + Δ/A)</span><span class="stat-val" id="ex-formula">—</span></div>
+    </div>
+  </div>
+
+  <div class="callout gold" style="margin-top:1rem" id="ex-callout">
+    <strong>P/A = (2/Δ)·(1 − ΔI/A + Δ/A).</strong>
+    The interior fill ΔI/A drives everything. When ΔI/A → 1 (large, interior-dense polygon), P/A → 2/Δ from below.
+    Small or boundary-heavy polygons have low ΔI/A and sit well below the limit — not because they are close to it asymptotically, but because their interior is sparse.
+    Non-convex polygons waste boundary without enclosing interior, keeping ΔI/A low.
+    To approach the limit: make the polygon large and convex.
+  </div>
+
+  <button class="btn-next" onclick="go(4)">Convex polygons →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ PAGE 4 -->
+<div class="page" id="p4">
+  <span class="tag">Convex polygons</span>
+  <h1>Convex polygons<br><em>the surprise reverses</em></h1>
+
+  <p>For generic polygons P/A → 2/Δ is higher on the Eisenstein lattice. But restrict to <strong>convex</strong> polygons and optimise — the ordering reverses.</p>
+
+  <h2>Why convex polygons are different</h2>
+  <p>For a convex lattice polygon, boundary growth is constrained. Andrews (1963) proved:</p>
+  <div class="formula">B = O(A<sup>1/3</sup>) for convex lattice polygons</div>
+  <p>This means for convex polygons, B grows <em>much</em> slower than A. So P/A → 0 as the polygon grows on <em>either</em> lattice. The 2/Δ limit applies only to generic (possibly non-convex, boundary-heavy) polygons.</p>
+
+  <h2>Optimal isoperimetric ratio P²/A</h2>
+  <p>The right comparison for convex polygons is the isoperimetric ratio P²/A (lower is closer to a circle). The optimal convex lattice polygon uses all available boundary directions — 8 on the square lattice, 12 on the Eisenstein lattice.</p>
+
+  <div class="svg-wrap">
+    <svg width="100%" viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg">
+      <!-- Circle reference -->
+      <g transform="translate(80,115)">
+        <circle cx="0" cy="0" r="80" fill="#f7f4ef" stroke="#8a8780" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="0" y="100" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#4a4740">Circle</text>
+        <text x="0" y="116" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8a8780">4π ≈ 12.57</text>
+      </g>
+      <!-- Square lattice optimal: octagon -->
+      <g transform="translate(340,115)">
+        <polygon points="0,-80 57,-57 80,0 57,57 0,80 -57,57 -80,0 -57,-57"
+          fill="#dae4f5" fill-opacity="0.6" stroke="#1a4fa0" stroke-width="1.8"/>
+        <text x="0" y="100" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#1a4fa0">Square lattice</text>
+        <text x="0" y="116" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="11" fill="#1a4fa0">(8 directions → octagon)</text>
+        <text x="0" y="132" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1a4fa0">P²/A ≈ 13.25</text>
+      </g>
+      <!-- Eisenstein lattice optimal: 12-gon -->
+      <g transform="translate(590,115)">
+        <polygon points="0,-80 40,-69 69,-40 80,0 69,40 40,69 0,80 -40,69 -69,40 -80,0 -69,-40 -40,-69"
+          fill="#d4eddf" fill-opacity="0.6" stroke="#1a6b3c" stroke-width="1.8"/>
+        <text x="0" y="100" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#1a6b3c">Eisenstein lattice</text>
+        <text x="0" y="116" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="11" fill="#1a6b3c">(12 directions → 12-gon)</text>
+        <text x="0" y="132" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1a6b3c">P²/A ≈ 12.43</text>
+      </g>
+    </svg>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Shape</th><th>P²/A</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="hl">Circle</td><td class="blue">4π ≈ 12.566</td><td>Theoretical minimum</td></tr>
+      <tr><td class="hl">Eisenstein optimal (12-gon)</td><td class="green">12(2−√3) ≈ 12.43</td><td>Closer to circle</td></tr>
+      <tr><td class="hl">Square optimal (octagon)</td><td class="blue">8(√2−1)·4 ≈ 13.25</td><td>Further from circle</td></tr>
+      <tr><td>Square</td><td>16</td><td>Only 4 directions</td></tr>
+      <tr><td>Equilateral triangle</td><td>12√3 ≈ 20.78</td><td>Only 3 directions</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout orange">
+    <strong>The reversal explained:</strong> more boundary directions → better circle approximation → lower P²/A. The Eisenstein lattice has 12 available directions (6 unit vectors + 6 combinations) against the square lattice's 8. So the optimal Eisenstein polygon is actually <em>closer</em> to a circle, not further. The Eisenstein lattice is simultaneously worse on average (higher P/A generically) and better at best (lower P²/A for optimal convex shapes).
+  </div>
+
+  <h2>Summary of the two regimes</h2>
+  <table>
+    <thead>
+      <tr><th>Regime</th><th>Square P/A</th><th>Eisenstein P/A</th><th>Winner</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="hl">Generic polygons (large)</td><td class="blue">→ 2</td><td class="green">→ 2.309</td><td class="blue">Square (lower)</td></tr>
+      <tr><td class="hl">Optimal convex (P²/A)</td><td class="blue">≈ 13.25</td><td class="green">≈ 12.43</td><td class="green">Eisenstein (lower)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gold">
+    The triangular lattice is geometrically superior for enclosing area — but only when you restrict to convex shapes and optimise. Its density advantage in the generic case is outweighed by the proliferation of boundary-heavy non-convex configurations. The law P/A = 2/Δ penalises Eisenstein for the same density that makes it efficient, because density also multiplies the ways to waste boundary.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCRIPTS ═══════════════════════════════════════ -->
+<script>
+// ── Navigation ─────────────────────────────────────────────────────────────────────────────
+const pages = document.querySelectorAll('.page');
+const navBtns = document.querySelectorAll('nav button');
+function go(i) {
+  pages.forEach((p,j) => p.classList.toggle('active', j===i));
+  navBtns.forEach((b,j) => b.classList.toggle('active', j===i));
+  if (i===3) { initExplorer(); drawExplorer(); }
+}
+
+// ── Explorer State ─────────────────────────────────────────────────────────────────────────
+let latticeMode = 'sq'; // 'sq' or 'ei'
+let vertices = [];
+let dragging = -1;
+let explorerInited = false;
+
+const SQ_STEP = 54;   // pixels per grid unit, square
+const CANVAS_W = 740, CANVAS_H = 340;
+const SQ_COLS = Math.floor((CANVAS_W - 40) / SQ_STEP) + 1;
+const SQ_ROWS = Math.floor((CANVAS_H - 20) / SQ_STEP) + 1;
+
+// ── Eisenstein oblique basis (TRUE triangular lattice) ──────────────────────
+// b1 = S*(1, 0)            — horizontal
+// b2 = S*(cos60°, sin60°)  — 60° above horizontal (canvas y inverted so -sin)
+// Origin placed at bottom-left so lattice fans upward-rightward.
+const EI_S   = 54;
+const EI_B1x = EI_S,                EI_B1y = 0;
+const EI_B2x = EI_S * 0.5,          EI_B2y = -EI_S * Math.sqrt(3) / 2;
+const EI_OX  = 28,                  EI_OY  = CANVAS_H - 28;
+
+function sqOrigin() { return { ox: 36, oy: 20 }; }
+
+// ── Grid coordinate ↔ canvas pixel ─────────────────────────────────────────
+function sqToCanvas(gx, gy) {
+  const {ox, oy} = sqOrigin();
+  return { x: ox + gx * SQ_STEP, y: oy + gy * SQ_STEP };
+}
+function canvasToSq(cx, cy) {
+  const {ox, oy} = sqOrigin();
+  return { gx: Math.round((cx - ox) / SQ_STEP), gy: Math.round((cy - oy) / SQ_STEP) };
+}
+
+// Eisenstein (a,b) lattice → canvas
+// P = origin + a·b1 + b·b2
+function eiToCanvas(a, b) {
+  return {
+    x: EI_OX + a * EI_B1x + b * EI_B2x,
+    y: EI_OY + a * EI_B1y + b * EI_B2y
+  };
+}
+// Canvas → nearest Eisenstein lattice point
+// Solve the 2×2 system; B1y=0 simplifies it:
+//   dy = b * B2y  →  b = dy/B2y
+//   dx = a*B1x + b*B2x  →  a = (dx - b*B2x)/B1x
+function canvasToEi(cx, cy) {
+  const dx = cx - EI_OX, dy = cy - EI_OY;
+  const b_raw = dy / EI_B2y;
+  const a_raw = (dx - b_raw * EI_B2x) / EI_B1x;
+  return { ga: Math.round(a_raw), gb: Math.round(b_raw) };
+}
+
+function gridToCanvas(g) {
+  if (latticeMode === 'sq') return sqToCanvas(g.gx, g.gy);
+  return eiToCanvas(g.ga, g.gb);
+}
+
+function canvasToGrid(cx, cy) {
+  if (latticeMode === 'sq') return canvasToSq(cx, cy);
+  return canvasToEi(cx, cy);
+}
+
+function gridKey(g) {
+  if (latticeMode === 'sq') return g.gx + ',' + g.gy;
+  return g.ga + ',' + g.gb;
+}
+
+function gridEq(a, b) {
+  if (latticeMode === 'sq') return a.gx===b.gx && a.gy===b.gy;
+  return a.ga===b.ga && a.gb===b.gb;
+}
+
+function allGridPoints() {
+  const pts = [];
+  if (latticeMode === 'sq') {
+    for (let r = 0; r < SQ_ROWS; r++)
+      for (let c = 0; c < SQ_COLS; c++) {
+        const p = sqToCanvas(c, r);
+        if (p.x >= 20 && p.x <= CANVAS_W-10 && p.y >= 10 && p.y <= CANVAS_H-10)
+          pts.push({ gx: c, gy: r });
+      }
+  } else {
+    // Enumerate over oblique lattice range
+    for (let b = 0; b <= 7; b++)
+      for (let a = -2; a <= 14; a++) {
+        const p = eiToCanvas(a, b);
+        if (p.x >= 14 && p.x <= CANVAS_W-10 && p.y >= 10 && p.y <= CANVAS_H-10)
+          pts.push({ ga: a, gb: b });
+      }
+  }
+  return pts;
+}
+
+// ── Geometry helpers ───────────────────────────────────────────────────────────────────────
+function polygonAreaCanvas(verts) {
+  let a = 0;
+  for (let i = 0; i < verts.length; i++) {
+    const j = (i+1) % verts.length;
+    const pi = gridToCanvas(verts[i]), pj = gridToCanvas(verts[j]);
+    a += pi.x * pj.y - pj.x * pi.y;
+  }
+  return Math.abs(a) / 2;
+}
+
+function polygonAreaLattice(verts) {
+  // For square lattice: shoelace on grid coords
+  // For Eisenstein: need actual Euclidean area
+  return polygonAreaCanvas(verts) / (latticeMode==='sq' ? SQ_STEP*SQ_STEP : EI_STEP*EI_VERT);
+  // Note: for Eisenstein this gives area in units of the parallelogram strip, not Δ units
+}
+
+function pointInPoly(pt, poly) {
+  const p = gridToCanvas(pt);
+  let wn = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const a = gridToCanvas(poly[i]), b = gridToCanvas(poly[(i+1)%poly.length]);
+    if (a.y <= p.y) {
+      if (b.y > p.y && (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x) > 0) wn++;
+    } else {
+      if (b.y <= p.y && (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x) < 0) wn--;
+    }
+  }
+  return wn !== 0;
+}
+
+function gcd2(a, b) { a=Math.abs(a); b=Math.abs(b); while(b){let t=b;b=a%b;a=t;} return a||1; }
+
+function boundaryPoints(poly) {
+  let B = 0;
+  if (latticeMode === 'sq') {
+    for (let i = 0; i < poly.length; i++) {
+      const j = (i+1) % poly.length;
+      const dx = Math.abs(poly[j].gx - poly[i].gx);
+      const dy = Math.abs(poly[j].gy - poly[i].gy);
+      B += gcd2(dx, dy);
+    }
+  } else {
+    // Eisenstein: edge from (a1,b1) to (a2,b2) in oblique coords.
+    // Steps along edge = gcd(|da|, |db|) — same as square lattice Pick rule
+    // because the oblique basis is a genuine lattice basis.
+    for (let i = 0; i < poly.length; i++) {
+      const j = (i+1) % poly.length;
+      const da = Math.abs(poly[j].ga - poly[i].ga);
+      const db = Math.abs(poly[j].gb - poly[i].gb);
+      B += gcd2(da, db);
+    }
+  }
+  return B;
+}
+
+// ── Canvas interaction ─────────────────────────────────────────────────────────────────────
+function initExplorer() {
+  if (explorerInited) return;
+  explorerInited = true;
+  // Default polygon — square lattice
+  vertices = [
+    {gx:1,gy:1},{gx:5,gy:1},{gx:7,gy:3},{gx:4,gy:5},{gx:1,gy:4}
+  ];
+  const canvas = document.getElementById('explorer-canvas');
+  canvas.addEventListener('mousedown', exDown);
+  canvas.addEventListener('mousemove', exMove);
+  canvas.addEventListener('mouseup',   exUp);
+  canvas.addEventListener('dblclick',  exDbl);
+  canvas.addEventListener('touchstart', e=>{e.preventDefault();exDown(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchmove',  e=>{e.preventDefault();exMove(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchend',   e=>{e.preventDefault();exUp();},{passive:false});
+}
+
+function getCanvasXY(e) {
+  const canvas = document.getElementById('explorer-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = CANVAS_W / rect.width;
+  const scaleY = CANVAS_H / rect.height;
+  return { cx: (e.clientX - rect.left)*scaleX, cy: (e.clientY - rect.top)*scaleY };
+}
+
+function nearVertex(cx, cy) {
+  for (let i = 0; i < vertices.length; i++) {
+    const p = gridToCanvas(vertices[i]);
+    if (Math.hypot(cx-p.x, cy-p.y) < 22) return i;
+  }
+  return -1;
+}
+
+function exDown(e) {
+  const {cx,cy} = getCanvasXY(e);
+  const idx = nearVertex(cx,cy);
+  if (idx >= 0) { dragging = idx; return; }
+  // Add new vertex
+  const g = canvasToGrid(cx, cy);
+  const exists = vertices.some(v => gridEq(v, g));
+  if (!exists) {
+    // Check in bounds
+    const p = gridToCanvas(g);
+    if (p.x >= 15 && p.x <= CANVAS_W-10 && p.y >= 10 && p.y <= CANVAS_H-10) {
+      vertices.push(g);
+      drawExplorer();
+    }
+  }
+}
+
+function exMove(e) {
+  if (dragging < 0) return;
+  const {cx,cy} = getCanvasXY(e);
+  const g = canvasToGrid(cx, cy);
+  const exists = vertices.some((v,i) => i!==dragging && gridEq(v,g));
+  if (!exists) {
+    const p = gridToCanvas(g);
+    if (p.x >= 15 && p.x <= CANVAS_W-10 && p.y >= 10 && p.y <= CANVAS_H-10) {
+      vertices[dragging] = g;
+      drawExplorer();
+    }
+  }
+}
+
+function exUp() { dragging = -1; }
+
+function exDbl(e) {
+  if (vertices.length <= 3) return;
+  const {cx,cy} = getCanvasXY(e);
+  const idx = nearVertex(cx,cy);
+  if (idx >= 0) { vertices.splice(idx,1); drawExplorer(); }
+}
+
+function setLattice(mode) {
+  latticeMode = mode;
+  document.getElementById('btn-sq').className = 'ltbtn' + (mode==='sq'?' sel-sq':'');
+  document.getElementById('btn-ei').className = 'ltbtn' + (mode==='ei'?' sel-ei':'');
+  // Reset to sensible default
+  if (mode === 'sq') {
+    vertices = [{gx:1,gy:1},{gx:5,gy:1},{gx:7,gy:3},{gx:4,gy:5},{gx:1,gy:4}];
+    document.getElementById('lattice-label').textContent = 'Square lattice · Δ = 1';
+  } else {
+    // Default hexagon in oblique (a,b) coords — looks like a proper hexagon
+    vertices = [{ga:2,gb:1},{ga:5,gb:1},{ga:7,gb:3},{ga:6,gb:5},{ga:3,gb:5},{ga:1,gb:3}];
+    document.getElementById('lattice-label').textContent = 'Eisenstein lattice · Δ = √3/2';
+  }
+  drawExplorer();
+}
+
+// ── Draw ───────────────────────────────────────────────────────────────────────────────────
+function drawExplorer() {
+  const canvas = document.getElementById('explorer-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+  // Background
+  ctx.fillStyle = '#edeae3';
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  const allPts = allGridPoints();
+  const vtxKeys = new Set(vertices.map(gridKey));
+
+  // Draw grid lines
+  ctx.strokeStyle = '#c8c4bc'; ctx.lineWidth = 0.5;
+  if (latticeMode === 'sq') {
+    const rows = SQ_ROWS, cols = SQ_COLS;
+    for (let r = 0; r < rows; r++) {
+      const p0 = sqToCanvas(0, r), p1 = sqToCanvas(cols-1, r);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (let c = 0; c < cols; c++) {
+      const p0 = sqToCanvas(c, 0), p1 = sqToCanvas(c, rows-1);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+  } else {
+    // Draw TRUE triangular lattice grid lines in three directions:
+    //   Family 1 (constant b): lines along the b1 direction
+    //   Family 2 (constant a): lines along the b2 direction
+    //   Family 3 (constant a+b): lines along b1-b2 direction (the third axis)
+    const AMIN = -3, AMAX = 16, BMIN = -1, BMAX = 8;
+    // Family 1: for each integer b, draw horizontal line across all a
+    for (let b = BMIN; b <= BMAX; b++) {
+      const p0 = eiToCanvas(AMIN, b), p1 = eiToCanvas(AMAX, b);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    // Family 2: for each integer a, draw lines along the b2 direction
+    for (let a = AMIN; a <= AMAX; a++) {
+      const p0 = eiToCanvas(a, BMIN), p1 = eiToCanvas(a, BMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    // Family 3: for each integer a+b=k, draw lines along b1-b2 direction
+    // These go from (k-BMAX, BMAX) to (k-BMIN, BMIN)
+    for (let k = AMIN+BMIN; k <= AMAX+BMAX; k++) {
+      const p0 = eiToCanvas(k - BMAX, BMAX), p1 = eiToCanvas(k - BMIN, BMIN);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+  }
+
+  if (vertices.length < 3) {
+    // Just draw dots
+    allPts.forEach(g => {
+      const p = gridToCanvas(g);
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 2*Math.PI);
+      ctx.fillStyle = '#c8c4bc'; ctx.fill();
+    });
+    return;
+  }
+
+  // Compute I and B
+  const B = boundaryPoints(vertices);
+  // Boundary lattice points
+  const bSet = new Set();
+  for (let i = 0; i < vertices.length; i++) {
+    const j = (i+1)%vertices.length;
+    if (latticeMode === 'sq') {
+      const dx = vertices[j].gx-vertices[i].gx, dy = vertices[j].gy-vertices[i].gy;
+      const g = gcd2(Math.abs(dx),Math.abs(dy));
+      for (let k=0; k<=g; k++) {
+        const px = vertices[i].gx + Math.round(dx*k/g);
+        const py = vertices[i].gy + Math.round(dy*k/g);
+        bSet.add(px+','+py);
+      }
+    } else {
+      // Eisenstein oblique coords: interpolate in (a,b) space
+      const da = vertices[j].ga - vertices[i].ga;
+      const db = vertices[j].gb - vertices[i].gb;
+      const steps = gcd2(Math.abs(da), Math.abs(db));
+      for (let k=0; k<=steps; k++) {
+        const fa = vertices[i].ga + Math.round(da*k/steps);
+        const fb = vertices[i].gb + Math.round(db*k/steps);
+        bSet.add(fa+','+fb);
+      }
+    }
+  }
+
+  let I = 0;
+  const intPts=[], bndPts=[];
+  allPts.forEach(g => {
+    const key = gridKey(g);
+    if (bSet.has(key)) { bndPts.push(g); }
+    else if (pointInPoly(g, vertices)) { intPts.push(g); I++; }
+  });
+
+  // Polygon fill + outline
+  ctx.beginPath();
+  const p0c = gridToCanvas(vertices[0]);
+  ctx.moveTo(p0c.x, p0c.y);
+  vertices.slice(1).forEach(v => { const p=gridToCanvas(v); ctx.lineTo(p.x,p.y); });
+  ctx.closePath();
+  ctx.fillStyle = latticeMode==='sq' ? 'rgba(218,228,245,0.5)' : 'rgba(212,237,223,0.5)';
+  ctx.fill();
+  ctx.strokeStyle = latticeMode==='sq' ? '#1a4fa0' : '#1a6b3c';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Grid dots
+  const iKeys = new Set(intPts.map(gridKey));
+  const bKeys = new Set(bndPts.map(gridKey));
+  allPts.forEach(g => {
+    const key = gridKey(g);
+    if (vtxKeys.has(key)) return;
+    const p = gridToCanvas(g);
+    const isI = iKeys.has(key), isB = bKeys.has(key);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, isI?6:isB?5.5:2.5, 0, 2*Math.PI);
+    ctx.fillStyle = isI ? (latticeMode==='sq'?'#1a4fa0':'#1a6b3c') : isB ? '#c24a1a' : '#c8c4bc';
+    ctx.fill();
+  });
+
+  // Vertex handles
+  vertices.forEach(v => {
+    const p = gridToCanvas(v);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, 2*Math.PI);
+    ctx.fillStyle = '#c24a1a'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  // ── Compute stats ────────────────────────────────────────────────────────
+  const Delta = latticeMode==='sq' ? 1 : Math.sqrt(3)/2;
+  const Apick = Delta * (I + B/2 - 1);
+  const Adisplay = Apick;
+  const pa = Adisplay > 0 ? B / Adisplay : 0;
+  const limit = 2 / Delta;
+
+  // Interior fill factor: ΔI/A — drives convergence
+  const fill = Adisplay > 0 ? (Delta * I / Adisplay) : 0;
+  // Pick exact decomposition: P/A = (2/Δ)·(1 − ΔI/A + Δ/A)
+  const correction = 1 - fill + (Adisplay > 0 ? Delta / Adisplay : 0);
+
+  // Convexity test: cross products of consecutive edges should all have same sign
+  function isConvex(verts) {
+    if (verts.length < 3) return true;
+    let sign = 0;
+    for (let i = 0; i < verts.length; i++) {
+      const a = gridToCanvas(verts[i]);
+      const b = gridToCanvas(verts[(i+1) % verts.length]);
+      const c = gridToCanvas(verts[(i+2) % verts.length]);
+      const cross = (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
+      if (Math.abs(cross) < 1e-9) continue;
+      const s = cross > 0 ? 1 : -1;
+      if (sign === 0) sign = s;
+      else if (s !== sign) return false;
+    }
+    return true;
+  }
+  const convex = isConvex(vertices);
+
+  // Fill colour: red when low fill, gold when mid, green when high
+  const fillPct = (fill * 100).toFixed(1);
+  const fillColour = fill < 0.4 ? 'var(--orange)' : fill < 0.75 ? 'var(--gold)' : 'var(--green)';
+
+  // Convexity label and colour
+  const convexEl = document.getElementById('ex-convex');
+  convexEl.textContent = convex ? 'convex' : 'non-convex — boundary wasteful';
+  convexEl.style.color = convex ? 'var(--green)' : 'var(--orange)';
+
+  document.getElementById('ex-I').textContent = I;
+  document.getElementById('ex-B').textContent = B;
+  document.getElementById('ex-A').textContent = Adisplay.toFixed(3);
+  document.getElementById('ex-pa').textContent = pa.toFixed(4);
+  document.getElementById('ex-limit').textContent = limit.toFixed(4) + (latticeMode==='sq' ? ' (= 2)' : ' (= 4/√3)');
+
+  const fillEl = document.getElementById('ex-fill');
+  fillEl.textContent = fill.toFixed(3) + ' (' + fillPct + '%)';
+  fillEl.style.color = fillColour;
+
+  // Show the Pick decomposition numerically
+  document.getElementById('ex-formula').textContent =
+    (limit).toFixed(3) + '·(' + correction.toFixed(3) + ') = ' + pa.toFixed(3);
+
+  // Update callout dynamically to reflect current shape
+  const callout = document.getElementById('ex-callout');
+  if (!convex) {
+    callout.innerHTML = '<strong>Non-convex polygon detected.</strong> Non-convexity wastes boundary: the perimeter traces inward recesses that enclose no additional interior. ΔI/A = ' + fill.toFixed(3) + ' is depressed by the concavities. P/A = ' + pa.toFixed(3) + ' sits below the limit ' + limit.toFixed(3) + ' not because this polygon is near the asymptote, but because its interior is sparse relative to its boundary length. Make it convex and larger to approach the limit.';
+    callout.className = 'callout orange';
+  } else if (fill > 0.75) {
+    callout.innerHTML = '<strong>Large, interior-dense polygon.</strong> ΔI/A = ' + fill.toFixed(3) + ' is high — the interior is well-filled. P/A = ' + pa.toFixed(3) + ' is approaching the asymptotic limit ' + limit.toFixed(3) + ' from below. The correction factor (1 − ΔI/A + Δ/A) = ' + correction.toFixed(3) + '. Grow the polygon further to close the gap.';
+    callout.className = 'callout green';
+  } else {
+    callout.innerHTML = '<strong>P/A = (2/Δ)·(1 − ΔI/A + Δ/A).</strong> The interior fill ΔI/A = ' + fill.toFixed(3) + ' drives everything. The limit 2/Δ = ' + limit.toFixed(3) + ' is approached from below only as ΔI/A → 1. Small or boundary-heavy polygons sit well below the limit — not because they are near it asymptotically, but because their interior is sparse. Make the polygon large and convex to approach the limit.';
+    callout.className = 'callout gold';
+  }
+}
+</script>
+</body>
+</html>
