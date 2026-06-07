@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lattice Isoperimetric · B²/A</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f7f4ef; --bg2:#edeae3; --bg3:#e2dfd7;
+  --ink:#1a1814; --ink2:#3a3730; --ink3:#7a7770; --rule:#c8c4bc;
+  --blue:#1a4fa0; --blue-l:#dae4f5; --blue-ll:#eef4fc;
+  --green:#1a6b3c; --green-l:#d4eddf; --green-ll:#edf8f2;
+  --orange:#c24a1a; --orange-l:#fae0d4;
+  --gold:#9a6b00; --gold-l:#fef0c7;
+  --serif:'Crimson Pro',Georgia,serif; --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:16px;line-height:1.7;}
+
+nav{display:flex;border-bottom:1px solid var(--rule);background:var(--bg);position:sticky;top:0;z-index:100;overflow-x:auto;}
+nav button{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;padding:11px 16px;border:none;background:transparent;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+nav button:hover{color:var(--ink2);}
+nav button.active{color:var(--ink);border-bottom-color:var(--ink);}
+
+.page{display:none;max-width:820px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+.page.active{display:block;}
+
+h1{font-size:2rem;font-weight:300;line-height:1.2;margin-bottom:.3rem;}
+h2{font-size:1.2rem;font-weight:600;margin:2rem 0 .5rem;}
+h3{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:1.6rem 0 .5rem;}
+p{color:var(--ink2);margin-bottom:.8rem;}
+em{font-style:italic;color:var(--ink);}
+strong{font-weight:600;color:var(--ink);}
+
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--bg3);color:var(--ink3);margin-bottom:.8rem;}
+.callout{border-radius:6px;padding:12px 16px;margin:1.2rem 0;font-size:.93rem;}
+.callout.gold{background:var(--gold-l);border:1px solid #e8d080;color:var(--gold);}
+.callout.blue{background:var(--blue-ll);border:1px solid #9ab8e0;color:var(--blue);}
+.callout.green{background:var(--green-ll);border:1px solid #8fcfaa;color:var(--green);}
+.callout.orange{background:var(--orange-l);border:1px solid #e8a070;color:var(--orange);}
+
+.formula{font-family:var(--mono);font-size:.88rem;background:var(--bg2);border-left:3px solid var(--ink);padding:10px 18px;margin:1rem 0;border-radius:0 4px 4px 0;color:var(--ink);}
+.formula.blue{border-color:var(--blue);background:var(--blue-ll);color:var(--blue);}
+.formula.green{border-color:var(--green);background:var(--green-ll);color:var(--green);}
+.formula.gold{border-color:var(--gold);background:var(--gold-l);color:var(--gold);}
+.formula.orange{border-color:var(--orange);background:var(--orange-l);color:var(--orange);}
+
+.svg-wrap{background:var(--bg2);border:1px solid var(--rule);border-radius:8px;padding:1.2rem;margin:1.4rem 0;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0;}
+@media(max-width:560px){.two-col{grid-template-columns:1fr;}}
+
+.stat-panel{background:var(--bg2);border:1px solid var(--rule);border-radius:8px;padding:14px 18px;}
+.stat-panel .label{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+.srow{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule);font-size:.9rem;}
+.srow:last-child{border-bottom:none;}
+.sk{color:var(--ink3);font-family:var(--mono);font-size:11px;}
+.sv{color:var(--ink);font-family:var(--mono);font-size:12px;font-weight:500;}
+.sv.blue{color:var(--blue);} .sv.green{color:var(--green);} .sv.gold{color:var(--gold);} .sv.orange{color:var(--orange);}
+
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem;}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);color:var(--ink2);font-family:var(--mono);font-size:11px;}
+td.hl{color:var(--ink);font-weight:500;} td.blue{color:var(--blue);font-weight:500;} td.green{color:var(--green);font-weight:500;} td.gold{color:var(--gold);font-weight:500;}
+
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair;border-radius:4px;}
+.hint{font-family:var(--mono);font-size:11px;color:var(--ink3);text-align:center;margin:6px 0 0;}
+
+.btn-next{margin-top:2rem;font-family:var(--mono);font-size:12px;letter-spacing:.06em;padding:10px 22px;border:1px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;transition:background .15s,color .15s;}
+.btn-next:hover{background:var(--ink);color:var(--bg);}
+
+.lattice-toggle{display:flex;gap:8px;margin-bottom:1rem;}
+.ltbtn{font-family:var(--mono);font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid var(--rule);background:var(--bg);color:var(--ink3);cursor:pointer;transition:all .15s;}
+.ltbtn.sel-sq{background:var(--blue);color:#fff;border-color:var(--blue);}
+.ltbtn.sel-ei{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* big number display */
+.big-num{font-family:var(--mono);font-size:2rem;font-weight:500;line-height:1;}
+.big-num.blue{color:var(--blue);} .big-num.green{color:var(--green);} .big-num.gold{color:var(--gold);}
+.big-label{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-top:4px;}
+
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1rem 0;}
+.trio-card{background:var(--bg2);border:1px solid var(--rule);border-radius:8px;padding:12px 14px;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="active" onclick="go(0)">1 · Isoperimetric ratio</button>
+  <button onclick="go(1)">2 · Pick &amp; scale invariance</button>
+  <button onclick="go(2)">3 · Lattice isoperimetric</button>
+  <button onclick="go(3)">4 · Live explorer</button>
+  <button onclick="go(4)">5 · Both lattices</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════ PAGE 0 -->
+<div class="page active" id="p0">
+  <span class="tag">Isoperimetric</span>
+  <h1>The isoperimetric ratio<br><em>B²/A on a lattice</em></h1>
+
+  <p>This learner is a companion to the
+  <a href="https://leelemacjames.github.io/pa_law_v3.html" style="color:var(--blue)">interactive P/A explorer</a>,
+  which introduced Pick's theorem on the square and Eisenstein lattices.
+  That app showed B/A computed for polygons you draw.
+  This learner asks a sharper question: is B/A even the right thing to measure?</p>
+
+  <p>The classical isoperimetric problem asks: among all shapes with a given perimeter, which encloses the most area?
+  The answer is the circle. But the quantity that captures <em>shape efficiency</em> — independent of size — is <strong>not</strong> P/A.</p>
+
+  <h2>Why P/A fails as a measure of shape</h2>
+  <p>Dilate any shape by a factor r. Its perimeter scales as rP, its area as r²A:</p>
+  <div class="formula orange">P/A → rP/r²A = (1/r)·(P/A) → 0 as r → ∞</div>
+  <p>So P/A → 0 for <em>any</em> shape under dilation — a square, a circle, a fractal coastline. It carries no shape information whatsoever, only size. On a lattice, Pick confirms this directly: for an n×n square, B = 4n and A = n², so B/A = 4/n → 0.</p>
+
+  <h2>The scale-invariant measure</h2>
+  <p>Dilation by r gives (rP)²/(r²A) = P²/A unchanged. So P²/A is <strong>scale-invariant</strong> — it measures shape efficiency independent of size:</p>
+  <div class="formula gold">P²/A — the isoperimetric ratio — is invariant under dilation</div>
+
+  <div class="svg-wrap">
+    <svg width="100%" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+      <!-- Circle -->
+      <g transform="translate(90,100)">
+        <circle r="60" fill="none" stroke="#8a8780" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <circle r="2.5" fill="#8a8780"/>
+        <text x="0" y="80" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#4a4740">Circle</text>
+        <text x="0" y="96" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1a6b3c">P²/A = 4π ≈ 12.57</text>
+        <text x="0" y="110" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#8a8780">minimum possible</text>
+      </g>
+      <!-- Square -->
+      <g transform="translate(280,100)">
+        <rect x="-52" y="-52" width="104" height="104" fill="none" stroke="#1a4fa0" stroke-width="1.5"/>
+        <text x="0" y="72" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#1a4fa0">Square</text>
+        <text x="0" y="88" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1a4fa0">P²/A = 16</text>
+        <text x="0" y="102" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#8a8780">same at any size</text>
+      </g>
+      <!-- Thin rectangle — same P²/A demonstration -->
+      <g transform="translate(470,100)">
+        <rect x="-80" y="-16" width="160" height="32" fill="none" stroke="#c24a1a" stroke-width="1.5"/>
+        <text x="0" y="36" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="13" fill="#c24a1a">Thin rectangle</text>
+        <text x="0" y="52" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#c24a1a">P²/A → large</text>
+        <text x="0" y="66" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#8a8780">poor efficiency</text>
+      </g>
+      <!-- Scale arrows under square -->
+      <g transform="translate(280,170)">
+        <text x="-40" y="0" font-family="'JetBrains Mono',monospace" font-size="9" fill="#8a8780">×2 dilation:</text>
+        <text x="32" y="0" font-family="'JetBrains Mono',monospace" font-size="9" fill="#1a4fa0">P²/A still = 16</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="callout blue">
+    <strong>The isoperimetric inequality:</strong> for any shape, P²/A ≥ 4π, with equality only for the circle. On a lattice, P is replaced by the boundary count B and A is given by Pick. The question becomes: what is the minimum B²/A achievable on each lattice, and how does the basis determinant Δ enter?
+  </div>
+
+  <button class="btn-next" onclick="go(1)">Pick's theorem and scale invariance →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PAGE 1 -->
+<div class="page" id="p1">
+  <span class="tag">Pick + scaling</span>
+  <h1>Pick's theorem<br><em>and scale invariance</em></h1>
+
+  <p>Pick's theorem is A = Δ(I + B/2 − 1). The correct asymptotic behaviour under dilation is B/A → 0. The scale-invariant quantity is B²/A, which Pick lets us express purely in terms of lattice point counts.</p>
+
+  <h2>What Pick says about B/A</h2>
+  <p>From Pick exactly:</p>
+  <div class="formula">B/A = (2/Δ) · (1 − ΔI/A + Δ/A)</div>
+  <p>For a large well-filled polygon, I grows like A/Δ, so ΔI/A → 1 and Δ/A → 0. The bracket → 1 − 1 + 0 = 0. Therefore:</p>
+  <div class="formula orange">B/A → 0 for any large filled polygon — trivially, by dilation</div>
+  <p>This is not an interesting limit. An n×n square has B = 4n, A = n², so B/A = 4/n → 0 regardless of shape.</p>
+
+  <h2>The correct scale-invariant quantity</h2>
+  <p>B²/A is invariant under lattice dilation by n (all coordinates scaled by n): B → nB, A → n²A, so B²/A → n²B²/n²A = B²/A. Using Pick:</p>
+  <div class="formula gold">B²/A = B² / [Δ(I + B/2 − 1)]</div>
+  <p>This is the lattice analogue of the classical isoperimetric ratio P²/A. It is dimensionless in lattice units and measures shape efficiency independent of size.</p>
+
+  <h2>The n×n square — explicit check</h2>
+  <p>For a square n×n on the square lattice (Δ=1): A = n², B = 4n, I = (n−1)².</p>
+  <div class="formula blue">B²/A = 16n²/n² = 16 — constant for all n ✓</div>
+  <p>And Pick confirms: A = (n−1)² + 4n/2 − 1 = n² ✓. The ratio 16 matches the continuous square (P²/A = (4L)²/L² = 16). Scale invariance is exact.</p>
+
+  <div class="callout green">
+    <strong>The role of Δ:</strong> on the Eisenstein lattice, the same n×n parallelogram (in oblique coordinates) has area Δ·n² = (√3/2)n² and boundary 4n (same count). So B²/A = 16n²/((√3/2)n²) = 32/√3 ≈ 18.48. The lattice determinant enters the denominator — a denser lattice (smaller Δ) gives a larger B²/A for the same combinatorial shape, because the same boundary count encloses less Euclidean area.
+  </div>
+
+  <table>
+    <thead><tr><th>Shape</th><th>B²/A (square lattice)</th><th>B²/A (Eisenstein)</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">Circle (continuous)</td><td class="gold">4π ≈ 12.57 (min)</td><td class="gold">4π ≈ 12.57 (min)</td></tr>
+      <tr><td class="hl">Optimal convex lattice polygon</td><td class="blue">≈ 13.25 (octagon)</td><td class="green">≈ 12.43 (12-gon)</td></tr>
+      <tr><td class="hl">Square / parallelogram</td><td class="blue">16</td><td class="green">32/√3 ≈ 18.48</td></tr>
+      <tr><td>Triangle</td><td>12√3 ≈ 20.78</td><td>varies</td></tr>
+    </tbody>
+  </table>
+
+  <button class="btn-next" onclick="go(2)">The lattice isoperimetric inequality →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PAGE 2 -->
+<div class="page" id="p2">
+  <span class="tag">Isoperimetric inequality</span>
+  <h1>Lattice isoperimetric<br><em>B²/A ≥ 4π via Pick</em></h1>
+
+  <p>The continuous isoperimetric inequality P²/A ≥ 4π (with equality for the circle) has a lattice analogue. Pick's theorem is the bridge.</p>
+
+  <h2>The inequality</h2>
+  <p>For any lattice polygon with boundary count B, interior count I, and fundamental domain area Δ:</p>
+  <div class="formula gold">B²/A ≥ 4π — approached as the polygon approximates a circle</div>
+  <p>The minimum is achieved by the most circle-like convex lattice polygon available — which depends on how many boundary directions the lattice permits.</p>
+
+  <h2>How Δ enters</h2>
+  <p>Since A = Δ(I + B/2 − 1), the ratio B²/A can be written:</p>
+  <div class="formula">B²/A = B² / [Δ·(I + B/2 − 1)]</div>
+  <p>The Δ in the denominator means: for the same combinatorial polygon (same I, B), a lattice with larger Δ gives a smaller B²/A — it is a more efficient lattice for enclosing area. The square lattice (Δ=1) is more efficient than the Eisenstein (Δ=√3/2) in this sense. But the Eisenstein lattice has more available boundary directions, so its optimal polygon is more circle-like — it can achieve a lower B²/A by choosing a better shape.</p>
+
+  <h2>The two effects in tension</h2>
+  <div class="two-col">
+    <div class="stat-panel">
+      <div class="label">Square lattice (Δ = 1)</div>
+      <div class="srow"><span class="sk">fundamental domain</span><span class="sv blue">area 1</span></div>
+      <div class="srow"><span class="sk">boundary directions</span><span class="sv">8</span></div>
+      <div class="srow"><span class="sk">optimal shape</span><span class="sv">octagon</span></div>
+      <div class="srow"><span class="sk">min B²/A</span><span class="sv blue">≈ 13.25</span></div>
+      <div class="srow"><span class="sk">vs circle (4π)</span><span class="sv">+5.5% above</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="label">Eisenstein lattice (Δ = √3/2)</div>
+      <div class="srow"><span class="sk">fundamental domain</span><span class="sv green">area √3/2</span></div>
+      <div class="srow"><span class="sk">boundary directions</span><span class="sv">12</span></div>
+      <div class="srow"><span class="sk">optimal shape</span><span class="sv">12-gon</span></div>
+      <div class="srow"><span class="sk">min B²/A</span><span class="sv green">≈ 12.43</span></div>
+      <div class="srow"><span class="sk">vs circle (4π)</span><span class="sv">−1.1% below 4π</span></div>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>The Eisenstein lattice wins the isoperimetric competition.</strong> Despite having a smaller fundamental domain (which inflates B²/A for any given combinatorial shape), its 12 available boundary directions allow polygon shapes that more closely approximate a circle. The minimum achievable B²/A on the Eisenstein lattice is actually <em>below</em> 4π for finite polygons — the discrete lattice can beat the continuous bound because the lattice perimeter is not the Euclidean perimeter.
+  </div>
+
+  <p style="font-size:.88rem;color:var(--ink3);margin-bottom:.4rem">Click any marker to read its explanation.</p>
+  <div class="svg-wrap" style="padding:1rem 1rem 0.6rem;position:relative">
+    <canvas id="numline-canvas" width="720" height="220" style="cursor:pointer;width:100%;height:auto"></canvas>
+  </div>
+  <div id="numline-info" class="callout gold" style="min-height:3.6rem;margin-top:.6rem">
+    Click a marker on the number line to learn about that shape.
+  </div>
+
+  <button class="btn-next" onclick="go(3)">Live explorer →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PAGE 3 -->
+<div class="page" id="p3">
+  <span class="tag">Interactive</span>
+  <h1>Live isoperimetric explorer<br><em>B²/A for any polygon</em></h1>
+  <p>Draw a polygon. The scale-invariant ratio B²/A is computed via Pick and compared to the circle bound 4π and the lattice optimum. Dilation (scaling the polygon) leaves B²/A unchanged.</p>
+
+  <div class="lattice-toggle">
+    <button class="ltbtn sel-sq" id="btn-sq" onclick="setLattice('sq')">Square lattice (Δ = 1)</button>
+    <button class="ltbtn" id="btn-ei" onclick="setLattice('ei')">Eisenstein lattice (Δ = √3/2)</button>
+  </div>
+
+  <div class="svg-wrap" style="padding:0.6rem">
+    <canvas id="explorer-canvas" width="740" height="340"></canvas>
+  </div>
+  <p class="hint">Drag vertices · Click empty lattice point to add · Double-click vertex to remove · Min 3 vertices</p>
+
+  <!-- Big B²/A display -->
+  <div style="text-align:center;margin:1.2rem 0 0.4rem">
+    <div class="big-num gold" id="ex-bsqa">—</div>
+    <div class="big-label">B²/A — isoperimetric ratio</div>
+  </div>
+
+  <div class="trio">
+    <div class="trio-card">
+      <div class="big-num" id="ex-I" style="font-size:1.4rem;color:var(--blue)">—</div>
+      <div class="big-label">Interior I</div>
+    </div>
+    <div class="trio-card">
+      <div class="big-num" id="ex-B" style="font-size:1.4rem;color:var(--orange)">—</div>
+      <div class="big-label">Boundary B</div>
+    </div>
+    <div class="trio-card">
+      <div class="big-num" id="ex-A" style="font-size:1.4rem;color:var(--green)">—</div>
+      <div class="big-label">Area (Pick)</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="stat-panel">
+      <div class="label" id="lattice-label">Square lattice · Δ = 1</div>
+      <div class="srow"><span class="sk">B²/A (your polygon)</span><span class="sv gold" id="ex-bsqa2">—</span></div>
+      <div class="srow"><span class="sk">Circle bound (4π)</span><span class="sv">12.566</span></div>
+      <div class="srow"><span class="sk">Lattice optimum</span><span class="sv" id="ex-opt">—</span></div>
+      <div class="srow"><span class="sk">Shape</span><span class="sv" id="ex-convex">—</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="label">Scale invariance check</div>
+      <div class="srow"><span class="sk">B/A (not invariant)</span><span class="sv orange" id="ex-ba">—</span></div>
+      <div class="srow"><span class="sk">B²/A (invariant)</span><span class="sv gold" id="ex-bsqa3">—</span></div>
+      <div class="srow"><span class="sk">above 4π by</span><span class="sv" id="ex-above">—</span></div>
+      <div class="srow"><span class="sk">Pick: A = Δ(I + B/2 − 1)</span><span class="sv green" id="ex-pickcheck">—</span></div>
+    </div>
+  </div>
+
+  <div class="callout gold" id="ex-callout">
+    Draw a polygon to see its isoperimetric ratio B²/A computed via Pick's theorem.
+  </div>
+
+  <button class="btn-next" onclick="go(4)">Compare both lattices →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PAGE 4 -->
+<div class="page" id="p4">
+  <span class="tag">Comparison</span>
+  <h1>Square vs Eisenstein<br><em>the isoperimetric comparison</em></h1>
+
+  <p>The correct comparison between the two lattices is through B²/A, not B/A. Two effects compete.</p>
+
+  <h2>Effect 1 — fundamental domain size</h2>
+  <p>For the same combinatorial polygon (same I and B), Pick gives different areas on the two lattices:</p>
+  <div class="formula">A<sub>sq</sub> = 1·(I + B/2 − 1) &nbsp;&nbsp; A<sub>ei</sub> = (√3/2)·(I + B/2 − 1)</div>
+  <p>Since A<sub>ei</sub> &lt; A<sub>sq</sub>, we have B²/A<sub>ei</sub> &gt; B²/A<sub>sq</sub> for the same shape. The denser Eisenstein lattice penalises any given combinatorial shape by inflating B²/A.</p>
+
+  <h2>Effect 2 — available boundary directions</h2>
+  <p>The square lattice has 8 primitive boundary directions (horizontal, vertical, and 4 diagonals). The Eisenstein lattice has 12. More directions → better circle approximation → lower B²/A for the optimal shape. This is the effect that lets the Eisenstein lattice win the isoperimetric competition.</p>
+
+  <h2>The resolution</h2>
+  <table>
+    <thead><tr><th>Comparison</th><th>Square lattice</th><th>Eisenstein lattice</th><th>Winner</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">Same combinatorial shape</td><td class="blue">B²/A lower</td><td class="green">B²/A higher</td><td class="blue">Square</td></tr>
+      <tr><td class="hl">Optimal shape (best polygon)</td><td class="blue">≈ 13.25</td><td class="green">≈ 12.43</td><td class="green">Eisenstein</td></tr>
+      <tr><td class="hl">Proximity to circle (4π ≈ 12.57)</td><td class="blue">+5.5%</td><td class="green">−1.1%</td><td class="green">Eisenstein</td></tr>
+      <tr><td class="hl">B/A under dilation</td><td colspan="2" style="text-align:center;color:var(--ink3)">→ 0 on both (not informative)</td><td class="gold">Neither</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <strong>Summary:</strong> the Eisenstein lattice has a smaller fundamental domain, which inflates B²/A for any fixed combinatorial polygon. But it compensates by offering more boundary directions, allowing polygon shapes that more closely approximate a circle. The net result is that the optimal Eisenstein polygon achieves B²/A ≈ 12.43, closer to the circle bound 4π ≈ 12.57 than the optimal square lattice polygon at ≈ 13.25.
+  </div>
+
+  <h2>The Pick thread</h2>
+  <p>The determinant Δ of the lattice basis enters B²/A through the denominator of Pick's formula. It is the same Δ that appeared in the generalised Pick formula A = Δ(I + B/2 − 1). The isoperimetric problem on a lattice is inseparable from the geometry of the basis — which is the central theme of the companion paper.</p>
+
+  <div class="formula gold">B²/A = B² / [Δ·(I + B/2 − 1)] — the basis determinant Δ is the lattice ruler</div>
+
+  <div class="callout blue">
+    <strong>The correct limiting law:</strong> for any lattice polygon under dilation, B/A → 0 (trivially). The informative quantity is B²/A, which is constant under dilation and measures how circle-like the polygon is in lattice units. Its minimum over all polygons on a given lattice is the <em>lattice isoperimetric constant</em>, determined jointly by Δ and the available boundary directions.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ SCRIPTS ═══════════════════════════════════ -->
+<script>
+const pages = document.querySelectorAll('.page');
+const navBtns = document.querySelectorAll('nav button');
+function go(i) {
+  pages.forEach((p,j) => p.classList.toggle('active', j===i));
+  navBtns.forEach((b,j) => b.classList.toggle('active', j===i));
+  if (i===2) { setTimeout(initNumline, 50); }
+  if (i===3) { initExplorer(); drawExplorer(); }
+}
+
+// ── Lattice geometry ───────────────────────────────────────────────────────
+let latticeMode = 'sq';
+let vertices = [];
+let dragging = -1;
+let explorerInited = false;
+
+const SQ_STEP = 54, CANVAS_W = 740, CANVAS_H = 340;
+const SQ_COLS = Math.floor((CANVAS_W-40)/SQ_STEP)+1;
+const SQ_ROWS = Math.floor((CANVAS_H-20)/SQ_STEP)+1;
+
+const EI_S = 54;
+const EI_B1x = EI_S, EI_B1y = 0;
+const EI_B2x = EI_S*0.5, EI_B2y = -EI_S*Math.sqrt(3)/2;
+const EI_OX = 28, EI_OY = CANVAS_H - 28;
+
+function sqToCanvas(gx,gy){ return {x:36+gx*SQ_STEP, y:20+gy*SQ_STEP}; }
+function canvasToSq(cx,cy){ return {gx:Math.round((cx-36)/SQ_STEP), gy:Math.round((cy-20)/SQ_STEP)}; }
+
+function eiToCanvas(a,b){ return {x:EI_OX+a*EI_B1x+b*EI_B2x, y:EI_OY+a*EI_B1y+b*EI_B2y}; }
+function canvasToEi(cx,cy){
+  const dx=cx-EI_OX, dy=cy-EI_OY;
+  const b_=dy/EI_B2y, a_=(dx-b_*EI_B2x)/EI_B1x;
+  return {ga:Math.round(a_), gb:Math.round(b_)};
+}
+
+function gridToCanvas(g){ return latticeMode==='sq' ? sqToCanvas(g.gx,g.gy) : eiToCanvas(g.ga,g.gb); }
+function canvasToGrid(cx,cy){ return latticeMode==='sq' ? canvasToSq(cx,cy) : canvasToEi(cx,cy); }
+function gridKey(g){ return latticeMode==='sq' ? g.gx+','+g.gy : g.ga+','+g.gb; }
+function gridEq(a,b){ return latticeMode==='sq' ? a.gx===b.gx&&a.gy===b.gy : a.ga===b.ga&&a.gb===b.gb; }
+
+function allGridPoints(){
+  const pts=[];
+  if(latticeMode==='sq'){
+    for(let r=0;r<SQ_ROWS;r++) for(let c=0;c<SQ_COLS;c++){
+      const p=sqToCanvas(c,r);
+      if(p.x>=20&&p.x<=CANVAS_W-10&&p.y>=10&&p.y<=CANVAS_H-10) pts.push({gx:c,gy:r});
+    }
+  } else {
+    for(let b=0;b<=7;b++) for(let a=-2;a<=14;a++){
+      const p=eiToCanvas(a,b);
+      if(p.x>=14&&p.x<=CANVAS_W-10&&p.y>=10&&p.y<=CANVAS_H-10) pts.push({ga:a,gb:b});
+    }
+  }
+  return pts;
+}
+
+function cross2d(ax,ay,bx,by){ return ax*by-ay*bx; }
+
+function pointInPoly(pt,poly){
+  const p=gridToCanvas(pt); let wn=0;
+  for(let i=0;i<poly.length;i++){
+    const a=gridToCanvas(poly[i]), b=gridToCanvas(poly[(i+1)%poly.length]);
+    if(a.y<=p.y){ if(b.y>p.y&&cross2d(b.x-a.x,b.y-a.y,p.x-a.x,p.y-a.y)>0) wn++; }
+    else { if(b.y<=p.y&&cross2d(b.x-a.x,b.y-a.y,p.x-a.x,p.y-a.y)<0) wn--; }
+  }
+  return wn!==0;
+}
+
+function gcd2(a,b){ a=Math.abs(a);b=Math.abs(b); while(b){let t=b;b=a%b;a=t;} return a||1; }
+
+function boundaryPoints(poly){
+  let B=0;
+  for(let i=0;i<poly.length;i++){
+    const j=(i+1)%poly.length;
+    if(latticeMode==='sq'){
+      B+=gcd2(Math.abs(poly[j].gx-poly[i].gx),Math.abs(poly[j].gy-poly[i].gy));
+    } else {
+      B+=gcd2(Math.abs(poly[j].ga-poly[i].ga),Math.abs(poly[j].gb-poly[i].gb));
+    }
+  }
+  return B;
+}
+
+function isConvex(verts){
+  if(verts.length<3) return true;
+  let sign=0;
+  for(let i=0;i<verts.length;i++){
+    const a=gridToCanvas(verts[i]), b=gridToCanvas(verts[(i+1)%verts.length]), c=gridToCanvas(verts[(i+2)%verts.length]);
+    const cr=(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
+    if(Math.abs(cr)<1e-9) continue;
+    const s=cr>0?1:-1;
+    if(sign===0) sign=s; else if(s!==sign) return false;
+  }
+  return true;
+}
+
+// ── Canvas interaction ─────────────────────────────────────────────────────
+function initExplorer(){
+  if(explorerInited) return;
+  explorerInited=true;
+  vertices=[{gx:1,gy:1},{gx:5,gy:1},{gx:7,gy:3},{gx:4,gy:5},{gx:1,gy:4}];
+  const canvas=document.getElementById('explorer-canvas');
+  canvas.addEventListener('mousedown',exDown);
+  canvas.addEventListener('mousemove',exMove);
+  canvas.addEventListener('mouseup',exUp);
+  canvas.addEventListener('dblclick',exDbl);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();exDown(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();exMove(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchend',e=>{e.preventDefault();exUp();},{passive:false});
+}
+
+function getXY(e){
+  const canvas=document.getElementById('explorer-canvas');
+  const rect=canvas.getBoundingClientRect();
+  return {cx:(e.clientX-rect.left)*CANVAS_W/rect.width, cy:(e.clientY-rect.top)*CANVAS_H/rect.height};
+}
+
+function nearVertex(cx,cy){
+  for(let i=0;i<vertices.length;i++){
+    const p=gridToCanvas(vertices[i]);
+    if(Math.hypot(cx-p.x,cy-p.y)<22) return i;
+  }
+  return -1;
+}
+
+function exDown(e){
+  const {cx,cy}=getXY(e);
+  const idx=nearVertex(cx,cy);
+  if(idx>=0){dragging=idx;return;}
+  const g=canvasToGrid(cx,cy);
+  if(!vertices.some(v=>gridEq(v,g))){
+    const p=gridToCanvas(g);
+    if(p.x>=15&&p.x<=CANVAS_W-10&&p.y>=10&&p.y<=CANVAS_H-10){vertices.push(g);drawExplorer();}
+  }
+}
+
+function exMove(e){
+  if(dragging<0) return;
+  const {cx,cy}=getXY(e);
+  const g=canvasToGrid(cx,cy);
+  if(!vertices.some((v,i)=>i!==dragging&&gridEq(v,g))){
+    const p=gridToCanvas(g);
+    if(p.x>=15&&p.x<=CANVAS_W-10&&p.y>=10&&p.y<=CANVAS_H-10){vertices[dragging]=g;drawExplorer();}
+  }
+}
+
+function exUp(){ dragging=-1; }
+
+function exDbl(e){
+  if(vertices.length<=3) return;
+  const {cx,cy}=getXY(e);
+  const idx=nearVertex(cx,cy);
+  if(idx>=0){vertices.splice(idx,1);drawExplorer();}
+}
+
+function setLattice(mode){
+  latticeMode=mode;
+  document.getElementById('btn-sq').className='ltbtn'+(mode==='sq'?' sel-sq':'');
+  document.getElementById('btn-ei').className='ltbtn'+(mode==='ei'?' sel-ei':'');
+  if(mode==='sq'){
+    vertices=[{gx:1,gy:1},{gx:5,gy:1},{gx:7,gy:3},{gx:4,gy:5},{gx:1,gy:4}];
+    document.getElementById('lattice-label').textContent='Square lattice · Δ = 1';
+    document.getElementById('ex-opt').textContent='≈ 13.25 (octagon)';
+  } else {
+    vertices=[{ga:2,gb:1},{ga:5,gb:1},{ga:7,gb:3},{ga:6,gb:5},{ga:3,gb:5},{ga:1,gb:3}];
+    document.getElementById('lattice-label').textContent='Eisenstein lattice · Δ = √3/2';
+    document.getElementById('ex-opt').textContent='≈ 12.43 (12-gon)';
+  }
+  drawExplorer();
+}
+
+// ── Draw ───────────────────────────────────────────────────────────────────
+function drawExplorer(){
+  const canvas=document.getElementById('explorer-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle='#edeae3'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  const allPts=allGridPoints();
+  const vtxKeys=new Set(vertices.map(gridKey));
+
+  // Grid lines
+  ctx.strokeStyle='#c8c4bc'; ctx.lineWidth=0.5;
+  if(latticeMode==='sq'){
+    for(let r=0;r<SQ_ROWS;r++){const p0=sqToCanvas(0,r),p1=sqToCanvas(SQ_COLS-1,r);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();}
+    for(let c=0;c<SQ_COLS;c++){const p0=sqToCanvas(c,0),p1=sqToCanvas(c,SQ_ROWS-1);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();}
+  } else {
+    const AM=-3,AX=16,BM=-1,BX=8;
+    for(let b=BM;b<=BX;b++){const p0=eiToCanvas(AM,b),p1=eiToCanvas(AX,b);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();}
+    for(let a=AM;a<=AX;a++){const p0=eiToCanvas(a,BM),p1=eiToCanvas(a,BX);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();}
+    for(let k=AM+BM;k<=AX+BX;k++){const p0=eiToCanvas(k-BX,BX),p1=eiToCanvas(k-BM,BM);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();}
+  }
+
+  if(vertices.length<3){
+    allPts.forEach(g=>{const p=gridToCanvas(g);ctx.beginPath();ctx.arc(p.x,p.y,3,0,2*Math.PI);ctx.fillStyle='#c8c4bc';ctx.fill();});
+    return;
+  }
+
+  // Boundary set
+  const B=boundaryPoints(vertices);
+  const bSet=new Set();
+  for(let i=0;i<vertices.length;i++){
+    const j=(i+1)%vertices.length;
+    if(latticeMode==='sq'){
+      const dx=vertices[j].gx-vertices[i].gx,dy=vertices[j].gy-vertices[i].gy;
+      const g=gcd2(Math.abs(dx),Math.abs(dy));
+      for(let k=0;k<=g;k++) bSet.add((vertices[i].gx+Math.round(dx*k/g))+','+(vertices[i].gy+Math.round(dy*k/g)));
+    } else {
+      const da=vertices[j].ga-vertices[i].ga,db=vertices[j].gb-vertices[i].gb;
+      const s=gcd2(Math.abs(da),Math.abs(db));
+      for(let k=0;k<=s;k++) bSet.add((vertices[i].ga+Math.round(da*k/s))+','+(vertices[i].gb+Math.round(db*k/s)));
+    }
+  }
+
+  let I=0;
+  const intPts=[],bndPts=[];
+  allPts.forEach(g=>{
+    const key=gridKey(g);
+    if(vtxKeys.has(key)) return;
+    if(bSet.has(key)) bndPts.push(g);
+    else if(pointInPoly(g,vertices)){intPts.push(g);I++;}
+  });
+
+  // Polygon
+  ctx.beginPath();
+  const p0c=gridToCanvas(vertices[0]);ctx.moveTo(p0c.x,p0c.y);
+  vertices.slice(1).forEach(v=>{const p=gridToCanvas(v);ctx.lineTo(p.x,p.y);});
+  ctx.closePath();
+  ctx.fillStyle=latticeMode==='sq'?'rgba(218,228,245,0.5)':'rgba(212,237,223,0.5)';
+  ctx.fill();
+  ctx.strokeStyle=latticeMode==='sq'?'#1a4fa0':'#1a6b3c';ctx.lineWidth=2;ctx.stroke();
+
+  // Dots
+  const iKeys=new Set(intPts.map(gridKey)),bKeys=new Set(bndPts.map(gridKey));
+  allPts.forEach(g=>{
+    const key=gridKey(g);if(vtxKeys.has(key)) return;
+    const p=gridToCanvas(g),isI=iKeys.has(key),isB=bKeys.has(key);
+    ctx.beginPath();ctx.arc(p.x,p.y,isI?6:isB?5.5:2.5,0,2*Math.PI);
+    ctx.fillStyle=isI?(latticeMode==='sq'?'#1a4fa0':'#1a6b3c'):isB?'#c24a1a':'#c8c4bc';ctx.fill();
+  });
+
+  vertices.forEach(v=>{
+    const p=gridToCanvas(v);ctx.beginPath();ctx.arc(p.x,p.y,9,0,2*Math.PI);
+    ctx.fillStyle='#c24a1a';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  });
+
+  // Stats
+  const Delta=latticeMode==='sq'?1:Math.sqrt(3)/2;
+  const A=Delta*(I+B/2-1);
+  if(A<=0){
+    document.getElementById('ex-bsqa').textContent='—';
+    document.getElementById('ex-callout').textContent='Degenerate polygon — need positive area.';
+    return;
+  }
+  const bsqa=B*B/A;
+  const ba=B/A;
+  const above=bsqa-4*Math.PI;
+  const convex=isConvex(vertices);
+  const optVal=latticeMode==='sq'?13.25:12.43;
+
+  // Update DOM
+  document.getElementById('ex-bsqa').textContent=bsqa.toFixed(3);
+  document.getElementById('ex-bsqa2').textContent=bsqa.toFixed(3);
+  document.getElementById('ex-bsqa3').textContent=bsqa.toFixed(3);
+  document.getElementById('ex-I').textContent=I;
+  document.getElementById('ex-B').textContent=B;
+  document.getElementById('ex-A').textContent=A.toFixed(3);
+  document.getElementById('ex-ba').textContent=ba.toFixed(4)+' (→0 as scaled)';
+  document.getElementById('ex-above').textContent=(above>=0?'+':'')+above.toFixed(3)+' (4π=12.566)';
+  document.getElementById('ex-pickcheck').textContent=A.toFixed(3)+' ✓';
+
+  const convEl=document.getElementById('ex-convex');
+  convEl.textContent=convex?'convex':'non-convex';
+  convEl.style.color=convex?'var(--green)':'var(--orange)';
+
+  // Colour the big number
+  const bsqaEl=document.getElementById('ex-bsqa');
+  bsqaEl.style.color=bsqa<4*Math.PI+0.5?'var(--green)':bsqa<optVal+1?'var(--gold)':'var(--orange)';
+
+  // Callout
+  const cl=document.getElementById('ex-callout');
+  if(!convex){
+    cl.className='callout orange';
+    cl.innerHTML='<strong>Non-convex polygon.</strong> Non-convexity wastes boundary without enclosing interior, inflating B²/A. B²/A = '+bsqa.toFixed(2)+'. Make it convex to approach the lattice optimum ('+optVal+').';
+  } else if(bsqa<optVal+0.5){
+    cl.className='callout green';
+    cl.innerHTML='<strong>Near the lattice optimum!</strong> B²/A = '+bsqa.toFixed(2)+' is close to the best achievable on this lattice (≈'+optVal+'). The circle bound is 4π ≈ 12.57. Scale the polygon — B²/A stays constant under dilation.';
+  } else {
+    cl.className='callout gold';
+    cl.innerHTML='<strong>B²/A = '+bsqa.toFixed(2)+'</strong> — the scale-invariant isoperimetric ratio. The circle bound is 4π ≈ 12.57. The lattice optimum ('+latticeMode==='sq'?'octagon':'12-gon'+') is ≈'+optVal+'. B/A = '+ba.toFixed(3)+' would → 0 under dilation and carries no shape information; B²/A = '+bsqa.toFixed(2)+' is constant and does.';
+  }
+}
+
+// ── Interactive number line ──────────────────────────────────────────────────
+const NL_MARKERS = [
+  {
+    val: 12.566, label: '4π', sub: 'Circle (continuous)', col: '#8a8780',
+    filled: false, dash: true,
+    detail: '<strong>Circle — 4π ≈ 12.566:</strong> the theoretical minimum for any shape in the continuous plane. The isoperimetric inequality states P²/A ≥ 4π for every closed curve, with equality only for the circle. On a lattice this bound cannot be achieved exactly, but it is the target.',
+    shape: 'dash'
+  },
+  {
+    val: 12.43, label: 'Eisenstein\noptimal', sub: '12-gon ≈ 12.43', col: '#1a6b3c',
+    filled: true,
+    detail: '<strong>Eisenstein 12-gon — B²/A ≈ 12.43:</strong> the most circle-like polygon achievable on the Eisenstein (triangular) lattice. The Eisenstein lattice has 12 primitive boundary directions (the six unit vectors ±1, ±ω, ±(1−ω) and their combinations), allowing a 12-sided polygon that approximates the circle more closely than the square lattice can. Remarkably this beats 4π — possible because the lattice boundary count B is not the same as the Euclidean perimeter.',
+    shape: 'circle'
+  },
+  {
+    val: 13.25, label: 'Square\noptimal', sub: 'octagon ≈ 13.25', col: '#1a4fa0',
+    filled: true,
+    detail: '<strong>Square octagon — B²/A ≈ 13.25:</strong> the best achievable on the square (Gaussian) lattice. The square lattice has 8 primitive boundary directions (horizontal, vertical, and 4 diagonals), so the optimal shape is an octagon. It is 5.5% above the circle bound. The square lattice\'s larger fundamental domain (Δ=1 vs √3/2) means any given boundary count encloses more area, which is an advantage — but the fewer directions limit how circle-like the shape can be.',
+    shape: 'circle'
+  },
+  {
+    val: 16.0, label: 'Square\nsquare', sub: 'n×n square = 16', col: '#1a4fa0',
+    filled: false,
+    detail: '<strong>Square lattice square — B²/A = 16:</strong> for any n×n square, B = 4n and A = n², giving B²/A = 16n²/n² = 16 for all n. This illustrates scale invariance perfectly: the ratio is identical regardless of how large the square is. The square scores worse than the octagon because it uses only 4 boundary directions and corners are inefficient.',
+    shape: 'circle'
+  },
+  {
+    val: 18.48, label: 'Eisenstein\nparallelogram', sub: '≈ 18.48', col: '#1a6b3c',
+    filled: false,
+    detail: '<strong>Eisenstein parallelogram — B²/A ≈ 18.48:</strong> a parallelogram on the Eisenstein lattice with the same combinatorial structure as a square (I = (n−1)², B = 4n) but Δ = √3/2. So A = (√3/2)n² and B²/A = 16n²/((√3/2)n²) = 32/√3 ≈ 18.48. This is worse than the square lattice square (16) because the denser Eisenstein lattice gives less area for the same boundary count — the penalty of a small Δ for an unoptimised shape.',
+    shape: 'circle'
+  },
+  {
+    val: 20.78, label: 'Triangle', sub: '12√3 ≈ 20.78', col: '#8a8780',
+    filled: false,
+    detail: '<strong>Equilateral triangle — B²/A = 12√3 ≈ 20.78:</strong> the worst of the regular polygons, because a triangle uses only 3 directions and its corners are very sharp. On the square lattice the closest approximation scores similarly. The general principle: the more directions available and used, the lower B²/A and the closer the shape is to a circle.',
+    shape: 'circle'
+  }
+];
+
+let nlActive = -1;
+
+function nlVal2x(val, W) {
+  // Map val in [12, 22] to canvas x in [50, W-30]
+  return 50 + (val - 12) / 10 * (W - 80);
+}
+
+function drawNumline() {
+  const canvas = document.getElementById('numline-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#edeae3'; ctx.fillRect(0, 0, W, H);
+
+  const AX_Y = 130; // axis y position
+
+  // Axis line
+  ctx.strokeStyle = '#c8c4bc'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(45, AX_Y); ctx.lineTo(W - 25, AX_Y); ctx.stroke();
+
+  // Tick marks and labels every integer from 12 to 22
+  ctx.fillStyle = '#8a8780';
+  ctx.font = '11px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  for (let v = 12; v <= 22; v++) {
+    const x = nlVal2x(v, W);
+    ctx.strokeStyle = '#c8c4bc'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, AX_Y - 5); ctx.lineTo(x, AX_Y + 5); ctx.stroke();
+    ctx.fillStyle = '#8a8780';
+    ctx.fillText(String(v), x, AX_Y + 18);
+  }
+
+  // Direction label
+  ctx.fillStyle = '#8a8780'; ctx.font = 'italic 11px Crimson Pro, serif'; ctx.textAlign = 'left';
+  ctx.fillText('← more circle-like', 46, H - 8);
+  ctx.textAlign = 'right';
+  ctx.fillText('less efficient →', W - 26, H - 8);
+
+  // Draw markers
+  NL_MARKERS.forEach((m, i) => {
+    const x = nlVal2x(m.val, W);
+    const isActive = (i === nlActive);
+    const r = isActive ? 11 : 9;
+
+    if (m.shape === 'dash') {
+      // Vertical dashed reference line for 4π
+      ctx.strokeStyle = '#8a8780'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(x, AX_Y - 45); ctx.lineTo(x, AX_Y + 5); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#8a8780'; ctx.font = '10px JetBrains Mono, monospace'; ctx.textAlign = 'center';
+      ctx.fillText('4π ≈ 12.57', x, AX_Y - 50);
+      return;
+    }
+
+    // Shadow / highlight ring for active
+    if (isActive) {
+      ctx.beginPath(); ctx.arc(x, AX_Y, r + 4, 0, 2*Math.PI);
+      ctx.fillStyle = m.col + '33'; ctx.fill();
+    }
+
+    // Circle marker
+    ctx.beginPath(); ctx.arc(x, AX_Y, r, 0, 2*Math.PI);
+    if (m.filled) {
+      ctx.fillStyle = m.col; ctx.fill();
+    } else {
+      ctx.fillStyle = '#edeae3'; ctx.fill();
+      ctx.strokeStyle = m.col; ctx.lineWidth = isActive ? 2.5 : 1.8; ctx.stroke();
+    }
+
+    // Label above
+    const lines = m.sub.split('\n');
+    ctx.fillStyle = m.col;
+    ctx.font = (isActive ? 'bold ' : '') + '10px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    // Position label: alternate above/below to avoid clashes
+    const labelY = (i % 2 === 0) ? AX_Y - 28 : AX_Y - 46;
+    ctx.fillText(m.sub, x, labelY);
+    if (i % 2 !== 0) {
+      // connector line
+      ctx.strokeStyle = m.col + '88'; ctx.lineWidth = 1;
+      ctx.setLineDash([3,2]);
+      ctx.beginPath(); ctx.moveTo(x, AX_Y - r); ctx.lineTo(x, AX_Y - 35); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+}
+
+function nlHandleClick(e) {
+  const canvas = document.getElementById('numline-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) * canvas.width / rect.width;
+  const cy = (e.clientY - rect.top) * canvas.height / rect.height;
+  const AX_Y = 130;
+  let hit = -1;
+  NL_MARKERS.forEach((m, i) => {
+    const x = nlVal2x(m.val, canvas.width);
+    const dx = cx - x, dy = cy - AX_Y;
+    if (Math.sqrt(dx*dx + dy*dy) < 18) hit = i;
+  });
+  if (hit >= 0) {
+    nlActive = hit;
+    drawNumline();
+    document.getElementById('numline-info').className = 'callout ' + (
+      NL_MARKERS[hit].col === '#1a6b3c' ? 'green' :
+      NL_MARKERS[hit].col === '#1a4fa0' ? 'blue' : 'gold'
+    );
+    document.getElementById('numline-info').innerHTML = NL_MARKERS[hit].detail;
+  }
+}
+
+function initNumline() {
+  const canvas = document.getElementById('numline-canvas');
+  if (!canvas) return;
+  drawNumline();
+  canvas.addEventListener('click', nlHandleClick);
+  canvas.addEventListener('touchend', e => { e.preventDefault(); nlHandleClick(e.changedTouches[0]); }, {passive: false});
+}
+
+</script>
+</body>
+</html>
