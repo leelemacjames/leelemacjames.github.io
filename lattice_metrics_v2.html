@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distance on a Lattice</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f4ef;--bg2:#edeae3;--bg3:#e2dfd7;
+  --ink:#1a1814;--ink2:#3a3730;--ink3:#7a7770;--rule:#c8c4bc;
+  --blue:#1a4fa0;--blue-l:#dae4f5;--blue-ll:#eef4fc;
+  --green:#1a6b3c;--green-l:#d4eddf;--green-ll:#edf8f2;
+  --orange:#c24a1a;--orange-l:#fae0d4;
+  --gold:#9a6b00;--gold-l:#fef0c7;
+  --purple:#6a1a8a;--purple-l:#f0e4f8;
+  --serif:'Crimson Pro',Georgia,serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:16px;line-height:1.75;}
+nav{display:flex;border-bottom:1px solid var(--rule);background:var(--bg);position:sticky;top:0;z-index:100;overflow-x:auto;}
+nav button{font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:11px 14px;border:none;background:transparent;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+nav button:hover{color:var(--ink2);}
+nav button.active{color:var(--ink);border-bottom-color:var(--ink);}
+.page{display:none;max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+.page.active{display:block;}
+h1{font-size:1.9rem;font-weight:300;line-height:1.2;margin-bottom:.4rem;}
+h2{font-size:1.15rem;font-weight:600;margin:1.8rem 0 .4rem;}
+p{color:var(--ink2);margin-bottom:.9rem;}
+em{font-style:italic;color:var(--ink);}
+strong{font-weight:600;color:var(--ink);}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--bg3);color:var(--ink3);margin-bottom:.8rem;}
+.callout{border-radius:6px;padding:13px 17px;margin:1.3rem 0;font-size:.95rem;line-height:1.65;}
+.callout.gold{background:var(--gold-l);border:1px solid #e8d080;color:var(--gold);}
+.callout.blue{background:var(--blue-ll);border:1px solid #9ab8e0;color:var(--blue);}
+.callout.green{background:var(--green-ll);border:1px solid #8fcfaa;color:var(--green);}
+.callout.orange{background:var(--orange-l);border:1px solid #e8a070;color:var(--orange);}
+.callout.purple{background:var(--purple-l);border:1px solid #c090e0;color:var(--purple);}
+.formula{font-family:var(--mono);font-size:.9rem;background:var(--bg2);border-left:3px solid var(--ink);padding:10px 18px;margin:.9rem 0;border-radius:0 4px 4px 0;color:var(--ink);}
+.formula.gold{border-color:var(--gold);background:var(--gold-l);color:var(--gold);}
+.formula.blue{border-color:var(--blue);background:var(--blue-ll);color:var(--blue);}
+.formula.green{border-color:var(--green);background:var(--green-ll);color:var(--green);}
+.formula.purple{border-color:var(--purple);background:var(--purple-l);color:var(--purple);}
+.svg-wrap{background:var(--bg2);border:1px solid var(--rule);border-radius:8px;padding:1rem;margin:1.2rem 0;}
+canvas{display:block;width:100%;height:auto;border-radius:4px;}
+.hint{font-family:var(--mono);font-size:11px;color:var(--ink3);text-align:center;margin:.4rem 0 0;}
+.btn-next{margin-top:2rem;font-family:var(--mono);font-size:12px;letter-spacing:.06em;padding:10px 22px;border:1px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;transition:background .15s,color .15s;}
+.btn-next:hover{background:var(--ink);color:var(--bg);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0;}
+@media(max-width:520px){.two-col{grid-template-columns:1fr;}}
+.panel{background:var(--bg2);border:1px solid var(--rule);border-radius:8px;padding:13px 17px;}
+.panel .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;}
+.row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--rule);font-size:.88rem;}
+.row:last-child{border-bottom:none;}
+.rk{color:var(--ink3);font-family:var(--mono);font-size:10.5px;}
+.rv{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);}
+.rv.b{color:var(--blue);}.rv.g{color:var(--green);}.rv.o{color:var(--orange);}.rv.gold{color:var(--gold);}.rv.p{color:var(--purple);}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.88rem;}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);color:var(--ink2);font-family:var(--mono);font-size:10.5px;}
+td.hl{color:var(--ink);font-weight:500;}
+/* metric selector pills */
+.metric-pills{display:flex;flex-wrap:wrap;gap:8px;margin:.8rem 0 1rem;}
+.mpill{font-family:var(--mono);font-size:11px;padding:6px 16px;border-radius:20px;border:1px solid var(--rule);background:var(--bg);color:var(--ink3);cursor:pointer;transition:all .15s;}
+.mpill:hover{background:var(--bg2);}
+.mpill.euc{background:#1a4fa0;color:#fff;border-color:#1a4fa0;}
+.mpill.cheb{background:#1a6b3c;color:#fff;border-color:#1a6b3c;}
+.mpill.manh{background:#c24a1a;color:#fff;border-color:#c24a1a;}
+.mpill.word{background:#6a1a8a;color:#fff;border-color:#6a1a8a;}
+</style>
+</head>
+<body>
+<nav>
+  <button class="active" onclick="go(0)">1 · What is distance?</button>
+  <button onclick="go(1)">2 · Three classical metrics</button>
+  <button onclick="go(2)">3 · Lattice word length</button>
+  <button onclick="go(3)">4 · Pick &amp; B²/A</button>
+  <button onclick="go(4)">5 · All four together</button>
+</nav>
+
+<!-- ═══════════════════════════════ PAGE 0 ═══════════════════════════════ -->
+<div class="page active" id="p0">
+  <span class="tag">Introduction</span>
+  <h1>Distance on a lattice<br><em>four different answers</em></h1>
+
+  <p>The integer lattice ℤ² is the grid of points with whole-number coordinates. It is familiar from graph paper. But distance on this grid is not a single thing — it depends on what you are allowed to do.</p>
+
+  <p>Are you a crow flying straight between points? A taxi constrained to city blocks? A chess king moving one step at a time? Or a surveyor counting how many irreducible lattice steps lie between two points? Each question gives a different metric, and each reveals a different geometric structure of the lattice.</p>
+
+  <p>This learner introduces the four natural distance measures on ℤ², from the most familiar to the most intrinsic to the lattice itself. The culmination is Pick's theorem — which turns out to be a statement about the lattice's own notion of boundary length.</p>
+
+  <h2>The four measures</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Generators</th><th>d((0,0),(3,4))</th><th>d((0,0),(6,8))</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr><td class="hl" style="color:var(--blue)">Euclidean</td><td>All directions in ℝ²</td><td>5</td><td>10</td><td>Ambient geometry</td></tr>
+      <tr><td class="hl" style="color:var(--green)">Chebyshev L∞</td><td>8 king-move directions</td><td>4</td><td>8</td><td>Coarsens Euclidean</td></tr>
+      <tr><td class="hl" style="color:var(--orange)">Manhattan L¹</td><td>4 axis directions</td><td>7</td><td>14</td><td>Further coarsening</td></tr>
+      <tr><td class="hl" style="color:var(--purple)">Lattice word length</td><td>All primitive vectors</td><td>1</td><td>2</td><td>Intrinsic to ℤ²</td></tr>
+    </tbody>
+  </table>
+
+  <p>(3,4) is a Pythagorean triple: Euclidean distance exactly 5. Yet gcd(3,4) = 1, so it costs exactly 1 in the word metric — one irreducible lattice step, regardless of its Euclidean length. Its double (6,8) has Euclidean distance 10 and word length gcd(6,8) = 2: two primitive sub-steps of (3,4). The word length halves where the Euclidean distance doubles, and the Chebyshev and Manhattan distances scale proportionally. Four metrics, four different answers to the same question.</p>
+
+  <div class="callout gold">
+    <strong>The thread:</strong> Euclidean, Chebyshev, and Manhattan are all restrictions or distortions of the ambient geometry of ℝ². The lattice word length is different in kind — it lives entirely on ℤ², with no reference to ℝ². Pick's theorem is written in this fourth language.
+  </div>
+
+  <button class="btn-next" onclick="go(1)">The three classical metrics →</button>
+</div>
+
+<!-- ═══════════════════════════════ PAGE 1 ═══════════════════════════════ -->
+<div class="page" id="p1">
+  <span class="tag">Classical metrics</span>
+  <h1>Three classical metrics<br><em>hover any lattice point</em></h1>
+
+  <p>Click or hover any lattice point to see its distance from the origin under each metric. The coloured ring shows which points are equidistant — the <em>metric neighbourhood</em> at that distance.</p>
+
+  <div class="metric-pills">
+    <button class="mpill euc" onclick="setMetric('euc')">Euclidean L²</button>
+    <button class="mpill" onclick="setMetric('cheb')" id="pill-cheb" style="border-color:var(--green);color:var(--green)">Chebyshev L∞</button>
+    <button class="mpill" onclick="setMetric('manh')" id="pill-manh" style="border-color:var(--orange);color:var(--orange)">Manhattan L¹</button>
+  </div>
+
+  <div class="svg-wrap" style="padding:.6rem">
+    <canvas id="metric-canvas" width="700" height="400"></canvas>
+  </div>
+  <p class="hint">Click any lattice point to pin it · hover to preview</p>
+
+  <div id="metric-info" class="callout blue" style="min-height:4rem">
+    Click a lattice point to see its distances under all three metrics.
+  </div>
+
+  <h2>What each metric privileges</h2>
+  <p><strong style="color:var(--blue)">Euclidean:</strong> straight-line distance in ℝ². The metric neighbourhood at radius r is a circle — all directions equally weighted. This is the metric of the ambient space; the lattice is just a discrete subset.</p>
+  <p><strong style="color:var(--green)">Chebyshev (L∞):</strong> max(|Δx|, |Δy|). The neighbourhood is a square aligned with the axes. Diagonal steps cost the same as axis steps — a king on a chessboard. This coarsens the Euclidean metric by collapsing all eight shortest directions to the same cost.</p>
+  <p><strong style="color:var(--orange)">Manhattan (L¹):</strong> |Δx| + |Δy|. The neighbourhood is a diamond. Only axis steps are primitive — diagonal movement must be decomposed into two axis steps. This privileges the four axis directions over all others.</p>
+
+  <button class="btn-next" onclick="go(2)">The intrinsic lattice metric →</button>
+</div>
+
+<!-- ═══════════════════════════════ PAGE 2 ═══════════════════════════════ -->
+<div class="page" id="p2">
+  <span class="tag">Lattice word length</span>
+  <h1>Lattice word length<br><em>all primitive directions equally</em></h1>
+
+  <p>The three classical metrics all measure distances by importing structure from ℝ² — lengths, axis directions, or the ambient plane. The lattice has its own intrinsic notion of distance, which needs no reference to ℝ² at all.</p>
+
+  <h2>Primitive vectors</h2>
+  <p>A vector (a,b) ∈ ℤ² is <em>primitive</em> if gcd(|a|,|b|) = 1 — it cannot be written as n·(p,q) for integer n > 1. Primitive vectors are the irreducible steps of the lattice: (1,0), (1,1), (2,1), (3,2), (5,3) and infinitely many others, one for every rational slope.</p>
+
+  <p>Every lattice vector decomposes uniquely: (a,b) = gcd(|a|,|b|) · (a/g, b/g) where (a/g, b/g) is primitive. The <strong>lattice word length</strong> assigns:</p>
+
+  <div class="formula purple">‖(a,b)‖_B = gcd(|a|, |b|)</div>
+
+  <p>So (6,4) has word length gcd(6,4) = 2. The vector (3,2) has word length 1 — it is itself primitive, one irreducible step regardless of its Euclidean length √13.</p>
+
+  <h2>Why gcd? The lattice points on a segment</h2>
+  <p>Before defining the word length formula, ask a concrete question: how many lattice points lie strictly <em>inside</em> the segment from (0,0) to (a,b)?</p>
+  <p>The points on the segment are parametrised as (ta, tb) for t ∈ [0,1]. Such a point is a lattice point exactly when both ta and tb are integers — which happens for t = k/gcd(a,b), k = 0, 1, …, gcd(a,b). So the segment contains gcd(a,b)+1 lattice points in total (including endpoints) and gcd(a,b)−1 strictly interior ones.</p>
+  <div class="formula purple">interior lattice points on [(0,0),(a,b)] = gcd(|a|,|b|) − 1</div>
+  <p>A vector is <em>primitive</em> when gcd(a,b) = 1 — meaning the segment has <em>no</em> interior lattice points. The lattice cannot subdivide it further. (3,4) is primitive: the segment from (0,0) to (3,4) passes through no other lattice point. (6,8) has gcd = 2: the midpoint (3,4) lies on the segment, splitting it into two primitive sub-steps.</p>
+  <div class="svg-wrap" style="padding:.8rem">
+    <svg width="100%" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- Grid -->
+      <g stroke="#c8c4bc" stroke-width="0.5">
+        <line x1="30" y1="20" x2="30" y2="150"/><line x1="80" y1="20" x2="80" y2="150"/>
+        <line x1="130" y1="20" x2="130" y2="150"/><line x1="180" y1="20" x2="180" y2="150"/>
+        <line x1="230" y1="20" x2="230" y2="150"/><line x1="280" y1="20" x2="280" y2="150"/>
+        <line x1="30" y1="20" x2="280" y2="20"/><line x1="30" y1="70" x2="280" y2="70"/>
+        <line x1="30" y1="120" x2="280" y2="120"/><line x1="30" y1="150" x2="280" y2="150"/>
+      </g>
+      <!-- (0,0) to (3,2): primitive, no interior points -->
+      <line x1="30" y1="120" x2="180" y2="20" stroke="#6a1a8a" stroke-width="2"/>
+      <circle cx="30" cy="120" r="5" fill="#1a1814"/>
+      <circle cx="180" cy="20" r="5" fill="#6a1a8a"/>
+      <text x="105" y="155" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#6a1a8a">(0,0)→(3,2) gcd=1</text>
+      <text x="105" y="168" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="11" fill="#6a1a8a">primitive — no interior points</text>
+      <!-- (0,0) to (3,4): primitive -->
+      <line x1="30" y1="150" x2="180" y2="150" stroke="#c8c4bc" stroke-width="0.5"/>
+      <!-- right side: (0,0) to (6,4): gcd=2, midpoint (3,2) -->
+      <g transform="translate(340,0)">
+        <g stroke="#c8c4bc" stroke-width="0.5">
+          <line x1="30" y1="20" x2="30" y2="150"/><line x1="80" y1="20" x2="80" y2="150"/>
+          <line x1="130" y1="20" x2="130" y2="150"/><line x1="180" y1="20" x2="180" y2="150"/>
+          <line x1="230" y1="20" x2="230" y2="150"/><line x1="280" y1="20" x2="280" y2="150"/>
+          <line x1="30" y1="20" x2="280" y2="20"/><line x1="30" y1="70" x2="280" y2="70"/>
+          <line x1="30" y1="120" x2="280" y2="120"/><line x1="30" y1="150" x2="280" y2="150"/>
+        </g>
+        <line x1="30" y1="120" x2="330" y2="20" stroke="#c24a1a" stroke-width="2"/>
+        <circle cx="30" cy="120" r="5" fill="#1a1814"/>
+        <circle cx="180" cy="70" r="6" fill="#c24a1a"/>
+        <circle cx="330" cy="20" r="5" fill="#c24a1a"/>
+        <text x="180" y="58" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#c24a1a">(3,2)</text>
+        <text x="160" y="155" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#c24a1a">(0,0)→(6,4) gcd=2</text>
+        <text x="160" y="168" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="11" fill="#c24a1a">interior point (3,2) — 2 sub-steps</text>
+      </g>
+    </svg>
+  </div>
+  <p>The word length of (a,b) is therefore the number of primitive sub-steps the segment decomposes into: gcd(|a|,|b|). This is not an arbitrary formula — it counts how many irreducible pieces the lattice sees in the vector.</p>
+
+  <h2>No preferred directions</h2>
+  <p>Chebyshev privileges 8 directions. Manhattan privileges 4. The lattice word length privileges <em>none</em> — every primitive direction costs 1. There are infinitely many such directions, one for each rational slope. The generating set is the set of all primitive vectors:</p>
+
+  <div class="formula purple">𝒫 = {(a,b) ∈ ℤ² : gcd(|a|,|b|) = 1}</div>
+
+  <p>This is not a ball or neighbourhood in ℝ² — it is a countably infinite set of directions, densely distributed around the origin. Calling it a "unit ball" would import Euclidean language where it does not belong. It is better understood as the <em>generating set</em> of the lattice, or the set of atomic steps.</p>
+
+  <div class="svg-wrap" style="padding:.6rem">
+    <canvas id="prim-canvas" width="700" height="380"></canvas>
+  </div>
+  <p class="hint">Hover any lattice point to see its word length and primitive decomposition</p>
+
+  <div id="prim-info" class="callout purple" style="min-height:3.5rem">
+    Hover a lattice point to see its decomposition.
+  </div>
+
+  <h2>Chebyshev and Manhattan as coarsenings</h2>
+  <p>Both Chebyshev and Manhattan are special cases of the word metric — they just use a <em>finite</em> generating set rather than all of 𝒫. Chebyshev uses the 8 shortest primitive vectors. Manhattan uses the 4 axis vectors. The lattice word length uses all of 𝒫 and is therefore finer than either: it distinguishes directions that Chebyshev collapses to the same cost.</p>
+
+  <table>
+    <thead><tr><th>Metric</th><th>Generating set</th><th>d((0,0),(3,4))</th><th>d((0,0),(6,8))</th><th>d((0,0),(2,1))</th></tr></thead>
+    <tbody>
+      <tr><td class="hl" style="color:var(--blue)">Euclidean</td><td>All of ℝ²</td><td>5</td><td>10</td><td>√5 ≈ 2.24</td></tr>
+      <tr><td class="hl" style="color:var(--green)">Chebyshev</td><td>8 shortest primitives</td><td>4</td><td>8</td><td>2</td></tr>
+      <tr><td class="hl" style="color:var(--orange)">Manhattan</td><td>4 axis vectors</td><td>7</td><td>14</td><td>3</td></tr>
+      <tr><td class="hl" style="color:var(--purple)">Word length</td><td>All primitives 𝒫</td><td>1</td><td>2</td><td>1</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout purple">
+    <strong>What the word length discards:</strong> all Euclidean length information. The step (1,0) and the Pythagorean step (3,4) both cost 1, because both are primitive — gcd(3,4) = 1. (6,8) costs 2 because it decomposes into two (3,4) steps. The word length sees only the combinatorial structure of ℤ² as a group — how many irreducible generators are needed — not the geometry of ℝ².
+  </div>
+
+  <button class="btn-next" onclick="go(3)">Word length and Pick's theorem →</button>
+</div>
+
+<!-- ═══════════════════════════════ PAGE 3 ═══════════════════════════════ -->
+<div class="page" id="p3">
+  <span class="tag">Pick's theorem</span>
+  <h1>Pick's theorem<br><em>written in word length</em></h1>
+
+  <p>Pick's theorem counts boundary lattice points B. Each boundary edge from vertex to vertex contributes gcd(|Δx|,|Δy|) to B — exactly its lattice word length. So B is the total word length of the boundary cycle, measured in primitive generators.</p>
+
+  <div class="formula purple">B = total lattice word length of the polygon boundary</div>
+
+  <p>Pick's theorem then reads:</p>
+  <div class="formula gold">A = Δ · (I + B/2 − 1)</div>
+
+  <p>where Δ = det(M_basis) is the area of the fundamental domain. The determinant Δ converts word length into Euclidean area. Each primitive boundary step contributes Δ/2 to the area — this is the geometric content of the unimodular condition.</p>
+
+  <h2>Why B/A fails as a shape measure</h2>
+  <p>Scale any polygon by n: each boundary step (Δx, Δy) becomes (nΔx, nΔy) with word length gcd(n|Δx|, n|Δy|) = n·gcd(|Δx|,|Δy|). So B → nB, A → n²A, giving B/A → 0 for any shape. Word length and area scale differently under dilation.</p>
+
+  <div class="formula" style="border-color:var(--orange);background:var(--orange-l);color:var(--orange)">B/A → 0 under dilation — carries no shape information</div>
+
+  <h2>The scale-invariant ratio B²/A</h2>
+  <p>Under dilation by n: B → nB and A → n²A, so B²/A → B²/A exactly. This is the natural scale-invariant measure of boundary efficiency in word-length units:</p>
+
+  <div class="formula gold">B²/A = B² / [Δ·(I + B/2 − 1)] — invariant under lattice dilation</div>
+
+  <p>For an n×n square: B = 4n, A = n², B²/A = 16 for all n. Scale invariance is exact.</p>
+
+  <h2>B²/A versus P²/A</h2>
+  <p>The classical isoperimetric ratio P²/A uses Euclidean perimeter P. Replacing P with B (word length) gives a related but distinct quantity. They agree when all boundary steps have the same Euclidean length — as for the six shortest Eisenstein directions, all of length 1. In general B ≤ P (word length undercounts Euclidean length for oblique steps like (1,1) which has word length 1 but Euclidean length √2), so B²/A ≤ P²/A. The classical bound P²/A ≥ 4π holds for Euclidean perimeters; it says nothing directly about B²/A.</p>
+
+  <div class="callout gold">
+    <strong>Pick's theorem is written in word length.</strong> The boundary count B is not a Euclidean measure — it is the word length of the boundary in the lattice's own metric. The determinant Δ is the exchange rate between word length and Euclidean area. Together they give the formula A = Δ(I + B/2 − 1): a statement about ℤ² as a group, converted to Euclidean area by Δ.
+  </div>
+
+  <button class="btn-next" onclick="go(4)">All four metrics together →</button>
+</div>
+
+<!-- ═══════════════════════════════ PAGE 4 ═══════════════════════════════ -->
+<div class="page" id="p4">
+  <span class="tag">Interactive comparison</span>
+  <h1>All four metrics<br><em>click any lattice point</em></h1>
+
+  <p>Click any lattice point to see its distance from the origin under all four metrics simultaneously. The rings show equidistant sets — note how the shape of the neighbourhood changes completely depending on which metric you use.</p>
+
+  <div class="svg-wrap" style="padding:.6rem">
+    <canvas id="all-canvas" width="700" height="400"></canvas>
+  </div>
+  <p class="hint">Click any lattice point to compare all four distances</p>
+
+  <div id="all-info" class="callout gold" style="min-height:5rem">
+    Click a lattice point to compare all four metrics.
+  </div>
+
+  <div class="two-col" style="margin-top:1rem">
+    <div class="panel">
+      <div class="lbl">For the clicked point (a, b)</div>
+      <div class="row"><span class="rk" style="color:var(--blue)">Euclidean</span><span class="rv b" id="d-euc">—</span></div>
+      <div class="row"><span class="rk" style="color:var(--green)">Chebyshev L∞</span><span class="rv g" id="d-cheb">—</span></div>
+      <div class="row"><span class="rk" style="color:var(--orange)">Manhattan L¹</span><span class="rv o" id="d-manh">—</span></div>
+      <div class="row"><span class="rk" style="color:var(--purple)">Word length</span><span class="rv p" id="d-word">—</span></div>
+    </div>
+    <div class="panel">
+      <div class="lbl">The hierarchy</div>
+      <div class="row"><span class="rk">Euclidean ≤ Chebyshev</span><span class="rv" style="font-size:10px">diag compressed</span></div>
+      <div class="row"><span class="rk">Word length ≤ all others</span><span class="rv" style="font-size:10px">most permissive</span></div>
+      <div class="row"><span class="rk">Manhattan ≥ Euclidean</span><span class="rv" style="font-size:10px">axis only</span></div>
+      <div class="row"><span class="rk">Pick uses word length</span><span class="rv p">B = word length</span></div>
+    </div>
+  </div>
+
+  <h2>The full picture</h2>
+  <p>Euclidean, Chebyshev, and Manhattan all live in ℝ² — the lattice is just a discrete subset of the ambient plane, and the metrics are restrictions of ℝ² geometry. The word length lives entirely on ℤ², needing no ambient space. It is the metric the lattice generates from itself.</p>
+
+  <p>Pick's theorem uses word length because it is counting lattice structure, not Euclidean length. The determinant Δ is then the bridge: it converts the intrinsic word-length count into Euclidean area. Change the lattice (square to Eisenstein), change Δ, and the same word-length count maps to a different area. The basis is the exchange rate between the two worlds.</p>
+
+  <div class="callout gold">
+    <strong>The hierarchy of metrics on ℤ²:</strong>
+    word length (all primitives) → Chebyshev (8 shortest) → Manhattan (4 axis) → Euclidean (continuous).
+    Each step coarsens or enriches the notion of distance. Pick's theorem lives at the word-length end.
+    The classical isoperimetric inequality P²/A ≥ 4π lives at the Euclidean end.
+    B²/A is the word-length version of the isoperimetric ratio — a genuinely lattice-theoretic quantity, not a discretisation of a Euclidean one.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SCRIPTS ═══════════════════════════════ -->
+<script>
+// ── Navigation ────────────────────────────────────────────────────────────
+const pages=document.querySelectorAll('.page'),navBtns=document.querySelectorAll('nav button');
+function go(i){
+  pages.forEach((p,j)=>p.classList.toggle('active',j===i));
+  navBtns.forEach((b,j)=>b.classList.toggle('active',j===i));
+  if(i===1) initMetric();
+  if(i===2) initPrim();
+  if(i===4) initAll();
+}
+
+// ── Shared helpers ─────────────────────────────────────────────────────────
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t;}return a||0;}
+
+function dEuc(a,b){return Math.sqrt(a*a+b*b);}
+function dCheb(a,b){return Math.max(Math.abs(a),Math.abs(b));}
+function dManh(a,b){return Math.abs(a)+Math.abs(b);}
+function dWord(a,b){if(a===0&&b===0)return 0;if(a===0)return Math.abs(b);if(b===0)return Math.abs(a);return gcd(Math.abs(a),Math.abs(b));}
+
+// ── Grid setup ────────────────────────────────────────────────────────────
+const STEP=52, ORIGIN_X=5, ORIGIN_Y=5; // in grid units from top-left
+// Canvas 700×400: origin at grid position (5,4) → pixel (5*52+20, 4*52+20)
+function setup(W,H){
+  const cols=Math.floor((W-20)/STEP)+1, rows=Math.floor((H-20)/STEP)+1;
+  const ox=Math.round(W/2), oy=Math.round(H/2);
+  return {cols,rows,ox,oy};
+}
+function gToP(gx,gy,ox,oy){return{x:ox+gx*STEP, y:oy-gy*STEP};}
+function pToG(px,py,ox,oy){return{gx:Math.round((px-ox)/STEP), gy:Math.round(-(py-oy)/STEP)};}
+
+function drawGrid(ctx,W,H,ox,oy,col='#c8c4bc'){
+  ctx.strokeStyle=col;ctx.lineWidth=0.5;
+  const r=Math.ceil(Math.max(W,H)/STEP)+1;
+  for(let i=-r;i<=r;i++){
+    const {x:x0}=gToP(i,-r,ox,oy),{x:x1}=gToP(i,r,ox,oy);
+    const {y:y0}=gToP(-r,i,ox,oy),{y:y1}=gToP(r,i,ox,oy);
+    ctx.beginPath();ctx.moveTo(x0,gToP(i,-r,ox,oy).y);ctx.lineTo(x1,gToP(i,r,ox,oy).y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(gToP(-r,i,ox,oy).x,y0);ctx.lineTo(gToP(r,i,ox,oy).x,y1);ctx.stroke();
+  }
+}
+
+function drawDots(ctx,W,H,ox,oy,highlightFn){
+  const r=Math.ceil(Math.max(W,H)/STEP)+2;
+  for(let gx=-r;gx<=r;gx++)for(let gy=-r;gy<=r;gy++){
+    const {x,y}=gToP(gx,gy,ox,oy);
+    if(x<-10||x>W+10||y<-10||y>H+10)continue;
+    const h=highlightFn?highlightFn(gx,gy):null;
+    ctx.beginPath();ctx.arc(x,y,h?h.r||4:2.5,0,2*Math.PI);
+    ctx.fillStyle=h?h.col:'#c8c4bc';ctx.fill();
+    if(h&&h.label){
+      ctx.fillStyle=h.col;ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='center';
+      ctx.fillText(h.label,x,y-10);
+    }
+  }
+  // Origin
+  const {x,y}=gToP(0,0,ox,oy);
+  ctx.beginPath();ctx.arc(x,y,5,0,2*Math.PI);ctx.fillStyle='#1a1814';ctx.fill();
+  ctx.fillStyle='#1a1814';ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText('O',x+7,y-5);
+}
+
+// ── PAGE 1: Classical metrics ──────────────────────────────────────────────
+let metricMode='euc', metricInited=false, metricTarget=null;
+
+function initMetric(){
+  if(metricInited)return;metricInited=true;
+  const cv=document.getElementById('metric-canvas');
+  cv.addEventListener('click',e=>{
+    const r=cv.getBoundingClientRect();
+    const {ox,oy}=setup(cv.width,cv.height);
+    const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height;
+    const {gx,gy}=pToG(px,py,ox,oy);
+    metricTarget={gx,gy};drawMetric();updateMetricInfo(gx,gy);
+  });
+  cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    const {ox,oy}=setup(cv.width,cv.height);
+    const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height;
+    const {gx,gy}=pToG(px,py,ox,oy);
+    if(!metricTarget){drawMetricWith(gx,gy,0.4);updateMetricInfo(gx,gy,true);}
+  });
+  drawMetric();
+}
+
+function setMetric(m){
+  metricMode=m;
+  ['euc','cheb','manh'].forEach(k=>{
+    const btn=document.querySelector('.mpill.'+k)||document.querySelector(`[onclick="setMetric('${k}')"]`);
+  });
+  document.querySelectorAll('.mpill').forEach(b=>{
+    const om=b.getAttribute('onclick').match(/'(\w+)'/)?.[1];
+    if(!om)return;
+    b.className='mpill'+(om===m?' '+m:'');
+    if(om!==m){
+      const cols={euc:'var(--blue)',cheb:'var(--green)',manh:'var(--orange)'};
+      b.style.background='';b.style.borderColor=cols[om];b.style.color=cols[om];
+    } else { b.style.background='';b.style.borderColor='';b.style.color=''; }
+  });
+  drawMetric();
+}
+
+function metricDist(gx,gy){
+  if(metricMode==='euc')return dEuc(gx,gy);
+  if(metricMode==='cheb')return dCheb(gx,gy);
+  return dManh(gx,gy);
+}
+
+const METRIC_COLS={euc:'#1a4fa0',cheb:'#1a6b3c',manh:'#c24a1a'};
+
+function drawMetricWith(hx,hy,alpha){
+  const cv=document.getElementById('metric-canvas');
+  const ctx=cv.getContext('2d');
+  const {ox,oy}=setup(cv.width,cv.height);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#edeae3';ctx.fillRect(0,0,cv.width,cv.height);
+  drawGrid(ctx,cv.width,cv.height,ox,oy);
+  const col=METRIC_COLS[metricMode];
+  const targetD=metricDist(hx,hy);
+  drawDots(ctx,cv.width,cv.height,ox,oy,(gx,gy)=>{
+    const d=metricDist(gx,gy);
+    const onRing=Math.abs(d-targetD)<0.001;
+    if(gx===0&&gy===0)return null;
+    if(onRing)return{col,r:6};
+    if(d<targetD)return{col:col+'55',r:3.5};
+    return null;
+  });
+  // Target point
+  const {x,y}=gToP(hx,hy,ox,oy);
+  ctx.beginPath();ctx.arc(x,y,8,0,2*Math.PI);
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.globalAlpha=alpha;ctx.stroke();ctx.globalAlpha=1;
+  // Axes labels
+  ctx.fillStyle='#8a8780';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillText('x',gToP(6,0,ox,oy).x,gToP(6,0,ox,oy).y-8);
+  ctx.fillText('y',gToP(0,4,ox,oy).x+10,gToP(0,4,ox,oy).y);
+}
+
+function drawMetric(){if(metricTarget)drawMetricWith(metricTarget.gx,metricTarget.gy,1);else drawMetricWith(3,4,0.3);}
+
+function updateMetricInfo(gx,gy,preview){
+  const col=METRIC_COLS[metricMode];
+  const names={euc:'Euclidean',cheb:'Chebyshev L∞',manh:'Manhattan L¹'};
+  const deuc=dEuc(gx,gy).toFixed(3), dcheb=dCheb(gx,gy), dmanh=dManh(gx,gy);
+  const el=document.getElementById('metric-info');
+  el.className='callout '+(metricMode==='euc'?'blue':metricMode==='cheb'?'green':'orange');
+  el.innerHTML=`<strong>(${gx}, ${gy})</strong> — ${preview?'preview':'pinned'}<br>
+    <span style="color:var(--blue)">Euclidean: ${deuc}</span> &nbsp;·&nbsp;
+    <span style="color:var(--green)">Chebyshev: ${dcheb}</span> &nbsp;·&nbsp;
+    <span style="color:var(--orange)">Manhattan: ${dmanh}</span><br>
+    <span style="font-size:.88rem">Active metric: <strong>${names[metricMode]}</strong> = ${metricMode==='euc'?deuc:metricMode==='cheb'?dcheb:dmanh}. Coloured ring = equidistant set.</span>`;
+}
+
+// ── PAGE 2: Primitive / word length ────────────────────────────────────────
+let primInited=false;
+function initPrim(){
+  if(primInited)return;primInited=true;
+  const cv=document.getElementById('prim-canvas');
+  cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    const {ox,oy}=setup(cv.width,cv.height);
+    const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height;
+    const {gx,gy}=pToG(px,py,ox,oy);
+    drawPrim(gx,gy);updatePrimInfo(gx,gy);
+  });
+  cv.addEventListener('click',e=>{
+    const r=cv.getBoundingClientRect();
+    const {ox,oy}=setup(cv.width,cv.height);
+    const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height;
+    const {gx,gy}=pToG(px,py,ox,oy);
+    drawPrim(gx,gy);updatePrimInfo(gx,gy);
+  });
+  drawPrim(3,4);updatePrimInfo(3,4);
+}
+
+function drawPrim(hx,hy){
+  const cv=document.getElementById('prim-canvas');
+  const ctx=cv.getContext('2d');
+  const {ox,oy}=setup(cv.width,cv.height);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#edeae3';ctx.fillRect(0,0,cv.width,cv.height);
+  drawGrid(ctx,cv.width,cv.height,ox,oy);
+  const w=dWord(hx,hy);
+  drawDots(ctx,cv.width,cv.height,ox,oy,(gx,gy)=>{
+    if(gx===0&&gy===0)return null;
+    const ww=dWord(gx,gy);
+    if(ww===1)return{col:'#6a1a8a55',r:4}; // all primitives faint
+    if(ww===w&&w>0)return{col:'#6a1a8a',r:6}; // same word length
+    return null;
+  });
+  // Draw the target point and its primitive factor
+  const {x,y}=gToP(hx,hy,ox,oy);
+  ctx.beginPath();ctx.arc(x,y,9,0,2*Math.PI);
+  ctx.strokeStyle='#6a1a8a';ctx.lineWidth=2.5;ctx.stroke();
+  // If w>1, show the primitive direction
+  if(w>0&&(hx!==0||hy!==0)){
+    const g=gcd(Math.abs(hx),Math.abs(hy))||1;
+    const px2=hx/g, py2=hy/g;
+    // Draw arrow from origin along primitive direction
+    const {x:tx,y:ty}=gToP(px2,py2,ox,oy);
+    ctx.strokeStyle='#6a1a8a';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(tx,ty);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(tx,ty,5,0,2*Math.PI);ctx.fillStyle='#6a1a8a';ctx.fill();
+    ctx.fillStyle='#6a1a8a';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='left';
+    ctx.fillText(`(${px2},${py2})`,tx+8,ty-4);
+  }
+}
+
+function updatePrimInfo(gx,gy){
+  const w=dWord(gx,gy);
+  const el=document.getElementById('prim-info');
+  el.className='callout purple';
+  if(gx===0&&gy===0){el.innerHTML='Origin — distance 0 from itself.';return;}
+  const g=gcd(Math.abs(gx),Math.abs(gy))||1;
+  const px=gx/g, py=gy/g;
+  const isPrim=g===1;
+  el.innerHTML=`<strong>(${gx}, ${gy})</strong> — word length = gcd(${Math.abs(gx)}, ${Math.abs(gy)}) = <strong>${w}</strong><br>
+  ${isPrim
+    ?`Primitive vector: irreducible, one step in any lattice path.`
+    :`Decomposes as ${w} × (${px}, ${py}). The primitive direction is (${px}, ${py}) — one irreducible step.`
+  }<br>
+  <span style="font-size:.88rem">Euclidean length: ${dEuc(gx,gy).toFixed(3)} &nbsp;·&nbsp; Chebyshev: ${dCheb(gx,gy)} &nbsp;·&nbsp; Manhattan: ${dManh(gx,gy)}</span>`;
+}
+
+// ── PAGE 4: All four metrics ────────────────────────────────────────────────
+let allInited=false, allTarget={gx:3,gy:4};
+function initAll(){
+  if(allInited)return;allInited=true;
+  const cv=document.getElementById('all-canvas');
+  cv.addEventListener('click',e=>{
+    const r=cv.getBoundingClientRect();
+    const {ox,oy}=setup(cv.width,cv.height);
+    const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height;
+    allTarget=pToG(px,py,ox,oy);
+    drawAll();updateAllInfo(allTarget.gx,allTarget.gy);
+  });
+  drawAll();updateAllInfo(3,4);
+}
+
+function drawAll(){
+  const cv=document.getElementById('all-canvas');
+  const ctx=cv.getContext('2d');
+  const {ox,oy}=setup(cv.width,cv.height);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#edeae3';ctx.fillRect(0,0,cv.width,cv.height);
+  drawGrid(ctx,cv.width,cv.height,ox,oy);
+  const {gx:tx,gy:ty}=allTarget;
+  const de=dEuc(tx,ty), dc=dCheb(tx,ty), dm=dManh(tx,ty), dw=dWord(tx,ty);
+  drawDots(ctx,cv.width,cv.height,ox,oy,(gx,gy)=>{
+    if(gx===0&&gy===0)return null;
+    const matches=[];
+    if(Math.abs(dEuc(gx,gy)-de)<0.001)matches.push('#1a4fa0');
+    if(dCheb(gx,gy)===dc)matches.push('#1a6b3c');
+    if(dManh(gx,gy)===dm)matches.push('#c24a1a');
+    if(dWord(gx,gy)===dw)matches.push('#6a1a8a');
+    if(matches.length===0)return null;
+    // Use the "most restrictive" colour
+    return{col:matches[0],r:5+matches.length};
+  });
+  // Target
+  const {x,y}=gToP(tx,ty,ox,oy);
+  ctx.beginPath();ctx.arc(x,y,10,0,2*Math.PI);ctx.strokeStyle='#1a1814';ctx.lineWidth=2;ctx.stroke();
+  // Legend
+  const labels=[
+    {col:'#1a4fa0',text:'Euclidean ring'},
+    {col:'#1a6b3c',text:'Chebyshev ring'},
+    {col:'#c24a1a',text:'Manhattan ring'},
+    {col:'#6a1a8a',text:'Word length ring'},
+  ];
+  labels.forEach((l,i)=>{
+    ctx.beginPath();ctx.arc(cv.width-120,30+i*22,6,0,2*Math.PI);ctx.fillStyle=l.col;ctx.fill();
+    ctx.fillStyle=l.col;ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='left';
+    ctx.fillText(l.text,cv.width-108,34+i*22);
+  });
+}
+
+function updateAllInfo(gx,gy){
+  document.getElementById('d-euc').textContent=dEuc(gx,gy).toFixed(4);
+  document.getElementById('d-cheb').textContent=dCheb(gx,gy);
+  document.getElementById('d-manh').textContent=dManh(gx,gy);
+  document.getElementById('d-word').textContent=dWord(gx,gy);
+  const el=document.getElementById('all-info');
+  const w=dWord(gx,gy);
+  const g=gcd(Math.abs(gx),Math.abs(gy))||1;
+  const isPrim=g===1;
+  el.className='callout gold';
+  el.innerHTML=`<strong>(${gx}, ${gy})</strong><br>
+  Euclidean: ${dEuc(gx,gy).toFixed(3)} &nbsp;·&nbsp;
+  Chebyshev: ${dCheb(gx,gy)} &nbsp;·&nbsp;
+  Manhattan: ${dManh(gx,gy)} &nbsp;·&nbsp;
+  Word length: <strong style="color:var(--purple)">${w}</strong><br>
+  <span style="font-size:.88rem">${isPrim
+    ?`Primitive vector — one irreducible lattice step in direction (${gx}, ${gy}).`
+    :`Decomposes as ${w} × (${gx/g}, ${gy/g}). Word length = gcd = ${w}.`
+  } Pick's B-count uses word length: this edge contributes ${w} to B.</span>`;
+}
+</script>
+</body>
+</html>
