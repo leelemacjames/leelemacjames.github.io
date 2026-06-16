@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Relativity of Motion — From Galileo to the Light Cone</title>
+
+<!-- MathJax config MUST precede the CDN script (v3 ordering) -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#0e0f12;
+  --ink-2:#15161a;
+  --ink-3:#1c1d22;
+  --line:rgba(201,161,78,.16);
+  --line-strong:rgba(201,161,78,.32);
+  --gold:#c9a14e;
+  --gold-2:#e3c476;
+  --paper:#e9e4d9;
+  --paper-dim:#a39d90;
+  --muted:#6f6a60;
+  /* diagram functional colours */
+  --c-light:#c9a14e;
+  --c-rest:#d8d2c4;
+  --c-move:#6fa8c9;
+  --c-world:#79c2a0;
+  --c-event:#e0856b;
+  --c-event2:#c97ad0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(201,161,78,.05), transparent 60%),
+    var(--ink);
+  color:var(--paper);
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-size:20px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px;margin:0 auto;padding:0 26px}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-bottom:1px solid var(--line);
+  padding:54px 0 30px;
+  margin-bottom:8px;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--gold);font-weight:400;
+}
+h1.title{
+  font-weight:500;
+  font-size:clamp(40px,7vw,72px);
+  line-height:1.02;
+  margin:.18em 0 .12em;
+  letter-spacing:.01em;
+}
+h1.title em{color:var(--gold-2);font-style:italic}
+.dek{
+  font-size:clamp(19px,2.4vw,23px);
+  color:var(--paper-dim);
+  max-width:62ch;font-weight:400;
+}
+.dek em{color:var(--paper);font-style:italic}
+
+/* ---------- tabs ---------- */
+nav.tabs{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(var(--ink) 70%, rgba(14,15,18,.0));
+  border-bottom:1px solid var(--line);
+  padding-top:6px;
+}
+.tabrow{
+  max-width:920px;margin:0 auto;padding:0 18px;
+  display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;
+}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{
+  appearance:none;background:none;border:none;cursor:pointer;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--paper-dim);
+  padding:14px 14px 12px;white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:color .18s, border-color .18s;
+}
+.tab .num{color:var(--muted);margin-right:7px}
+.tab:hover{color:var(--paper)}
+.tab[aria-selected="true"]{color:var(--gold-2);border-bottom-color:var(--gold)}
+.tab[aria-selected="true"] .num{color:var(--gold)}
+.tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:2px}
+
+/* ---------- panels ---------- */
+.panel{display:none;padding:38px 0 20px}
+.panel.active{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h2.sec{
+  font-weight:500;font-size:clamp(30px,4.4vw,42px);
+  line-height:1.08;margin:.2em 0 .35em;letter-spacing:.01em;
+}
+h2.sec .kicker{
+  display:block;font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.55em;font-weight:400;
+}
+h3{font-weight:600;font-size:25px;margin:1.5em 0 .3em;color:var(--paper)}
+p{margin:.7em 0}
+p .lead{font-size:1.06em}
+strong{color:var(--gold-2);font-weight:600}
+a{color:var(--gold);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+
+/* mono utility text */
+.mono{font-family:"IBM Plex Mono",monospace;font-size:13.5px;letter-spacing:.02em}
+
+/* callout / aside boxes */
+.note{
+  border-left:2px solid var(--gold);
+  background:var(--ink-2);
+  padding:14px 20px;margin:1.4em 0;border-radius:0 4px 4px 0;
+}
+.note .tag{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.3em;
+}
+.note p{margin:.35em 0;color:var(--paper-dim)}
+.note p strong{color:var(--paper)}
+
+/* two-column grid for compare blocks */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:1.4em 0}
+@media(max-width:680px){.cols{grid-template-columns:1fr}}
+.card{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:5px;
+  padding:18px 20px;
+}
+.card h4{
+  margin:0 0 .2em;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500;
+}
+.card p{margin:.4em 0;color:var(--paper-dim);font-size:18px;line-height:1.5}
+
+/* interactive figure shell */
+figure.lab{
+  margin:1.8em 0;background:var(--ink-2);
+  border:1px solid var(--line);border-radius:6px;overflow:hidden;
+}
+.lab-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:13px 18px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap;
+}
+.lab-head .ttl{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold-2)}
+.lab-head .hint{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.lab-body{padding:16px 18px}
+canvas{display:block;width:100%;height:auto;touch-action:none;border-radius:3px}
+
+/* controls */
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;
+  padding:14px 18px;border-top:1px solid var(--line);background:var(--ink-3)}
+.ctrl label{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.08em;
+  color:var(--paper-dim);display:flex;align-items:center;gap:9px}
+.ctrl .val{color:var(--gold-2);min-width:3.4em;display:inline-block}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;height:3px;width:150px;
+  background:var(--line-strong);border-radius:3px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--gold);cursor:pointer;border:2px solid var(--ink-3)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;
+  background:var(--gold);cursor:pointer;border:2px solid var(--ink-3)}
+input[type=range]:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.btn{
+  appearance:none;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  background:transparent;color:var(--paper-dim);
+  border:1px solid var(--line-strong);border-radius:3px;padding:7px 12px;
+  transition:.16s;
+}
+.btn:hover{color:var(--paper);border-color:var(--gold)}
+.btn[aria-pressed="true"]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* readout strip */
+.readout{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  display:flex;flex-wrap:wrap;gap:8px 22px;
+  padding:12px 18px;border-top:1px solid var(--line);color:var(--paper-dim);
+}
+.readout b{color:var(--gold-2);font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 18px;border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:14px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+figcaption{font-size:16.5px;color:var(--muted);padding:0 4px;margin-top:.6em;line-height:1.5}
+figcaption em{color:var(--paper-dim)}
+
+/* equation emphasis */
+.eqbox{background:var(--ink-2);border:1px solid var(--line);border-radius:5px;
+  padding:6px 18px;margin:1.2em 0;text-align:center;overflow-x:auto}
+
+/* small data table */
+table.tbl{width:100%;border-collapse:collapse;margin:1.2em 0;font-size:17px}
+table.tbl th,table.tbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+table.tbl th{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold);font-weight:500}
+table.tbl td{color:var(--paper-dim)}
+table.tbl .mono{font-size:13px;color:var(--paper)}
+
+footer.stamp{
+  border-top:1px solid var(--line);margin-top:50px;padding:26px 0 60px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;
+  color:var(--muted);text-align:center;
+}
+@media (prefers-reduced-motion: reduce){
+  .panel.active{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="eyebrow">Mechanics · Spacetime · IB / A-level extension</div>
+    <h1 class="title">The Relativity<br>of <em>Motion</em></h1>
+    <p class="dek">A walk from Galileo's shared clock to Einstein's <em>invariant interval</em>, told through the one diagram that changes everything once its axes are allowed to lean.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="tabrow" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  aria-controls="p1" id="t1"><span class="num">01</span>The Invariant</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="p2" id="t2"><span class="num">02</span>Spacetime Diagrams</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="p3" id="t3"><span class="num">03</span>The Evidence</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="p4" id="t4"><span class="num">04</span>Simultaneity</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="p5" id="t5"><span class="num">05</span>Paradoxes</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ===================== PANEL 1 ===================== -->
+<section class="panel active" role="tabpanel" id="p1" aria-labelledby="t1">
+  <h2 class="sec"><span class="kicker">01 · What survives a change of frame</span>From Galileo to the Interval</h2>
+
+  <p class="lead">Relativity, in both its versions, is an argument about which quantities every observer agrees on. Galileo's answer and Einstein's answer differ in exactly one place, and that single difference reorganises the whole of mechanics.</p>
+
+  <h3>Galileo's bargain</h3>
+  <p>Picture two observers, one standing on a platform and one gliding past at constant velocity $v$. Galileo asks that they share a single universal clock and a single notion of length, so that to convert one observer's coordinates into the other's you simply slide the spatial origin along while time runs identically for both:</p>
+
+  <div class="eqbox">$$x' = x - vt,\qquad t' = t.$$</div>
+
+  <p>Under this transformation, two things are held sacred. Time intervals are absolute, since $\Delta t' = \Delta t$ for everyone, and the spatial distance between events measured <em>at the same time</em> is the same in every frame. Velocities then simply add, $u' = u - v$, which is the ordinary common sense of throwing a ball forward on a moving train.</p>
+
+  <div class="note">
+    <span class="tag">The crack in the bargain</span>
+    <p>Maxwell's equations deliver a definite speed for light, $c = 1/\sqrt{\mu_0\varepsilon_0}$, with no reference to any source or observer. Galilean velocity addition insists that speed should change from frame to frame, so either electromagnetism secretly singles out one special frame, the luminiferous aether, or the rule $t'=t$ is wrong. The experiments in tab 03 force the second option.</p>
+  </div>
+
+  <h3>Einstein's replacement</h3>
+  <p>Einstein keeps the principle of relativity, that the laws of physics read the same in every inertial frame, and adds a second postulate that the speed of light in vacuum is the same $c$ for every inertial observer regardless of the motion of the source. Holding $c$ fixed forces time and space to mix, and the transformation that does the mixing is the Lorentz transformation, written here with $\beta = v/c$ and the Lorentz factor $\gamma = 1/\sqrt{1-\beta^2}$:</p>
+
+  <div class="eqbox">$$x' = \gamma\,(x - vt),\qquad ct' = \gamma\,(ct - \beta x).$$</div>
+
+  <p>Notice that $t'$ now depends on $x$; the moving observer's clock reading is contaminated by position, which is the seed of every effect that follows. Galileo is not discarded, since setting $\beta \ll 1$ returns $\gamma \to 1$ and the old equations reappear, so the familiar world is simply the low-speed corner of a larger structure.</p>
+
+  <h3>The quantity everyone agrees on</h3>
+  <p>If neither $\Delta t$ nor $\Delta x$ is absolute any longer, the natural question is whether <em>anything</em> is. There is, and it is the combination that the Lorentz transformation leaves untouched, the spacetime interval between two events:</p>
+
+  <div class="eqbox">$$\Delta s^{2} \;=\; (c\,\Delta t)^{2} - (\Delta x)^{2} \;=\; (c\,\Delta t')^{2} - (\Delta x')^{2}.$$</div>
+
+  <p>The sign of $\Delta s^2$ sorts every pair of events into one of three families, and this classification is itself frame-independent, which is why it can carry the entire causal structure of the universe. The interactive below lets you boost a fixed pair of events and watch the separate pieces shift while the interval refuses to.</p>
+
+  <figure class="lab" id="lab-interval">
+    <div class="lab-head">
+      <span class="ttl">Interval invariance</span>
+      <span class="hint">drag the sliders · the interval stays put</span>
+    </div>
+    <div class="lab-body">
+      <canvas id="cv-interval" width="860" height="300" aria-label="Bar chart comparing time and space separations across frames while the interval is conserved"></canvas>
+    </div>
+    <div class="ctrl">
+      <label>separation&nbsp;$c\Delta t$ <input id="iv-t" type="range" min="-4" max="4" step="0.1" value="3"><span class="val" id="iv-tv">3.0</span></label>
+      <label>separation&nbsp;$\Delta x$ <input id="iv-x" type="range" min="-4" max="4" step="0.1" value="1"><span class="val" id="iv-xv">1.0</span></label>
+      <label>boost&nbsp;$\beta$ <input id="iv-b" type="range" min="-0.95" max="0.95" step="0.01" value="0.6"><span class="val" id="iv-bv">0.60</span></label>
+    </div>
+    <div class="readout" id="iv-read"></div>
+    <div class="legend">
+      <span><i class="swatch" style="border-top-color:var(--c-rest)"></i> frame S</span>
+      <span><i class="swatch" style="border-top-color:var(--c-move)"></i> boosted frame S′</span>
+      <span><i class="dot" style="background:var(--c-light)"></i> invariant $\Delta s^2$</span>
+    </div>
+    <figcaption>The blue pair $(c\Delta t',\,\Delta x')$ swings as you change $\beta$, yet the gold quantity $\Delta s^2$ on the right is pinned. <em>Timelike</em> ($\Delta s^2>0$) events can be cause and effect; <em>spacelike</em> ($\Delta s^2<0$) events cannot influence one another; the boundary is the path of light itself.</figcaption>
+  </figure>
+</section>
+
+<!-- ===================== PANEL 2 ===================== -->
+<section class="panel" role="tabpanel" id="p2" aria-labelledby="t2" hidden>
+  <h2 class="sec"><span class="kicker">02 · Geometry of events</span>When the Axes Learn to Lean</h2>
+
+  <p class="lead">A spacetime diagram plots an event by where and when it happened, with time running up the page and space across it. The whole conceptual jump from Galileo to Einstein can be read off how a second observer's axes are drawn onto the first observer's chart.</p>
+
+  <p>By convention we put $ct$ on the vertical axis so that both axes carry the same units and the path of a light ray sits at a tidy $45^\circ$. A stationary object traces a vertical <strong>worldline</strong>; a moving object leans over, and because nothing outruns light, every physical worldline stays steeper than the light line.</p>
+
+  <div class="cols">
+    <div class="card">
+      <h4>Galileo — a shear</h4>
+      <p>The moving observer's time axis tilts, because their origin drifts through space, but their lines of simultaneity stay flat. Everyone shares the same horizontal "now," so the diagram is merely sheared and time remains absolute.</p>
+    </div>
+    <div class="card">
+      <h4>Einstein — a scissor</h4>
+      <p>Holding $c$ fixed forces both axes to rotate toward the $45^\circ$ light line by the same angle, $\tan\theta = \beta$. The space axis lifts as the time axis leans, so "now" tilts and simultaneity becomes a matter of who is asking.</p>
+    </div>
+  </div>
+
+  <p>Switch the model on the diagram below to feel the difference directly. In Galilean mode the $x'$ axis stays horizontal; in Einstein mode it scissors up to meet the leaning $ct'$ axis, and the dashed line of simultaneity through your event tilts with it. The two hyperbolae are calibration curves, the loci $\,(ct)^2 - x^2 = \pm 1$, which mark off a unit tick along the skewed axes and explain why the leaning rulers and clocks appear stretched.</p>
+
+  <figure class="lab" id="lab-mink">
+    <div class="lab-head">
+      <span class="ttl">The Minkowski diagram</span>
+      <span class="hint">drag the event · move the slider</span>
+    </div>
+    <div class="lab-body">
+      <canvas id="cv-mink" width="860" height="560" aria-label="Interactive Minkowski spacetime diagram with adjustable boost, light cone, leaning S-prime axes and a draggable event"></canvas>
+    </div>
+    <div class="ctrl">
+      <label>boost&nbsp;$\beta$ <input id="mk-b" type="range" min="-0.9" max="0.9" step="0.01" value="0.45"><span class="val" id="mk-bv">0.45</span></label>
+      <button class="btn" id="mk-mode" aria-pressed="false">Mode: Einstein</button>
+      <button class="btn" id="mk-cone" aria-pressed="true">Light cone</button>
+      <button class="btn" id="mk-hyp"  aria-pressed="false">Calibration curves</button>
+    </div>
+    <div class="readout" id="mk-read"></div>
+    <div class="legend">
+      <span><i class="swatch" style="border-top-color:var(--c-rest)"></i> S axes</span>
+      <span><i class="swatch" style="border-top-color:var(--c-move)"></i> S′ axes ($ct'$, $x'$)</span>
+      <span><i class="swatch" style="border-top-color:var(--c-light)"></i> light line</span>
+      <span><i class="dot" style="background:var(--c-event)"></i> event</span>
+    </div>
+    <figcaption>The cone splits spacetime into an absolute <em>future</em> and <em>past</em> reachable from the event, and an <em>elsewhere</em> region that no signal can bridge. Because the cone sits at $45^\circ$ for every observer, this causal skeleton is the one feature the leaning axes can never disturb.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">Reading the dashed line</span>
+    <p>The dashed line through your event collects all the events the moving observer calls <strong>simultaneous</strong> with it. In Galilean mode it is horizontal and matches S exactly; in Einstein mode it tilts, so two observers passing through the same event no longer agree on what is happening "right now" elsewhere. That single tilt is the subject of tab 04.</p>
+  </div>
+</section>
+
+<!-- ===================== PANEL 3 ===================== -->
+<section class="panel" role="tabpanel" id="p3" aria-labelledby="t3" hidden>
+  <h2 class="sec"><span class="kicker">03 · Why we believe it</span>The Evidence on the Bench and in the Sky</h2>
+
+  <p class="lead">A theory this strange earns its place only by surviving measurement, and special relativity arrived already cornered by three independent lines of evidence, one optical, one astronomical, and one woven into electromagnetism itself.</p>
+
+  <h3>Michelson and Morley — the aether refuses to appear</h3>
+  <p>If light travelled through a stationary aether, then the Earth ploughing through it at orbital speed should produce an "aether wind," and a beam sent along the wind would take a measurably different time from a beam sent across it. Michelson and Morley split a single beam down two perpendicular arms, recombined them, and looked for the interference fringes to shift as the apparatus was slowly rotated.</p>
+
+  <figure class="lab">
+    <div class="lab-head"><span class="ttl">The interferometer, schematically</span><span class="hint">arm difference vanishes</span></div>
+    <div class="lab-body">
+      <canvas id="cv-mm" width="860" height="300" aria-label="Schematic Michelson-Morley interferometer showing source, beam splitter, two mirrors and detector"></canvas>
+    </div>
+    <figcaption>For arm length $L$ and aether speed $v$, the simple model predicts a round-trip time difference $\Delta t \approx \dfrac{L v^2}{c^3}$ between the two arms, large enough to shift the fringes by a visible fraction. <em>The observed shift was null,</em> repeatedly and across seasons, which leaves the speed of light stubbornly the same in every direction.</figcaption>
+  </figure>
+
+  <h3>Muons — the clock in the sky runs slow</h3>
+  <p>Cosmic rays striking the upper atmosphere create muons roughly $15\ \mathrm{km}$ up, moving at close to $c$, with a mean lifetime at rest of only $\tau_0 = 2.2\ \mu\mathrm{s}$. In a world without time dilation a muon would travel only a few hundred metres before decaying, so almost none should reach sea level, yet detectors at the surface count them in abundance.</p>
+
+  <p>Relativity resolves the count in two mutually consistent ways. From the ground the muon's internal clock is dilated to $\gamma\tau_0$, so it survives long enough to cross the atmosphere; from the muon's own frame the atmosphere is length-contracted to a thin slab of thickness $h/\gamma$, which it crosses in its ordinary short lifetime. Both descriptions predict the same survival fraction, $N/N_0 = e^{-h/(\gamma\, v\, \tau_0)}$, and the calculator lets you watch the classical and relativistic predictions diverge.</p>
+
+  <figure class="lab" id="lab-muon">
+    <div class="lab-head"><span class="ttl">Muon survival to sea level</span><span class="hint">slide the speed</span></div>
+    <div class="lab-body">
+      <canvas id="cv-muon" width="860" height="280" aria-label="Bar comparison of classical versus relativistic muon survival fraction"></canvas>
+    </div>
+    <div class="ctrl">
+      <label>speed&nbsp;$\beta=v/c$ <input id="mu-b" type="range" min="0.9" max="0.9995" step="0.0005" value="0.998"><span class="val" id="mu-bv">0.998</span></label>
+      <label>height&nbsp;$h$&nbsp;(km) <input id="mu-h" type="range" min="2" max="20" step="0.5" value="15"><span class="val" id="mu-hv">15.0</span></label>
+    </div>
+    <div class="readout" id="mu-read"></div>
+    <figcaption>The gulf between the two bars is time dilation made arithmetic. At $\beta = 0.998$ the factor $\gamma \approx 16$, which is the difference between a particle that should never arrive and one that routinely does.</figcaption>
+  </figure>
+
+  <h3>Electromagnetism — relativity was hiding in Maxwell all along</h3>
+  <p>The deepest evidence is theoretical. Maxwell's $c$ is fixed by constants of the vacuum and knows nothing of who is watching, which is precisely the second postulate stated in the language of fields. More striking still, magnetism turns out to be electricity seen from a moving frame: a current-carrying wire is electrically neutral to an observer at rest, yet to a charge drifting alongside it the length contraction of the moving lattice unbalances the charge densities, producing a net electric force that the stationary observer had been calling "magnetic." The two fields are one object viewed from two frames, which is why they transform into each other and why relativity is not an addition to electromagnetism so much as its hidden grammar.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Observation</th><th>Galilean expectation</th><th>What is measured</th></tr></thead>
+    <tbody>
+      <tr><td>Michelson–Morley fringe shift</td><td class="mono">visible shift on rotation</td><td>null</td></tr>
+      <tr><td>Muons at sea level</td><td class="mono">negligible flux</td><td>large flux</td></tr>
+      <tr><td>Speed of light vs. source motion</td><td class="mono">$c \pm v$</td><td>$c$, always</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== PANEL 4 ===================== -->
+<section class="panel" role="tabpanel" id="p4" aria-labelledby="t4" hidden>
+  <h2 class="sec"><span class="kicker">04 · The relativity of now</span>Simultaneity Comes Apart</h2>
+
+  <p class="lead">Of all the consequences, the relativity of simultaneity is the one that most offends intuition and the one from which length contraction and the paradoxes both descend, since it says that the very notion of "two things happening at the same time" depends on who is moving.</p>
+
+  <h3>Einstein's train</h3>
+  <p>A train moves along an embankment, and lightning strikes both ends of the train at once according to an observer standing at the midpoint of the embankment, who sees the two flashes arrive together. An observer seated at the middle of the train is rushing toward the front flash and away from the rear one, so the light from the front reaches them first; for the train observer the front strike happened <em>before</em> the rear strike. Neither observer is mistaken, because each is correctly reporting the order of events in their own frame, and there is no privileged frame to overrule them.</p>
+
+  <figure class="lab" id="lab-sim">
+    <div class="lab-head"><span class="ttl">The same two strikes, two verdicts</span><span class="hint">slide the train's speed</span></div>
+    <div class="lab-body">
+      <canvas id="cv-sim" width="860" height="360" aria-label="Spacetime diagram of two lightning strikes showing they are simultaneous on the embankment but ordered for the train"></canvas>
+    </div>
+    <div class="ctrl">
+      <label>train speed&nbsp;$\beta$ <input id="sm-b" type="range" min="0" max="0.8" step="0.01" value="0.5"><span class="val" id="sm-bv">0.50</span></label>
+    </div>
+    <div class="readout" id="sm-read"></div>
+    <figcaption>Both strikes lie on one horizontal line, so they are <em>simultaneous on the embankment</em>. The train's tilted line of simultaneity cuts them at different heights, so in the train's frame one precedes the other by $\Delta t' = \gamma\,\beta L/c$.</figcaption>
+  </figure>
+
+  <h3>The rule of leading clocks</h3>
+  <p>Quantitatively, if a row of clocks is synchronised in its own rest frame and then observed from a frame moving along the row, the clocks toward the front read <em>behind</em> those at the rear by an amount $\Delta t = vL/c^2$ per length $L$. This "leading clocks lag" rule is just the position-dependent term $-\beta x$ sitting inside the Lorentz transformation for $t'$, and once you accept it the famous paradoxes stop being paradoxical, because each apparent contradiction is two observers disagreeing about which events were simultaneous.</p>
+
+  <div class="note">
+    <span class="tag">Where contraction comes from</span>
+    <p>To measure a moving rod's length you mark both ends <strong>at the same instant</strong>, but "the same instant" is exactly the thing two frames disagree about. Length contraction is therefore not a force squeezing the rod; it is the geometric shadow of measuring its two ends along a tilted line of simultaneity.</p>
+  </div>
+</section>
+
+<!-- ===================== PANEL 5 ===================== -->
+<section class="panel" role="tabpanel" id="p5" aria-labelledby="t5" hidden>
+  <h2 class="sec"><span class="kicker">05 · Apparent contradictions</span>Two Paradoxes, Both Resolved</h2>
+
+  <p class="lead">A relativistic paradox is a story engineered to make two frames seem to contradict each other; the resolution is always that the frames disagree about simultaneity, never about any event that actually occurs, so the physics stays single-valued.</p>
+
+  <h3>The pole and the barn</h3>
+  <p>A runner carries a pole of rest length $5\ \mathrm{m}$ toward a barn of rest length $4\ \mathrm{m}$ with both doors open, running fast enough that $\gamma = 1.25$. In the barn's frame the pole is contracted to exactly $4\ \mathrm{m}$ and momentarily fits, so a farmer could slam both doors shut at the same instant with the pole entirely inside. In the runner's frame the barn is the thing contracted, down to $3.2\ \mathrm{m}$, and the $5\ \mathrm{m}$ pole can never be enclosed, which appears to flatly contradict the farmer.</p>
+
+  <p>Both are right, because the two door-slams are simultaneous only in the barn's frame. Scrub the animation and watch the door events: in the runner's frame the far door opens again before the near door closes, so there is never a moment when both doors are shut and the pole is trapped, and the contradiction dissolves into a disagreement about timing.</p>
+
+  <figure class="lab" id="lab-pole">
+    <div class="lab-head"><span class="ttl">Pole &amp; barn, both frames</span><span class="hint">scrub or play</span></div>
+    <div class="lab-body">
+      <canvas id="cv-pole" width="860" height="340" aria-label="Two-frame animation of the pole and barn paradox showing door closing events"></canvas>
+    </div>
+    <div class="ctrl">
+      <button class="btn" id="pb-play" aria-pressed="false">Play</button>
+      <label>time <input id="pb-t" type="range" min="0" max="1000" step="1" value="350"><span class="val" id="pb-tv"></span></label>
+    </div>
+    <div class="readout" id="pb-read"></div>
+    <figcaption>Top, the <em>barn frame</em>: a contracted pole, both doors shut together for an instant. Bottom, the <em>pole frame</em>: a contracted barn, the doors opening and closing out of step so the pole is never sealed in. The same events, ordered differently.</figcaption>
+  </figure>
+
+  <h3>The travelling twin</h3>
+  <p>One twin flies to a distant star at high speed and returns, while the other stays on Earth, and they reunite to find the traveller younger. The puzzle is the apparent symmetry, since each twin sees the other recede and might claim the other's clock ran slow, yet only one ends up younger and the situation cannot be symmetric after all.</p>
+
+  <p>The asymmetry is real and lives in the turnaround. The stay-at-home twin occupies a single inertial frame throughout, drawing one straight worldline, whereas the traveller must accelerate to come back and so switches frames, drawing a bent worldline. In spacetime geometry the straight path between two events carries the <em>greatest</em> proper time, so the bent path simply logs fewer ticks; at the turn the traveller's line of simultaneity swings across a large slab of the Earth twin's history, which is the geometric bookkeeping for the years the traveller "skips."</p>
+
+  <figure class="lab" id="lab-twin">
+    <div class="lab-head"><span class="ttl">The bent worldline ages less</span><span class="hint">slide the journey speed</span></div>
+    <div class="lab-body">
+      <canvas id="cv-twin" width="860" height="460" aria-label="Spacetime diagram of the twin paradox comparing proper times of the straight and bent worldlines"></canvas>
+    </div>
+    <div class="ctrl">
+      <label>journey&nbsp;$\beta$ <input id="tw-b" type="range" min="0.3" max="0.95" step="0.01" value="0.8"><span class="val" id="tw-bv">0.80</span></label>
+    </div>
+    <div class="readout" id="tw-read"></div>
+    <figcaption>The faint horizontal lines are the traveller's planes of simultaneity. Their abrupt swing at the turnaround is where the missing Earth-years go, and the proper-time tally beneath the diagram shows the straight worldline winning every time.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">The common thread</span>
+    <p>Both stories are defused by the same move. Identify the events that one frame calls simultaneous, notice that the other frame disagrees, and the contradiction evaporates. <strong>Simultaneity is the hinge on which all of special relativity turns.</strong></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="stamp">
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+<script>
+/* =========================================================
+   Tabs
+   ========================================================= */
+const tabs = Array.from(document.querySelectorAll('.tab'));
+const panels = Array.from(document.querySelectorAll('.panel'));
+const onShow = {}; // hooks: redraw a panel's canvases when revealed
+
+function selectTab(i){
+  tabs.forEach((t,j)=>{
+    const on = i===j;
+    t.setAttribute('aria-selected', on?'true':'false');
+    panels[j].classList.toggle('active', on);
+    panels[j].hidden = !on;
+  });
+  const id = panels[i].id;
+  if(onShow[id]) onShow[id]();
+}
+tabs.forEach((t,i)=>{
+  t.addEventListener('click',()=>selectTab(i));
+  t.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'){e.preventDefault();const n=(i+1)%tabs.length;tabs[n].focus();selectTab(n);}
+    if(e.key==='ArrowLeft'){e.preventDefault();const n=(i-1+tabs.length)%tabs.length;tabs[n].focus();selectTab(n);}
+  });
+});
+
+/* =========================================================
+   Canvas helpers (HiDPI)
+   ========================================================= */
+function fitCanvas(cv){
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const cssW = cv.clientWidth || cv.parentElement.clientWidth;
+  const ratio = cv.height / cv.width;            // keep authored aspect
+  const cssH = cssW * ratio;
+  cv.style.height = cssH + 'px';
+  cv.width  = Math.round(cssW*dpr);
+  cv.height = Math.round(cssH*dpr);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx, w:cssW, h:cssH};
+}
+const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const COL = {
+  ink2:'#15161a', line:'rgba(201,161,78,.16)', lineS:'rgba(201,161,78,.32)',
+  gold:'#c9a14e', gold2:'#e3c476', paper:'#e9e4d9', dim:'#a39d90', muted:'#6f6a60',
+  rest:'#d8d2c4', move:'#6fa8c9', world:'#79c2a0', event:'#e0856b', event2:'#c97ad0'
+};
+const gamma = b => 1/Math.sqrt(1-b*b);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* =========================================================
+   LAB 1 — interval invariance (bar comparison)
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('cv-interval');
+  const st=document.getElementById('iv-t'), sx=document.getElementById('iv-x'), sb=document.getElementById('iv-b');
+  const lt=document.getElementById('iv-tv'), lx=document.getElementById('iv-xv'), lb=document.getElementById('iv-bv');
+  const read=document.getElementById('iv-read');
+
+  function draw(){
+    const {ctx,w,h}=fitCanvas(cv);
+    const cdt=+st.value, dx=+sx.value, b=+sb.value, g=gamma(b);
+    const cdt2=g*(cdt - b*dx), dx2=g*(dx - b*cdt);
+    const s2 = cdt*cdt - dx*dx;
+    lt.textContent=cdt.toFixed(1); lx.textContent=dx.toFixed(1); lb.textContent=b.toFixed(2);
+
+    ctx.clearRect(0,0,w,h);
+    const scale = 26; const mid=h*0.56;
+    // groups: S(cΔt, Δx) , S'(cΔt', Δx') , invariant s2
+    const groups=[
+      {label:'S',  bars:[['cΔt',cdt,COL.rest],['Δx',dx,COL.rest]]},
+      {label:"S′", bars:[["cΔt′",cdt2,COL.move],["Δx′",dx2,COL.move]]},
+      {label:'inv',bars:[['Δs²',s2,COL.gold]]}
+    ];
+    let x=70; const gap=64;
+    ctx.textAlign='center';
+    // zero axis
+    ctx.strokeStyle=COL.line; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(40,mid); ctx.lineTo(w-20,mid); ctx.stroke();
+    groups.forEach(grp=>{
+      const bw=34, innerGap=10;
+      grp.bars.forEach((bar,i)=>{
+        const [name,val,col]=bar;
+        const bx=x+i*(bw+innerGap);
+        const bh=val*scale*(name==='Δs²'?1:1);
+        ctx.fillStyle=col;
+        ctx.globalAlpha = name==='Δs²'?0.92:0.8;
+        ctx.fillRect(bx, mid-Math.max(bh,0), bw, Math.abs(bh));
+        ctx.globalAlpha=1;
+        ctx.fillStyle=COL.dim; ctx.font='12px "IBM Plex Mono"';
+        ctx.fillText(name, bx+bw/2, val>=0?mid+16:mid-6);
+        ctx.fillStyle=COL.paper; ctx.font='12px "IBM Plex Mono"';
+        ctx.fillText(val.toFixed(1), bx+bw/2, mid-bh+(bh>=0?-7:16));
+      });
+      const span=grp.bars.length*bw+(grp.bars.length-1)*innerGap;
+      ctx.fillStyle=COL.gold; ctx.font='11px "IBM Plex Mono"';
+      ctx.fillText(grp.label, x+span/2, h-12);
+      x += span + gap;
+    });
+
+    const kind = s2>0.001?'timelike — causal link possible':(s2<-0.001?'spacelike — no causal link':'lightlike — on the light cone');
+    read.innerHTML = `γ = <b>${g.toFixed(2)}</b> · Δs² in S = <b>${s2.toFixed(2)}</b> · Δs² in S′ = <b>${(cdt2*cdt2-dx2*dx2).toFixed(2)}</b> · <b>${kind}</b>`;
+  }
+  [st,sx,sb].forEach(s=>s.addEventListener('input',draw));
+  onShow['p1']=draw; window.addEventListener('resize',()=>{if(panels[0].classList.contains('active'))draw();});
+  draw();
+})();
+
+/* =========================================================
+   LAB 2 — Minkowski diagram (signature)
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('cv-mink');
+  const sb=document.getElementById('mk-b'), lb=document.getElementById('mk-bv');
+  const bMode=document.getElementById('mk-mode'), bCone=document.getElementById('mk-cone'), bHyp=document.getElementById('mk-hyp');
+  const read=document.getElementById('mk-read');
+  let einstein=true, showCone=true, showHyp=false;
+  let ev={x:1.2, ct:2.4};           // event in S coords
+  const R=5;                         // axis range ±R
+
+  function geo(w,h){
+    const pad=30, size=Math.min(w,h)-pad*2, ox=w/2, oy=h/2, sc=size/(2*R);
+    return {ox,oy,sc};
+  }
+  const P=(x,ct,G)=>[G.ox + x*G.sc, G.oy - ct*G.sc];
+
+  function draw(){
+    const {ctx,w,h}=fitCanvas(cv);
+    const G=geo(w,h);
+    const b=+sb.value, g=gamma(b); lb.textContent=b.toFixed(2);
+    ctx.clearRect(0,0,w,h);
+
+    // light-cone shading
+    if(showCone){
+      const f=(x,ct)=>P(x,ct,G);
+      ctx.fillStyle='rgba(201,161,78,.07)';
+      // future
+      ctx.beginPath();ctx.moveTo(...f(0,0));ctx.lineTo(...f(R,R));ctx.lineTo(...f(-R,R));ctx.closePath();ctx.fill();
+      // past
+      ctx.beginPath();ctx.moveTo(...f(0,0));ctx.lineTo(...f(R,-R));ctx.lineTo(...f(-R,-R));ctx.closePath();ctx.fill();
+      // elsewhere
+      ctx.fillStyle='rgba(111,168,201,.06)';
+      ctx.beginPath();ctx.moveTo(...f(0,0));ctx.lineTo(...f(R,R));ctx.lineTo(...f(R,-R));ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(...f(0,0));ctx.lineTo(...f(-R,R));ctx.lineTo(...f(-R,-R));ctx.closePath();ctx.fill();
+      ctx.fillStyle=COL.muted;ctx.font='italic 13px "Cormorant Garamond"';ctx.textAlign='center';
+      ctx.fillText('future', G.ox, G.oy-G.sc*R*0.78);
+      ctx.fillText('past',   G.ox, G.oy+G.sc*R*0.82);
+      ctx.fillText('elsewhere', G.ox+G.sc*R*0.7, G.oy+4);
+    }
+
+    // faint grid
+    ctx.strokeStyle='rgba(201,161,78,.07)';ctx.lineWidth=1;
+    for(let i=-R;i<=R;i++){
+      ctx.beginPath();ctx.moveTo(...P(i,-R,G));ctx.lineTo(...P(i,R,G));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(...P(-R,i,G));ctx.lineTo(...P(R,i,G));ctx.stroke();
+    }
+
+    // calibration hyperbolae
+    if(showHyp){
+      ctx.strokeStyle='rgba(227,196,118,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      for(const k of [1,2]){
+        // (ct)^2 - x^2 = k^2  (timelike, opens vertically)
+        ctx.beginPath();let first=true;
+        for(let x=-R;x<=R;x+=0.08){const ct=Math.sqrt(k*k+x*x);if(ct<=R){const[px,py]=P(x,ct,G);first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);}}
+        ctx.stroke();
+        ctx.beginPath();first=true;
+        for(let x=-R;x<=R;x+=0.08){const ct=-Math.sqrt(k*k+x*x);if(ct>=-R){const[px,py]=P(x,ct,G);first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);}}
+        ctx.stroke();
+        // x^2 - (ct)^2 = k^2 (spacelike, opens horizontally)
+        ctx.beginPath();first=true;
+        for(let ct=-R;ct<=R;ct+=0.08){const x=Math.sqrt(k*k+ct*ct);if(x<=R){const[px,py]=P(x,ct,G);first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);}}
+        ctx.stroke();
+        ctx.beginPath();first=true;
+        for(let ct=-R;ct<=R;ct+=0.08){const x=-Math.sqrt(k*k+ct*ct);if(x>=-R){const[px,py]=P(x,ct,G);first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);}}
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    // light lines
+    ctx.strokeStyle=COL.gold;ctx.lineWidth=1.4;ctx.globalAlpha=.85;
+    ctx.beginPath();ctx.moveTo(...P(-R,-R,G));ctx.lineTo(...P(R,R,G));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(...P(-R,R,G));ctx.lineTo(...P(R,-R,G));ctx.stroke();
+    ctx.globalAlpha=1;
+
+    // S axes
+    ctx.strokeStyle=COL.rest;ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(...P(0,-R,G));ctx.lineTo(...P(0,R,G));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(...P(-R,0,G));ctx.lineTo(...P(R,0,G));ctx.stroke();
+    ctx.fillStyle=COL.rest;ctx.font='13px "IBM Plex Mono"';ctx.textAlign='left';
+    ctx.fillText('ct', G.ox+6, G.oy-G.sc*R+14);
+    ctx.fillText('x',  G.ox+G.sc*R-16, G.oy-8);
+
+    // S' axes
+    // ct'-axis: x = β·ct  (the worldline of S' origin) ; spans ct=-R..R
+    // x'-axis : ct = (einstein? β : 0)·x
+    ctx.strokeStyle=COL.move;ctx.lineWidth=1.8;
+    // ct'
+    let a1=P(b*(-R),-R,G), a2=P(b*R,R,G);
+    ctx.beginPath();ctx.moveTo(...a1);ctx.lineTo(...a2);ctx.stroke();
+    // x'
+    const sxp = einstein?b:0;
+    let c1=P(-R, sxp*(-R), G), c2=P(R, sxp*R, G);
+    ctx.beginPath();ctx.moveTo(...c1);ctx.lineTo(...c2);ctx.stroke();
+    ctx.fillStyle=COL.move;ctx.textAlign='left';
+    ctx.fillText("ct′", ...[a2[0]+5,a2[1]+4]);
+    ctx.fillText("x′",  ...[c2[0]-2,c2[1]-7]);
+
+    // event
+    const [ex,ey]=P(ev.x,ev.ct,G);
+    // S simultaneity (horizontal)
+    ctx.strokeStyle=COL.rest;ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.globalAlpha=.6;
+    ctx.beginPath();ctx.moveTo(...P(-R,ev.ct,G));ctx.lineTo(...P(R,ev.ct,G));ctx.stroke();
+    // S' simultaneity (parallel to x'): ct = sxp*x + (ev.ct - sxp*ev.x)
+    ctx.strokeStyle=COL.move;
+    const k0 = ev.ct - sxp*ev.x;
+    ctx.beginPath();ctx.moveTo(...P(-R, sxp*(-R)+k0, G));ctx.lineTo(...P(R, sxp*R+k0, G));ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+
+    // event dot
+    ctx.fillStyle=COL.event;ctx.beginPath();ctx.arc(ex,ey,6,0,7);ctx.fill();
+    ctx.strokeStyle=COL.ink2;ctx.lineWidth=2;ctx.stroke();
+
+    // primed coords of event
+    const exp = einstein? g*(ev.x-b*ev.ct) : ev.x - b*ev.ct;
+    const ectp= einstein? g*(ev.ct-b*ev.x) : ev.ct;
+    const s2 = ev.ct*ev.ct - ev.x*ev.x;
+    read.innerHTML = `event S (x, ct) = (<b>${ev.x.toFixed(2)}</b>, <b>${ev.ct.toFixed(2)}</b>) · `+
+      `S′ (x′, ct′) = (<b>${exp.toFixed(2)}</b>, <b>${ectp.toFixed(2)}</b>) · `+
+      `Δs² = <b>${s2.toFixed(2)}</b> · axis tilt θ = <b>${(Math.atan(b)*180/Math.PI).toFixed(1)}°</b>`;
+  }
+
+  // dragging the event
+  let drag=false;
+  function toData(e){
+    const r=cv.getBoundingClientRect();
+    const G=geo(r.width, r.height);
+    const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    const py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+    return { x: Math.max(-R,Math.min(R,(px-G.ox)/G.sc)),
+             ct:Math.max(-R,Math.min(R,(G.oy-py)/G.sc)) };
+  }
+  function start(e){drag=true;ev=toData(e);draw();e.preventDefault();}
+  function move(e){if(drag){ev=toData(e);draw();e.preventDefault();}}
+  function end(){drag=false;}
+  cv.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false});cv.addEventListener('touchmove',move,{passive:false});cv.addEventListener('touchend',end);
+
+  sb.addEventListener('input',draw);
+  bMode.addEventListener('click',()=>{einstein=!einstein;bMode.setAttribute('aria-pressed',einstein?'false':'true');bMode.textContent='Mode: '+(einstein?'Einstein':'Galileo');draw();});
+  bCone.addEventListener('click',()=>{showCone=!showCone;bCone.setAttribute('aria-pressed',showCone?'true':'false');draw();});
+  bHyp .addEventListener('click',()=>{showHyp=!showHyp;bHyp.setAttribute('aria-pressed',showHyp?'true':'false');draw();});
+  onShow['p2']=draw; window.addEventListener('resize',()=>{if(panels[1].classList.contains('active'))draw();});
+})();
+
+/* =========================================================
+   LAB 3a — Michelson–Morley schematic (static)
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('cv-mm');
+  function draw(){
+    const {ctx,w,h}=fitCanvas(cv);
+    ctx.clearRect(0,0,w,h);
+    const cx=w*0.36, cy=h*0.55;
+    const src=[w*0.08,cy], bs=[cx,cy], mH=[w*0.82,cy], mV=[cx,h*0.16], det=[cx,h*0.92];
+    function node(p,label,col){
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(p[0],p[1],5,0,7);ctx.fill();
+      ctx.fillStyle=COL.dim;ctx.font='11px "IBM Plex Mono"';ctx.textAlign='center';
+      ctx.fillText(label,p[0],p[1]-12);
+    }
+    // beams
+    ctx.strokeStyle=COL.gold;ctx.lineWidth=1.6;ctx.globalAlpha=.85;
+    ctx.beginPath();ctx.moveTo(...src);ctx.lineTo(...bs);ctx.stroke();      // source -> splitter
+    ctx.beginPath();ctx.moveTo(...bs);ctx.lineTo(...mH);ctx.stroke();        // horizontal arm
+    ctx.strokeStyle=COL.move;
+    ctx.beginPath();ctx.moveTo(...bs);ctx.lineTo(...mV);ctx.stroke();        // vertical arm
+    ctx.strokeStyle=COL.world;
+    ctx.beginPath();ctx.moveTo(...bs);ctx.lineTo(...det);ctx.stroke();       // recombined -> detector
+    ctx.globalAlpha=1;
+    // splitter glyph
+    ctx.save();ctx.translate(...bs);ctx.rotate(-Math.PI/4);ctx.strokeStyle=COL.paper;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(14,0);ctx.stroke();ctx.restore();
+    // mirrors
+    ctx.strokeStyle=COL.paper;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(mH[0],mH[1]-13);ctx.lineTo(mH[0],mH[1]+13);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mV[0]-13,mV[1]);ctx.lineTo(mV[0]+13,mV[1]);ctx.stroke();
+
+    node(src,'source',COL.gold2);
+    node(bs,'beam splitter',COL.paper);
+    node(mH,'mirror',COL.move);
+    node(mV,'mirror',COL.move);
+    node(det,'detector',COL.world);
+
+    // aether wind arrow
+    ctx.strokeStyle=COL.muted;ctx.fillStyle=COL.muted;ctx.lineWidth=1.4;
+    const ay=h*0.12;
+    ctx.beginPath();ctx.moveTo(w*0.62,ay);ctx.lineTo(w*0.92,ay);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(w*0.92,ay);ctx.lineTo(w*0.90,ay-4);ctx.lineTo(w*0.90,ay+4);ctx.closePath();ctx.fill();
+    ctx.font='italic 13px "Cormorant Garamond"';ctx.textAlign='center';
+    ctx.fillText('supposed aether wind  v',w*0.77,ay-8);
+  }
+  onShow['p3']=()=>{draw();muon();};
+  window.addEventListener('resize',()=>{if(panels[2].classList.contains('active')){draw();muon();}});
+  // muon defined below; declare hoisted via var
+  var muon=function(){};
+  // store draw for combined hook
+  window.__mmDraw=draw;
+
+  /* ---- LAB 3b muon survival ---- */
+  const mcv=document.getElementById('cv-muon');
+  const mb=document.getElementById('mu-b'), mh=document.getElementById('mu-h');
+  const lbv=document.getElementById('mu-bv'), lhv=document.getElementById('mu-hv');
+  const mread=document.getElementById('mu-read');
+  const TAU=2.2e-6, C=3e8;
+  muon=function(){
+    const {ctx,w,h}=fitCanvas(mcv);
+    const b=+mb.value, hh=+mh.value*1000, g=gamma(b), v=b*C;
+    lbv.textContent=b.toFixed(4); lhv.textContent=(+mh.value).toFixed(1);
+    const tLab = hh/v;
+    const Ncl = Math.exp(-tLab/TAU);            // classical (no dilation)
+    const Nrel= Math.exp(-tLab/(g*TAU));        // relativistic
+    ctx.clearRect(0,0,w,h);
+    const base=h-40, maxH=h-80;
+    function bar(x,frac,col,label){
+      const drawH=maxH*Math.min(1,Math.max(frac,0)); 
+      ctx.fillStyle=col;ctx.globalAlpha=.85;
+      ctx.fillRect(x,base-drawH, 150, drawH);ctx.globalAlpha=1;
+      ctx.fillStyle=COL.paper;ctx.font='13px "IBM Plex Mono"';ctx.textAlign='center';
+      const pct = frac<1e-3 ? frac.toExponential(1) : (frac*100).toFixed(1)+'%';
+      ctx.fillText(pct, x+75, base-drawH-8);
+      ctx.fillStyle=COL.dim;ctx.font='12px "IBM Plex Mono"';
+      ctx.fillText(label, x+75, base+20);
+    }
+    ctx.strokeStyle=COL.line;ctx.beginPath();ctx.moveTo(40,base);ctx.lineTo(w-30,base);ctx.stroke();
+    bar(w*0.22, Ncl, COL.muted, 'classical');
+    bar(w*0.58, Nrel, COL.gold, 'relativistic');
+    mread.innerHTML=`γ = <b>${g.toFixed(1)}</b> · lab travel time = <b>${(tLab*1e6).toFixed(1)} μs</b> ≈ <b>${(tLab/TAU).toFixed(1)}</b> rest-lifetimes · `+
+      `survival: classical <b>${(Ncl*100).toExponential(1)}%</b> vs relativistic <b>${(Nrel*100).toFixed(1)}%</b>`;
+  };
+  [mb,mh].forEach(s=>s.addEventListener('input',muon));
+})();
+
+/* =========================================================
+   LAB 4 — simultaneity spacetime diagram
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('cv-sim');
+  const sb=document.getElementById('sm-b'), lb=document.getElementById('sm-bv');
+  const read=document.getElementById('sm-read');
+  const L=3;                          // half-length of train (in light-units)
+  function draw(){
+    const {ctx,w,h}=fitCanvas(cv);
+    const b=+sb.value, g=gamma(b); lb.textContent=b.toFixed(2);
+    ctx.clearRect(0,0,w,h);
+    const pad=40, ox=w/2, oy=h-40, sc=Math.min((w-2*pad)/(2*L+1.5),(h-70)/4.2);
+    const P=(x,ct)=>[ox+x*sc, oy-ct*sc];
+    // axes
+    ctx.strokeStyle=COL.rest;ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(...P(0,0));ctx.lineTo(...P(0,4));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(...P(-L-1,0));ctx.lineTo(...P(L+1,0));ctx.stroke();
+    ctx.fillStyle=COL.rest;ctx.font='12px "IBM Plex Mono"';ctx.textAlign='left';
+    ctx.fillText('ct (embankment)',...[P(0,4)[0]+6,P(0,4)[1]+6]);ctx.fillText('x',...[P(L+1,0)[0]-14,P(0,0)[1]-8]);
+    // two strikes at ct=1.4, x=±L  (simultaneous in S)
+    const tS=1.4;
+    const A={x:-L,ct:tS}, B={x:L,ct:tS};
+    // S simultaneity line
+    ctx.strokeStyle=COL.rest;ctx.setLineDash([4,4]);ctx.globalAlpha=.6;
+    ctx.beginPath();ctx.moveTo(...P(-L-0.6,tS));ctx.lineTo(...P(L+0.6,tS));ctx.stroke();
+    // train worldlines (front/back), slope 1/β through ends
+    ctx.setLineDash([]);ctx.globalAlpha=1;ctx.strokeStyle=COL.world;ctx.lineWidth=1.4;
+    // train centre passes origin; ends at x=±L*?? keep ends at ±L at ct=0
+    for(const x0 of [-L,0,L]){
+      ctx.globalAlpha = x0===0?.5:1;
+      ctx.beginPath();ctx.moveTo(...P(x0,0));ctx.lineTo(...P(x0+b*4,4));ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    // S' simultaneity through midpoint of the two strikes' frame: line slope β through train centre at the strikes' average
+    // train centre worldline: x = β·ct ; choose t' line through event where centre is at ct=tS => centre x=β*tS
+    const cx=b*tS;
+    ctx.strokeStyle=COL.move;ctx.setLineDash([5,4]);ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(...P(-L-0.6, b*(-L-0.6-cx)+tS));ctx.lineTo(...P(L+0.6, b*(L+0.6-cx)+tS));ctx.stroke();
+    ctx.setLineDash([]);
+    // strike events
+    for(const [e,lab,col] of [[A,'rear',COL.event2],[B,'front',COL.event]]){
+      const [px,py]=P(e.x,e.ct);
+      // little lightning star
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(px,py,6,0,7);ctx.fill();
+      ctx.strokeStyle=COL.ink2;ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=col;ctx.font='italic 13px "Cormorant Garamond"';ctx.textAlign='center';
+      ctx.fillText(lab,px,py-12);
+    }
+    // train-time of each strike: ct' = γ(ct - βx)
+    const tpF=g*(tS-b*L), tpR=g*(tS-b*(-L));
+    const dtp = tpR - tpF; // rear minus front
+    read.innerHTML=`γ = <b>${g.toFixed(2)}</b> · embankment: strikes simultaneous (Δt = 0) · `+
+      `train: front at ct′ = <b>${tpF.toFixed(2)}</b>, rear at ct′ = <b>${tpR.toFixed(2)}</b> · `+
+      `front leads by <b>${(dtp).toFixed(2)}</b>`;
+    ctx.fillStyle=COL.move;ctx.font='12px "IBM Plex Mono"';ctx.textAlign='left';
+    ctx.fillText("train 'now'", ...[P(L+0.2,b*(L+0.2-cx)+tS)[0]-70, P(L+0.6,b*(L+0.6-cx)+tS)[1]-6]);
+  }
+  sb.addEventListener('input',draw);
+  onShow['p4']=draw; window.addEventListener('resize',()=>{if(panels[3].classList.contains('active'))draw();});
+})();
+
+/* =========================================================
+   LAB 5a — pole & barn, two frames
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('cv-pole');
+  const slider=document.getElementById('pb-t'), playBtn=document.getElementById('pb-play'), tv=document.getElementById('pb-tv');
+  const read=document.getElementById('pb-read');
+  const Lp=5, Lb=4, b=0.6, g=1.25;     // γ=1.25 exactly; pole→4 in barn frame, barn→3.2 in pole frame
+  let playing=false, raf=null;
+
+  function draw(){
+    const {ctx,w,h}=fitCanvas(cv);
+    const T=+slider.value/1000;        // 0..1 normalised journey
+    tv.textContent=(T).toFixed(2);
+    ctx.clearRect(0,0,w,h);
+    const m=18;
+
+    // ---- top: BARN FRAME ----
+    const topY=h*0.30, scale=(w-2*m)/12;  // 12 m of world width
+    const cxL = m+scale*1;                 // barn left wall x
+    const barnW=Lb*scale, poleW=(Lp/g)*scale; // pole contracted to 4 m
+    // pole travels left->right; position so it sweeps across barn
+    const travel=(w-2*m)-poleW; const px = m + T*travel;
+    // barn
+    drawBarn(ctx, cxL, topY, barnW, scale, 'barn frame  ·  pole contracts to 4 m');
+    // doors closed when pole fully inside (barn frame: simultaneous)
+    const inside = (px>=cxL) && (px+poleW<=cxL+barnW);
+    door(ctx,cxL,topY,scale,inside);                 // left door
+    door(ctx,cxL+barnW,topY,scale,inside);           // right door
+    // pole
+    pole(ctx,px,topY,poleW,scale);
+
+    // ---- bottom: POLE FRAME ----
+    const botY=h*0.74; const poleW2=Lp*scale, barnW2=(Lb/g)*scale; // barn 3.2 m
+    const poleX = m+2*scale; // pole roughly centred-left, stationary
+    // barn sweeps right->left toward pole
+    const travel2=(w-2*m)-barnW2; const barnX = (w-m-barnW2) - T*travel2*0.0; // we move barn leftwards as time passes
+    const bx = (w-m) - barnW2 - T*travel2;
+    drawBarn(ctx, bx, botY, barnW2, scale, 'pole frame  ·  barn contracts to 3.2 m');
+    // doors: NOT simultaneous. Far(right) door opens before near(left) closes.
+    // model: near(left) door closes when barn's left wall reaches pole's left end;
+    //        far(right) door already re-opened earlier.
+    const nearClosed = (bx <= poleX) && (bx+barnW2 >= poleX); // left wall passed pole left
+    const farClosed  = (bx+barnW2 >= poleX+poleW2);            // right wall beyond pole right (never, pole longer)
+    door(ctx,bx,botY,scale,nearClosed);
+    door(ctx,bx+barnW2,botY,scale,farClosed);
+    pole(ctx,poleX,botY,poleW2,scale);
+
+    read.innerHTML = `β = <b>0.60</b>, γ = <b>1.25</b> · barn frame: pole = <b>4.0 m</b> fits exactly · `+
+      `pole frame: barn = <b>3.2 m</b>, pole = <b>5.0 m</b> never enclosed · `+
+      `<b>${inside?'both doors shut (barn frame)':'doors open'}</b>`;
+  }
+  function drawBarn(ctx,x,y,bw,sc,label){
+    ctx.strokeStyle=COL.dim;ctx.lineWidth=2;
+    // roof
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+bw/2,y-sc*1.1);ctx.lineTo(x+bw,y);ctx.stroke();
+    // walls baseline
+    ctx.strokeStyle=COL.line;ctx.beginPath();ctx.moveTo(x-sc*0.4,y);ctx.lineTo(x+bw+sc*0.4,y);ctx.stroke();
+    ctx.fillStyle=COL.muted;ctx.font='12px "IBM Plex Mono"';ctx.textAlign='left';
+    ctx.fillText(label,x-sc*0.4,y-sc*1.25);
+  }
+  function door(ctx,x,y,sc,closed){
+    ctx.strokeStyle=closed?COL.event:COL.world;ctx.lineWidth=4;
+    if(closed){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-sc*0.9);ctx.stroke();}
+    else{ // open: short hinge stub
+      ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+sc*0.18,y-sc*0.22);ctx.stroke();ctx.globalAlpha=1;
+    }
+  }
+  function pole(ctx,x,y,pw,sc){
+    ctx.strokeStyle=COL.gold2;ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(x,y-sc*0.42);ctx.lineTo(x+pw,y-sc*0.42);ctx.stroke();
+    ctx.fillStyle=COL.gold;ctx.beginPath();ctx.arc(x+pw,y-sc*0.42,4,0,7);ctx.fill();
+  }
+  function tick(){
+    if(!playing)return;
+    let v=+slider.value+6; if(v>1000){v=0;}
+    slider.value=v;draw();
+    raf=requestAnimationFrame(tick);
+  }
+  playBtn.addEventListener('click',()=>{
+    playing=!playing;playBtn.setAttribute('aria-pressed',playing?'true':'false');playBtn.textContent=playing?'Pause':'Play';
+    if(playing && !reduceMotion) tick(); else {playing=false;playBtn.textContent='Play';playBtn.setAttribute('aria-pressed','false');if(reduceMotion){/*step disabled*/}}
+  });
+  slider.addEventListener('input',()=>{draw();});
+  onShow['p5']=()=>{draw();twin();};
+  window.addEventListener('resize',()=>{if(panels[4].classList.contains('active')){draw();twin();}});
+
+  /* ---- LAB 5b twin paradox ---- */
+  const tcv=document.getElementById('cv-twin');
+  const tb=document.getElementById('tw-b'), tbv=document.getElementById('tw-bv');
+  const tread=document.getElementById('tw-read');
+  var twin=function(){
+    const {ctx,w,h}=fitCanvas(tcv);
+    const beta=+tb.value, gg=gamma(beta); tbv.textContent=beta.toFixed(2);
+    ctx.clearRect(0,0,w,h);
+    const pad=44, ox=pad+10, oy=h-40, X=4, totalCT=2*X/beta; // turnaround at x=X
+    const scX=(w-2*pad)/(X+1), scT=(h-70)/totalCT;
+    const P=(x,ct)=>[ox + x*scX, oy - ct*scT];
+    // axes
+    ctx.strokeStyle=COL.rest;ctx.lineWidth=1.3;
+    ctx.beginPath();ctx.moveTo(...P(0,0));ctx.lineTo(...P(0,totalCT));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(...P(0,0));ctx.lineTo(...P(X+0.6,0));ctx.stroke();
+    ctx.fillStyle=COL.rest;ctx.font='12px "IBM Plex Mono"';ctx.textAlign='left';
+    ctx.fillText('ct (Earth)',...[P(0,totalCT)[0]+6,P(0,totalCT)[1]+10]);
+    ctx.fillText('x',...[P(X+0.6,0)[0]-10,P(0,0)[1]-8]);
+    // Earth worldline
+    ctx.strokeStyle=COL.world;ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(...P(0,0));ctx.lineTo(...P(0,totalCT));ctx.stroke();
+    // traveller worldline (out and back)
+    ctx.strokeStyle=COL.event;ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(...P(0,0));ctx.lineTo(...P(X,totalCT/2));ctx.lineTo(...P(0,totalCT));ctx.stroke();
+    // turnaround simultaneity jump (faint horizontals from traveller's two frames)
+    ctx.strokeStyle=COL.move;ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.globalAlpha=.7;
+    const ctTurn=totalCT/2;
+    // outbound simultaneity at turn meets Earth axis at ct = ctTurn - beta*X
+    const e1=ctTurn - beta*X, e2=ctTurn + beta*X;
+    ctx.beginPath();ctx.moveTo(...P(X,ctTurn));ctx.lineTo(...P(0,e1));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(...P(X,ctTurn));ctx.lineTo(...P(0,e2));ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+    // mark the skipped slab on Earth line
+    ctx.strokeStyle=COL.move;ctx.lineWidth=4;ctx.globalAlpha=.5;
+    ctx.beginPath();ctx.moveTo(...P(0,e1));ctx.lineTo(...P(0,e2));ctx.stroke();ctx.globalAlpha=1;
+    // endpoints
+    ctx.fillStyle=COL.gold2;[[0,0],[X,ctTurn],[0,totalCT]].forEach(p=>{const q=P(p[0],p[1]);ctx.beginPath();ctx.arc(q[0],q[1],5,0,7);ctx.fill();});
+    ctx.fillStyle=COL.move;ctx.font='italic 13px "Cormorant Garamond"';ctx.textAlign='left';
+    ctx.fillText('skipped Earth-years', ...[P(0,(e1+e2)/2)[0]+10, P(0,(e1+e2)/2)[1]+4]);
+    // proper times
+    const tauEarth=totalCT;                  // in ct units
+    const tauTrav = 2*Math.sqrt((ctTurn)*(ctTurn) - X*X); // sqrt((cΔt)^2 - Δx^2) each leg ×2
+    tread.innerHTML=`γ = <b>${gg.toFixed(2)}</b> · Earth proper time = <b>${tauEarth.toFixed(2)}</b> · `+
+      `traveller proper time = <b>${tauTrav.toFixed(2)}</b> · traveller ages <b>${(tauTrav/tauEarth*100).toFixed(0)}%</b> as much`;
+  };
+  tb.addEventListener('input',twin);
+})();
+
+/* initialise first visible panel */
+selectTab(0);
+</script>
+</body>
+</html>
