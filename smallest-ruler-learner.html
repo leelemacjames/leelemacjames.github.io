@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Smallest Ruler — black hole entropy from units alone</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: true }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root{
+  --bg:#0c0c0e;
+  --panel:#15151a;
+  --panel2:#1c1c22;
+  --ink:#ece6d6;
+  --muted:#928c7d;
+  --gold:#c9a44a;
+  --gold-bright:#e8c976;
+  --line:#2b2b33;
+  --good:#7fae6a;
+  --bad:#9a6b6b;
+  --glow:rgba(201,164,74,0.22);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:20px; line-height:1.7; font-weight:500;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px; margin:0 auto; padding:0 22px;}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+
+/* ---- header ---- */
+header{padding:64px 0 26px; border-bottom:1px solid var(--line);}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.34em;
+  text-transform:uppercase; color:var(--gold); margin:0 0 18px;}
+h1{font-size:clamp(38px,7vw,68px); line-height:1.02; font-weight:600; margin:0;
+  letter-spacing:-.01em;}
+h1 .sub{display:block; font-style:italic; font-weight:400; color:var(--muted);
+  font-size:clamp(20px,3.4vw,30px); margin-top:12px; letter-spacing:0;}
+.lede{color:var(--ink); font-size:21px; margin:26px 0 4px; max-width:62ch;}
+
+/* ---- section scaffolding ---- */
+section{padding:54px 0; border-bottom:1px solid var(--line);}
+.snum{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.3em;
+  color:var(--gold); text-transform:uppercase;}
+h2{font-size:clamp(28px,4.6vw,40px); font-weight:600; margin:8px 0 6px; line-height:1.1;}
+h3{font-size:24px; font-weight:600; margin:30px 0 6px; color:var(--gold-bright);}
+p{max-width:64ch;}
+a{color:var(--gold-bright);}
+em{color:var(--ink);}
+
+/* ---- panels / widgets ---- */
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  padding:22px; margin:26px 0;}
+.panel-row{display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start;}
+.controls{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center;
+  font-family:'IBM Plex Mono',monospace; font-size:13px;}
+label.ctl{display:flex; flex-direction:column; gap:6px; color:var(--muted);
+  letter-spacing:.08em; text-transform:uppercase; font-size:11px;}
+select, input[type=range]{accent-color:var(--gold);}
+select{font-family:'IBM Plex Mono',monospace; background:var(--panel2);
+  color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:6px 8px;}
+input[type=range]{width:180px;}
+
+button{font-family:'IBM Plex Mono',monospace; cursor:pointer;
+  background:transparent; color:var(--gold-bright); border:1px solid var(--gold);
+  border-radius:4px; padding:7px 13px; font-size:12px; letter-spacing:.06em;
+  transition:background .18s, color .18s;}
+button:hover{background:var(--glow);}
+button:active{transform:translateY(1px);}
+button.solid{background:var(--gold); color:#1a1407;}
+button.solid:hover{background:var(--gold-bright);}
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible{
+  outline:2px solid var(--gold-bright); outline-offset:2px;}
+
+canvas{width:100%; height:auto; display:block; border-radius:4px; background:#0a0a0c;}
+.caption{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
+  margin-top:12px; line-height:1.6;}
+
+/* ---- cascade ---- */
+.cascade{display:grid; gap:10px 0; margin:18px 0 4px; justify-items:center; overflow-x:auto;}
+.cascade .node{width:42px; height:42px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:14px;}
+.cascade .s{border:1px solid var(--line); background:#0a0a0c; color:var(--ink);}
+.cascade .d1{border:1px solid var(--gold); background:rgba(201,164,74,.10); color:var(--gold-bright);}
+.cascade .d2{border:1px solid var(--gold); background:rgba(201,164,74,.24); color:var(--gold-bright); font-weight:600;}
+.rowlab{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+  justify-self:start; align-self:center;}
+
+/* ---- dimension matcher ---- */
+.modebar{display:flex; gap:0; margin-bottom:20px; border:1px solid var(--line);
+  border-radius:5px; overflow:hidden; width:fit-content;}
+.modebar button{border:0; border-radius:0; color:var(--muted); padding:9px 16px;}
+.modebar button[aria-pressed=true]{background:var(--gold); color:#1a1407;}
+.qrow{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:10px 0; border-bottom:1px solid var(--line);}
+.qrow:last-of-type{border-bottom:0;}
+.qname{font-family:'IBM Plex Mono',monospace; min-width:158px; color:var(--ink); font-size:13px;}
+.qname small{display:block; color:var(--muted); font-size:11px; letter-spacing:.02em;}
+.stepper{display:flex; align-items:center; gap:8px;}
+.stepper button{width:30px; padding:6px 0; text-align:center;}
+.expval{font-family:'IBM Plex Mono',monospace; min-width:46px; text-align:center;
+  color:var(--gold-bright); font-size:15px;}
+.dimboard{display:flex; gap:10px; flex-wrap:wrap; margin:20px 0 6px;}
+.chip{flex:1 1 86px; min-width:86px; text-align:center; border:1px solid var(--line);
+  border-radius:5px; padding:10px 6px; background:var(--panel2);
+  font-family:'IBM Plex Mono',monospace; transition:border-color .2s, background .2s;}
+.chip.ok{border-color:var(--good); background:rgba(127,174,106,.10);}
+.chip .lab{font-size:11px; color:var(--muted); letter-spacing:.12em;}
+.chip .cur{font-size:22px; color:var(--ink); margin-top:4px;}
+.chip .tgt{font-size:11px; color:var(--muted); margin-top:2px;}
+.status{font-family:'IBM Plex Mono',monospace; font-size:13px; margin-top:14px;
+  padding:12px 14px; border-radius:5px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--muted);}
+.status.win{border-color:var(--gold); color:var(--gold-bright);
+  background:var(--glow); box-shadow:0 0 22px -6px var(--glow);}
+.reveal{margin-top:16px; padding:14px 16px; border-left:2px solid var(--gold);
+  background:rgba(201,164,74,.06); display:none;}
+.reveal.show{display:block;}
+.freecount{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+  margin-top:10px;}
+.freecount b{color:var(--gold-bright);}
+
+/* ---- stirling ---- */
+.readout{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px; margin:18px 0;}
+.stat{border:1px solid var(--line); border-radius:5px; padding:14px;
+  background:var(--panel2);}
+.stat .k{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em;
+  color:var(--muted); text-transform:uppercase;}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-size:22px; color:var(--gold-bright);
+  margin-top:6px;}
+.bar{height:10px; border-radius:5px; background:#0a0a0c; overflow:hidden;
+  border:1px solid var(--line); margin-top:6px;}
+.bar > span{display:block; height:100%; background:var(--gold);}
+
+/* ---- confusion boxes ---- */
+details.cb{border:1px solid var(--line); border-left:2px solid var(--gold);
+  border-radius:5px; margin:16px 0; background:var(--panel);}
+details.cb summary{cursor:pointer; padding:14px 18px; font-family:'IBM Plex Mono',monospace;
+  font-size:13px; letter-spacing:.04em; color:var(--gold-bright); list-style:none;}
+details.cb summary::-webkit-details-marker{display:none;}
+details.cb summary::before{content:'›'; display:inline-block; margin-right:12px;
+  color:var(--gold); transition:transform .2s;}
+details.cb[open] summary::before{transform:rotate(90deg);}
+details.cb .body{padding:0 18px 16px; color:var(--ink);}
+details.cb .body p{margin-top:0;}
+
+/* ---- footer ---- */
+footer{padding:40px 0 60px; text-align:center;}
+.stamp{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em;
+  color:var(--muted);}
+
+/* ---- intro reveal ---- */
+.fade{opacity:0; transform:translateY(10px); animation:rise .7s ease forwards;}
+@keyframes rise{to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion:reduce){
+  .fade{animation:none; opacity:1; transform:none;}
+  html{scroll-behavior:auto;}
+  .status.win{box-shadow:none;}
+}
+@media (max-width:560px){
+  body{font-size:18px;}
+  .qname{min-width:0;}
+  input[type=range]{width:140px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap fade">
+    <p class="eyebrow">Year 11 &middot; physics &amp; mathematics &middot; an interactive companion</p>
+    <h1>A Smallest Ruler
+      <span class="sub">building a black hole's entropy out of units alone</span></h1>
+    <p class="lede">Hawking and Bekenstein found that a black hole carries the entropy
+      \( S = \dfrac{\pi A k_{B} c^{3}}{2hG} \). Almost all of that formula can be
+      recovered without any deep physics, using only the demand that both sides of
+      an equation carry the same units. This page lets you assemble the pieces by
+      hand: read rates off a lattice, drive a dimension toward a target, and count
+      the arrangements that entropy is really measuring.</p>
+  </div>
+</header>
+
+<!-- ===================== SECTION 1 : LATTICE ===================== -->
+<section id="lattice">
+<div class="wrap">
+  <p class="snum">01 / rates without calculus</p>
+  <h2>Reading a rate off a lattice</h2>
+  <p>Calculus measures how a quantity changes at a single instant, and it leans on
+    ideas of continuity and limits. We can step around all of that by recording a
+    quantity only at equally spaced moments, like photographs on a steady beat, so
+    that it becomes a list of numbers. The change across one step is the
+    <em>first difference</em> \( \Delta s_n = s_{n+1}-s_n \), and the change in that
+    change is the <em>second difference</em>. A first difference divided by the tick
+    is a discrete speed; a second difference is the discrete acceleration. Change the
+    rule below and watch the cascade and the chords respond.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <label class="ctl">Sequence rule
+        <select id="rule">
+          <option value="linear">sₙ = n &nbsp;(steady motion)</option>
+          <option value="square" selected>sₙ = n² &nbsp;(released from rest)</option>
+          <option value="cube">sₙ = n³ &nbsp;(changing acceleration)</option>
+        </select>
+      </label>
+      <label class="ctl">Highlight the step
+        <input type="range" id="step" min="0" max="4" value="2" step="1">
+      </label>
+    </div>
+
+    <div id="cascade" class="cascade" aria-hidden="true"></div>
+
+    <canvas id="latCanvas" width="800" height="340" role="img"
+      aria-label="Plot of the sampled positions joined by chords, with one rise-over-run step highlighted."></canvas>
+    <p class="caption" id="latCaption"></p>
+  </div>
+
+  <details class="cb">
+    <summary>Why are the first differences of n² the odd numbers?</summary>
+    <div class="body"><p>Because \( (n+1)^2 - n^2 = 2n+1 \), which runs through
+      \(1,3,5,7,\dots\) as \(n\) increases. Their own differences are all \(2\), the
+      constant second difference, and a constant second difference is exactly the
+      fingerprint of uniform acceleration, the discrete form of Galileo's odd-number
+      rule for a body released from rest.</p></div>
+  </details>
+
+  <details class="cb">
+    <summary>What happened to continuity and the tangent line?</summary>
+    <div class="body"><p>The dashed curve is the smooth path the calculus would draw,
+      and its tangent at a point is what you would reach by letting the step shrink
+      toward zero. We never take that limit here; every rate we need is read as a
+      chord between two real samples, which carries the same dimensions a tangent
+      would, so nothing is lost for the purpose of finding units.</p></div>
+  </details>
+</div>
+</section>
+
+<!-- ===================== SECTION 2 : DIMENSIONS ===================== -->
+<section id="dimensions">
+<div class="wrap">
+  <p class="snum">02 / the homogeneity engine</p>
+  <h2>Driving a dimension to its target</h2>
+  <p>Every constant arrives through a defining equation, and from that equation its
+    units follow. Tracking only the base dimensions, mass \(\mathsf{M}\),
+    length \(\mathsf{L}\), time \(\mathsf{T}\) and temperature \(\Uptheta\), each
+    quantity becomes a short list of powers.</p>
+
+  <div class="panel mono" style="font-size:13.5px; color:var(--muted); line-height:2;">
+    \( [c] = \mathsf{L}\,\mathsf{T}^{-1} \) &nbsp;from \(c=d/t\) &nbsp;&middot;&nbsp;
+    \( [h] = \mathsf{M}\,\mathsf{L}^{2}\,\mathsf{T}^{-1} \) &nbsp;from \(E=hf\) &nbsp;&middot;&nbsp;
+    \( [G] = \mathsf{M}^{-1}\mathsf{L}^{3}\mathsf{T}^{-2} \) &nbsp;from \(F=Gm_1m_2/r^2\)<br>
+    \( [k_{B}] = \mathsf{M}\,\mathsf{L}^{2}\,\mathsf{T}^{-2}\,\Uptheta^{-1} \) &nbsp;from \(\bar E=\tfrac32 k_B T\) &nbsp;&middot;&nbsp;
+    \( [A] = \mathsf{L}^{2} \) &nbsp;an area
+  </div>
+
+  <p>Now build a product of powers and try to drive its total dimension onto the
+    target. Step each exponent up or down and watch the four dimension chips; when
+    every chip turns green you have a dimensionally valid formula. The two targets
+    behave very differently, which is the whole point.</p>
+
+  <div class="panel">
+    <div class="modebar" role="group" aria-label="Choose target">
+      <button id="modePlanck" aria-pressed="true">target: a length ℓₚ</button>
+      <button id="modeEntropy" aria-pressed="false">target: entropy S</button>
+    </div>
+
+    <div id="rows"></div>
+
+    <div class="dimboard" id="dimboard"></div>
+    <div class="status" id="status"></div>
+    <div class="freecount" id="freecount"></div>
+
+    <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+      <button id="btnNudge" style="display:none;">apply Bekenstein: set A-power = 1</button>
+      <button id="btnReveal" class="solid">reveal a solution</button>
+      <button id="btnReset">reset to zero</button>
+    </div>
+
+    <div class="reveal" id="revealPlanck">
+      <p style="margin:0 0 6px;">Three constants, three base dimensions in play, so the
+      equations are just enough to fix a single answer with nothing left over:</p>
+      \[ \ell_{P} = \kappa\, c^{-3/2} h^{1/2} G^{1/2} = \kappa\sqrt{\dfrac{hG}{c^{3}}}\approx 1.6\times10^{-35}\ \text{m}. \]
+      <p style="margin:6px 0 0;">The pure number \(\kappa\) stays invisible to units;
+      the accepted value uses \(\hbar=h/2\pi\).</p>
+    </div>
+
+    <div class="reveal" id="revealEntropy">
+      <p style="margin:0 0 6px;">Five exponents against four equations leaves one free
+      choice. Temperature is carried only by \(k_B\), so its power is forced to one;
+      the leftover freedom is removed only by Bekenstein's physical claim that the
+      entropy is proportional to the area, \(b=1\):</p>
+      \[ S = \kappa\, k_{B}\,A\,c^{3} h^{-1} G^{-1} = \kappa\,\dfrac{k_{B} A c^{3}}{hG},\qquad \kappa=\tfrac{\pi}{2}. \]
+    </div>
+  </div>
+
+  <details class="cb">
+    <summary>Why can't this method ever find the π/2?</summary>
+    <div class="body"><p>A pure number has dimension \(1\): it changes no unit. Matching
+      dimensions therefore cannot see it, whether it is \(\pi/2\), \(4\) or
+      \(\sqrt{2\pi}\). Pinning the leading number down needs the full physics of fields
+      near the horizon, which is the part this shortcut deliberately skips.</p></div>
+  </details>
+
+  <details class="cb">
+    <summary>Why is the length unique but the entropy is not?</summary>
+    <div class="body"><p>It is a counting match. The Planck length has three unknown
+      powers and three base dimensions, so the equations are exactly enough and the
+      answer is forced. The entropy has five unknown powers against the same four base
+      dimensions, one short, so a whole family of formulas is dimensionally legal and a
+      single physical fact, \(S\propto A\), is needed to choose among them.</p></div>
+  </details>
+</div>
+</section>
+
+<!-- ===================== SECTION 3 : STIRLING ===================== -->
+<section id="stirling">
+<div class="wrap">
+  <p class="snum">03 / what entropy counts</p>
+  <h2>Counting the arrangements</h2>
+  <p>Entropy counts how many internal arrangements a system could be in while looking
+    the same from outside, \( S = k_B \ln\Omega \). A shuffled pack of \(52\) cards has
+    \(\Omega = 52!\) orderings, a number far too large to write out, yet the entropy
+    needs only its logarithm. Stirling's approximation,
+    \( \ln n! \approx n\ln n - n + \tfrac12\ln(2\pi n) \), reaches that logarithm
+    without ever forming the factorial. Slide \(n\) and watch how tightly it tracks the
+    exact value.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <label class="ctl">number of items&nbsp;&nbsp;n = <span class="mono" id="nVal" style="color:var(--gold-bright)">52</span>
+        <input type="range" id="nSlider" min="2" max="120" value="52" step="1">
+      </label>
+    </div>
+
+    <div class="readout">
+      <div class="stat"><div class="k">ln(n!) exact</div><div class="v" id="stExact">—</div></div>
+      <div class="stat"><div class="k">Stirling (full)</div><div class="v" id="stFull">—</div></div>
+      <div class="stat"><div class="k">leading n ln n − n</div><div class="v" id="stLead">—</div></div>
+      <div class="stat"><div class="k">relative error</div><div class="v" id="stErr">—</div>
+        <div class="bar"><span id="stBar" style="width:0%"></span></div></div>
+    </div>
+
+    <div class="readout">
+      <div class="stat"><div class="k">Ω = n! is about</div><div class="v" id="stOmega">—</div></div>
+      <div class="stat"><div class="k">entropy S</div><div class="v" id="stEnt">—</div></div>
+      <div class="stat"><div class="k">information</div><div class="v" id="stBits">—</div></div>
+    </div>
+    <p class="caption" id="stCaption"></p>
+  </div>
+
+  <details class="cb">
+    <summary>Why use ln Ω rather than Ω itself?</summary>
+    <div class="body"><p>The count \(\Omega\) for a deck sits near \(10^{68}\), and for a
+      gas or a black hole it is unthinkably larger; the logarithm tames it into a number
+      you can hold in your hand, around \(156\) for the deck. The logarithm also turns
+      the multiplying together of independent systems into plain addition, so their
+      entropies simply add, which is exactly the behaviour a measure of disorder should
+      have.</p></div>
+  </details>
+</div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================= *
+ *  SECTION 1 — lattice / first differences                      *
+ * ============================================================= */
+(function(){
+  const N = 6;                       // samples n = 0 .. 5
+  const rules = {
+    linear: n => n,
+    square: n => n*n,
+    cube:   n => n*n*n
+  };
+  const ruleSel = document.getElementById('rule');
+  const stepSel = document.getElementById('step');
+  const cap = document.getElementById('latCaption');
+  const cascade = document.getElementById('cascade');
+  const cv = document.getElementById('latCanvas');
+  const ctx = cv.getContext('2d');
+
+  function seqArray(rule){ return Array.from({length:N}, (_,n)=>rules[rule](n)); }
+  function diffs(arr){ const d=[]; for(let i=0;i<arr.length-1;i++) d.push(arr[i+1]-arr[i]); return d; }
+
+  function fmt(x){ return Number.isInteger(x)? x : x.toFixed(2); }
+
+  function drawCascade(s, d1, d2){
+    const cols = 2*N;                           // 12 columns: col 1 = labels
+    cascade.style.gridTemplateColumns = `repeat(${cols}, minmax(40px,1fr))`;
+    cascade.innerHTML = '';
+    // row 1: s at columns 2,4,6,...
+    const lab1 = document.createElement('div'); lab1.className='rowlab'; lab1.textContent='sₙ';
+    lab1.style.gridColumn = '1 / span 1'; lab1.style.gridRow='1';
+    cascade.appendChild(lab1);
+    s.forEach((v,k)=>{
+      const c=document.createElement('div'); c.className='node s'; c.textContent=fmt(v);
+      c.style.gridColumn = (2*k+2)+' / span 1'; c.style.gridRow='1'; cascade.appendChild(c);
+    });
+    // row 2: first differences at columns 3,5,...
+    const lab2 = document.createElement('div'); lab2.className='rowlab'; lab2.textContent='Δsₙ';
+    lab2.style.gridColumn='1 / span 1'; lab2.style.gridRow='2';
+    cascade.appendChild(lab2);
+    d1.forEach((v,k)=>{
+      const c=document.createElement('div'); c.className='node d1'; c.textContent=fmt(v);
+      c.style.gridColumn=(2*k+3)+' / span 1'; c.style.gridRow='2'; cascade.appendChild(c);
+    });
+    // row 3: second differences at columns 4,6,...
+    const lab3 = document.createElement('div'); lab3.className='rowlab'; lab3.textContent='Δ²sₙ';
+    lab3.style.gridColumn='1 / span 1'; lab3.style.gridRow='3';
+    cascade.appendChild(lab3);
+    d2.forEach((v,k)=>{
+      const c=document.createElement('div'); c.className='node d2'; c.textContent=fmt(v);
+      c.style.gridColumn=(2*k+4)+' / span 1'; c.style.gridRow='3'; cascade.appendChild(c);
+    });
+  }
+
+  function drawPlot(rule, s, hi){
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = 340;
+    cv.width = W*dpr; cv.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    const mL=46, mR=18, mT=18, mB=34;
+    const maxY = Math.max(...s, 1);
+    const x = n => mL + (n/(N-1))*(W-mL-mR);
+    const y = v => H-mB - (v/maxY)*(H-mT-mB);
+
+    // axes
+    ctx.strokeStyle = '#3a3a42'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(mL,mT); ctx.lineTo(mL,H-mB); ctx.lineTo(W-mR,H-mB); ctx.stroke();
+    ctx.fillStyle = '#6f6a5e'; ctx.font = "12px 'IBM Plex Mono', monospace";
+    for(let n=0;n<N;n++){ ctx.fillText(n, x(n)-3, H-mB+18); }
+    ctx.fillText('sₙ', 6, mT+10);
+
+    // continuum (dashed)
+    ctx.strokeStyle = 'rgba(146,140,125,.55)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath();
+    for(let t=0;t<=1.0001;t+=0.01){ const nn=t*(N-1); const vv=rules[rule](nn);
+      const px=x(nn), py=y(vv); t===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // chords (gold)
+    ctx.strokeStyle = '#c9a44a'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(x(0),y(s[0]));
+    for(let n=1;n<N;n++) ctx.lineTo(x(n),y(s[n]));
+    ctx.stroke();
+
+    // slope numerals on chords
+    ctx.fillStyle = '#e8c976'; ctx.font = "12px 'IBM Plex Mono', monospace";
+    for(let n=0;n<N-1;n++){ const sl=s[n+1]-s[n];
+      ctx.fillText(sl, (x(n)+x(n+1))/2 - 6, (y(s[n])+y(s[n+1]))/2 - 6); }
+
+    // rise/run triangle on highlighted step
+    if(hi>=0 && hi<N-1){
+      const x0=x(hi), x1=x(hi+1), y0=y(s[hi]), y1=y(s[hi+1]);
+      ctx.strokeStyle = '#ece6d6'; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y0); ctx.lineTo(x1,y1); ctx.stroke();
+      ctx.fillStyle = '#ece6d6'; ctx.font = "12px 'IBM Plex Mono', monospace";
+      ctx.fillText('Δt', (x0+x1)/2 - 7, y0+16);
+      ctx.fillText('Δs='+(s[hi+1]-s[hi]), x1+6, (y0+y1)/2 + 4);
+    }
+    // points
+    ctx.fillStyle = '#ece6d6';
+    for(let n=0;n<N;n++){ ctx.beginPath(); ctx.arc(x(n),y(s[n]),3.4,0,7); ctx.fill(); }
+  }
+
+  function update(){
+    const rule = ruleSel.value;
+    const s = seqArray(rule);
+    const d1 = diffs(s), d2 = diffs(d1);
+    let hi = parseInt(stepSel.value,10); if(hi>N-2) hi=N-2;
+    drawCascade(s,d1,d2);
+    drawPlot(rule, s, hi);
+    const constSecond = d2.every(v=>v===d2[0]);
+    let msg;
+    if(rule==='linear') msg = 'The chords share one slope, so the first differences are constant and the second differences vanish: steady motion, no acceleration.';
+    else if(rule==='square') msg = 'The chord slopes are the odd numbers '+d1.join(', ')+'; their constant second difference '+d2[0]+' is the discrete acceleration.';
+    else msg = 'The chord slopes '+d1.join(', ')+' now rise unevenly, so the second differences '+d2.join(', ')+' are not constant: the acceleration itself is changing, and you would need a third difference to find its constant rate.';
+    const hiTxt = ' Highlighted step n='+hi+'→'+(hi+1)+': Δs='+(s[hi+1]-s[hi])+' over Δt=1, so v='+(s[hi+1]-s[hi])+' per tick.';
+    cap.textContent = msg + hiTxt + (constSecond && rule!=='linear' ? '' : '');
+  }
+
+  ruleSel.addEventListener('change', update);
+  stepSel.addEventListener('input', update);
+  window.addEventListener('resize', update);
+  update();
+})();
+
+/* ============================================================= *
+ *  SECTION 2 — dimension matcher                                *
+ * ============================================================= */
+(function(){
+  // dimension vectors [M, L, T, Theta]
+  const DIM = {
+    c:[0,1,-1,0], h:[1,2,-1,0], G:[-1,3,-2,0], kB:[1,2,-2,-1], A:[0,2,0,0]
+  };
+  const META = {
+    c:{name:'c', sub:'speed of light'},
+    h:{name:'h', sub:'Planck constant'},
+    G:{name:'G', sub:'gravitational constant'},
+    kB:{name:'k_B', sub:'Boltzmann constant'},
+    A:{name:'A', sub:'horizon area'}
+  };
+  const MODES = {
+    planck:{ quants:['c','h','G'], target:[0,1,0,0], targetName:'a length  ℓₚ : L',
+             eqs:3, reveal:'revealPlanck' },
+    entropy:{ quants:['kB','A','c','h','G'], target:[1,2,-2,-1], targetName:'entropy S : M L² T⁻² Θ⁻¹',
+              eqs:4, reveal:'revealEntropy' }
+  };
+  const DIMLABS = ['M','L','T','Θ'];
+  let mode = 'planck';
+  let exp = {};                 // current exponents
+
+  const rowsEl = document.getElementById('rows');
+  const boardEl = document.getElementById('dimboard');
+  const statusEl = document.getElementById('status');
+  const freeEl = document.getElementById('freecount');
+  const btnNudge = document.getElementById('btnNudge');
+  const btnReveal = document.getElementById('btnReveal');
+  const btnReset = document.getElementById('btnReset');
+
+  function fmtExp(v){
+    if(v===0) return '0';
+    const sign = v<0 ? '−' : '';
+    const a = Math.abs(v);
+    if(Number.isInteger(a)) return sign+a;
+    // halves
+    return sign + (a*2) + '/2';
+  }
+
+  function buildRows(){
+    rowsEl.innerHTML='';
+    MODES[mode].quants.forEach(q=>{
+      if(!(q in exp)) exp[q]=0;
+      const row=document.createElement('div'); row.className='qrow';
+      const nm=document.createElement('div'); nm.className='qname';
+      nm.innerHTML = '\\('+META[q].name+'\\)<small>'+META[q].sub+'</small>';
+      const st=document.createElement('div'); st.className='stepper';
+      const minus=document.createElement('button'); minus.textContent='−'; minus.setAttribute('aria-label','decrease power of '+META[q].name);
+      const val=document.createElement('span'); val.className='expval'; val.id='exp_'+q;
+      const plus=document.createElement('button'); plus.textContent='+'; plus.setAttribute('aria-label','increase power of '+META[q].name);
+      minus.onclick=()=>{ exp[q]=Math.max(-3, +(exp[q]-0.5).toFixed(1)); update(); };
+      plus.onclick =()=>{ exp[q]=Math.min( 3, +(exp[q]+0.5).toFixed(1)); update(); };
+      st.append(minus,val,plus);
+      const eq=document.createElement('div'); eq.className='mono'; eq.style.cssText='font-size:11px;color:var(--muted)';
+      eq.textContent = '['+(q==='kB'?'k_B':q)+'] = ['+DIM[q].map((p,i)=>p?DIMLABS[i]+(p===1?'':'^'+p):'').filter(Boolean).join(' ')+']';
+      row.append(nm,st,eq);
+      rowsEl.appendChild(row);
+    });
+    if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([rowsEl]);
+  }
+
+  function total(){
+    const r=[0,0,0,0];
+    MODES[mode].quants.forEach(q=>{ for(let i=0;i<4;i++) r[i]+=DIM[q][i]*exp[q]; });
+    return r;
+  }
+
+  function update(){
+    const tgt = MODES[mode].target;
+    const cur = total();
+    // exponent readouts
+    MODES[mode].quants.forEach(q=>{ document.getElementById('exp_'+q).textContent = fmtExp(exp[q]); });
+    // dimension board
+    boardEl.innerHTML='';
+    let agree=0;
+    for(let i=0;i<4;i++){
+      const ok = Math.abs(cur[i]-tgt[i])<1e-9;
+      if(ok) agree++;
+      const chip=document.createElement('div'); chip.className='chip'+(ok?' ok':'');
+      chip.innerHTML = '<div class="lab">'+DIMLABS[i]+'</div><div class="cur">'+fmtExp(cur[i])+
+                       '</div><div class="tgt">target '+fmtExp(tgt[i])+'</div>';
+      boardEl.appendChild(chip);
+    }
+    const win = agree===4 && MODES[mode].quants.some(q=>exp[q]!==0);
+    statusEl.className = 'status'+(win?' win':'');
+    statusEl.textContent = win
+      ? '✓ matched — this product is dimensionally a valid '+ (mode==='planck'?'length.':'entropy.')
+      : 'target: '+MODES[mode].targetName+'   —   '+agree+' of 4 dimensions agree.';
+    // free-choice counter
+    const unknowns = MODES[mode].quants.length;
+    freeEl.innerHTML = 'unknown powers: <b>'+unknowns+'</b> &nbsp; equations (base dimensions): <b>'+MODES[mode].eqs+'</b> &nbsp; '+
+      (unknowns>MODES[mode].eqs
+        ? '→ <b>'+(unknowns-MODES[mode].eqs)+'</b> free choice remains, so units alone cannot finish the job.'
+        : '→ exactly determined, units alone fix the answer.');
+  }
+
+  function setMode(m){
+    mode=m; exp={};
+    document.getElementById('modePlanck').setAttribute('aria-pressed', m==='planck');
+    document.getElementById('modeEntropy').setAttribute('aria-pressed', m==='entropy');
+    btnNudge.style.display = (m==='entropy') ? '' : 'none';
+    document.getElementById('revealPlanck').classList.remove('show');
+    document.getElementById('revealEntropy').classList.remove('show');
+    buildRows(); update();
+  }
+
+  document.getElementById('modePlanck').onclick=()=>setMode('planck');
+  document.getElementById('modeEntropy').onclick=()=>setMode('entropy');
+
+  btnReset.onclick=()=>{ MODES[mode].quants.forEach(q=>exp[q]=0); update(); };
+
+  btnNudge.onclick=()=>{ exp.A=1; update(); };
+
+  btnReveal.onclick=()=>{
+    if(mode==='planck'){ exp={c:-1.5,h:0.5,G:0.5}; }
+    else { exp={kB:1,A:1,c:3,h:-1,G:-1}; }
+    update();
+    document.getElementById(MODES[mode].reveal).classList.add('show');
+  };
+
+  setMode('planck');
+})();
+
+/* ============================================================= *
+ *  SECTION 3 — Stirling explorer                                *
+ * ============================================================= */
+(function(){
+  const sl = document.getElementById('nSlider');
+  const nVal = document.getElementById('nVal');
+  const elExact=document.getElementById('stExact'), elFull=document.getElementById('stFull'),
+        elLead=document.getElementById('stLead'), elErr=document.getElementById('stErr'),
+        elBar=document.getElementById('stBar'), elOmega=document.getElementById('stOmega'),
+        elEnt=document.getElementById('stEnt'), elBits=document.getElementById('stBits'),
+        cap=document.getElementById('stCaption');
+
+  function lnFactExact(n){ let s=0; for(let k=2;k<=n;k++) s+=Math.log(k); return s; }
+
+  function update(){
+    const n = parseInt(sl.value,10);
+    nVal.textContent = n;
+    const exact = lnFactExact(n);
+    const lead  = n*Math.log(n) - n;
+    const full  = lead + 0.5*Math.log(2*Math.PI*n);
+    const relErr = Math.abs(full-exact)/exact;
+
+    elExact.textContent = exact.toFixed(2);
+    elFull.textContent  = full.toFixed(2);
+    elLead.textContent  = lead.toFixed(2);
+    elErr.textContent   = (relErr*100).toFixed(2)+'%';
+    elBar.style.width   = Math.min(100, relErr*100*40).toFixed(1)+'%';
+
+    const exp10 = exact/Math.LN10;
+    const e = Math.floor(exp10);
+    const mant = Math.pow(10, exp10-e);
+    elOmega.textContent = mant.toFixed(1)+' × 10';
+    elOmega.innerHTML   = mant.toFixed(1)+' × 10<sup style="font-size:13px">'+e+'</sup>';
+
+    elEnt.innerHTML  = '≈ '+exact.toFixed(0)+' k<sub>B</sub>';
+    elBits.textContent = (exact/Math.LN2).toFixed(0)+' bits';
+
+    cap.textContent = (n===52)
+      ? 'A 52-card deck: Ω ≈ 8×10⁶⁷ orderings, entropy ≈ 156 k_B, about 226 yes/no questions to fix the exact order. The full Stirling form already agrees with the exact logarithm to better than a fiftieth of a percent.'
+      : 'Stirling tracks the exact logarithm closely, and the relative error shrinks as n grows; the leading term n ln n − n alone runs a little low, and the ½ ln(2πn) correction closes most of the gap.';
+  }
+  sl.addEventListener('input', update);
+  update();
+})();
+</script>
+</body>
+</html>
