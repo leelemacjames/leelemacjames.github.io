@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assembling the Chandrasekhar Limit</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#0e0f13;
+  --panel:#16181f;
+  --panel-2:#1c1f29;
+  --line:rgba(233,230,221,0.10);
+  --line-strong:rgba(233,230,221,0.18);
+  --text:#e9e6dd;
+  --muted:#928f86;
+  --faint:#6c6a64;
+  --gold:#d9b25f;
+  --gold-dim:rgba(217,178,95,0.14);
+  --rust:#b5654a;
+  --rust-dim:rgba(181,101,74,0.13);
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--ink);color:var(--text);
+  font-family:var(--serif);font-weight:300;font-size:18px;line-height:1.62;
+  letter-spacing:.005em;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(18px,4vw,48px) 80px}
+
+/* ---- masthead ---- */
+.eyebrow{font-family:var(--sans);font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:500}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(2rem,5.2vw,3.3rem);line-height:1.04;margin:.34em 0 .15em;letter-spacing:-.01em}
+.standfirst{font-size:clamp(1.02rem,2.3vw,1.22rem);color:var(--muted);max-width:64ch;font-style:italic;font-weight:300}
+.rule{height:1px;background:var(--line);border:0;margin:30px 0}
+
+/* ---- controls ---- */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--sans);margin:6px 0 4px}
+.toggle{
+  appearance:none;border:1px solid var(--line-strong);background:transparent;color:var(--muted);
+  font-family:var(--sans);font-size:.78rem;letter-spacing:.04em;padding:8px 14px;border-radius:999px;
+  cursor:pointer;transition:all .18s ease;font-weight:500;
+}
+.toggle:hover{border-color:var(--gold);color:var(--text)}
+.toggle[aria-pressed="true"]{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.toggle.reset{margin-left:auto;color:var(--faint)}
+.toggle.reset:hover{border-color:var(--rust);color:var(--rust)}
+.toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* expandable explainer panels */
+.explainer{
+  border:1px solid var(--line);border-left:2px solid var(--gold);background:var(--panel);
+  padding:18px 22px;border-radius:4px;margin:14px 0 0;font-size:.98rem;color:#d8d4ca;
+}
+.explainer h4{font-family:var(--sans);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;font-weight:600}
+.explainer.hint{border-left-color:var(--muted)}
+.explainer.hint h4{color:var(--muted)}
+[hidden]{display:none !important}
+
+/* ---- progress ---- */
+.progress-wrap{margin:26px 0 8px}
+.progress-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--sans);font-size:.8rem;letter-spacing:.04em;color:var(--muted);margin-bottom:8px}
+.progress-head b{color:var(--text);font-weight:600}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),#f0d390);transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.bench-note{font-family:var(--sans);font-size:.78rem;color:var(--rust);margin-top:8px;min-height:1.1em}
+
+/* ---- layout ---- */
+.layout{display:grid;grid-template-columns:1fr;gap:34px;margin-top:14px}
+@media(min-width:940px){.layout{grid-template-columns:1.32fr 1fr;gap:42px;align-items:start}}
+
+.section-label{font-family:var(--sans);font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 14px}
+
+/* ---- equation bank ---- */
+.bank{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:560px){.bank{grid-template-columns:1fr 1fr}}
+@media(min-width:940px){.bank{grid-template-columns:1fr}}
+@media(min-width:1180px){.bank{grid-template-columns:1fr 1fr}}
+
+.card{
+  position:relative;border:1px solid var(--line);background:var(--panel);border-radius:5px;
+  padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;
+  border-left:2px solid transparent;transition:border-color .2s ease,background .2s ease,transform .12s ease;
+}
+.card:hover{background:var(--panel-2)}
+.card .title{font-family:var(--sans);font-weight:600;font-size:.9rem;letter-spacing:.01em;color:var(--text)}
+.card .eq{font-size:1.05rem;color:#f1eee6;min-height:1.6em;overflow-x:auto;overflow-y:hidden}
+.card .tag{font-family:var(--sans);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.card .note{font-size:.86rem;color:var(--muted);line-height:1.5;border-top:1px dashed var(--line);padding-top:9px;margin-top:2px}
+.card .use{
+  appearance:none;align-self:flex-start;font-family:var(--sans);font-size:.74rem;font-weight:600;letter-spacing:.06em;
+  border:1px solid var(--line-strong);background:transparent;color:var(--muted);
+  padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .16s ease;text-transform:uppercase;
+}
+.card .use:hover{border-color:var(--gold);color:var(--text)}
+.card .use:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.card.used-essential{border-left-color:var(--gold);background:linear-gradient(180deg,var(--gold-dim),transparent 60%),var(--panel)}
+.card.used-essential .use{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.card.used-decoy{border-left-color:var(--rust);background:linear-gradient(180deg,var(--rust-dim),transparent 60%),var(--panel)}
+.card.used-decoy .use{border-color:var(--rust);color:var(--rust);background:var(--rust-dim)}
+.card.shake{animation:shake .34s ease}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+
+/* ---- derivation panel ---- */
+.derive{border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:22px 22px 24px;position:sticky;top:18px}
+.derive .empty{color:var(--faint);font-style:italic;font-size:.95rem}
+.step{
+  border-left:2px solid var(--gold);padding:2px 0 2px 16px;margin:0 0 16px;
+  animation:rise .4s ease both;
+}
+.step .lead{font-family:var(--sans);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;display:block;margin-bottom:3px}
+.step p{margin:0;font-size:.96rem;color:#ddd9cf;line-height:1.55}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+#result{margin-top:20px;border-top:1px solid var(--line-strong);padding-top:18px}
+#result .crown{font-family:var(--sans);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:10px}
+.boxed{
+  border:1px solid var(--gold);background:var(--gold-dim);border-radius:5px;
+  padding:16px 18px;text-align:center;font-size:1.15rem;color:#f6f0e2;margin:6px 0 12px;overflow-x:auto;
+}
+#result p{font-size:.94rem;color:var(--muted);margin:.5em 0 0}
+
+footer{margin-top:60px;border-top:1px solid var(--line);padding-top:18px;font-family:var(--sans);font-size:.74rem;letter-spacing:.06em;color:var(--faint)}
+
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px}
+
+@media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">A companion learner &middot; White dwarfs</div>
+    <h1>Assembling the Chandrasekhar Limit</h1>
+    <p class="standfirst">A maximum mass for a white dwarf can be built from a handful of equations you already meet in the syllabus. Choose which ones to deploy. Some belong in the argument; others are decoys that look astronomical but lead nowhere.</p>
+  </header>
+
+  <hr class="rule">
+
+  <div class="controls">
+    <button class="toggle" id="t-tags" aria-pressed="true">Syllabus tags</button>
+    <button class="toggle" id="t-hints" aria-pressed="false">Hints</button>
+    <button class="toggle" id="t-rel" aria-pressed="false">Why relativity?</button>
+    <button class="toggle" id="t-coef" aria-pressed="false">Coefficient &amp; 1.44</button>
+    <button class="toggle reset" id="t-reset">Reset bench</button>
+  </div>
+
+  <div class="explainer hint" id="hintBox" hidden>
+    <h4>What you are looking for</h4>
+    You need four kinds of physics: a source of <em>electron momentum</em> from confinement, the <em>relativistic energy</em> that takes over at high speed, the <em>gravity</em> that pulls the sphere inward, and the bookkeeping that links the star's <em>mass to its electron number</em>. Anything about temperature, thermal radiation, or photon scattering is a decoy, because the support that fails is cold and quantum-mechanical.
+  </div>
+
+  <div class="explainer" id="relBox" hidden>
+    <h4>Why a limit needs relativity</h4>
+    If the electrons stayed slow, their degeneracy energy would behave as $E_{\text{deg}}\sim \hbar^{2}N^{5/3}/(m_e R^{2})$, which steepens faster than gravity's $-GM^{2}/R$ as the star shrinks, so the total energy has a true minimum and the star settles at a finite radius for <em>any</em> mass. No limit appears. The maximum emerges only when compression drives the electrons close to the speed of light, where $E\approx pc$ makes the degeneracy energy fall as $\hbar c\,N^{4/3}/R$, the same $1/R$ as gravity. Once the two share that scaling the radius cancels and mass alone decides the outcome.
+  </div>
+
+  <div class="explainer" id="coefBox" hidden>
+    <h4>The missing number</h4>
+    The scaling argument fixes the form exactly, $M_{\text{limit}}\propto(\hbar c/G)^{3/2}/(\mu_e m_{\mathrm H})^{2}$, yet it cannot pin the leading constant, because that depends on how density runs from centre to surface, which a single-radius model throws away. Keeping the order-unity factors of a uniform sphere already gives a rigorous upper bound, $M\lesssim 1.7\,M_\odot$; the full hydrostatic solution, the Lane&ndash;Emden equation of index three, sharpens it to $\omega_3^{0}\sqrt{3\pi}/2\approx 3.10$, and for a carbon&ndash;oxygen mix ($\mu_e=2$) that is the celebrated $1.44\,M_\odot$. The bare estimate with the constant set to one lands near $0.46\,M_\odot$, so the gap from $0.46$ to $1.44$ is precisely the coefficient.
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-head"><span>Essential physics on the bench</span><span><b id="pcount">0</b> / 6</span></div>
+    <div class="bar"><i id="pbar"></i></div>
+    <div class="bench-note" id="benchNote"></div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <p class="section-label">The equation bank</p>
+      <div class="bank" id="bank"></div>
+    </div>
+    <div>
+      <p class="section-label">Your derivation</p>
+      <div class="derive">
+        <div id="steps"><p class="empty">Deploy an equation and its contribution to the argument appears here, in order, as the pieces lock together.</p></div>
+        <div id="result" hidden>
+          <div class="crown">Assembled &middot; the Chandrasekhar mass</div>
+          <p style="color:#ddd9cf;font-size:.96rem;margin-top:0">Both energies fall as $1/R$, so the radius cancels and only the sign of the bracket survives,
+          $$E\sim\frac{1}{R}\Big[\,\hbar c\,N^{4/3}-G(\mu_e m_{\mathrm H})^{2}N^{2}\,\Big].$$
+          Setting the bracket to zero gives the largest stable electron count, and hence the mass:</p>
+          <div class="boxed">$M_{\text{limit}}=\left(\dfrac{\hbar c}{G}\right)^{3/2}\dfrac{1}{(\mu_e m_{\mathrm H})^{2}}$</div>
+          <p>You built the whole structure from the syllabus. The one thing the argument cannot supply is the leading number; open <em>Coefficient &amp; 1.44</em> to see where the famous figure comes from.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</footer>
+
+</div>
+
+<script>
+const EQUATIONS = [
+  { id:'heisenberg', kind:'essential', order:1,
+    title:'Heisenberg uncertainty', tag:'Theme E \u00b7 Quantum',
+    tex:'\\Delta x\\,\\Delta p \\gtrsim \\hbar',
+    lead:'Electron momentum',
+    note:'Confining each electron to the spacing between neighbours, $\\Delta x\\sim R/N^{1/3}$, forces a momentum $p\\sim \\hbar N^{1/3}/R$.' },
+
+  { id:'geometry', kind:'essential', order:2,
+    title:'Sphere & number density', tag:'Core \u00b7 Geometry',
+    tex:'n=\\dfrac{N}{V},\\quad V=\\tfrac{4}{3}\\pi R^{3}',
+    lead:'Radius from the count',
+    note:'With $N$ electrons in a volume $\\tfrac{4}{3}\\pi R^{3}$, the radius is tied to the count by $R\\propto N^{1/3}$, the spacing used above.' },
+
+  { id:'relativistic', kind:'essential', order:3,
+    title:'Relativistic energy', tag:'Theme A \u00b7 Relativity (HL)',
+    tex:'E^{2}=(pc)^{2}+(mc^{2})^{2}\\;\\Rightarrow\\;E\\approx pc',
+    lead:'Ultra-relativistic electrons',
+    note:'At white-dwarf density the electrons are ultra-relativistic, so $E\\approx pc$ and each carries $\\varepsilon\\sim \\hbar c\\,N^{1/3}/R$; over all $N$ this is a degeneracy energy $E_{\\text{deg}}\\sim \\hbar c\\,N^{4/3}/R$.' },
+
+  { id:'newton', kind:'essential', order:4,
+    title:'Newton\u2019s law of gravitation', tag:'Theme D \u00b7 Fields',
+    tex:'F=\\dfrac{GMm}{r^{2}}',
+    lead:'Mass acts from the centre',
+    note:'Through the shell theorem the inverse-square law lets the whole mass act as a point at the centre, which is what makes the next step legitimate.' },
+
+  { id:'gravpe', kind:'essential', order:5,
+    title:'Gravitational potential energy', tag:'Theme D \u00b7 Fields',
+    tex:'E_{p}=-\\dfrac{GMm}{r}',
+    lead:'Gravitational binding',
+    note:'Assembling the sphere stores a gravitational binding energy $E_{\\text{grav}}\\sim -GM^{2}/R$.' },
+
+  { id:'composition', kind:'essential', order:6,
+    title:'Mass per electron', tag:'Theme E \u00b7 Nuclear',
+    tex:'M=N\\,\\mu_e\\,m_{\\mathrm H}',
+    lead:'Mass from electron number',
+    note:'Writing the mass as $M=N\\mu_e m_{\\mathrm H}$ turns the gravitational term into $E_{\\text{grav}}\\sim -G(\\mu_e m_{\\mathrm H})^{2}N^{2}/R$.' },
+
+  { id:'nonrel', kind:'trap', tag:'Theme A \u00b7 Mechanics',
+    title:'Non-relativistic kinetic energy',
+    tex:'E_{k}=\\dfrac{p^{2}}{2m}',
+    note:'This does support the star, but it yields a stable radius at every mass, so no maximum appears. A limit emerges only once the electrons are relativistic \u2014 deploy the relativistic energy instead.' },
+
+  { id:'idealgas', kind:'trap', tag:'Theme B \u00b7 Thermal',
+    title:'Ideal gas law',
+    tex:'pV=Nk_{\\mathrm B}T',
+    note:'Thermal pressure holds up ordinary stars, but a white dwarf is supported by degeneracy pressure that survives at $T=0$. This is the trap to avoid.' },
+
+  { id:'wien', kind:'decoy', tag:'Theme B \u00b7 Thermal',
+    title:'Wien\u2019s displacement law',
+    tex:'\\lambda_{\\max}\\,T=b',
+    note:'Locates the peak of thermal emission. The limit is set by cold, degenerate electrons where temperature drops out. Not needed.' },
+
+  { id:'compton', kind:'decoy', tag:'Theme E \u00b7 Quantum',
+    title:'Compton scattering',
+    tex:'\\lambda\'-\\lambda=\\dfrac{h}{m_e c}\\,(1-\\cos\\theta)',
+    note:'Photon\u2013electron scattering shifts a wavelength. The star\u2019s support comes from electron momentum under confinement, not scattered photons. Not needed.' },
+
+  { id:'stefan', kind:'decoy', tag:'Theme B \u00b7 Thermal',
+    title:'Stefan\u2013Boltzmann law',
+    tex:'L=\\sigma A T^{4}',
+    note:'Governs how brightly the star shines, not what holds it up. Not needed.' },
+
+  { id:'coulomb', kind:'decoy', tag:'Theme D \u00b7 Fields',
+    title:'Coulomb\u2019s law',
+    tex:'F=\\dfrac{kq_{1}q_{2}}{r^{2}}',
+    note:'Electrostatics between charges; the star is neutral and the real contest is gravity against quantum pressure. It returns in the planet-sizing version, but not here.' },
+
+  { id:'schwarzschild', kind:'decoy', tag:'Astrophysics \u00b7 HL',
+    title:'Schwarzschild radius',
+    tex:'R_{s}=\\dfrac{2GM}{c^{2}}',
+    note:'Marks the horizon of the black hole that collapse may leave behind, not the support that fails first. Not needed.' }
+];
+
+const TOTAL_ESSENTIAL = EQUATIONS.filter(e=>e.kind==='essential').length;
+const used = new Set();
+let showTags = true;
+
+const bank = document.getElementById('bank');
+const stepsEl = document.getElementById('steps');
+const resultEl = document.getElementById('result');
+const pcount = document.getElementById('pcount');
+const pbar = document.getElementById('pbar');
+const benchNote = document.getElementById('benchNote');
+
+function renderMath(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el,{
+      delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+      throwOnError:false
+    });
+  }
+}
+
+// shuffle so essentials and decoys are interleaved, not grouped
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function buildBank(){
+  bank.innerHTML='';
+  shuffle(EQUATIONS.slice()).forEach(eq=>{
+    const card = document.createElement('div');
+    card.className='card';
+    card.id='card-'+eq.id;
+    card.innerHTML = `
+      <div class="title">${eq.title}</div>
+      <div class="eq">$${eq.tex}$</div>
+      <div class="tag"${showTags?'':' style="display:none"'}>${eq.tag}</div>
+      <button class="use" type="button" aria-pressed="false">Deploy</button>
+      <div class="note" hidden></div>`;
+    bank.appendChild(card);
+    card.querySelector('.use').addEventListener('click',()=>toggleUse(eq, card));
+  });
+}
+
+function toggleUse(eq, card){
+  const btn = card.querySelector('.use');
+  const noteEl = card.querySelector('.note');
+  if(used.has(eq.id)){
+    used.delete(eq.id);
+    card.classList.remove('used-essential','used-decoy');
+    btn.textContent='Deploy'; btn.setAttribute('aria-pressed','false');
+    noteEl.hidden=true; noteEl.innerHTML='';
+  } else {
+    used.add(eq.id);
+    noteEl.innerHTML=eq.note; noteEl.hidden=false; renderMath(noteEl);
+    if(eq.kind==='essential'){
+      card.classList.add('used-essential');
+      btn.textContent='In the argument \u2713'; btn.setAttribute('aria-pressed','true');
+    } else {
+      card.classList.add('used-decoy');
+      btn.textContent='Remove'; btn.setAttribute('aria-pressed','true');
+      if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+        card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+      }
+    }
+  }
+  refresh();
+}
+
+function refresh(){
+  // progress
+  const essUsed = EQUATIONS.filter(e=>e.kind==='essential' && used.has(e.id)).length;
+  pcount.textContent=essUsed;
+  pbar.style.width=(100*essUsed/TOTAL_ESSENTIAL)+'%';
+
+  const decoysOut = EQUATIONS.filter(e=>e.kind!=='essential' && used.has(e.id)).length;
+  benchNote.textContent = decoysOut
+    ? `${decoysOut} decoy${decoysOut>1?'s':''} on the bench \u2014 not wrong to test, but clear them to leave only what the argument needs.`
+    : '';
+
+  // derivation steps
+  const essentials = EQUATIONS.filter(e=>e.kind==='essential' && used.has(e.id))
+                              .sort((a,b)=>a.order-b.order);
+  if(essentials.length===0){
+    stepsEl.innerHTML='<p class="empty">Deploy an equation and its contribution to the argument appears here, in order, as the pieces lock together.</p>';
+  } else {
+    stepsEl.innerHTML = essentials.map(e=>
+      `<div class="step"><span class="lead">${e.lead}</span><p>${e.note}</p></div>`).join('');
+    renderMath(stepsEl);
+  }
+
+  // final result
+  const complete = essUsed===TOTAL_ESSENTIAL;
+  if(complete && resultEl.hidden){ resultEl.hidden=false; renderMath(resultEl); }
+  if(!complete) resultEl.hidden=true;
+}
+
+// toggles
+function wireToggle(id, fn){
+  const b=document.getElementById(id);
+  b.addEventListener('click',()=>{
+    const on=b.getAttribute('aria-pressed')!=='true';
+    b.setAttribute('aria-pressed', on?'true':'false');
+    fn(on);
+  });
+}
+wireToggle('t-hints', on=>document.getElementById('hintBox').hidden=!on);
+wireToggle('t-rel',   on=>{const el=document.getElementById('relBox'); el.hidden=!on; if(on) renderMath(el);});
+wireToggle('t-coef',  on=>{const el=document.getElementById('coefBox'); el.hidden=!on; if(on) renderMath(el);});
+wireToggle('t-tags',  on=>{
+  showTags=on;
+  document.querySelectorAll('.card .tag').forEach(t=>t.style.display=on?'':'none');
+});
+document.getElementById('t-tags').setAttribute('aria-pressed','true');
+
+document.getElementById('t-reset').addEventListener('click',()=>{
+  used.clear();
+  buildBank();
+  renderMath(bank);
+  refresh();
+});
+
+// initial render once KaTeX is ready
+window.addEventListener('load',()=>{
+  buildBank();
+  renderMath(document.body);
+  refresh();
+});
+</script>
+</body>
+</html>
