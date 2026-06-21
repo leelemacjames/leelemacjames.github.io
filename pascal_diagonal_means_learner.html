@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Pascal, Worpitzky and Delannoy Means Learner</title>
+<title>Triangle Means Robustness Learner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{--panel:#102235;--text:#eef6ff;--muted:#a9bdd3;--blue:#4ea1ff;--orange:#ff932e;--green:#62d84e;--purple:#bc68ff}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top,#10243a,#050b13 65%);color:var(--text)}
-header{margin:14px auto 10px;max-width:1280px;padding:20px;border:1px solid #27445f;border-radius:8px;background:linear-gradient(180deg,#122a43,#0d1c2d);text-align:center}
+header{margin:14px auto 10px;max-width:1320px;padding:20px;border:1px solid #27445f;border-radius:8px;background:linear-gradient(180deg,#122a43,#0d1c2d);text-align:center}
 h1{margin:0 0 6px;font-size:30px} h2{font-size:18px;margin:0 0 12px}
-.main{max-width:1280px;margin:auto;display:grid;grid-template-columns:290px 1fr;gap:14px;padding:0 14px 20px}
+.main{max-width:1320px;margin:auto;display:grid;grid-template-columns:300px 1fr;gap:14px;padding:0 14px 20px}
 .card{background:linear-gradient(180deg,var(--panel),#0b1a2a);border:1px solid #27445f;border-radius:8px;padding:14px;box-shadow:0 8px 25px #0006}
 .controls{display:flex;flex-direction:column;gap:12px}
 label{display:block;margin:10px 0 5px;color:#d9e8f7}
@@ -33,8 +33,8 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid 
 </head>
 <body>
 <header>
-  <h1>Triangle Means: Pascal, Worpitzky and Delannoy</h1>
-  <div>Use the same four means to check whether apparent oscillation belongs to the object or the averaging lens.</div>
+  <h1>Robustness of Central Means: Pascal, Delannoy, Motzkin, Catalan, Worpitzky</h1>
+  <div>Use the same four means to test whether graphical structure belongs to the family or to the averaging lens.</div>
 </header>
 
 <div class="main">
@@ -44,8 +44,10 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid 
 <label>Triangle family</label>
 <select id="family">
 <option value="pascal">Pascal Fibonacci diagonals: C(n−k,k)</option>
-<option value="worpitzky">Worpitzky rows: k!S(n+1,k+1)</option>
 <option value="delannoy">Delannoy rows: D(n,k)</option>
+<option value="motzkin">Motzkin path triangle rows</option>
+<option value="catalan">Catalan / ballot triangle rows</option>
+<option value="worpitzky">Worpitzky rows: k!S(n+1,k+1)</option>
 </select>
 <label>Max row n</label><input id="maxN" type="number" min="5" max="180" value="80">
 <label>Rows displayed</label><input id="rowsShown" type="number" min="5" max="60" value="18">
@@ -92,16 +94,19 @@ let chart;
 function bigComb(n,k){if(k<0||k>n)return 0n;if(k>n-k)k=n-k;let r=1n;for(let i=1;i<=k;i++)r=r*BigInt(n-k+i)/BigInt(i);return r}
 function buildS2(N){const S=Array.from({length:N+2},()=>Array(N+2).fill(0n));S[0][0]=1n;for(let n=1;n<=N+1;n++)for(let k=1;k<=n;k++)S[n][k]=S[n-1][k-1]+BigInt(k)*S[n-1][k];return S}
 function buildDel(N){const D=Array.from({length:N+1},()=>Array(N+1).fill(0n));for(let i=0;i<=N;i++){D[i][0]=1n;D[0][i]=1n}for(let i=1;i<=N;i++)for(let j=1;j<=N;j++)D[i][j]=D[i-1][j]+D[i][j-1]+D[i-1][j-1];return D}
-let S2=buildS2(200), Del=buildDel(200), facts=[1n]; for(let i=1;i<=200;i++) facts[i]=facts[i-1]*BigInt(i);
+function buildMot(N){const T=Array.from({length:N+1},()=>Array(N+1).fill(0n));T[0][0]=1n;for(let n=1;n<=N;n++){for(let k=0;k<=n;k++){T[n][k]=(k>0?T[n-1][k-1]:0n)+T[n-1][k]+(k+1<=N?T[n-1][k+1]:0n)}}return T}
+let S2=buildS2(200), Del=buildDel(200), Mot=buildMot(200), facts=[1n]; for(let i=1;i<=200;i++) facts[i]=facts[i-1]*BigInt(i);
 
 function rowPascal(n){let xs=[];for(let k=0;k<=Math.floor(n/2);k++)xs.push(bigComb(n-k,k));return xs}
 function rowWorpitzky(n){let xs=[];for(let k=0;k<=n;k++)xs.push(facts[k]*S2[n+1][k+1]);return xs}
 function rowDelannoy(n){let xs=[];for(let k=0;k<=n;k++)xs.push(Del[n][k]);return xs}
-function row(f,n){return f==='pascal'?rowPascal(n):f==='worpitzky'?rowWorpitzky(n):rowDelannoy(n)}
+function rowMotzkin(n){let xs=[];for(let k=0;k<=n;k++)xs.push(Mot[n][k]);return xs}
+function rowCatalan(n){let xs=[];for(let k=0;k<=n;k++)xs.push(bigComb(n+k,k)-bigComb(n+k,k-1));return xs}
+function row(f,n){return f==='pascal'?rowPascal(n):f==='worpitzky'?rowWorpitzky(n):f==='delannoy'?rowDelannoy(n):f==='motzkin'?rowMotzkin(n):rowCatalan(n)}
 
-function logBigInt(x){const s=x.toString();if(s.length<16)return Math.log(Number(s));const lead=Number(s.slice(0,16));return Math.log(lead)+(s.length-16)*Math.LN10}
+function logBigInt(x){if(x<=0n)return -Infinity; const s=x.toString();if(s.length<16)return Math.log(Number(s));const lead=Number(s.slice(0,16));return Math.log(lead)+(s.length-16)*Math.LN10}
 function meanLogs(xs){
- const logs=xs.map(logBigInt), L=xs.length, maxLog=Math.max(...logs);
+ const logs=xs.map(logBigInt).filter(Number.isFinite), L=logs.length, maxLog=Math.max(...logs);
  const logA=maxLog+Math.log(logs.reduce((a,l)=>a+Math.exp(l-maxLog),0)/L);
  const logQ=0.5*(2*maxLog+Math.log(logs.reduce((a,l)=>a+Math.exp(2*l-2*maxLog),0)/L));
  const logG=logs.reduce((a,b)=>a+b,0)/L;
@@ -117,8 +122,8 @@ function renderTriangle(f,currentN,rowsShown){
   for(let j=0;j<xs.length;j++){const span=document.createElement('span');span.className='cell';span.style.color=n===currentN?['#4ea1ff','#ff932e','#62d84e','#bc68ff'][j%4]:'#eef6ff';let s=xs[j].toString();span.textContent=s.length>9?s.slice(0,4)+'…'+s.slice(-3):s;span.title=s;r.appendChild(span)}
   div.appendChild(r)}
 }
-function renderRowLine(f,n){const xs=row(f,n).map(x=>x.toString());const trimmed=xs.length>18?xs.slice(0,9).join(', ')+', …, '+xs.slice(-9).join(', '):xs.join(', ');const name=f==='pascal'?'Pascal Fibonacci diagonal':f==='worpitzky'?'Worpitzky row':'Delannoy row';document.getElementById('rowline').innerHTML=`${name} for n = ${n}, length Lₙ = ${xs.length}:<br>${trimmed}`}
-function ref(f,mode){if(f==='pascal'&&mode==='raw')return{label:'φ',y:(1+Math.sqrt(5))/2};if(f==='worpitzky'&&mode==='normalised')return{label:'1/log 2',y:1/Math.log(2)};if(f==='delannoy'&&mode==='raw')return{label:'3+2√2',y:3+2*Math.sqrt(2)};return null}
+function renderRowLine(f,n){const xs=row(f,n).map(x=>x.toString());const trimmed=xs.length>18?xs.slice(0,9).join(', ')+', …, '+xs.slice(-9).join(', '):xs.join(', ');const name=f==='pascal'?'Pascal Fibonacci diagonal':f==='worpitzky'?'Worpitzky row':f==='delannoy'?'Delannoy row':f==='motzkin'?'Motzkin path row':'Catalan/ballot row';document.getElementById('rowline').innerHTML=`${name} for n = ${n}, length Lₙ = ${xs.length}:<br>${trimmed}`}
+function ref(f,mode){if(f==='pascal'&&mode==='raw')return{label:'φ',y:(1+Math.sqrt(5))/2};if(f==='worpitzky'&&mode==='normalised')return{label:'1/log 2',y:1/Math.log(2)};if(f==='delannoy'&&mode==='raw')return{label:'3+2√2',y:3+2*Math.sqrt(2)};if(f==='motzkin'&&mode==='raw')return{label:'3',y:3};if(f==='catalan'&&mode==='raw')return{label:'4',y:4};return null}
 function renderChart(f,ratios,maxN,mode){
  const visible={A:showA.checked,Q:showQ.checked,G:showG.checked,H:showH.checked};
  const datasets=Object.keys(ratios).filter(k=>visible[k]).map(k=>({label:labels[k],data:ratios[k].map((y,i)=>({x:i,y:mode==='normalised'?y/Math.max(1,i):y})),borderColor:colours[k],backgroundColor:colours[k],pointRadius:0,borderWidth:2,tension:.12}));
@@ -133,14 +138,20 @@ function renderTables(ratios,maxN,mode){
  recent.innerHTML=rec
 }
 function setText(f,mode){
- defs.innerHTML=f==='pascal'?`<p class="math">Dₙ={C(n−k,k):0≤k≤⌊n/2⌋}</p><p>Fibonacci additive structure. Raw comparison: φ.</p>`:
- f==='worpitzky'?`<p class="math">W(n,k)=k!S(n+1,k+1)</p><p>Factorial/Stirling growth. Raw ratios grow; Rₙ/n is the better diagnostic.</p>`:
- `<p class="math">D(n,k)=D(n−1,k)+D(n,k−1)+D(n−1,k−1)</p><p>Delannoy rows. Central diagonal growth has comparison constant 3+2√2.</p>`;
- triTitle.textContent=f==='pascal'?'Pascal Fibonacci diagonals':f==='worpitzky'?'Worpitzky rows':'Delannoy rows';
+ defs.innerHTML=
+ f==='pascal'?`<p class="math">Dₙ={C(n−k,k):0≤k≤⌊n/2⌋}</p><p>Fibonacci additive structure. Raw comparison: φ.</p>`:
+ f==='delannoy'?`<p class="math">D(n,k)=D(n−1,k)+D(n,k−1)+D(n−1,k−1)</p><p>Two-dimensional lattice paths with diagonal steps. Central comparison: 3+2√2.</p>`:
+ f==='motzkin'?`<p class="math">T(n,k)=T(n−1,k−1)+T(n−1,k)+T(n−1,k+1)</p><p>Motzkin path heights. Motzkin number growth scale: 3.</p>`:
+ f==='catalan'?`<p class="math">C(n,k)=C(n+k,k)-C(n+k,k-1)</p><p>Ballot/Catalan triangle. Catalan growth scale: 4.</p>`:
+ `<p class="math">W(n,k)=k!S(n+1,k+1)</p><p>Factorial/Stirling growth. Raw ratios grow; Rₙ/n is the better diagnostic.</p>`;
+ triTitle.textContent=f==='pascal'?'Pascal Fibonacci diagonals':f==='worpitzky'?'Worpitzky rows':f==='delannoy'?'Delannoy rows':f==='motzkin'?'Motzkin path rows':'Catalan/ballot rows';
  chartTitle.textContent=mode==='raw'?'Raw ratio Rₙ = Mₙ₊₁/Mₙ':'Normalised ratio Rₙ/n';
- interpret.innerHTML=f==='pascal'?`Pascal Fibonacci diagonals show persistent parity splitting, especially for geometric and harmonic means.`:
- f==='worpitzky'?`Worpitzky rows show mostly monotone scaling because factorial/Stirling growth overwhelms parity effects.`:
- `Delannoy rows test a different lattice-path family. If the Pascal two-cycle vanishes here, the Pascal effect is not a generic averaging artifact. If a weaker oscillation remains, inspect row-endpoint effects and central-dominance separately.`;
+ interpret.innerHTML=
+ f==='pascal'?`Pascal Fibonacci diagonals show persistent parity splitting, especially for geometric and harmonic means.`:
+ f==='delannoy'?`Delannoy rows test a different lattice-path family. They tend to clean limits rather than a persistent two-cycle.`:
+ f==='motzkin'?`Motzkin rows are a closer path-family control. If oscillation is absent or weak, the Pascal effect is less likely to be a generic path-mean artifact.`:
+ f==='catalan'?`Catalan/ballot rows are a Pascal-adjacent control. They test whether Pascal ancestry alone forces the two-cycle.`:
+ `Worpitzky rows show mostly monotone scaling because factorial/Stirling growth overwhelms parity effects.`;
 }
 function recompute(){
  const f=family.value, mode=chartMode.value;
@@ -157,5 +168,6 @@ recompute();
 </script>
 </body>
 </html>
+
 
 
