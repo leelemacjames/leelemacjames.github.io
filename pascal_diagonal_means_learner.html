@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pascal Diagonals: Means, Ratios & Limits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#07111f; --panel:#102235; --panel2:#132a42; --text:#eef6ff; --muted:#a9bdd3;
+  --grid:#2f455d; --blue:#4ea1ff; --orange:#ff932e; --green:#62d84e; --purple:#bc68ff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top,#10243a,#050b13 65%);color:var(--text)}
+header{margin:14px auto 10px;max-width:1250px;padding:20px;border:1px solid #27445f;border-radius:8px;background:linear-gradient(180deg,#122a43,#0d1c2d);text-align:center}
+h1{margin:0 0 6px;font-size:30px} h2{font-size:18px;margin:0 0 12px}
+.main{max-width:1250px;margin:auto;display:grid;grid-template-columns:260px 1fr;gap:14px;padding:0 14px 20px}
+.card{background:linear-gradient(180deg,var(--panel),#0b1a2a);border:1px solid #27445f;border-radius:8px;padding:14px;box-shadow:0 8px 25px #0006}
+.controls{display:flex;flex-direction:column;gap:12px}
+label{display:block;margin:10px 0 5px;color:#d9e8f7}
+input[type=number],select{width:100%;padding:9px;background:#0b1828;color:var(--text);border:1px solid #3d5872;border-radius:6px}
+button{width:100%;padding:11px;margin-top:8px;border:0;border-radius:6px;color:white;font-weight:700;background:#2fc06d;cursor:pointer}
+button.secondary{background:#607080}
+.check{display:flex;align-items:center;gap:8px;margin:10px 0}
+.check input{transform:scale(1.2)}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px}
+.pascal{overflow:auto;max-height:520px;border:1px solid #2b445e;border-radius:6px;background:#081522;padding:10px}
+.row{white-space:nowrap;text-align:center;font-family:ui-monospace,Consolas,monospace;line-height:1.75}
+.rownum{display:inline-block;width:34px;color:#9fb5cc;text-align:right;margin-right:18px}
+.cell{display:inline-block;min-width:42px;text-align:center}
+.diag{font-weight:800;text-shadow:0 0 8px currentColor}
+.diagline{margin-top:10px;color:#cbd9e8;font-family:ui-monospace,Consolas,monospace;overflow:auto}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px}
+.tablewrap{overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid #2b445e;padding:7px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#10263b}
+.small{color:var(--muted);font-size:13px;line-height:1.45}
+.math{font-family:Georgia,serif;font-size:16px}
+footer{max-width:1250px;margin:0 auto 20px;padding:0 14px;color:#b8c9da;text-align:center}
+@media(max-width:900px){.main{grid-template-columns:1fr}.pascal{max-height:420px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pascal Diagonals: Means, Ratios & Asymptotic Limits</h1>
+  <div>Explore arithmetic, RMS, geometric and harmonic means of the Fibonacci diagonals of Pascal's triangle.</div>
+</header>
+
+<div class="main">
+  <aside class="controls">
+    <section class="card">
+      <h2>Controls</h2>
+      <label>Max row n</label>
+      <input id="maxN" type="number" min="5" max="500" value="100">
+      <label>Pascal rows displayed</label>
+      <input id="rowsShown" type="number" min="5" max="80" value="20">
+      <label>Current highlighted row</label>
+      <input id="currentN" type="number" min="0" max="500" value="30">
+      <button id="recompute">Recompute</button>
+    </section>
+
+    <section class="card">
+      <h2>Mean Types</h2>
+      <label class="check"><input type="checkbox" id="showA" checked><span><span class="swatch" style="background:var(--blue)"></span>Arithmetic mean A</span></label>
+      <label class="check"><input type="checkbox" id="showQ" checked><span><span class="swatch" style="background:var(--orange)"></span>RMS Q</span></label>
+      <label class="check"><input type="checkbox" id="showG" checked><span><span class="swatch" style="background:var(--green)"></span>Geometric mean G</span></label>
+      <label class="check"><input type="checkbox" id="showH" checked><span><span class="swatch" style="background:var(--purple)"></span>Harmonic mean H</span></label>
+    </section>
+
+    <section class="card small">
+      <h2>Definitions</h2>
+      <p class="math">Dₙ = { C(n−k,k) : 0 ≤ k ≤ ⌊n/2⌋ }</p>
+      <p class="math">Lₙ = ⌊n/2⌋ + 1</p>
+      <p class="math">Aₙ = Σxᵢ/Lₙ = Fₙ₊₁/Lₙ</p>
+      <p class="math">Qₙ = √(Σxᵢ²/Lₙ)</p>
+      <p class="math">Gₙ = (Πxᵢ)¹ᐟᴸⁿ</p>
+      <p class="math">Hₙ = Lₙ/Σ(1/xᵢ)</p>
+    </section>
+  </aside>
+
+  <main class="grid2">
+    <section class="card">
+      <h2>Pascal's Triangle <span class="small">(highlighted row uses Fibonacci diagonal entries)</span></h2>
+      <div id="triangle" class="pascal"></div>
+      <div id="diagline" class="diagline"></div>
+    </section>
+
+    <section class="card">
+      <h2>Ratio of Consecutive Means: Rₙ = Mₙ₊₁/Mₙ</h2>
+      <canvas id="ratioChart" height="125"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Estimated Limits of Rₙ as n → ∞</h2>
+      <div class="tablewrap">
+        <table id="limits"></table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Recent Ratios</h2>
+      <div class="tablewrap">
+        <table id="recent"></table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  Expected common comparison limit for Fibonacci-type row-sum growth: φ = (1 + √5)/2 ≈ <span id="phi"></span>.
+</footer>
+
+<script>
+const colours = {A:'#4ea1ff', Q:'#ff932e', G:'#62d84e', H:'#bc68ff'};
+const labels = {A:'Arithmetic A', Q:'RMS Q', G:'Geometric G', H:'Harmonic H'};
+let chart;
+
+function bigComb(n,k){
+  if(k<0 || k>n) return 0n;
+  if(k>n-k) k=n-k;
+  let r=1n;
+  for(let i=1;i<=k;i++) r = r * BigInt(n-k+i) / BigInt(i);
+  return r;
+}
+function diag(n){
+  let xs=[];
+  for(let k=0;k<=Math.floor(n/2);k++) xs.push(bigComb(n-k,k));
+  return xs;
+}
+function toNum(x){ return Number(x); }
+function meanValues(xs){
+  const nums = xs.map(toNum), L=nums.length;
+  const A = nums.reduce((a,b)=>a+b,0)/L;
+  const Q = Math.sqrt(nums.reduce((a,b)=>a+b*b,0)/L);
+  const G = Math.exp(nums.reduce((a,b)=>a+Math.log(b),0)/L);
+  const H = L/nums.reduce((a,b)=>a+1/b,0);
+  return {A,Q,G,H};
+}
+function fmt(x){
+  if(!Number.isFinite(x)) return 'overflow';
+  if(Math.abs(x)>=1e6) return x.toExponential(6);
+  return x.toPrecision(10);
+}
+function pascalCell(n,j){ return bigComb(n,j); }
+function renderTriangle(currentN, rowsShown){
+  const div=document.getElementById('triangle');
+  div.innerHTML='';
+  for(let n=0;n<rowsShown;n++){
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML = `<span class="rownum">${n}</span>`;
+    const ks = new Set();
+    if(n===currentN){ for(let k=0;k<=Math.floor(n/2);k++) ks.add(k); }
+    for(let j=0;j<=n;j++){
+      const span=document.createElement('span');
+      span.className='cell' + (ks.has(j)?' diag':'');
+      span.style.color = ks.has(j) ? ['#4ea1ff','#ff932e','#62d84e','#bc68ff'][j%4] : '#eef6ff';
+      span.textContent = pascalCell(n,j).toString();
+      row.appendChild(span);
+    }
+    div.appendChild(row);
+  }
+}
+function renderDiagLine(n){
+  const xs=diag(n).map(x=>x.toString());
+  const trimmed = xs.length>18 ? xs.slice(0,9).join(', ') + ', …, ' + xs.slice(-9).join(', ') : xs.join(', ');
+  document.getElementById('diagline').innerHTML = `Diagonal for n = ${n}, length Lₙ = ${xs.length}:<br>${trimmed}`;
+}
+function compute(maxN){
+  const means={A:[],Q:[],G:[],H:[]};
+  for(let n=0;n<=maxN;n++){
+    const mv=meanValues(diag(n));
+    for(const k of Object.keys(means)) means[k].push(mv[k]);
+  }
+  const ratios={A:[],Q:[],G:[],H:[]};
+  for(const k of Object.keys(means)){
+    for(let n=0;n<maxN;n++) ratios[k].push(means[k][n+1]/means[k][n]);
+  }
+  return ratios;
+}
+function renderChart(ratios,maxN){
+  const xs=[...Array(maxN).keys()];
+  const visible = {
+    A:document.getElementById('showA').checked,
+    Q:document.getElementById('showQ').checked,
+    G:document.getElementById('showG').checked,
+    H:document.getElementById('showH').checked
+  };
+  const phi=(1+Math.sqrt(5))/2;
+  const datasets=Object.keys(ratios).filter(k=>visible[k]).map(k=>({
+    label:labels[k], data:ratios[k].map((y,i)=>({x:i,y})),
+    borderColor:colours[k], backgroundColor:colours[k], pointRadius:0, borderWidth:2, tension:0.12
+  }));
+  datasets.push({label:'φ', data:xs.map(i=>({x:i,y:phi})), borderColor:'#ffffff', pointRadius:0, borderWidth:1.5, borderDash:[6,6]});
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById('ratioChart'),{
+    type:'line', data:{datasets},
+    options:{
+      parsing:false, responsive:true,
+      scales:{
+        x:{type:'linear', title:{display:true,text:'n',color:'#dceeff'}, ticks:{color:'#dceeff'}, grid:{color:'#263d55'}},
+        y:{min:1,max:2.3, ticks:{color:'#dceeff'}, grid:{color:'#263d55'}}
+      },
+      plugins:{legend:{labels:{color:'#eef6ff'}}}
+    }
+  });
+}
+function renderTables(ratios,maxN){
+  const phi=(1+Math.sqrt(5))/2;
+  let lim='<tr><th>Mean</th><th>Estimated limit</th><th>Last 20 range</th><th>Difference from φ</th></tr>';
+  for(const k of ['A','Q','G','H']){
+    const tail=ratios[k].slice(Math.max(0,maxN-20));
+    const est=tail.reduce((a,b)=>a+b,0)/tail.length;
+    const lo=Math.min(...tail), hi=Math.max(...tail);
+    lim += `<tr><td><span class="swatch" style="background:${colours[k]}"></span>${labels[k]}</td><td>${fmt(est)}</td><td>[${fmt(lo)}, ${fmt(hi)}]</td><td>${fmt(est-phi)}</td></tr>`;
+  }
+  document.getElementById('limits').innerHTML=lim;
+
+  const start=Math.max(0,maxN-10);
+  let rec='<tr><th>n</th>';
+  for(let n=start;n<maxN;n++) rec+=`<th>${n}</th>`;
+  rec+='</tr>';
+  for(const k of ['A','Q','G','H']){
+    rec+=`<tr><td style="color:${colours[k]}">${k}</td>`;
+    for(let n=start;n<maxN;n++) rec+=`<td style="color:${colours[k]}">${fmt(ratios[k][n])}</td>`;
+    rec+='</tr>';
+  }
+  document.getElementById('recent').innerHTML=rec;
+}
+function recompute(){
+  const maxN=Math.max(5,Math.min(500,parseInt(document.getElementById('maxN').value||100)));
+  let rowsShown=Math.max(5,Math.min(80,parseInt(document.getElementById('rowsShown').value||20)));
+  let currentN=Math.max(0,Math.min(maxN,parseInt(document.getElementById('currentN').value||30)));
+  document.getElementById('maxN').value=maxN;
+  document.getElementById('rowsShown').value=rowsShown;
+  document.getElementById('currentN').value=currentN;
+  renderTriangle(currentN, rowsShown);
+  renderDiagLine(currentN);
+  const ratios=compute(maxN);
+  renderChart(ratios,maxN);
+  renderTables(ratios,maxN);
+}
+document.getElementById('phi').textContent=((1+Math.sqrt(5))/2).toPrecision(16);
+document.querySelectorAll('input,button').forEach(el=>el.addEventListener('change',recompute));
+document.getElementById('recompute').addEventListener('click',recompute);
+recompute();
+</script>
+</body>
+</html>
