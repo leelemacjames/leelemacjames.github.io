@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Braess Paradox — When Adding a Road Makes Everyone Slower</title>
+<style>
+  :root {
+    --navy:   #0d1b2a;
+    --ink:    #1a2e42;
+    --cream:  #f0ead6;
+    --warm:   #e8e4d9;
+    --copper: #c47b2e;
+    --sage:   #5c8f6a;
+    --blue:   #7b9fca;
+    --rose:   #a05050;
+    --gold:   #d4b04a;
+    --mono:   'Courier New', Courier, monospace;
+    --serif:  Georgia, 'Times New Roman', serif;
+    --ui:     Arial, Helvetica, sans-serif;
+    --rule:   1px solid rgba(196,123,46,0.30);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--cream); font-family: var(--serif);
+         font-size: 17px; line-height: 1.75; }
+
+  .sec    { max-width: 860px; margin: 0 auto; padding: 44px 40px; border-bottom: var(--rule); }
+  @media(max-width:520px){ .sec{ padding:32px 16px; } }
+
+  .eyebrow { font-family:var(--ui); font-size:10px; letter-spacing:.18em;
+             text-transform:uppercase; color:var(--copper); margin-bottom:14px; }
+  h1 { font-size:clamp(1.8rem,4.5vw,2.8rem); font-weight:normal;
+       line-height:1.15; color:var(--cream); margin-bottom:16px; }
+  h1 em { color:var(--copper); font-style:italic; }
+  h2 { font-size:1.3rem; font-weight:normal; color:var(--cream); margin-bottom:14px; }
+  h3 { font-family:var(--ui); font-size:.9rem; font-weight:bold;
+       text-transform:uppercase; letter-spacing:.06em; color:var(--warm);
+       margin-bottom:8px; }
+  p  { margin-bottom:14px; color:#c0ccd6; }
+  p:last-child { margin-bottom:0; }
+  strong { color:var(--cream); }
+
+  .fbox {
+    background:rgba(255,255,255,.04); border-left:3px solid var(--copper);
+    border-radius:0 6px 6px 0; padding:14px 18px; margin:16px 0;
+    font-family:var(--mono); font-size:.9rem; line-height:2; color:var(--cream);
+  }
+  .fbox .fl { font-family:var(--ui); font-size:9px; letter-spacing:.14em;
+              text-transform:uppercase; color:var(--copper); margin-bottom:6px; }
+  .fbox .fb { font-size:1.05rem; color:#f5e8c8; display:block; margin:3px 0; }
+
+  .notice {
+    background:rgba(92,143,106,.12); border:1px solid rgba(92,143,106,.35);
+    border-radius:6px; padding:14px 18px; margin:16px 0;
+    font-size:.92rem; color:#a8d4b2;
+  }
+  .notice strong { color:#c8ecd0; }
+
+  .callout {
+    background:rgba(196,123,46,.10); border:1px solid rgba(196,123,46,.35);
+    border-radius:6px; padding:14px 18px; margin:16px 0;
+    font-size:.92rem; color:#e0c080;
+  }
+  .callout strong { color:#f5e0a0; }
+
+  .warn {
+    background:rgba(160,80,80,.14); border:1px solid rgba(160,80,80,.40);
+    border-radius:6px; padding:14px 18px; margin:16px 0;
+    font-size:.92rem; color:#e8b0b0;
+  }
+  .warn strong { color:#f5c8c8; }
+
+  /* ── Variant cards ── */
+  .variant-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:20px 0; }
+  @media(max-width:580px){ .variant-grid{grid-template-columns:1fr;} }
+
+  .vcard {
+    background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
+    border-radius:10px; padding:20px 18px;
+  }
+  .vcard.v1 { border-top:3px solid var(--blue); }
+  .vcard.v2 { border-top:3px solid var(--rose); }
+  .vcard .vtag { font-family:var(--ui); font-size:9px; letter-spacing:.14em;
+                 text-transform:uppercase; margin-bottom:8px; }
+  .vcard.v1 .vtag { color:var(--blue); }
+  .vcard.v2 .vtag { color:var(--rose); }
+  .vcard .vresult { font-family:var(--mono); font-size:1.2rem;
+                    margin-top:12px; padding:10px; background:rgba(0,0,0,.25);
+                    border-radius:4px; text-align:center; }
+  .vcard.v1 .vresult { color:var(--blue); }
+  .vcard.v2 .vresult { color:var(--rose); }
+
+  /* ── Network SVG diagrams ── */
+  .net-wrap { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
+              border-radius:10px; padding:20px; margin:18px 0; }
+  .net-wrap svg { display:block; margin:0 auto; }
+  .net-label { font-family:var(--ui); font-size:9px; letter-spacing:.14em;
+               text-transform:uppercase; color:var(--copper); margin-bottom:10px; }
+
+  /* ── Steps ── */
+  .steps { list-style:none; margin:16px 0; }
+  .steps li { display:grid; grid-template-columns:30px 1fr; gap:12px; margin-bottom:16px; }
+  .sn { width:28px; height:28px; border-radius:50%; background:rgba(196,123,46,.18);
+        border:1px solid var(--copper); display:flex; align-items:center;
+        justify-content:center; font-family:var(--ui); font-size:11px;
+        color:var(--copper); font-weight:bold; flex-shrink:0; margin-top:2px; }
+  .sb { color:#b0bec8; font-size:.93rem; }
+  .sb strong { color:var(--cream); }
+  .mono { font-family:var(--mono); color:#f0d89c; }
+
+  /* ── Interactive slider panel ── */
+  .slider-panel { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
+                  border-radius:10px; padding:22px 20px; margin-top:20px; }
+  .slider-row { margin:10px 0; font-family:var(--ui); font-size:12px; }
+  .slider-row label { display:flex; justify-content:space-between;
+                      color:#8a9eac; margin-bottom:3px; }
+  .slider-row label span { color:var(--cream); font-weight:bold; }
+  input[type=range] { width:100%; accent-color:var(--copper); cursor:pointer; }
+
+  .result-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:14px; }
+  @media(max-width:460px){ .result-grid{grid-template-columns:1fr;} }
+  .rcard { background:rgba(0,0,0,.3); border-radius:6px; padding:12px;
+           font-family:var(--mono); text-align:center; }
+  .rcard .rl { font-family:var(--ui); font-size:9px; letter-spacing:.1em;
+               text-transform:uppercase; margin-bottom:5px; }
+  .rcard .rv { font-size:1.2rem; }
+  .rcard.nash { border:1px solid var(--copper); }
+  .nash-label { font-family:var(--ui); font-size:10px; color:var(--copper);
+                text-align:center; margin-top:8px; letter-spacing:.08em;
+                text-transform:uppercase; }
+
+  /* ── Paradox reveal ── */
+  .reveal-btn {
+    display:inline-block; margin:12px 0 4px;
+    background:transparent; border:1px solid rgba(196,123,46,.55);
+    color:var(--copper); font-family:var(--ui); font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; padding:8px 18px;
+    border-radius:4px; cursor:pointer; transition:background .2s;
+  }
+  .reveal-btn:hover { background:rgba(196,123,46,.15); }
+  .hidden { display:none; }
+  .fade-in { animation:fadeIn .5s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+
+  /* ── Connection box ── */
+  .connect-box {
+    background:rgba(123,159,202,.10); border:1px solid rgba(123,159,202,.30);
+    border-radius:8px; padding:18px 20px; margin:20px 0;
+  }
+  .connect-box .cl { font-family:var(--ui); font-size:9px; letter-spacing:.14em;
+                     text-transform:uppercase; color:var(--blue); margin-bottom:10px; }
+
+  footer { max-width:860px; margin:0 auto; padding:26px 40px;
+           font-family:var(--ui); font-size:10px; color:#2e4050; border-top:var(--rule); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HERO ════════════════════════════════ -->
+<header class="sec" style="border-bottom:var(--rule);padding-top:56px;">
+  <p class="eyebrow">Dwight School London &nbsp;·&nbsp; Natural &amp; Unnatural Sciences &nbsp;·&nbsp; Extension</p>
+  <h1>The <em>Braess Paradox</em><br>Adding a road can make everyone slower</h1>
+  <p>You have seen how parallel pipes add their conductances, always producing a lower combined resistance. But what if each pipe's resistance depends on how many people use it? Then adding a new path can make the whole system worse — for everyone simultaneously. This is the Braess paradox, and it lives at the intersection of conductance, game theory, and network design.</p>
+</header>
+
+
+<!-- ═══════════════════════════ S1: THE SETUP ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Part 1 — The Setup</p>
+  <h2>A city, two routes, traffic-dependent travel times</h2>
+
+  <p>All vehicles want to travel from city <strong>A</strong> to city <strong>B</strong>. Let <strong>x</strong> be the fraction of all vehicles using a particular road (so x = 1 means everyone uses it; x = ½ means half do).</p>
+
+  <p>There are two possible routes through intermediate cities L and R:</p>
+
+  <div class="fbox">
+    <div class="fl">Variant 1 — Two routes, no shortcut</div>
+    <span class="fb">Route 1:  A → L → B &nbsp;&nbsp; time = 10 + 6x₁ minutes</span>
+    <span class="fb">Route 2:  A → R → B &nbsp;&nbsp; time = 6x₂ + 10 minutes</span>
+    <span style="color:#8a9eac;font-size:.82rem;display:block;margin-top:6px;">
+      Each route has one fixed segment (motorway, always 10 min) and one congested
+      segment (city road, time = 6x where x is the fraction of all traffic using it).
+    </span>
+  </div>
+
+  <!-- Network diagram V1 -->
+  <div class="net-wrap">
+    <p class="net-label">Variant 1 — network diagram</p>
+    <svg viewBox="0 0 500 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- nodes -->
+      <circle cx="60"  cy="100" r="22" fill="#1a2e42" stroke="#7b9fca" stroke-width="1.5"/>
+      <text x="60"  y="105" font-family="Arial" font-size="14" font-weight="bold"
+            fill="#f0ead6" text-anchor="middle">A</text>
+
+      <circle cx="220" cy="45"  r="20" fill="#1a2e42" stroke="#5c8f6a" stroke-width="1.5"/>
+      <text x="220" y="50"  font-family="Arial" font-size="13" fill="#5c8f6a"
+            text-anchor="middle" font-weight="bold">L</text>
+
+      <circle cx="220" cy="155" r="20" fill="#1a2e42" stroke="#c47b2e" stroke-width="1.5"/>
+      <text x="220" y="160" font-family="Arial" font-size="13" fill="#c47b2e"
+            text-anchor="middle" font-weight="bold">R</text>
+
+      <circle cx="440" cy="100" r="22" fill="#1a2e42" stroke="#7b9fca" stroke-width="1.5"/>
+      <text x="440" y="105" font-family="Arial" font-size="14" font-weight="bold"
+            fill="#f0ead6" text-anchor="middle">B</text>
+
+      <!-- Route 1: A→L (congested), L→B (fixed) -->
+      <line x1="80" y1="90" x2="202" y2="53" stroke="#5c8f6a" stroke-width="2"
+            marker-end="url(#ag)"/>
+      <text x="128" y="58" font-family="Arial" font-size="10" fill="#5c8f6a"
+            text-anchor="middle">6x₁ min</text>
+      <text x="115" y="72" font-family="Arial" font-size="9" fill="#5a7a6a"
+            text-anchor="middle">(congested)</text>
+
+      <line x1="240" y1="55" x2="420" y2="92" stroke="#5c8f6a" stroke-width="2"
+            stroke-dasharray="6,3" marker-end="url(#ag)"/>
+      <text x="348" y="62" font-family="Arial" font-size="10" fill="#5c8f6a"
+            text-anchor="middle">10 min (fixed)</text>
+
+      <!-- Route 2: A→R (fixed), R→B (congested) -->
+      <line x1="80" y1="110" x2="202" y2="147" stroke="#c47b2e" stroke-width="2"
+            stroke-dasharray="6,3" marker-end="url(#ao)"/>
+      <text x="128" y="148" font-family="Arial" font-size="10" fill="#c47b2e"
+            text-anchor="middle">10 min (fixed)</text>
+
+      <line x1="240" y1="148" x2="420" y2="110" stroke="#c47b2e" stroke-width="2"
+            marker-end="url(#ao)"/>
+      <text x="348" y="148" font-family="Arial" font-size="10" fill="#c47b2e"
+            text-anchor="middle">6x₂ min</text>
+      <text x="348" y="160" font-family="Arial" font-size="9" fill="#9a6a3a"
+            text-anchor="middle">(congested)</text>
+
+      <!-- key: solid=congested dashed=fixed -->
+      <line x1="20" y1="185" x2="50" y2="185" stroke="#8a9eac" stroke-width="2"/>
+      <text x="54" y="189" font-family="Arial" font-size="9" fill="#8a9eac">congested</text>
+      <line x1="130" y1="185" x2="160" y2="185" stroke="#8a9eac" stroke-width="2"
+            stroke-dasharray="5,3"/>
+      <text x="164" y="189" font-family="Arial" font-size="9" fill="#8a9eac">fixed</text>
+
+      <defs>
+        <marker id="ag" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#5c8f6a"/></marker>
+        <marker id="ao" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#c47b2e"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="variant-grid">
+    <div class="vcard v1">
+      <div class="vtag">Route 1: A → L → B</div>
+      <p style="font-size:.88rem;color:#8a9eac;">At Nash equilibrium, traffic splits evenly: x₁ = x₂ = ½</p>
+      <div class="vresult">t = 10 + 6×½ = <strong>13 min</strong></div>
+    </div>
+    <div class="vcard v1">
+      <div class="vtag">Route 2: A → R → B</div>
+      <p style="font-size:.88rem;color:#8a9eac;">By symmetry, same time — no driver can improve by switching</p>
+      <div class="vresult">t = 6×½ + 10 = <strong>13 min</strong></div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <strong>Nash equilibrium.</strong> When x₁ = x₂ = ½, both routes take 13 minutes. No individual driver can reduce their travel time by switching route — if they moved to Route 1, Route 1 would get slightly more crowded, and Route 2 slightly less, until they balanced again. The system is stable at 13 minutes.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════ S2: THE SHORTCUT ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Part 2 — The Shortcut</p>
+  <h2>A new road is built between R and L — and things get worse</h2>
+
+  <p>Engineers build a new expressway connecting R directly to L. It is very fast — always just <strong>2 minutes</strong>, regardless of traffic. A new route becomes available:</p>
+
+  <div class="fbox">
+    <div class="fl">New route — the tempting shortcut</div>
+    <span class="fb">Route 3:  A → R → L → B</span>
+    <span style="color:#8a9eac;font-size:.82rem;display:block;margin-top:4px;">
+      Time = (A→R congested) + 2 min (R→L fixed) + (L→B congested)<br>
+      = 6x_R + 2 + 6x_L minutes
+    </span>
+  </div>
+
+  <!-- Network diagram V2 -->
+  <div class="net-wrap">
+    <p class="net-label">Variant 2 — new R→L shortcut added</p>
+    <svg viewBox="0 0 500 210" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- nodes -->
+      <circle cx="60"  cy="100" r="22" fill="#1a2e42" stroke="#7b9fca" stroke-width="1.5"/>
+      <text x="60"  y="105" font-family="Arial" font-size="14" font-weight="bold"
+            fill="#f0ead6" text-anchor="middle">A</text>
+      <circle cx="220" cy="45"  r="20" fill="#1a2e42" stroke="#5c8f6a" stroke-width="1.5"/>
+      <text x="220" y="50"  font-family="Arial" font-size="13" fill="#5c8f6a"
+            font-weight="bold" text-anchor="middle">L</text>
+      <circle cx="220" cy="160" r="20" fill="#1a2e42" stroke="#c47b2e" stroke-width="1.5"/>
+      <text x="220" y="165" font-family="Arial" font-size="13" fill="#c47b2e"
+            font-weight="bold" text-anchor="middle">R</text>
+      <circle cx="440" cy="100" r="22" fill="#1a2e42" stroke="#7b9fca" stroke-width="1.5"/>
+      <text x="440" y="105" font-family="Arial" font-size="14" font-weight="bold"
+            fill="#f0ead6" text-anchor="middle">B</text>
+
+      <!-- Route 1 (green, faded) -->
+      <line x1="80" y1="90" x2="202" y2="53" stroke="#5c8f6a" stroke-width="1.5"
+            opacity=".5" marker-end="url(#ag2)"/>
+      <text x="128" y="58" font-family="Arial" font-size="9" fill="#5c8f6a"
+            opacity=".6" text-anchor="middle">6x_L</text>
+      <line x1="240" y1="53" x2="420" y2="90" stroke="#5c8f6a" stroke-width="1.5"
+            stroke-dasharray="6,3" opacity=".5" marker-end="url(#ag2)"/>
+      <text x="348" y="60" font-family="Arial" font-size="9" fill="#5c8f6a"
+            opacity=".6" text-anchor="middle">10 min</text>
+
+      <!-- Route 2 (orange, faded) -->
+      <line x1="80" y1="110" x2="202" y2="152" stroke="#c47b2e" stroke-width="1.5"
+            stroke-dasharray="6,3" opacity=".5" marker-end="url(#ao2)"/>
+      <text x="128" y="148" font-family="Arial" font-size="9" fill="#c47b2e"
+            opacity=".6" text-anchor="middle">10 min</text>
+      <line x1="240" y1="152" x2="420" y2="110" stroke="#c47b2e" stroke-width="1.5"
+            opacity=".5" marker-end="url(#ao2)"/>
+      <text x="348" y="148" font-family="Arial" font-size="9" fill="#c47b2e"
+            opacity=".6" text-anchor="middle">6x_R</text>
+
+      <!-- NEW SHORTCUT R→L (gold, prominent) -->
+      <line x1="220" y1="140" x2="220" y2="65" stroke="#d4b04a" stroke-width="2.5"
+            marker-end="url(#agold)"/>
+      <rect x="228" y="95" width="52" height="18" rx="3" fill="rgba(212,176,74,.15)"
+            stroke="rgba(212,176,74,.4)" stroke-width="0.8"/>
+      <text x="254" y="107" font-family="Arial" font-size="9" fill="#d4b04a"
+            text-anchor="middle" font-weight="bold">2 min NEW</text>
+
+      <!-- Route 3 highlight: A→R→L→B -->
+      <text x="250" y="198" font-family="Arial" font-size="9" fill="#d4b04a"
+            text-anchor="middle">New route 3: A→R→L→B uses all three congested links</text>
+
+      <defs>
+        <marker id="ag2"   markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#5c8f6a" opacity=".6"/></marker>
+        <marker id="ao2"   markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#c47b2e" opacity=".6"/></marker>
+        <marker id="agold" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#d4b04a"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Why Route 3 looks tempting at first</h3>
+  <p>When the shortcut is first opened and almost nobody uses it yet, Route 3 seems very attractive. Suppose half the traffic still uses Route 1 and half Route 2, so x_R ≈ ½ and x_L ≈ ½ at first:</p>
+
+  <div class="fbox">
+    <div class="fl">Initial apparent time on Route 3</div>
+    <span class="fb">t₃ = 6×½ + 2 + 6×½ = 3 + 2 + 3 = 8 min</span>
+    <span style="color:var(--gold);display:block;margin-top:4px;font-size:.85rem;">
+      8 minutes vs 13 minutes on the old routes — of course everyone switches!
+    </span>
+  </div>
+
+  <button class="reveal-btn" onclick="showParadox()">▶ Show what happens when everyone switches</button>
+
+  <div id="paradoxReveal" class="hidden fade-in" style="margin-top:16px;">
+    <p>As more and more drivers switch to Route 3, both congested links (A→R and L→B) fill up. Eventually <em>everyone</em> uses Route 3: x_R = 1 and x_L = 1.</p>
+
+    <div class="warn">
+      <strong>The new equilibrium — everybody on Route 3:</strong><br>
+      t₃ = 6×1 + 2 + 6×1 = 6 + 2 + 6 = <strong>14 minutes</strong><br><br>
+      That is <em>worse</em> than the original 13 minutes. And no single driver can improve
+      by switching away: if one driver moves back to Route 1 (A→L→B), they face
+      x_L ≈ 1 on the A→L segment too, giving t₁ = 6×1 + 10 = 16 minutes — even worse.
+      The system is stuck at 14 minutes.
+    </div>
+
+    <div class="variant-grid">
+      <div class="vcard v1">
+        <div class="vtag">Before shortcut — Nash equilibrium</div>
+        <p style="font-size:.85rem;color:#8a9eac;">Traffic splits ½ / ½ on Routes 1 and 2</p>
+        <div class="vresult"><strong style="color:var(--blue);">13 min</strong> for everyone</div>
+      </div>
+      <div class="vcard v2">
+        <div class="vtag">After shortcut — new Nash equilibrium</div>
+        <p style="font-size:.85rem;color:#8a9eac;">Everyone uses Route 3: A→R→L→B</p>
+        <div class="vresult"><strong style="color:var(--rose);">14 min</strong> for everyone</div>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:4px;">
+      <strong>The paradox.</strong> Adding a new high-capacity road made every single driver one minute slower — not through bad luck, but through the rational self-interest of every individual. The best collective solution is to ignore the new road entirely, but no individual driver has an incentive to do so.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════ S3: INTERACTIVE ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Part 3 — Interactive</p>
+  <h2>Adjust the shortcut time — watch the paradox switch on and off</h2>
+
+  <p>The paradox only appears because the shortcut is fast enough to tempt everyone onto Route 3. Use the slider to change the shortcut travel time <strong>c</strong> (the time on the R→L link) and see whether the new Nash equilibrium is better or worse than the original 13 minutes.</p>
+
+  <div class="slider-panel">
+    <div class="slider-row">
+      <label>Shortcut time c (minutes) <span id="cval">2</span></label>
+      <input type="range" id="cslider" min="0" max="15" value="2" step="0.5"
+             oninput="updateBraess()">
+    </div>
+    <div class="slider-row">
+      <label>Traffic flow coefficient α (min per unit fraction) <span id="aval">6</span></label>
+      <input type="range" id="aslider" min="1" max="12" value="6" step="1"
+             oninput="updateBraess()">
+    </div>
+
+    <div class="result-grid" style="margin-top:16px;">
+      <div class="rcard">
+        <div class="rl" style="color:var(--blue);">Original equilibrium</div>
+        <div class="rv" style="color:var(--blue);" id="t_orig">13 min</div>
+        <div style="font-family:var(--ui);font-size:9px;color:#607080;margin-top:4px;">
+          t = 10 + α/2
+        </div>
+      </div>
+      <div class="rcard nash">
+        <div class="rl" style="color:var(--rose);">New equilibrium (Route 3)</div>
+        <div class="rv" style="color:var(--rose);" id="t_new">14 min</div>
+        <div style="font-family:var(--ui);font-size:9px;color:#607080;margin-top:4px;">
+          t = 2α + c
+        </div>
+      </div>
+      <div class="rcard">
+        <div class="rl" id="verdict_label" style="color:var(--copper);">Verdict</div>
+        <div class="rv" id="verdict" style="color:var(--copper);">Paradox active</div>
+        <div style="font-family:var(--ui);font-size:9px;color:#607080;margin-top:4px;"
+             id="condition_label">New route used only when 2α + c &lt; 10 + α/2</div>
+      </div>
+    </div>
+
+    <div id="braess_explain" style="margin-top:14px;font-family:var(--ui);font-size:.85rem;
+         color:#8a9eac;line-height:1.7;"></div>
+  </div>
+
+  <div class="notice" style="margin-top:20px;">
+    <strong>The threshold.</strong> The paradox is active only when the shortcut is so fast that Route 3 (time = 2α + c) beats the original equilibrium (time = 10 + α/2) even when everyone crowds onto it. Rearranging: paradox appears when c &lt; 10 − (3α/2). For α = 6: paradox when c &lt; 1 minute. Try the slider at c = 0 to see it most clearly, and c = 10 to see it disappear.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════ S4: CONNECTION TO CONDUCTANCE ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Part 4 — The Connection</p>
+  <h2>What this means for conductance and parallel networks</h2>
+
+  <div class="connect-box">
+    <div class="cl">Linking back to hydraulic conductance and harmonic means</div>
+    <p style="color:#b8cce0;font-size:.93rem;margin-bottom:10px;">
+      The pipe and resistor examples on this page assumed <strong>fixed conductances</strong> — each pipe's resistance is a physical property of its geometry, independent of how much water flows through it. Adding a parallel pipe <em>always</em> increases total conductance and lowers combined resistance.
+    </p>
+    <p style="color:#b8cce0;font-size:.93rem;margin-bottom:0;">
+      The Braess paradox shows what happens when conductance is <strong>flow-dependent</strong>: when a road (or network link) gets slower as more agents use it, adding a new link can — through the self-interested choices of individual agents — route everyone onto the congested links simultaneously, destroying the beneficial sharing that parallel paths normally provide.
+    </p>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;font-family:var(--ui);font-size:.85rem;margin:16px 0;">
+    <thead>
+      <tr style="border-bottom:1px solid rgba(196,123,46,.35);">
+        <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">System</th>
+        <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Conductance type</th>
+        <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Adding a parallel path...</th>
+        <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid rgba(255,255,255,.05);">
+        <td style="padding:10px;color:var(--sage);font-weight:bold;">Water pipe<br>Electric circuit</td>
+        <td style="padding:10px;color:#b0bec8;">Fixed (geometry only,<br>independent of flow)</td>
+        <td style="padding:10px;color:var(--sage);">Always helps — lowers<br>combined resistance</td>
+        <td style="padding:10px;color:#b0bec8;">Conductances add;<br>no strategic interaction</td>
+      </tr>
+      <tr>
+        <td style="padding:10px;color:var(--rose);font-weight:bold;">Traffic network<br>(selfish routing)</td>
+        <td style="padding:10px;color:#b0bec8;">Congestion-dependent<br>(worse as more use it)</td>
+        <td style="padding:10px;color:var(--rose);">Can hurt everyone if<br>it creates a dominant<br>but collectively bad strategy</td>
+        <td style="padding:10px;color:#b0bec8;">Individual optimisation<br>≠ collective optimisation<br>(Nash ≠ social optimum)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The Braess paradox has been observed in real systems: Seoul removed a motorway through the city centre and traffic improved; New York City has identified Braess-like effects in parts of its road network. In telecommunications, adding bandwidth to a congested link can sometimes slow all users if routing protocols shift everyone onto the new link.</p>
+
+  <div class="notice">
+    <strong>The deeper lesson.</strong> The harmonic-mean formula for parallel resistors assumes the network is passive — each element's conductance is fixed by physics. The Braess paradox is what happens when the "network" contains agents with preferences. The mathematics of conductance tells us what happens to current or water. Game theory tells us what happens when individual decision-makers route themselves through the network. The two frameworks agree precisely when conductances are fixed and disagree precisely when they are not.
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames &nbsp;·&nbsp;
+  Dwight School London · Department of Natural &amp; Unnatural Sciences
+</footer>
+
+
+<script>
+function showParadox(){
+  document.getElementById('paradoxReveal').classList.remove('hidden');
+  event.target.disabled = true;
+  document.getElementById('paradoxReveal')
+          .scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function updateBraess(){
+  const c = +document.getElementById('cslider').value;
+  const a = +document.getElementById('aslider').value;
+  document.getElementById('cval').textContent = c;
+  document.getElementById('aval').textContent = a;
+
+  const t_orig = 10 + a/2;               // original Nash: t = fixed + α·(½)
+  const t_new  = 2*a + c;                 // new Nash if all on Route 3: t = 2α + c
+  const threshold = 10 - 1.5*a;          // paradox when c < threshold (can be negative)
+
+  document.getElementById('t_orig').textContent = t_orig.toFixed(1) + ' min';
+  document.getElementById('t_new').textContent  = t_new.toFixed(1)  + ' min';
+
+  // Is Route 3 tempting at all? It's used if t_new < t_orig when half-loaded
+  // More precisely: paradox if 2α + c < 10 + α (all-on new is worse than orig)
+  // AND if new route looks better initially
+  const paradox_active = t_new > t_orig && c < (10 + a/2 - a); // new Nash worse AND route initially tempting
+
+  const vl  = document.getElementById('verdict_label');
+  const vd  = document.getElementById('verdict');
+  const exp = document.getElementById('braess_explain');
+
+  if(t_new <= t_orig){
+    vl.style.color = '#5c8f6a';
+    vd.style.color = '#5c8f6a';
+    vd.textContent = 'No paradox';
+    exp.innerHTML  = `With c = ${c} min, even if everyone uses Route 3 the time (${t_new.toFixed(1)} min) is no worse than the original (${t_orig.toFixed(1)} min). Adding the shortcut genuinely helps here.`;
+  } else {
+    vl.style.color = '#a05050';
+    vd.style.color = '#a05050';
+    vd.textContent = 'Paradox active ⚠';
+    exp.innerHTML  = `With c = ${c} min the new Nash equilibrium (${t_new.toFixed(1)} min) is <strong style="color:#e8b0b0;">worse</strong> than the original (${t_orig.toFixed(1)} min). Individual rationality leads everyone to Route 3, making all journeys ${(t_new - t_orig).toFixed(1)} min slower.`;
+  }
+}
+
+updateBraess();
+</script>
+</body>
+</html>
