@@ -584,5 +584,376 @@ function upR(){
 // init
 upS(); upR(); updateInvestigation();
 </script>
+
+
+<!-- ═══════════════════════════ SECTION 6: CONDUCTANCE & CONSERVATION ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Section 6 — Conductance &amp; Conservation of Flow</p>
+  <h2>Why parallel resistors add their <em>conductances</em> — not their resistances</h2>
+
+  <p>The reason the harmonic mean appears in parallel circuits is not arbitrary — it follows directly from a <strong>conservation law</strong> and a natural change of variable. The same logic reappears in water pipes, and in a slightly different form in spring systems.</p>
+
+  <div class="callout" style="margin:16px 0;">
+    <strong>The conservation law at a junction.</strong>
+    At any junction in a network, whatever is <em>flowing</em> must be conserved: charge cannot pile up at a node in a circuit; water cannot pile up at a pipe junction. This is known as Kirchhoff's Current Law (circuits) and the Continuity Equation (fluids). It forces the individual branch flows to add up to the total flow.
+  </div>
+
+  <h3 style="margin-top:20px;">Step 1 — Define conductance as the natural variable</h3>
+  <p>Resistance <strong>R</strong> measures how hard it is for current to flow. Its reciprocal, <strong>conductance G = 1/R</strong> (unit: siemens, S), measures how <em>easy</em> it is. Ohm's law rewritten in terms of conductance becomes:</p>
+
+  <div class="fbox">
+    <div class="flabel">Ohm's law — two equivalent forms</div>
+    <span class="fbig">V = IR &nbsp;&nbsp; ⟺ &nbsp;&nbsp; I = GV &nbsp;&nbsp; where G = 1/R</span>
+    <span style="color:#8a9eac;font-size:.85rem;display:block;margin-top:6px;">Current = conductance × voltage. The higher the conductance, the more current for the same voltage.</span>
+  </div>
+
+  <h3 style="margin-top:18px;">Step 2 — Apply conservation at the junction (parallel circuit)</h3>
+  <p>In a parallel circuit, the <em>same voltage</em> <strong>V</strong> appears across every branch. Conservation of charge (KCL) says the total current equals the sum of the branch currents:</p>
+
+  <div class="fbox">
+    <div class="flabel">KCL — current conservation at the junction</div>
+    <span class="fbig">I_total = I₁ + I₂ = G₁V + G₂V = (G₁ + G₂)V</span>
+    <span class="fbig" style="color:var(--copper);">∴ G_eff = G₁ + G₂ &nbsp;&nbsp; (conductances ADD in parallel)</span>
+    <span style="color:#8a9eac;font-size:.85rem;display:block;margin-top:6px;">Converting back: R_eff = 1/G_eff = 1/(1/R₁ + 1/R₂) = R₁R₂/(R₁+R₂) = H/2</span>
+  </div>
+
+  <div class="notice">
+    <strong>The harmonic mean is inevitable here.</strong> Once you accept conservation of charge (currents must add) and Ohm's law (current = conductance × voltage), the formula for parallel resistance follows without any choice. Adding conductances, then inverting, is exactly the three-step harmonic-mean recipe.
+  </div>
+
+  <!-- Conductance interactive -->
+  <div style="background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:22px 20px;margin-top:22px;">
+    <h3>See it both ways — resistance and conductance side by side</h3>
+    <p style="font-size:.88rem;color:#8a9eac;margin-bottom:14px;">Adjust two resistors in parallel. Watch conductances add directly while resistances combine via the harmonic mean.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div>
+        <div class="slider-row"><label>R₁ (Ω) <span id="cR1v">10</span></label>
+          <input type="range" id="cR1" min="1" max="100" value="10" step="1" oninput="upCond()"></div>
+        <div class="slider-row"><label>R₂ (Ω) <span id="cR2v">20</span></label>
+          <input type="range" id="cR2" min="1" max="100" value="20" step="1" oninput="upCond()"></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:.88rem;line-height:2;background:rgba(0,0,0,.25);padding:12px 14px;border-radius:6px;">
+        <div style="color:#8a9eac;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Conductance view</div>
+        <div>G₁ = 1/R₁ = <span id="cG1" style="color:var(--gold);">—</span> S</div>
+        <div>G₂ = 1/R₂ = <span id="cG2" style="color:var(--gold);">—</span> S</div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:6px 0;"></div>
+        <div>G_eff = G₁ + G₂ = <span id="cGeff" style="color:var(--copper);font-weight:bold;">—</span> S</div>
+        <div>R_eff = 1/G_eff = <span id="cReff" style="color:var(--copper);font-weight:bold;">—</span> Ω</div>
+        <div style="margin-top:8px;font-size:.78rem;color:#506070;">H(R₁,R₂)/2 = <span id="cHalf" style="color:#a0b890;">—</span> Ω ✓</div>
+      </div>
+    </div>
+
+    <!-- Current split SVG diagram -->
+    <div style="margin-top:18px;">
+      <div style="font-family:var(--ui);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);margin-bottom:8px;">Current split at 9 V (from conservation)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--mono);font-size:.82rem;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border-radius:6px;padding:10px 6px;">
+          <div style="color:#8a9eac;font-size:9px;margin-bottom:4px;">I₁ = 9/R₁</div>
+          <div id="cI1" style="color:var(--blue);font-size:1rem;">— A</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:6px;padding:10px 6px;">
+          <div style="color:#8a9eac;font-size:9px;margin-bottom:4px;">I₂ = 9/R₂</div>
+          <div id="cI2" style="color:var(--copper);font-size:1rem;">— A</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:6px;padding:10px 6px;">
+          <div style="color:#8a9eac;font-size:9px;margin-bottom:4px;">I_total = I₁+I₂</div>
+          <div id="cItot" style="color:var(--sage);font-size:1rem;">— A</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:6px;padding:10px 6px;">
+          <div style="color:#8a9eac;font-size:9px;margin-bottom:4px;">Check: 9/R_eff</div>
+          <div id="cIchk" style="color:var(--gold);font-size:1rem;">— A ✓</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /conductance panel -->
+</section>
+
+
+<!-- ═══════════════════════════ SECTION 7: WATER PIPES ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Section 7 — The Water Pipe Analogy</p>
+  <h2>Conservation of mass in pipe networks — the same mathematics</h2>
+
+  <p>Water flowing through a pipe network obeys exactly the same conservation principle as charge in a circuit: <strong>mass (and volume, for an incompressible fluid) is conserved at every junction</strong>. This is the <em>Continuity Equation</em> — what flows in must flow out.</p>
+
+  <h3>The driving difference and flow resistance</h3>
+  <p>In a circuit, current is driven by a <em>voltage difference</em>. In a pipe, volumetric flow rate <strong>Q</strong> (m³/s) is driven by a <em>pressure difference</em> <strong>ΔP</strong>. For laminar (smooth) flow in a cylindrical pipe, the Hagen-Poiseuille law plays the role of Ohm's law:</p>
+
+  <div class="fbox">
+    <div class="flabel">Hagen-Poiseuille law — the fluid Ohm's law</div>
+    <span class="fbig">Q = ΔP / R_f &nbsp;&nbsp; where &nbsp;&nbsp; R_f = 8ηL / (πr⁴)</span>
+    <span style="color:#8a9eac;font-size:.85rem;display:block;margin-top:6px;">η = fluid viscosity, L = pipe length, r = pipe radius. Notice the r⁴ dependence — doubling the radius increases flow 16-fold.</span>
+  </div>
+
+  <p><strong>Hydraulic conductance</strong> (also called <em>hydraulic transmissivity</em> or <em>flow coefficient</em>) is then <strong>K = 1/R_f = πr⁴/(8ηL)</strong>, exactly parallelling electrical conductance G = 1/R. Higher K means more flow for the same pressure difference.</p>
+
+  <h3 style="margin-top:18px;">Pipes in parallel — conservation forces conductances to add</h3>
+  <p>When two pipes share the same inlet and outlet pressure <strong>ΔP</strong>, the total flow rate is the sum of the individual flows — by conservation of mass:</p>
+
+  <div class="fbox">
+    <div class="flabel">Continuity equation at a junction</div>
+    <span class="fbig">Q_total = Q₁ + Q₂ = C_f1·ΔP + C_f2·ΔP = (C_f1 + C_f2)·ΔP</span>
+    <span class="fbig" style="color:var(--copper);">∴ C_f,eff = C_f1 + C_f2 &nbsp;&nbsp; (fluid conductances ADD in parallel)</span>
+    <span style="color:#8a9eac;font-size:.85rem;display:block;margin-top:6px;">Equivalent fluid resistance: R_f,eff = 1/(C_f1 + C_f2) = R_f1·R_f2/(R_f1+R_f2) = H/2</span>
+  </div>
+
+  <!-- SVG DIAGRAMS: pipes in parallel and series -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0;">
+
+    <!-- PARALLEL PIPES -->
+    <div style="background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:16px;">
+      <div style="font-family:var(--ui);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-bottom:10px;">Pipes in parallel — flows add (Q₁ + Q₂)</div>
+      <svg viewBox="0 0 280 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- left manifold -->
+        <rect x="18" y="25" width="10" height="80" rx="3" fill="#2a4535" stroke="#5c8f6a" stroke-width="1.2"/>
+        <!-- right manifold -->
+        <rect x="252" y="25" width="10" height="80" rx="3" fill="#2a4535" stroke="#5c8f6a" stroke-width="1.2"/>
+        <!-- top pipe walls -->
+        <rect x="28" y="28" width="224" height="22" rx="0" fill="#1a3028" stroke="#5c8f6a" stroke-width="1"/>
+        <!-- top pipe flow arrow & label -->
+        <line x1="60" y1="39" x2="220" y2="39" stroke="#5c8f6a" stroke-width="2" marker-end="url(#arr_sage)"/>
+        <text x="140" y="35" font-family="Arial" font-size="9" fill="#5c8f6a" text-anchor="middle">Q₁  (wide pipe, low R_f1)</text>
+        <!-- bottom pipe walls -->
+        <rect x="28" y="79" width="224" height="18" rx="0" fill="#1a2a1a" stroke="#c47b2e" stroke-width="1"/>
+        <!-- bottom pipe flow arrow & label -->
+        <line x1="60" y1="88" x2="220" y2="88" stroke="#c47b2e" stroke-width="1.5" marker-end="url(#arr_copper)"/>
+        <text x="140" y="84" font-family="Arial" font-size="9" fill="#c47b2e" text-anchor="middle">Q₂  (narrow pipe, high R_f2)</text>
+        <!-- inlet arrow -->
+        <line x1="2" y1="65" x2="18" y2="65" stroke="#8a9eac" stroke-width="1.8" marker-end="url(#arr_grey)"/>
+        <text x="0" y="60" font-family="Arial" font-size="8" fill="#8a9eac">ΔP</text>
+        <!-- outlet arrow -->
+        <line x1="262" y1="65" x2="278" y2="65" stroke="#8a9eac" stroke-width="1.8" marker-end="url(#arr_grey)"/>
+        <text x="266" y="60" font-family="Arial" font-size="8" fill="#8a9eac">Q_tot</text>
+        <!-- conservation label -->
+        <text x="140" y="120" font-family="Arial" font-size="8" fill="#607080" text-anchor="middle">Q_total = Q₁ + Q₂  (mass conservation)</text>
+        <defs>
+          <marker id="arr_sage"   markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5c8f6a"/></marker>
+          <marker id="arr_copper" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c47b2e"/></marker>
+          <marker id="arr_grey"   markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a9eac"/></marker>
+        </defs>
+      </svg>
+      <div style="font-family:var(--mono);font-size:.8rem;color:var(--copper);margin-top:8px;text-align:center;">
+        K_eff = K₁ + K₂ &nbsp;→&nbsp; R_f,eff = H(R_f1, R_f2)/2
+      </div>
+    </div>
+
+    <!-- SERIES PIPES -->
+    <div style="background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:16px;">
+      <div style="font-family:var(--ui);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">Pipes in series — same flow Q throughout</div>
+      <svg viewBox="0 0 280 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- pipe 1 walls (wide) -->
+        <rect x="10" y="34" width="120" height="24" rx="0" fill="#1a2535" stroke="#7b9fca" stroke-width="1"/>
+        <!-- pipe 2 walls (narrow) -->
+        <rect x="130" y="38" width="140" height="16" rx="0" fill="#1a2030" stroke="#c47b2e" stroke-width="1"/>
+        <!-- junction marker -->
+        <line x1="130" y1="30" x2="130" y2="60" stroke="#8a9eac" stroke-width="1" stroke-dasharray="3,2"/>
+        <!-- flow arrows -->
+        <line x1="30" y1="46" x2="110" y2="46" stroke="#7b9fca" stroke-width="2" marker-end="url(#arr_blue)"/>
+        <line x1="150" y1="46" x2="250" y2="46" stroke="#c47b2e" stroke-width="1.5" marker-end="url(#arr_cu2)"/>
+        <!-- labels -->
+        <text x="70"  y="42" font-family="Arial" font-size="9" fill="#7b9fca"  text-anchor="middle">R_f1  (wide)</text>
+        <text x="200" y="42" font-family="Arial" font-size="9" fill="#c47b2e" text-anchor="middle">R_f2  (narrow)</text>
+        <!-- pressure drop labels -->
+        <text x="70"  y="72" font-family="Arial" font-size="8" fill="#5a7090" text-anchor="middle">ΔP₁ = Q·R_f1</text>
+        <text x="200" y="72" font-family="Arial" font-size="8" fill="#5a7090" text-anchor="middle">ΔP₂ = Q·R_f2</text>
+        <!-- brace for total ΔP -->
+        <line x1="10" y1="82" x2="270" y2="82" stroke="#607080" stroke-width="0.8"/>
+        <line x1="10" y1="78" x2="10"  y2="86" stroke="#607080" stroke-width="0.8"/>
+        <line x1="270" y1="78" x2="270" y2="86" stroke="#607080" stroke-width="0.8"/>
+        <text x="140" y="96" font-family="Arial" font-size="8" fill="#607080" text-anchor="middle">ΔP_total = ΔP₁ + ΔP₂  (pressure drops add)</text>
+        <text x="140" y="112" font-family="Arial" font-size="8" fill="#607080" text-anchor="middle">Q same throughout (mass conservation)</text>
+        <text x="140" y="125" font-family="Arial" font-size="8" fill="#7b9fca" text-anchor="middle">R_f,eff = R_f1 + R_f2  (arithmetic)</text>
+        <defs>
+          <marker id="arr_blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7b9fca"/></marker>
+          <marker id="arr_cu2"  markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c47b2e"/></marker>
+        </defs>
+      </svg>
+      <div style="font-family:var(--mono);font-size:.8rem;color:var(--blue);margin-top:8px;text-align:center;">
+        R_f,eff = R_f1 + R_f2 &nbsp;(arithmetic — not harmonic)
+      </div>
+    </div>
+  </div><!-- /diagram grid -->
+
+  <p>Pipes in <em>series</em> — like resistors in series — share the same flow rate <strong>Q</strong>. The pressure drops add:
+  <strong>ΔP_total = ΔP₁ + ΔP₂ = Q·R_f1 + Q·R_f2 = Q(R_f1 + R_f2)</strong>,
+  so the effective fluid resistance is the simple arithmetic sum of the individual resistances — no harmonic mean involved.</p>
+
+  <p>The term used for <strong>hydraulic conductance</strong> — the pipe-flow analogue of electrical conductance — is sometimes called <em>hydraulic transmissivity</em> or simply the <em>flow coefficient</em>. The symbol <strong>K</strong> (or <strong>K_h</strong>) is standard: K = 1/R_f = πr⁴/(8ηL). Just as electrical conductance G = 1/R measures ease of current flow per volt, hydraulic conductance K measures ease of fluid flow per pascal of pressure difference.</p>
+
+  <!-- Comparison table -->
+  <div style="margin-top:22px;">
+    <div style="font-family:var(--ui);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--copper);margin-bottom:10px;">The three-system comparison</div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-family:var(--ui);font-size:.85rem;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(196,123,46,.4);">
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">System</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Driving difference</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Flow quantity</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Conservation law</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Resistance</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Conductance</th>
+          <th style="color:var(--copper);font-weight:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;text-align:left;">Parallel rule</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.06);">
+          <td style="padding:10px;color:var(--blue);font-weight:bold;">Electric circuit</td>
+          <td style="padding:10px;color:#b0bec8;">Voltage V (volts)</td>
+          <td style="padding:10px;color:#b0bec8;">Current I (A)</td>
+          <td style="padding:10px;color:#b0bec8;">KCL: charge conserved at node</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">R (Ω)</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">G = 1/R (S)</td>
+          <td style="padding:10px;color:var(--copper);font-family:var(--mono);font-size:.8rem;">G_eff = G₁+G₂</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.06);">
+          <td style="padding:10px;color:var(--sage);font-weight:bold;">Water pipe</td>
+          <td style="padding:10px;color:#b0bec8;">Pressure ΔP (Pa)</td>
+          <td style="padding:10px;color:#b0bec8;">Flow rate Q (m³/s)</td>
+          <td style="padding:10px;color:#b0bec8;">Continuity: mass conserved at junction</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">R_f = 8ηL/πr⁴</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">C_f = πr⁴/8ηL</td>
+          <td style="padding:10px;color:var(--copper);font-family:var(--mono);font-size:.8rem;">C_eff = C₁+C₂</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;color:var(--gold);font-weight:bold;">Spring (series)</td>
+          <td style="padding:10px;color:#b0bec8;">Force F (N)</td>
+          <td style="padding:10px;color:#b0bec8;">Extension x (m)</td>
+          <td style="padding:10px;color:#b0bec8;">Force equilibrium: same F throughout</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">1/k (compliance)</td>
+          <td style="padding:10px;color:#b0bec8;font-family:var(--mono);font-size:.8rem;">k (stiffness)</td>
+          <td style="padding:10px;color:var(--copper);font-family:var(--mono);font-size:.8rem;">1/k_eff = 1/k₁+1/k₂</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="notice" style="margin-top:20px;">
+    <strong>The deep unity.</strong> In every case, the harmonic-mean formula appears because (i) a conservation law forces the <em>flows</em> to add, and (ii) each flow equals conductance × driving difference. Adding conductances, then inverting back to resistance, is the harmonic-mean recipe. The mathematics does not care whether the flow is charge, water, or mechanical extension — the structure is identical.
+  </div>
+
+  <h3 style="margin-top:20px;">Why series gives the arithmetic mean and parallel gives the harmonic mean</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;">
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:16px;">
+      <div style="font-family:var(--ui);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;">Series — shared flow</div>
+      <div style="font-family:var(--mono);font-size:.85rem;color:#c0ccd6;line-height:2;">
+        Same current/flow/force<br>
+        Driving differences add<br>
+        ΔV = I·R₁ + I·R₂ = I(R₁+R₂)<br>
+        <span style="color:var(--blue);">R_eff = R₁ + R₂</span> (arithmetic)
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-left:3px solid var(--copper);border-radius:0 8px 8px 0;padding:16px;">
+      <div style="font-family:var(--ui);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);margin-bottom:8px;">Parallel — shared driving difference</div>
+      <div style="font-family:var(--mono);font-size:.85rem;color:#c0ccd6;line-height:2;">
+        Same voltage/pressure/force<br>
+        Flows (currents) add<br>
+        I = G₁V + G₂V = (G₁+G₂)V<br>
+        <span style="color:var(--copper);">G_eff = G₁+G₂</span> (conductances, arithmetic!)<br>
+        <span style="color:var(--copper);">R_eff = 1/G_eff</span> (harmonic of R values)
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:16px;">Notice the satisfying symmetry: <em>resistances</em> add arithmetically in series; <em>conductances</em> add arithmetically in parallel. In both cases something adds arithmetically — the choice of whether to work with resistance or conductance determines which configuration looks "simple".</p>
+</section>
+
+
+<!-- ═══════════════════════════ SECTION 8: PIPE INTERACTIVE ════════════════════════════ -->
+<section class="sec">
+  <p class="eyebrow">Section 8 — Interactive</p>
+  <h2>Pipe network calculator — vary radii and see flow split</h2>
+
+  <p>The Hagen-Poiseuille fluid resistance of a pipe is proportional to L/r⁴. Adjust the radii of two parallel pipes and watch flow rate, hydraulic conductance and the effective resistance update — the same harmonic-mean arithmetic as the circuit calculator in Section 4.</p>
+
+  <div style="background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:22px 20px;margin-top:16px;">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-family:var(--ui);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-bottom:10px;">Pipe parameters (same length η L = 1)</div>
+        <div class="slider-row"><label>r₁ (relative units) <span id="pr1v">1.0</span></label>
+          <input type="range" id="pr1" min="0.5" max="3.0" value="1.0" step="0.1" oninput="upPipe()"></div>
+        <div class="slider-row"><label>r₂ (relative units) <span id="pr2v">0.5</span></label>
+          <input type="range" id="pr2" min="0.5" max="3.0" value="0.5" step="0.1" oninput="upPipe()"></div>
+        <div class="slider-row"><label>Pressure ΔP (relative) <span id="pDPv">10</span></label>
+          <input type="range" id="pDP" min="1" max="30" value="10" step="1" oninput="upPipe()"></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:.85rem;line-height:2.1;background:rgba(0,0,0,.25);padding:14px;border-radius:6px;">
+        <div style="color:#8a9eac;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Results (R_f ∝ 1/r⁴)</div>
+        <div>R_f1 = 1/r₁⁴ = <span id="pRf1" style="color:var(--sage);">—</span></div>
+        <div>R_f2 = 1/r₂⁴ = <span id="pRf2" style="color:var(--gold);">—</span></div>
+        <div>C_f1 = r₁⁴ = <span id="pCf1" style="color:var(--sage);">—</span></div>
+        <div>C_f2 = r₂⁴ = <span id="pCf2" style="color:var(--gold);">—</span></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:6px 0;"></div>
+        <div>C_eff = C₁+C₂ = <span id="pCeff" style="color:var(--copper);font-weight:bold;">—</span></div>
+        <div>R_f,eff = 1/C_eff = <span id="pReff" style="color:var(--copper);font-weight:bold;">—</span></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:6px 0;"></div>
+        <div>Q₁ = ΔP/R_f1 = <span id="pQ1" style="color:var(--sage);">—</span></div>
+        <div>Q₂ = ΔP/R_f2 = <span id="pQ2" style="color:var(--gold);">—</span></div>
+        <div>Q_total = Q₁+Q₂ = <span id="pQtot" style="color:var(--copper);font-weight:bold;">—</span></div>
+        <div style="font-size:.75rem;color:#506070;margin-top:4px;">Check: ΔP/R_eff = <span id="pQchk" style="color:#a0b890;">—</span> ✓</div>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:16px;font-size:.88rem;">
+      <strong>Notice:</strong> the larger pipe (bigger r) has enormously lower fluid resistance (∝ 1/r⁴) and therefore dominates the total flow, pulling the effective resistance toward zero — exactly the same behaviour as a low-resistance parallel resistor. Try setting r₁ = 2.0 and r₂ = 0.5 to see r₁ carry over 99% of the flow.
+    </div>
+  </div>
+</section>
+
+
+<script>
+/* ─── Conductance panel ─── */
+function upCond(){
+  const r1=+document.getElementById('cR1').value;
+  const r2=+document.getElementById('cR2').value;
+  document.getElementById('cR1v').textContent=r1;
+  document.getElementById('cR2v').textContent=r2;
+  const g1=1/r1, g2=1/r2;
+  const geff=g1+g2, reff=1/geff;
+  const V=9;
+  const i1=V/r1, i2=V/r2, itot=i1+i2, ichk=V/reff;
+  const H=2*r1*r2/(r1+r2);
+  document.getElementById('cG1').textContent=g1.toFixed(4);
+  document.getElementById('cG2').textContent=g2.toFixed(4);
+  document.getElementById('cGeff').textContent=geff.toFixed(4);
+  document.getElementById('cReff').textContent=reff.toFixed(3);
+  document.getElementById('cHalf').textContent=(H/2).toFixed(3);
+  document.getElementById('cI1').textContent=i1.toFixed(3)+' A';
+  document.getElementById('cI2').textContent=i2.toFixed(3)+' A';
+  document.getElementById('cItot').textContent=itot.toFixed(3)+' A';
+  document.getElementById('cIchk').textContent=ichk.toFixed(3)+' A ✓';
+}
+
+/* ─── Pipe panel ─── */
+function upPipe(){
+  const r1=+document.getElementById('pr1').value;
+  const r2=+document.getElementById('pr2').value;
+  const dP=+document.getElementById('pDP').value;
+  document.getElementById('pr1v').textContent=r1.toFixed(1);
+  document.getElementById('pr2v').textContent=r2.toFixed(1);
+  document.getElementById('pDPv').textContent=dP;
+  const Rf1=1/Math.pow(r1,4), Rf2=1/Math.pow(r2,4);
+  const Cf1=Math.pow(r1,4),   Cf2=Math.pow(r2,4);
+  const Ceff=Cf1+Cf2, Reff=1/Ceff;
+  const Q1=dP/Rf1, Q2=dP/Rf2, Qtot=Q1+Q2, Qchk=dP/Reff;
+  const f=x=>x.toFixed(3);
+  document.getElementById('pRf1').textContent=f(Rf1);
+  document.getElementById('pRf2').textContent=f(Rf2);
+  document.getElementById('pCf1').textContent=f(Cf1);
+  document.getElementById('pCf2').textContent=f(Cf2);
+  document.getElementById('pCeff').textContent=f(Ceff);
+  document.getElementById('pReff').textContent=f(Reff);
+  document.getElementById('pQ1').textContent=f(Q1);
+  document.getElementById('pQ2').textContent=f(Q2);
+  document.getElementById('pQtot').textContent=f(Qtot);
+  document.getElementById('pQchk').textContent=f(Qchk);
+}
+
+upCond(); upPipe();
+</script>
 </body>
 </html>
