@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Harmonic Mean — Springs, Resistors & Rates</title>
+<style>
+  :root {
+    --navy:   #0d1b2a;
+    --ink:    #1a2e42;
+    --cream:  #f0ead6;
+    --warm:   #e8e4d9;
+    --copper: #c47b2e;
+    --sage:   #5c8f6a;
+    --rose:   #9e4b4b;
+    --mono:   'Courier New', Courier, monospace;
+    --sans:   Georgia, 'Times New Roman', serif;
+    --ui:     Arial, Helvetica, sans-serif;
+    --rule:   1px solid rgba(196,123,46,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 64px 40px 48px;
+    max-width: 860px;
+    margin: 0 auto;
+    border-bottom: var(--rule);
+  }
+  .eyebrow {
+    font-family: var(--ui);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: normal;
+    line-height: 1.15;
+    color: var(--cream);
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    color: var(--copper);
+    font-style: italic;
+  }
+  .hero p {
+    color: #b8c4ce;
+    max-width: 600px;
+    font-size: 1rem;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 40px;
+    border-bottom: var(--rule);
+  }
+  .section-label {
+    font-family: var(--ui);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: var(--cream);
+    margin-bottom: 18px;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--warm);
+    margin-bottom: 10px;
+    font-family: var(--ui);
+  }
+  p { margin-bottom: 14px; color: #c8d4dc; }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--cream); }
+
+  /* ── FORMULA BLOCKS ── */
+  .formula-box {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid var(--copper);
+    border-radius: 0 6px 6px 0;
+    padding: 18px 22px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1.9;
+    color: var(--cream);
+  }
+  .formula-box .label {
+    font-family: var(--ui);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 8px;
+    font-family: var(--ui);
+  }
+  .formula-big {
+    font-size: 1.25rem;
+    color: #f5e8c8;
+    display: block;
+    margin: 6px 0;
+  }
+  .formula-step {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    margin: 4px 0;
+  }
+  .step-num {
+    font-family: var(--ui);
+    font-size: 10px;
+    color: var(--copper);
+    letter-spacing: 0.1em;
+    min-width: 40px;
+    padding-top: 2px;
+  }
+
+  /* ── THE RECIPROCAL FLIP ANIMATION ── */
+  .flip-demo {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .flip-card {
+    perspective: 400px;
+    width: 90px;
+    height: 90px;
+    margin: 4px;
+  }
+  .flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  .flip-front {
+    background: var(--ink);
+    border: 1px solid rgba(196,123,46,0.4);
+    color: var(--cream);
+  }
+  .flip-back {
+    background: rgba(196,123,46,0.18);
+    border: 1px solid var(--copper);
+    color: var(--copper);
+    transform: rotateY(180deg);
+  }
+  .flip-sublabel {
+    font-family: var(--ui);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+  .flip-arrow {
+    color: rgba(196,123,46,0.5);
+    font-size: 1.4rem;
+    padding: 0 4px;
+    align-self: center;
+  }
+  .flip-result {
+    background: rgba(92,143,106,0.2);
+    border: 1px solid var(--sage);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    color: #a8d4b2;
+    align-self: center;
+    margin-left: 8px;
+  }
+  .flip-result .rlabel {
+    font-family: var(--ui);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sage);
+    margin-bottom: 4px;
+  }
+  .flip-btn {
+    background: transparent;
+    border: 1px solid rgba(196,123,46,0.5);
+    color: var(--copper);
+    font-family: var(--ui);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s, color 0.2s;
+    display: block;
+  }
+  .flip-btn:hover { background: rgba(196,123,46,0.15); }
+
+  /* ── WORKED EXAMPLE STEPS ── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 0 16px;
+    margin: 20px 0;
+  }
+  .sg-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(196,123,46,0.2);
+    border: 1px solid var(--copper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--ui);
+    font-size: 12px;
+    color: var(--copper);
+    font-weight: bold;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .sg-content {
+    padding-bottom: 20px;
+    border-bottom: 1px dashed rgba(196,123,46,0.15);
+    margin-bottom: 4px;
+  }
+  .sg-content:last-child { border-bottom: none; }
+  .sg-title { color: var(--cream); font-weight: bold; margin-bottom: 4px; font-family: var(--ui); font-size: 0.9rem; }
+  .sg-body { color: #b0bec8; font-size: 0.95rem; }
+  .mono { font-family: var(--mono); color: #f5e0b0; }
+
+  /* ── PHYSICS PANELS ── */
+  .physics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 28px;
+  }
+  @media (max-width: 620px) { .physics-grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .panel-spring { border-top: 3px solid var(--sage); }
+  .panel-resistor { border-top: 3px solid #7b9fca; }
+
+  .panel h3 { margin-bottom: 6px; }
+  .panel .tag {
+    font-family: var(--ui);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .panel-spring .tag { color: var(--sage); }
+  .panel-resistor .tag { color: #7b9fca; }
+
+  /* SVG diagram area */
+  .diagram { width: 100%; height: 100px; margin: 12px 0; }
+
+  /* sliders */
+  .slider-row {
+    margin: 12px 0;
+    font-family: var(--ui);
+    font-size: 13px;
+  }
+  .slider-row label {
+    display: flex;
+    justify-content: space-between;
+    color: #a8b8c4;
+    margin-bottom: 4px;
+  }
+  .slider-row label span { color: var(--cream); font-weight: bold; }
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--copper);
+    height: 4px;
+    cursor: pointer;
+  }
+
+  /* result display */
+  .result-display {
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-family: var(--mono);
+  }
+  .result-display .rd-label {
+    font-family: var(--ui);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 6px;
+  }
+  .result-display .rd-value {
+    font-size: 1.4rem;
+    color: #f5e8c8;
+  }
+  .result-display .rd-compare {
+    font-size: 0.82rem;
+    color: #8a9eac;
+    margin-top: 4px;
+    font-family: var(--ui);
+  }
+  .rd-working {
+    font-size: 0.8rem;
+    color: #6a7e8c;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  /* ── INEQUALITY STRIP ── */
+  .inequality-strip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-family: var(--mono);
+    text-align: center;
+    font-size: 1.1rem;
+    color: #f5e8c8;
+    letter-spacing: 0.05em;
+  }
+  .ineq-label {
+    font-family: var(--ui);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 10px;
+  }
+  .ineq-row { margin: 4px 0; }
+  .iq { color: #7b9fca; }
+  .ia { color: #e0c080; }
+  .ig { color: var(--sage); }
+  .ih { color: var(--copper); }
+
+  /* ── NOTICE BOX ── */
+  .notice {
+    background: rgba(92,143,106,0.12);
+    border: 1px solid rgba(92,143,106,0.35);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+    color: #a8d4b2;
+  }
+  .notice strong { color: #c8ecd0; }
+
+  /* ── FOOTER ── */
+  footer {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    font-family: var(--ui);
+    font-size: 11px;
+    color: #3a5060;
+    border-top: var(--rule);
+  }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-family: var(--ui); font-size: 0.9rem; }
+  th { color: var(--copper); font-weight: normal; letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(196,123,46,0.3); text-align: left; }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); color: #b8c8d4; vertical-align: top; }
+  td:first-child { color: var(--cream); font-weight: bold; }
+  td .mono { font-family: var(--mono); font-size: 0.85rem; color: #f0d89c; }
+
+  /* transition for result updates */
+  .flash { animation: flash 0.3s ease; }
+  @keyframes flash { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  @media (max-width: 500px) {
+    .hero, .section { padding: 36px 20px; }
+    .flip-card { width: 72px; height: 72px; }
+    footer { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <p class="eyebrow">Dwight School London &nbsp;·&nbsp; Natural &amp; Unnatural Sciences &nbsp;·&nbsp; MYP Year 10</p>
+  <h1>When averages<br><em>lie</em> about rates</h1>
+  <p>You already know the arithmetic mean. But for springs in parallel, resistors in parallel, and any quantity that adds as reciprocals, a different average — the <strong>harmonic mean</strong> — is the one that actually describes the physics.</p>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 1 — THE PROBLEM WITH THE ARITHMETIC MEAN
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 1</p>
+  <h2>The arithmetic mean you already know</h2>
+
+  <p>The <strong>arithmetic mean</strong> of a set of numbers is what you normally call "the average": add them up, divide by how many there are.</p>
+
+  <div class="formula-box">
+    <p class="label">Arithmetic mean of n numbers</p>
+    <span class="formula-big">A = (x₁ + x₂ + … + xₙ) / n</span>
+    <p style="font-family:var(--ui);font-size:0.85rem;color:#8a9eac;margin-top:8px;">Example: mean of 60 and 40 → A = (60 + 40) / 2 = 50</p>
+  </div>
+
+  <p>This works perfectly when you are averaging <em>additive</em> quantities — heights, temperatures, masses. But it <strong>fails</strong> when you are averaging <em>rates</em> or quantities whose reciprocals add together.</p>
+
+  <div class="notice">
+    <strong>The classic trap.</strong> A car drives 60 km at 60 km/h, then the same 60 km at 40 km/h. The arithmetic mean speed is 50 km/h — but the actual average speed for the whole journey is 48 km/h. At 50 km/h the journey would take 2.4 h; it actually takes 2.5 h. The arithmetic mean <em>overcounts</em> the faster leg.
+  </div>
+
+  <p>The true average speed is the <strong>harmonic mean</strong> of 60 and 40. The same idea appears everywhere rates or conductances add.</p>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 2 — RECIPROCAL FLIP: THE CORE IDEA
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 2</p>
+  <h2>The reciprocal flip — how the harmonic mean works</h2>
+
+  <p>The harmonic mean of a set of numbers follows three steps. Click the button to watch each number flip to its reciprocal, average, then flip back.</p>
+
+  <div class="flip-demo" id="flipDemo">
+    <div class="flip-card" id="fc1">
+      <div class="flip-inner">
+        <div class="flip-face flip-front"><span id="fv1">60</span><span class="flip-sublabel">value</span></div>
+        <div class="flip-face flip-back"><span id="fr1">1/60</span><span class="flip-sublabel">reciprocal</span></div>
+      </div>
+    </div>
+    <span class="flip-arrow">+</span>
+    <div class="flip-card" id="fc2">
+      <div class="flip-inner">
+        <div class="flip-face flip-front"><span id="fv2">40</span><span class="flip-sublabel">value</span></div>
+        <div class="flip-face flip-back"><span id="fr2">1/40</span><span class="flip-sublabel">reciprocal</span></div>
+      </div>
+    </div>
+    <span class="flip-arrow" id="flipOp" style="opacity:0">÷ 2</span>
+    <div class="flip-result" id="flipResult" style="opacity:0">
+      <div class="rlabel">Harmonic mean</div>
+      <div id="flipResultVal">48</div>
+    </div>
+  </div>
+
+  <button class="flip-btn" id="flipBtn" onclick="runFlip()">▶ Show the flip</button>
+
+  <div class="formula-box" style="margin-top:28px;">
+    <p class="label">Harmonic mean — general definition</p>
+    <span class="formula-big">H = n / (1/x₁ + 1/x₂ + … + 1/xₙ)</span>
+    <div class="formula-step" style="margin-top:10px;">
+      <span class="step-num">step 1</span>
+      <span>Take the reciprocal of every value: &nbsp; x → 1/x</span>
+    </div>
+    <div class="formula-step">
+      <span class="step-num">step 2</span>
+      <span>Find their arithmetic mean (add, divide by n)</span>
+    </div>
+    <div class="formula-step">
+      <span class="step-num">step 3</span>
+      <span>Take the reciprocal of <em>that</em> result to flip back</span>
+    </div>
+    <div style="margin-top:12px;font-family:var(--ui);font-size:0.85rem;color:#8a9eac;">
+      For two values: &nbsp; H = 2ab / (a + b) &nbsp;&nbsp; (simplification of the formula above)
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 3 — WORKED EXAMPLE
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 3</p>
+  <h2>A worked example: H of 60 and 40</h2>
+
+  <div class="steps-grid">
+    <div class="sg-num">1</div>
+    <div class="sg-content">
+      <div class="sg-title">Take reciprocals</div>
+      <div class="sg-body">1/60 ≈ 0.01667 &nbsp;&nbsp;&nbsp; 1/40 = 0.025</div>
+    </div>
+
+    <div class="sg-num">2</div>
+    <div class="sg-content">
+      <div class="sg-title">Add the reciprocals</div>
+      <div class="sg-body"><span class="mono">1/60 + 1/40 = 2/120 + 3/120 = 5/120 = 1/24</span></div>
+    </div>
+
+    <div class="sg-num">3</div>
+    <div class="sg-content">
+      <div class="sg-title">Find the arithmetic mean of the reciprocals (÷ 2 because n = 2)</div>
+      <div class="sg-body"><span class="mono">(1/24) / 2 = 1/48</span></div>
+    </div>
+
+    <div class="sg-num">4</div>
+    <div class="sg-content">
+      <div class="sg-title">Flip back — take the reciprocal</div>
+      <div class="sg-body"><span class="mono">H = 1 / (1/48) = <strong style="color:#f5e8c8;font-size:1.1rem;">48</strong></span></div>
+    </div>
+  </div>
+
+  <p style="margin-top:8px;">The arithmetic mean is 50. The harmonic mean is 48. The harmonic mean is always <em>less than or equal to</em> the arithmetic mean (equal only when all values are identical).</p>
+
+  <div class="notice">
+    <strong>Quick check for the car problem.</strong> At 60 km/h for 60 km: time = 1 h. At 40 km/h for 60 km: time = 1.5 h. Total: 120 km in 2.5 h → average speed = 120/2.5 = <strong>48 km/h</strong>. ✓ The harmonic mean is correct; the arithmetic mean (50) is not.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 4 — PHYSICS: WHY DOES THIS APPEAR?
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 4</p>
+  <h2>Why does the harmonic mean appear in physics?</h2>
+
+  <p>Whenever a physical law says that <strong>reciprocals add</strong>, the combined quantity is a harmonic mean (scaled by n). This happens in two situations you have studied:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Situation</th>
+        <th>Law (what adds)</th>
+        <th>Combined formula</th>
+        <th>Relation to H</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Resistors in <em>parallel</em></td>
+        <td>Conductances add: <span class="mono">G = 1/R</span></td>
+        <td><span class="mono">1/R = 1/R₁ + 1/R₂</span></td>
+        <td>R = H/2 &nbsp; (for two equal R)</td>
+      </tr>
+      <tr>
+        <td>Springs in <em>parallel</em></td>
+        <td>Stiffnesses add: <span class="mono">k_total = k₁ + k₂</span></td>
+        <td><span class="mono">k = k₁ + k₂</span></td>
+        <td>Arithmetic sum — see note below</td>
+      </tr>
+      <tr>
+        <td>Springs in <em>series</em></td>
+        <td>Compliances add: <span class="mono">1/k</span></td>
+        <td><span class="mono">1/k = 1/k₁ + 1/k₂</span></td>
+        <td>k = H/2 &nbsp; (for two equal k)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="notice">
+    <strong>Key pattern.</strong> When the reciprocal of the quantity adds — stiffness adds for <em>parallel</em> springs, conductance (= 1/R) adds for <em>parallel</em> resistors, compliance (= 1/k) adds for <em>series</em> springs — the combined value is always a harmonic-mean type expression. The harmonic mean is what you get when you put two <em>identical</em> such elements together.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 5 — INTERACTIVE CALCULATORS
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 5 — Interactive</p>
+  <h2>Adjust the sliders and watch the harmonic mean update</h2>
+
+  <div class="physics-grid">
+
+    <!-- SPRINGS IN SERIES -->
+    <div class="panel panel-spring">
+      <p class="tag">Springs in series</p>
+      <h3>Series spring system</h3>
+      <p style="font-size:0.88rem;color:#8a9eac;margin-bottom:10px;">Same force through each spring; extensions add. Compliances (1/k) add, so k_eff is a harmonic-mean expression.</p>
+
+      <!-- SVG: two springs in series -->
+      <svg class="diagram" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- wall -->
+        <rect x="2" y="20" width="8" height="50" fill="#3a5060"/>
+        <line x1="10" y1="20" x2="10" y2="70" stroke="#5c8f6a" stroke-width="1.5"/>
+        <!-- spring 1 (purple coil) -->
+        <path d="M10 45 Q20 30 30 45 Q40 60 50 45 Q60 30 70 45 Q80 60 90 45 Q100 30 110 45" stroke="#5c8f6a" stroke-width="2.2" stroke-linecap="round"/>
+        <text x="60" y="80" font-family="Arial" font-size="9" fill="#5c8f6a" text-anchor="middle">k₁</text>
+        <!-- spring 2 (gold coil) -->
+        <path d="M110 45 Q120 30 130 45 Q140 60 150 45 Q160 30 170 45 Q180 60 190 45 Q200 30 210 45" stroke="#c47b2e" stroke-width="2.2" stroke-linecap="round"/>
+        <text x="160" y="80" font-family="Arial" font-size="9" fill="#c47b2e" text-anchor="middle">k₂</text>
+        <!-- load block -->
+        <rect x="210" y="35" width="18" height="18" rx="2" fill="#2a4a5a" stroke="#5c8f6a" stroke-width="1"/>
+        <text x="255" y="49" font-family="Arial" font-size="10" fill="#8a9eac" text-anchor="end">F →</text>
+      </svg>
+
+      <div class="formula-box" style="margin:0 0 12px;font-size:0.85rem;">
+        <span style="color:#8a9eac;">1/k_eff = 1/k₁ + 1/k₂</span><br>
+        <span style="color:#f0d89c;">k_eff = (k₁ × k₂)/(k₁ + k₂) = H(k₁,k₂)/2</span>
+      </div>
+
+      <div class="slider-row">
+        <label>k₁ (N/m) <span id="sk1val">200</span></label>
+        <input type="range" id="sk1" min="50" max="600" value="200" step="10" oninput="updateSprings()">
+      </div>
+      <div class="slider-row">
+        <label>k₂ (N/m) <span id="sk2val">600</span></label>
+        <input type="range" id="sk2" min="50" max="600" value="600" step="10" oninput="updateSprings()">
+      </div>
+
+      <div class="result-display">
+        <div class="rd-label">Effective spring constant k_eff</div>
+        <div class="rd-value" id="skResult">150.0 N/m</div>
+        <div class="rd-working" id="skWorking"></div>
+        <div class="rd-compare" id="skCompare"></div>
+      </div>
+    </div>
+
+    <!-- RESISTORS IN PARALLEL -->
+    <div class="panel panel-resistor">
+      <p class="tag">Resistors in parallel</p>
+      <h3>Parallel resistor circuit</h3>
+      <p style="font-size:0.88rem;color:#8a9eac;margin-bottom:10px;">Same voltage across each; currents add. Conductances (1/R) add, so R_eff is a harmonic-mean expression.</p>
+
+      <!-- SVG: two resistors in parallel -->
+      <svg class="diagram" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- bus bars -->
+        <line x1="20" y1="20" x2="20" y2="70" stroke="#7b9fca" stroke-width="2"/>
+        <line x1="240" y1="20" x2="240" y2="70" stroke="#7b9fca" stroke-width="2"/>
+        <!-- top wire -->
+        <line x1="20" y1="20" x2="80" y2="20" stroke="#7b9fca" stroke-width="1.5"/>
+        <line x1="160" y1="20" x2="240" y2="20" stroke="#7b9fca" stroke-width="1.5"/>
+        <!-- bottom wire -->
+        <line x1="20" y1="70" x2="80" y2="70" stroke="#c47b2e" stroke-width="1.5"/>
+        <line x1="160" y1="70" x2="240" y2="70" stroke="#c47b2e" stroke-width="1.5"/>
+        <!-- R1 (top branch) -->
+        <rect x="80" y="14" width="80" height="14" rx="3" fill="#1e3545" stroke="#7b9fca" stroke-width="1.2"/>
+        <text x="120" y="24" font-family="Arial" font-size="9" fill="#7b9fca" text-anchor="middle">R₁</text>
+        <!-- R2 (bottom branch) -->
+        <rect x="80" y="63" width="80" height="14" rx="3" fill="#1e3545" stroke="#c47b2e" stroke-width="1.2"/>
+        <text x="120" y="73" font-family="Arial" font-size="9" fill="#c47b2e" text-anchor="middle">R₂</text>
+        <!-- V label -->
+        <text x="12" y="48" font-family="Arial" font-size="10" fill="#8a9eac" text-anchor="middle">V</text>
+      </svg>
+
+      <div class="formula-box" style="margin:0 0 12px;font-size:0.85rem;">
+        <span style="color:#8a9eac;">1/R_eff = 1/R₁ + 1/R₂</span><br>
+        <span style="color:#f0d89c;">R_eff = (R₁ × R₂)/(R₁ + R₂) = H(R₁,R₂)/2</span>
+      </div>
+
+      <div class="slider-row">
+        <label>R₁ (Ω) <span id="rr1val">10</span></label>
+        <input type="range" id="rr1" min="1" max="50" value="10" step="1" oninput="updateResistors()">
+      </div>
+      <div class="slider-row">
+        <label>R₂ (Ω) <span id="rr2val">20</span></label>
+        <input type="range" id="rr2" min="1" max="50" value="20" step="1" oninput="updateResistors()">
+      </div>
+
+      <div class="result-display">
+        <div class="rd-label">Effective resistance R_eff</div>
+        <div class="rd-value" id="rrResult">6.67 Ω</div>
+        <div class="rd-working" id="rrWorking"></div>
+        <div class="rd-compare" id="rrCompare"></div>
+      </div>
+    </div>
+
+  </div><!-- /physics-grid -->
+
+  <!-- PARALLEL SPRINGS (bonus) -->
+  <div style="margin-top:28px;">
+    <h3 style="margin-bottom:6px;">Bonus: springs in parallel (arithmetic sum)</h3>
+    <p style="font-size:0.9rem;color:#8a9eac;margin-bottom:14px;">Springs in parallel share the same extension; forces add. So stiffnesses simply add — this is the <em>arithmetic</em> case, not harmonic.</p>
+    <div class="formula-box" style="font-size:0.9rem;">
+      <span style="color:#8a9eac;">k_parallel = k₁ + k₂ &nbsp;&nbsp; (arithmetic — not harmonic)</span><br>
+      <span style="color:#f0d89c;font-size:0.85rem;">This is why a parallel system is stiffer than either spring alone, while a series system is softer.</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 6 — THE FOUR MEANS & INEQUALITY
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 6 — Going further</p>
+  <h2>Four kinds of average — and how they rank</h2>
+
+  <p>Mathematicians recognise four standard means of two positive numbers <em>a</em> and <em>b</em>. They always obey the same inequality:</p>
+
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Formula (for a, b)</th><th>Physics use</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:#7b9fca;">Quadratic (RMS)</td>
+        <td><span class="mono">Q = √((a²+b²)/2)</span></td>
+        <td>AC voltage/current; rms speed of gas molecules</td>
+      </tr>
+      <tr>
+        <td style="color:#e0c080;">Arithmetic</td>
+        <td><span class="mono">A = (a+b)/2</span></td>
+        <td>Average of additive quantities (mass, temperature)</td>
+      </tr>
+      <tr>
+        <td style="color:#5c8f6a;">Geometric</td>
+        <td><span class="mono">G = √(ab)</span></td>
+        <td>Compound growth; impedance of LC circuits</td>
+      </tr>
+      <tr>
+        <td style="color:#c47b2e;">Harmonic</td>
+        <td><span class="mono">H = 2ab/(a+b)</span></td>
+        <td>Parallel resistors; series springs; average speed</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="inequality-strip">
+    <div class="ineq-label">The means inequality — always true for a ≠ b</div>
+    <div class="ineq-row">
+      <span class="iq">Q (quadratic)</span>
+      &nbsp; ≥ &nbsp;
+      <span class="ia">A (arithmetic)</span>
+      &nbsp; ≥ &nbsp;
+      <span class="ig">G (geometric)</span>
+      &nbsp; ≥ &nbsp;
+      <span class="ih">H (harmonic)</span>
+    </div>
+    <div style="font-family:var(--ui);font-size:11px;color:#5a7080;margin-top:10px;">Equality holds everywhere only when a = b</div>
+  </div>
+
+  <p>You can see this with a = 60, b = 40:</p>
+
+  <div class="formula-box" style="font-size:0.9rem;">
+    <div class="formula-step"><span class="step-num" style="color:#7b9fca;">Q</span> <span>= √((3600+1600)/2) = √2600 ≈ <strong style="color:#7b9fca;">50.99</strong></span></div>
+    <div class="formula-step"><span class="step-num" style="color:#e0c080;">A</span> <span>= (60+40)/2 = <strong style="color:#e0c080;">50.00</strong></span></div>
+    <div class="formula-step"><span class="step-num" style="color:#5c8f6a;">G</span> <span>= √(60×40) = √2400 ≈ <strong style="color:#5c8f6a;">48.99</strong></span></div>
+    <div class="formula-step"><span class="step-num" style="color:#c47b2e;">H</span> <span>= 2×60×40/(60+40) = 4800/100 = <strong style="color:#c47b2e;">48.00</strong></span></div>
+  </div>
+
+  <div class="notice" style="margin-top:20px;">
+    <strong>The big picture.</strong> The harmonic mean is the <em>smallest</em> of the four means (for unequal values). It is always pulled towards the smaller value — which is physically correct for parallel circuits, where the smallest resistance dominates the combined resistance.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 7 — THREE WORKED EXAMPLES
+═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <p class="section-label">Section 7 — Practice</p>
+  <h2>Three worked calculations to try yourself</h2>
+
+  <div class="steps-grid">
+
+    <div class="sg-num">P1</div>
+    <div class="sg-content">
+      <div class="sg-title">Resistors R₁ = 10 Ω, R₂ = 20 Ω, R₃ = 30 Ω in parallel</div>
+      <div class="sg-body">
+        <span class="mono">1/R = 1/10 + 1/20 + 1/30 = 6/60 + 3/60 + 2/60 = 11/60</span><br>
+        <span class="mono">R_eff = 60/11 ≈ 5.45 Ω</span><br>
+        <span style="color:#6a7e8c;font-size:0.85rem;">Note: the harmonic mean of 10, 20, 30 would be 3/(11/60) = 180/11 ≈ 16.4 Ω, which is 3 × R_eff. So R_eff = H/3 for three resistors.</span>
+      </div>
+    </div>
+
+    <div class="sg-num">P2</div>
+    <div class="sg-content">
+      <div class="sg-title">Springs k₁ = 600 N/m and k₂ = 200 N/m in series</div>
+      <div class="sg-body">
+        <span class="mono">1/k_eff = 1/600 + 1/200 = 1/600 + 3/600 = 4/600</span><br>
+        <span class="mono">k_eff = 600/4 = 150 N/m</span><br>
+        <span style="color:#6a7e8c;font-size:0.85rem;">The softer spring (200 N/m) dominates — the series system is always softer than the weakest spring.</span>
+      </div>
+    </div>
+
+    <div class="sg-num">P3</div>
+    <div class="sg-content">
+      <div class="sg-title">Average speed over equal distances: 60 km/h then 40 km/h</div>
+      <div class="sg-body">
+        <span class="mono">H = 2×60×40 / (60+40) = 4800/100 = 48 km/h</span><br>
+        <span style="color:#6a7e8c;font-size:0.85rem;">Arithmetic mean (50 km/h) gives the wrong answer. The harmonic mean (48 km/h) gives the right total time.</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames &nbsp;|&nbsp;
+  Dwight School London · Department of Natural &amp; Unnatural Sciences
+</footer>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ── FLIP ANIMATION ── */
+let flipState = 0; // 0=original, 1=flipped, 2=result shown
+
+function runFlip() {
+  const btn = document.getElementById('flipBtn');
+  const fc1 = document.getElementById('fc1');
+  const fc2 = document.getElementById('fc2');
+  const op  = document.getElementById('flipOp');
+  const res = document.getElementById('flipResult');
+
+  if (flipState === 0) {
+    // flip to reciprocals
+    fc1.classList.add('flipped');
+    fc2.classList.add('flipped');
+    op.style.opacity = '0';
+    res.style.opacity = '0';
+    btn.textContent = '▶ Average the reciprocals, then flip back';
+    flipState = 1;
+  } else if (flipState === 1) {
+    // show ÷2 and result
+    op.style.opacity = '1';
+    op.textContent = '÷ 2, flip back →';
+    setTimeout(() => {
+      fc1.classList.remove('flipped');
+      fc2.classList.remove('flipped');
+      res.style.opacity = '1';
+    }, 400);
+    btn.textContent = '↺ Reset';
+    flipState = 2;
+  } else {
+    // reset
+    fc1.classList.remove('flipped');
+    fc2.classList.remove('flipped');
+    op.style.opacity = '0';
+    res.style.opacity = '0';
+    btn.textContent = '▶ Show the flip';
+    flipState = 0;
+  }
+}
+
+/* ── SPRINGS IN SERIES ── */
+function updateSprings() {
+  const k1 = parseFloat(document.getElementById('sk1').value);
+  const k2 = parseFloat(document.getElementById('sk2').value);
+  document.getElementById('sk1val').textContent = k1;
+  document.getElementById('sk2val').textContent = k2;
+
+  const keff = (k1 * k2) / (k1 + k2);
+  const harm = 2 * k1 * k2 / (k1 + k2);   // harmonic mean
+  const arith = (k1 + k2) / 2;
+
+  const el = document.getElementById('skResult');
+  el.textContent = keff.toFixed(1) + ' N/m';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+
+  document.getElementById('skWorking').innerHTML =
+    `1/k_eff = 1/${k1} + 1/${k2} = ${(1/k1).toFixed(4)} + ${(1/k2).toFixed(4)} = ${(1/keff).toFixed(4)}<br>` +
+    `k_eff = ${keff.toFixed(2)} N/m`;
+
+  document.getElementById('skCompare').innerHTML =
+    `Arithmetic mean of k₁,k₂ = ${arith.toFixed(1)} N/m &nbsp;|&nbsp; ` +
+    `Harmonic mean = ${harm.toFixed(2)} N/m &nbsp;|&nbsp; k_eff = H/2 ` +
+    `(${(harm/2).toFixed(2)} ✓)`;
+}
+
+/* ── RESISTORS IN PARALLEL ── */
+function updateResistors() {
+  const r1 = parseFloat(document.getElementById('rr1').value);
+  const r2 = parseFloat(document.getElementById('rr2').value);
+  document.getElementById('rr1val').textContent = r1;
+  document.getElementById('rr2val').textContent = r2;
+
+  const reff = (r1 * r2) / (r1 + r2);
+  const harm = 2 * r1 * r2 / (r1 + r2);
+  const arith = (r1 + r2) / 2;
+
+  const el = document.getElementById('rrResult');
+  el.textContent = reff.toFixed(2) + ' Ω';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+
+  document.getElementById('rrWorking').innerHTML =
+    `1/R_eff = 1/${r1} + 1/${r2} = ${(1/r1).toFixed(4)} + ${(1/r2).toFixed(4)} = ${(1/reff).toFixed(4)}<br>` +
+    `R_eff = ${reff.toFixed(2)} Ω`;
+
+  document.getElementById('rrCompare').innerHTML =
+    `Arithmetic mean = ${arith.toFixed(1)} Ω &nbsp;|&nbsp; ` +
+    `Harmonic mean = ${harm.toFixed(2)} Ω &nbsp;|&nbsp; R_eff = H/2 ` +
+    `(${(harm/2).toFixed(2)} ✓)`;
+}
+
+// initialise on load
+updateSprings();
+updateResistors();
+</script>
+</body>
+</html>
