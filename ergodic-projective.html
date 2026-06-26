@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergodic Trails and Projective Triples</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+:root {
+  --bg:     #0d0d0f;
+  --bg2:    #111114;
+  --bg3:    #16161a;
+  --border: #2a2a32;
+  --muted:  #3a3a48;
+  --dim:    #6b6b80;
+  --text:   #c8c8d8;
+  --hi:     #e8e8f0;
+  --accent: #c4965a;
+  --gold:   #d4a853;
+  --blue:   #7a9cbf;
+  --violet: #9b7ab8;
+  --green:  #6baa8a;
+  --serif:  'Cormorant Garamond', Georgia, serif;
+  --mono:   'IBM Plex Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:19px;line-height:1.75;font-weight:300}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4}
+.page{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:0 2rem 7rem}
+
+/* HEADER */
+header{padding:5.5rem 0 3rem;border-bottom:1px solid var(--border);margin-bottom:3.5rem}
+.kicker{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:1.4rem}
+h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:300;line-height:1.1;color:var(--hi);letter-spacing:-0.01em;margin-bottom:1.2rem}
+h1 em{font-style:italic;color:var(--accent)}
+.subtitle{font-family:var(--mono);font-size:0.7rem;color:var(--dim);line-height:1.8;max-width:540px}
+
+/* PROSE */
+p{margin-bottom:1.3rem}
+p:last-child{margin-bottom:0}
+strong{font-weight:500;color:var(--hi)}
+
+/* MATH BLOCK */
+.mb{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.2rem 1.6rem;margin:1.8rem 0;border-radius:2px;overflow-x:auto}
+.mb .katex-display{margin:0}
+
+/* SECTION HEADER */
+.sh{margin:3.5rem 0 1.4rem;display:flex;align-items:baseline;gap:1rem}
+.sh-num{font-family:var(--mono);font-size:0.58rem;color:var(--accent);letter-spacing:0.15em}
+h2{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:400;color:var(--hi);line-height:1.2}
+
+/* DIAGRAM PANEL */
+.diagram-panel{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:1.4rem;margin:2rem 0}
+
+.panel-label{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem}
+
+/* CONTROLS */
+.ctrl-bar{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.ctrl-grp{display:flex;flex-direction:column;gap:0.3rem}
+.ctrl-lbl{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim)}
+
+.slider-wrap{display:flex;align-items:center;gap:0.6rem}
+input[type=range]{
+  -webkit-appearance:none;width:180px;height:3px;
+  background:var(--muted);border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+  background:var(--accent);cursor:pointer;
+}
+.slider-val{font-family:var(--mono);font-size:0.72rem;color:var(--accent);min-width:2.8rem}
+
+.icon-btn{
+  background:none;border:1px solid var(--muted);color:var(--dim);
+  font-family:var(--mono);font-size:0.7rem;padding:0.35rem 0.8rem;
+  border-radius:2px;cursor:pointer;transition:all 0.15s;
+}
+.icon-btn:hover,.icon-btn.active{border-color:var(--accent);color:var(--accent)}
+.icon-btn.running{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+
+.tog{display:flex;align-items:center;gap:0.4rem;font-family:var(--mono);font-size:0.62rem;color:var(--dim);cursor:pointer;user-select:none}
+.tog input{accent-color:var(--accent);cursor:pointer}
+
+/* CANVASES */
+.canvas-row{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
+.canvas-col{display:flex;flex-direction:column;align-items:center;gap:0.5rem;flex:1;min-width:240px}
+.canvas-title{font-family:var(--mono);font-size:0.6rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;text-align:center}
+canvas{display:block;border-radius:2px}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:0.4rem 1rem;margin-top:1rem}
+.leg{display:flex;align-items:center;gap:0.35rem;font-family:var(--mono);font-size:0.6rem;color:var(--dim)}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.leg-line{width:18px;height:2px;flex-shrink:0;border-radius:1px}
+
+/* TOOLTIP */
+#gTip{position:fixed;pointer-events:none;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:0.4rem 0.75rem;font-family:var(--mono);font-size:0.67rem;color:var(--hi);line-height:1.65;z-index:200;opacity:0;transition:opacity 0.12s;max-width:220px}
+#gTip.vis{opacity:1}
+#gTip .gt{font-size:0.98rem;font-family:var(--serif);color:var(--accent);display:block;margin-bottom:0.1rem}
+#gTip .gd{color:var(--dim);font-size:0.6rem}
+
+/* PULL */
+.pull{border-left:2px solid var(--accent);padding:0.5rem 0 0.5rem 1.4rem;margin:2rem 0;font-size:1.08rem;font-style:italic;color:var(--hi);line-height:1.5}
+
+/* FOOTER */
+footer{margin-top:6rem;padding-top:2rem;border-top:1px solid var(--border);font-family:var(--mono);font-size:0.58rem;color:var(--dim);letter-spacing:0.1em;text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="kicker">Projective Triples &nbsp;·&nbsp; Ergodic Theory &nbsp;·&nbsp; Farey Sequence</div>
+  <h1>Dense Trails on <em>Projective Space</em></h1>
+  <p class="subtitle">
+    An irrational rotation fills the circle ergodically.<br>
+    Rational points on two conics, Pythagorean and Eisenstein, are dense in the same space.<br>
+    This page puts both on screen simultaneously.
+  </p>
+</header>
+
+<!-- §1 THE ERGODIC TRAIL -->
+<section>
+  <div class="sh"><span class="sh-num">§ 1</span><h2>The irrational rotation</h2></div>
+
+  <p>
+    Fix $\alpha \notin \mathbb{Q}$ and define the sequence $x_0 = 0$, $x_{n+1} = x_n + \alpha \pmod{1}$.
+    By Weyl's equidistribution theorem, the points $\{x_n\}$ are dense and equidistributed in $[0,1)$
+    for every irrational $\alpha$. Map to the circle by
+  </p>
+
+  <div class="mb">$$P_n = \bigl(\cos 2\pi x_n,\; \sin 2\pi x_n\bigr) = \bigl(\cos 2\pi n\alpha,\; \sin 2\pi n\alpha\bigr).$$</div>
+
+  <p>
+    The trail $\{P_n\}$ is an ergodic orbit of the circle rotation $R_\alpha : \theta \mapsto \theta + 2\pi\alpha$.
+    The choice $\alpha = \frac{\sqrt{5}-1}{2}$ is canonical: the golden ratio conjugate has continued fraction
+    $[0; 1, 1, 1, \ldots]$, the slowest-converging continued fraction possible, so the Farey approximations
+    converge most slowly and the orbit fills the circle most uniformly before any near-repetition.
+  </p>
+
+  <p>
+    The best rational approximations to $\alpha$ are the Farey fractions $F_n/F_{n+1}$ where $F_n$ is the
+    $n$-th Fibonacci number. Near-repetitions in the orbit occur precisely when $n\alpha \approx k$ for
+    some integer $k$, i.e. when $n/k \approx 1/\alpha$ is a good rational approximant.
+  </p>
+</section>
+
+<!-- §2 THE TWO CONICS -->
+<section>
+  <div class="sh"><span class="sh-num">§ 2</span><h2>Two families of rational points</h2></div>
+
+  <p>
+    Two distinct arithmetic families provide rational points that are dense in their respective conics,
+    both visible as projective triples $[a:b:c]$.
+  </p>
+
+  <p>
+    <strong>Pythagorean triples.</strong> The conic $a^2 + b^2 = c^2$ in $\mathbb{P}^2$.
+    Stereographic projection from $(-1, 0)$ on the unit circle: a line of slope $t = p/q$
+    through $(-1, 0)$ meets the circle at
+  </p>
+
+  <div class="mb">$$\Bigl(\tfrac{1-t^2}{1+t^2},\;\tfrac{2t}{1+t^2}\Bigr) \;\longleftrightarrow\; [p^2-q^2 : 2pq : p^2+q^2].$$</div>
+
+  <p>
+    <strong>Eisenstein triples.</strong> The norm form on $\mathbb{Z}[\omega]$, where $\omega = e^{2\pi i/3}$,
+    is $N(a + b\omega) = a^2 - ab + b^2$. The conic $a^2 - ab + b^2 = c^2$ is the Eisenstein analogue.
+    In the $(a, b)$ plane with $c = 1$, this is the ellipse
+  </p>
+
+  <div class="mb">$$a^2 - ab + b^2 = 1,$$</div>
+
+  <p>
+    whose quadratic form has matrix $M = \bigl(\begin{smallmatrix}1 & -\frac{1}{2} \\ -\frac{1}{2} & 1\end{smallmatrix}\bigr)$
+    with eigenvalues $\frac{1}{2}$ and $\frac{3}{2}$: semi-axes $\sqrt{2}$ and $\sqrt{2/3}$, tilted at $45°$.
+    The lattice $\mathbb{Z}[\omega]$ is honest hexagonal, and the ellipse reflects the non-orthogonality
+    of the basis $\{1, \omega\}$.
+    Stereographic from the rational point $(1, 0)$ with slope $t = p/q$ gives
+  </p>
+
+  <div class="mb">$$a(t) = \frac{t^2 - t + 1 - t(1-t)}{t^2 - t + 1}\cdot 1, \quad b(t) = \frac{2t - 1}{t^2 - t + 1},$$</div>
+
+  <p>
+    yielding the Eisenstein triple $[a:b:c]$ for each rational $t$.
+  </p>
+
+  <div class="pull">
+    The ergodic trail is irrational, continuous, and fills everything. The rational points are
+    countable, discrete, and arithmetically structured. Both are dense in the same space.
+    That the two kinds of density coexist is one of the deeper facts the diagram shows.
+  </div>
+</section>
+
+<!-- §3 INTERACTIVE -->
+<section>
+  <div class="sh"><span class="sh-num">§ 3</span><h2>Interactive diagram</h2></div>
+
+  <div class="diagram-panel">
+    <div class="panel-label">Ergodic orbit and rational points on two conics</div>
+
+    <div class="ctrl-bar">
+      <div class="ctrl-grp">
+        <div class="ctrl-lbl">Trail points N</div>
+        <div class="slider-wrap">
+          <input type="range" id="sN" min="1" max="800" value="120" step="1">
+          <span class="slider-val" id="sNval">120</span>
+        </div>
+      </div>
+      <div class="ctrl-grp">
+        <div class="ctrl-lbl">Animate</div>
+        <div style="display:flex;gap:0.4rem">
+          <button class="icon-btn" id="btnPlay">&#9654; Play</button>
+          <button class="icon-btn" id="btnReset">&#10227; Reset</button>
+        </div>
+      </div>
+      <div class="ctrl-grp">
+        <div class="ctrl-lbl">Show</div>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+          <label class="tog"><input type="checkbox" id="togPyth" checked> Pythagorean</label>
+          <label class="tog"><input type="checkbox" id="togEis" checked> Eisenstein</label>
+          <label class="tog"><input type="checkbox" id="togFade" checked> Trail fade</label>
+          <label class="tog"><input type="checkbox" id="togLabels" checked> Labels</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-bar" style="margin-top:0">
+      <div class="ctrl-grp">
+        <div class="ctrl-lbl">Alpha</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="icon-btn active" id="aGold" onclick="setAlpha('gold',this)">&#981; golden</button>
+          <button class="icon-btn" id="aSq2" onclick="setAlpha('sq2',this)">&#8730;2&#8722;1</button>
+          <button class="icon-btn" id="aSq3" onclick="setAlpha('sq3',this)">(&#8730;3&#8722;1)/2</button>
+        </div>
+      </div>
+      <div class="ctrl-grp">
+        <div class="ctrl-lbl">Farey max level</div>
+        <div class="slider-wrap">
+          <input type="range" id="sFarey" min="2" max="10" value="6" step="1">
+          <span class="slider-val" id="sFareyVal">6</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-row">
+      <div class="canvas-col">
+        <div class="canvas-title">Unit circle &nbsp;·&nbsp; Pythagorean $[p^2{-}q^2 : 2pq : p^2{+}q^2]$</div>
+        <canvas id="cCircle"></canvas>
+      </div>
+      <div class="canvas-col">
+        <div class="canvas-title">Eisenstein ellipse &nbsp;·&nbsp; $a^2 - ab + b^2 = 1$</div>
+        <canvas id="cEis"></canvas>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="leg"><div class="leg-line" style="background:rgba(196,150,90,0.8)"></div>Ergodic trail $P_n$</div>
+      <div class="leg"><div class="leg-dot" style="background:#e8e8f0"></div>Trail head $P_n$</div>
+      <div class="leg"><div class="leg-dot" style="background:#e8a84a"></div>Level 1&ndash;2</div>
+      <div class="leg"><div class="leg-dot" style="background:#82b8e0"></div>Level 3&ndash;4</div>
+      <div class="leg"><div class="leg-dot" style="background:#b890d8"></div>Level 5&ndash;6</div>
+      <div class="leg"><div class="leg-dot" style="background:#72cc9a"></div>Level 7+</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- .page -->
+<div id="gTip"></div>
+
+<footer>Constructed by Silicon &nbsp;·&nbsp; Anthropic Claude &nbsp;&mdash;&nbsp; Architect Carbon &nbsp;·&nbsp; LeeMcCullochJames</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const PHI   = (Math.sqrt(5) - 1) / 2;          // golden ratio conjugate
+const SQ2   = Math.sqrt(2) - 1;
+const SQ3   = (Math.sqrt(3) - 1) / 2;
+const ALPHAS = { gold: PHI, sq2: SQ2, sq3: SQ3 };
+const PAL   = ['#e8a84a','#e8a84a','#82b8e0','#82b8e0','#b890d8','#b890d8','#72cc9a','#72cc9a','#e08888','#e08888'];
+const lcol  = lv => PAL[Math.min(lv-1, PAL.length-1)];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let alpha      = PHI;
+let N          = 120;
+let fareyMax   = 6;
+let animN      = 0;
+let animating  = false;
+let animReq    = null;
+let showPyth   = true;
+let showEis    = true;
+let showFade   = true;
+let showLabels = true;
+
+// ═══════════════════════════════════════════════════════════
+// FAREY SEQUENCE
+// ═══════════════════════════════════════════════════════════
+function farey(N) {
+  let a=0,b=1,c=1,d=N;
+  const r=[{p:0,q:1}];
+  while(c<=N){
+    const k=Math.floor((N+b)/d);
+    const ta=c,tb=d;
+    c=k*c-a; d=k*d-b; a=ta; b=tb;
+    r.push({p:a,q:b});
+  }
+  return r.map(f=>({...f,level:f.q}));
+}
+
+// ═══════════════════════════════════════════════════════════
+// PYTHAGOREAN POINTS on unit circle
+// Stereographic from (-1,0) with slope t=p/q
+// ═══════════════════════════════════════════════════════════
+function pythPoints(maxN) {
+  const seq = farey(maxN);
+  const pts = [];
+  for(const {p,q,level} of seq) {
+    if(p===0&&q===1){pts.push({x:-1,y:0,label:'0/1',level,triple:null});continue;}
+    if(p===1&&q===1){pts.push({x:1,y:0,label:'1/1',level,triple:null});continue;}
+    const t = p/q;
+    const x = (1-t*t)/(1+t*t);
+    const y = 2*t/(1+t*t);
+    const a = Math.abs(p*p-q*q), b2 = 2*p*q, c2 = p*p+q*q;
+    pts.push({x,y,label:`${p}/${q}`,level,triple:`[${a}:${b2}:${c2}]`});
+  }
+  return pts;
+}
+
+// ═══════════════════════════════════════════════════════════
+// EISENSTEIN POINTS on ellipse a²-ab+b²=1
+// Stereographic from (1,0) with slope t=p/q
+// Line: a = 1 + s, b = t*s  through (1,0)
+// Sub into conic: (1+s)²-(1+s)(ts)+(ts)²=1
+// 1+2s+s²-ts-ts²+t²s²=1
+// s(2-t + s(1-t+t²))=0
+// s=0 (base pt) or s = -(2-t)/(1-t+t²)
+// ═══════════════════════════════════════════════════════════
+function eisPoints(maxN) {
+  const seq = farey(maxN);
+  const pts = [];
+  for(const {p,q,level} of seq) {
+    const t = (q===0) ? Infinity : p/q;
+    let a,b;
+    if(p===0){a=1;b=0;}            // t=0: base point
+    else if(p===q){a=0;b=1;}       // t=1: other rational pt
+    else {
+      const s = -(2-t)/(1-t+t*t);
+      a = 1+s;
+      b = t*s;
+    }
+    // verification: a²-ab+b² should be 1
+    const check = a*a - a*b + b*b;
+    if(Math.abs(check-1)>0.01) continue; // skip degenerate
+    pts.push({a,b,label:`${p}/${q}`,level});
+  }
+  return pts;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════════════════
+const cCircle = document.getElementById('cCircle');
+const cEis    = document.getElementById('cEis');
+const ctxC    = cCircle.getContext('2d');
+const ctxE    = cEis.getContext('2d');
+const tip     = document.getElementById('gTip');
+
+function getCanvasSize() {
+  const w = Math.min(window.innerWidth - 80, 760);
+  return Math.max(220, Math.floor((w - 20) / 2));
+}
+
+function resizeCanvases() {
+  const S = getCanvasSize();
+  cCircle.width  = S; cCircle.height = S;
+  cEis.width     = S; cEis.height    = S;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAW: CIRCLE PANEL
+// ═══════════════════════════════════════════════════════════
+function drawCircle() {
+  const W = cCircle.width, H = cCircle.height;
+  const cx = W/2, cy = H/2;
+  const R  = W*0.38;
+  const ctx = ctxC;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0f0f14'; ctx.fillRect(0,0,W,H);
+
+  // Axes
+  ctx.save();
+  ctx.strokeStyle='#1e1e2a'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(cx-R-10,cy); ctx.lineTo(cx+R+10,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-R-10); ctx.lineTo(cx,cy+R+10); ctx.stroke();
+  ctx.restore();
+
+  // Unit circle outline
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='#3a3a54'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.restore();
+
+  // Ergodic trail
+  const nDraw = animating ? animN : N;
+  if(nDraw > 0) {
+    ctx.save();
+    for(let i=0; i<nDraw; i++) {
+      const th = 2*Math.PI*i*alpha;
+      const x  = cx + R*Math.cos(th);
+      const y  = cy - R*Math.sin(th);
+      const age = nDraw - i;
+      const opa = showFade ? Math.max(0.04, 1 - age/(nDraw*1.1)) : 0.55;
+      ctx.beginPath(); ctx.arc(x,y,1.4,0,Math.PI*2);
+      ctx.fillStyle = `rgba(196,150,90,${opa})`;
+      ctx.fill();
+    }
+    // Head
+    const thH = 2*Math.PI*(nDraw-1)*alpha;
+    const xH  = cx + R*Math.cos(thH);
+    const yH  = cy - R*Math.sin(thH);
+    ctx.beginPath(); ctx.arc(xH,yH,5,0,Math.PI*2);
+    ctx.fillStyle='#e8e8f0'; ctx.fill();
+    ctx.restore();
+  }
+
+  // Pythagorean rational points
+  if(showPyth) {
+    const pts = pythPoints(fareyMax);
+    ctx.save();
+    for(const pt of pts) {
+      const px = cx + R*pt.x;
+      const py = cy - R*pt.y;
+      const r  = pt.level<=2 ? 4.5 : pt.level<=4 ? 3.5 : 2.5;
+      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fillStyle = lcol(pt.level);
+      ctx.fill();
+      if(showLabels && pt.level<=Math.min(fareyMax,4)) {
+        const angle = Math.atan2(-pt.y, pt.x);
+        const lx = cx + (R+16)*Math.cos(angle);
+        const ly = cy - (R+16)*Math.sin(angle);
+        ctx.font=`300 10px 'Cormorant Garamond',serif`;
+        ctx.fillStyle=lcol(pt.level)+'cc';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.strokeStyle='#0f0f14'; ctx.lineWidth=3;
+        ctx.strokeText(pt.label,lx,ly); ctx.fillText(pt.label,lx,ly);
+      }
+    }
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAW: EISENSTEIN ELLIPSE PANEL
+// Ellipse a²-ab+b²=1, rendered in (a,b) plane
+// Parametric: a = cos(t) + (1/2)sin(t)/k, b = sin(t)/k ... no, use true parametric.
+// True parametric of a²-ab+b²=1:
+// Let u=a-b/2, v=b*√3/2. Then u²+v²=1.
+// So a = cos(s) + sin(s)/√3, b = 2sin(s)/√3
+// ═══════════════════════════════════════════════════════════
+function drawEisenstein() {
+  const W = cEis.width, H = cEis.height;
+  const cx = W/2, cy = H/2;
+  // Scale: ellipse semi-axes sqrt(2) and sqrt(2/3) ~ 1.414 and 0.816
+  // Use scale so that sqrt(2) maps to ~38% of panel
+  const SC = W*0.38 / Math.sqrt(2);
+  const ctx = ctxE;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0f0f14'; ctx.fillRect(0,0,W,H);
+
+  // Axes (in (a,b) plane)
+  ctx.save();
+  ctx.strokeStyle='#1e1e2a'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+  // axis labels
+  ctx.font=`300 9px 'IBM Plex Mono',monospace`;
+  ctx.fillStyle='#3a3a54'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText('a',cx+SC*1.6,cy+4);
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('b',cx+4,cy-SC*1.6);
+  ctx.restore();
+
+  // Draw the ellipse a²-ab+b²=1 parametrically
+  // Change of variables: u=a-b/2, v=(√3/2)b => u²+v²=1
+  // So a = u + v/√3, b = 2v/√3
+  ctx.save();
+  ctx.beginPath();
+  const INV3 = 1/Math.sqrt(3);
+  for(let i=0; i<=360; i++) {
+    const s  = i*Math.PI/180;
+    const u  = Math.cos(s), v = Math.sin(s);
+    const a  = u + v*INV3;
+    const b  = 2*v*INV3;
+    const px = cx + a*SC;
+    const py = cy - b*SC;
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle='#3a3a54'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.restore();
+
+  // Ergodic trail mapped to Eisenstein ellipse
+  // Map angle theta on unit circle -> point on ellipse via same parametric:
+  // angle s on ellipse corresponds to theta on unit circle
+  // The rotation group of the ellipse is the same as circle (isomorphic),
+  // so we use the same irrational rotation but in the ellipse parameter.
+  const nDraw = animating ? animN : N;
+  if(nDraw > 0) {
+    ctx.save();
+    for(let i=0; i<nDraw; i++) {
+      const s   = 2*Math.PI*i*alpha;
+      const u   = Math.cos(s), v = Math.sin(s);
+      const a   = u + v*INV3;
+      const b   = 2*v*INV3;
+      const px  = cx + a*SC;
+      const py  = cy - b*SC;
+      const age = nDraw - i;
+      const opa = showFade ? Math.max(0.04, 1 - age/(nDraw*1.1)) : 0.55;
+      ctx.beginPath(); ctx.arc(px,py,1.4,0,Math.PI*2);
+      ctx.fillStyle = `rgba(196,150,90,${opa})`;
+      ctx.fill();
+    }
+    // Head
+    const sH  = 2*Math.PI*(nDraw-1)*alpha;
+    const uH  = Math.cos(sH), vH = Math.sin(sH);
+    const aH  = uH + vH*INV3;
+    const bH  = 2*vH*INV3;
+    const pxH = cx + aH*SC;
+    const pyH = cy - bH*SC;
+    ctx.beginPath(); ctx.arc(pxH,pyH,5,0,Math.PI*2);
+    ctx.fillStyle='#e8e8f0'; ctx.fill();
+    ctx.restore();
+  }
+
+  // Eisenstein rational points
+  if(showEis) {
+    const pts = eisPoints(fareyMax);
+    ctx.save();
+    for(const pt of pts) {
+      const px = cx + pt.a*SC;
+      const py = cy - pt.b*SC;
+      const r  = pt.level<=2 ? 4.5 : pt.level<=4 ? 3.5 : 2.5;
+      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fillStyle = lcol(pt.level);
+      ctx.fill();
+      if(showLabels && pt.level<=Math.min(fareyMax,4)) {
+        const angle = Math.atan2(-pt.b, pt.a);
+        const lx = cx + (pt.a*SC + 14*Math.cos(angle));
+        const ly = cy - (pt.b*SC + 14*Math.sin(angle));
+        ctx.font=`300 10px 'Cormorant Garamond',serif`;
+        ctx.fillStyle=lcol(pt.level)+'cc';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.strokeStyle='#0f0f14'; ctx.lineWidth=3;
+        ctx.strokeText(pt.label,lx,ly); ctx.fillText(pt.label,lx,ly);
+      }
+    }
+    ctx.restore();
+  }
+
+  // Draw lattice skeleton (faint hexagonal suggestion)
+  ctx.save();
+  ctx.strokeStyle='#1e1e26'; ctx.lineWidth=0.5;
+  for(let i=-3;i<=3;i++) for(let j=-3;j<=3;j++) {
+    const a=i, b=j;
+    const px=cx+a*SC, py=cy-b*SC;
+    if(i<3){ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(cx+(i+1)*SC,cy-j*SC);ctx.stroke();}
+    if(j<3){ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(cx+i*SC,cy-(j+1)*SC);ctx.stroke();}
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAW BOTH
+// ═══════════════════════════════════════════════════════════
+function drawAll() { drawCircle(); drawEisenstein(); }
+
+// ═══════════════════════════════════════════════════════════
+// ANIMATION
+// ═══════════════════════════════════════════════════════════
+let lastTime = 0;
+const SPEED  = 3; // points per frame
+
+function animate(ts) {
+  if(!animating) return;
+  if(ts - lastTime > 16) {
+    animN = Math.min(animN + SPEED, N);
+    drawAll();
+    lastTime = ts;
+    if(animN >= N) {
+      animating = false;
+      document.getElementById('btnPlay').textContent = '⏹ Done';
+      document.getElementById('btnPlay').classList.remove('running');
+      return;
+    }
+  }
+  animReq = requestAnimationFrame(animate);
+}
+
+function startAnim() {
+  if(animating) {
+    animating = false;
+    cancelAnimationFrame(animReq);
+    document.getElementById('btnPlay').textContent = '▶ Play';
+    document.getElementById('btnPlay').classList.remove('running');
+    return;
+  }
+  if(animN >= N) animN = 0;
+  animating = true;
+  document.getElementById('btnPlay').textContent = '⏸ Pause';
+  document.getElementById('btnPlay').classList.add('running');
+  animReq = requestAnimationFrame(animate);
+}
+
+function resetAnim() {
+  animating = false;
+  cancelAnimationFrame(animReq);
+  animN = 0;
+  document.getElementById('btnPlay').textContent = '▶ Play';
+  document.getElementById('btnPlay').classList.remove('running');
+  drawAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOVER TOOLTIPS
+// ═══════════════════════════════════════════════════════════
+function addHover(canvas, getPts, toCanvas) {
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const pts = getPts();
+    let best=null, bestD=18;
+    for(const pt of pts) {
+      const {x,y} = toCanvas(pt, canvas.width, canvas.height);
+      const d = Math.hypot(mx-x, my-y);
+      if(d<bestD){bestD=d;best=pt;}
+    }
+    if(best) {
+      let html = `<span class="gt">${best.label}</span><span class="gd">Level ${best.level}</span>`;
+      if(best.triple) html+=`<br><span class="gd">${best.triple}</span>`;
+      if(best.a!==undefined) html+=`<br><span class="gd">a=${best.a.toFixed(4)}, b=${best.b.toFixed(4)}</span>`;
+      tip.innerHTML=html;
+      tip.classList.add('vis');
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top=(e.clientY-8)+'px';
+    } else {
+      tip.classList.remove('vis');
+    }
+  });
+  canvas.addEventListener('mouseleave',()=>tip.classList.remove('vis'));
+}
+
+addHover(cCircle,
+  ()=>pythPoints(fareyMax),
+  (pt,W,H)=>({x:W/2+W*0.38*pt.x, y:H/2-H*0.38*pt.y})
+);
+
+addHover(cEis,
+  ()=>eisPoints(fareyMax),
+  (pt,W,H)=>{
+    const SC=W*0.38/Math.sqrt(2);
+    return {x:W/2+pt.a*SC, y:H/2-pt.b*SC};
+  }
+);
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLS WIRING
+// ═══════════════════════════════════════════════════════════
+const sNEl = document.getElementById('sN');
+sNEl.addEventListener('input', e => {
+  N = parseInt(e.target.value);
+  document.getElementById('sNval').textContent = N;
+  if(!animating){ animN=N; drawAll(); }
+});
+
+document.getElementById('sFarey').addEventListener('input', e => {
+  fareyMax = parseInt(e.target.value);
+  document.getElementById('sFareyVal').textContent = fareyMax;
+  drawAll();
+});
+
+document.getElementById('btnPlay').onclick  = startAnim;
+document.getElementById('btnReset').onclick = resetAnim;
+
+document.getElementById('togPyth').onchange   = e=>{showPyth=e.target.checked;drawAll();};
+document.getElementById('togEis').onchange    = e=>{showEis=e.target.checked;drawAll();};
+document.getElementById('togFade').onchange   = e=>{showFade=e.target.checked;drawAll();};
+document.getElementById('togLabels').onchange = e=>{showLabels=e.target.checked;drawAll();};
+
+function setAlpha(key,btn){
+  alpha=ALPHAS[key];
+  document.querySelectorAll('[id^=a]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetAnim();
+}
+
+window.addEventListener('resize',()=>{ resizeCanvases(); drawAll(); });
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+resizeCanvases();
+animN = N;
+drawAll();
+</script>
+</body>
+</html>
