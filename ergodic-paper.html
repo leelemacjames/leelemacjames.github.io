@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filling the Circle: An Introduction to Ergodicity and Dense Sets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
+
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #0d0d0f;
+  --bg2:       #111114;
+  --bg3:       #15151a;
+  --border:    #252530;
+  --muted:     #353545;
+  --dim:       #5a5a72;
+  --text:      #bdbdd0;
+  --hi:        #e4e4f0;
+  --accent:    #c4965a;
+  --gold:      #d4a853;
+  --blue:      #7a9cbf;
+  --violet:    #9b7ab8;
+  --green:     #6baa8a;
+  --red:       #bf7a7a;
+
+  --serif:     'Cormorant Garamond', Georgia, serif;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --mono:      'IBM Plex Mono', monospace;
+
+  --col-w:     680px;
+  --wide-w:    820px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 18px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 1.8;
+  counter-reset: section theorem;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.35;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT SPINE
+═══════════════════════════════════════════ */
+.page {
+  position: relative; z-index: 1;
+  max-width: var(--wide-w);
+  margin: 0 auto;
+  padding: 0 2rem 8rem;
+}
+
+.narrow { max-width: var(--col-w); margin-left: auto; margin-right: auto; }
+
+/* ═══════════════════════════════════════════
+   MASTHEAD
+═══════════════════════════════════════════ */
+.masthead {
+  border-bottom: 1px solid var(--border);
+  padding: 5rem 0 3.5rem;
+  margin-bottom: 4rem;
+}
+
+.journal-line {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.journal-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.paper-title {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 300;
+  line-height: 1.08;
+  color: var(--hi);
+  letter-spacing: -0.015em;
+  margin-bottom: 1.2rem;
+  max-width: 640px;
+}
+
+.paper-title em { font-style: italic; color: var(--accent); }
+
+.paper-subtitle {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--dim);
+  font-weight: 300;
+  margin-bottom: 2.5rem;
+  max-width: 560px;
+  line-height: 1.55;
+}
+
+.meta-row {
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.meta-block { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.meta-label {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.meta-value {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--text);
+  font-weight: 300;
+}
+
+/* ═══════════════════════════════════════════
+   ABSTRACT
+═══════════════════════════════════════════ */
+.abstract {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 1.8rem 2rem;
+  margin-bottom: 4rem;
+  border-radius: 0 2px 2px 0;
+}
+
+.abstract-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+}
+
+.abstract p {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════
+   TABLE OF CONTENTS
+═══════════════════════════════════════════ */
+.toc {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1.4rem 1.8rem;
+  margin-bottom: 4rem;
+}
+
+.toc-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 1rem;
+}
+
+.toc ol {
+  list-style: none;
+  counter-reset: toc-item;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 1.5rem;
+}
+
+@media(max-width:560px){ .toc ol { grid-template-columns: 1fr; } }
+
+.toc li {
+  counter-increment: toc-item;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--dim);
+  padding: 0.15rem 0;
+}
+
+.toc li::before {
+  content: counter(toc-item) '.';
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  padding-top: 0.05rem;
+}
+
+.toc a { color: var(--text); text-decoration: none; transition: color 0.15s; }
+.toc a:hover { color: var(--accent); }
+
+/* ═══════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════ */
+.sec-head {
+  margin: 4.5rem 0 1.6rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+  counter-increment: section;
+}
+
+.sec-num {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 400;
+  color: var(--hi);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--hi);
+  margin: 2rem 0 0.7rem;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════
+   PROSE
+═══════════════════════════════════════════ */
+p { margin-bottom: 1.25rem; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 500; color: var(--hi); }
+em { font-style: italic; }
+
+/* ═══════════════════════════════════════════
+   MATH ENVIRONMENTS
+═══════════════════════════════════════════ */
+.eq {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  padding: 1.1rem 1.5rem;
+  margin: 1.8rem 0;
+  border-radius: 0 2px 2px 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.eq .katex-display { margin: 0; }
+
+.eq-num {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--dim);
+}
+
+/* Theorem / Definition boxes */
+.box {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1.3rem 1.6rem;
+  margin: 2rem 0;
+  position: relative;
+}
+
+.box-def   { border-left: 3px solid var(--blue); background: #0e1014; }
+.box-thm   { border-left: 3px solid var(--accent); background: #100e0a; }
+.box-ex    { border-left: 3px solid var(--green); background: #0a100c; }
+.box-rmk   { border-left: 3px solid var(--violet); background: #0e0a10; }
+
+.box-label {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.box-def   .box-label { color: var(--blue); }
+.box-thm   .box-label { color: var(--accent); }
+.box-ex    .box-label { color: var(--green); }
+.box-rmk   .box-label { color: var(--violet); }
+
+.box p { margin-bottom: 0.7rem; }
+.box p:last-child { margin-bottom: 0; }
+
+/* ═══════════════════════════════════════════
+   PULL QUOTE
+═══════════════════════════════════════════ */
+.pull {
+  border-left: 2px solid var(--accent);
+  padding: 0.6rem 0 0.6rem 1.5rem;
+  margin: 2.5rem 0;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--hi);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════
+   FIGURE / INTERACTIVE EMBED
+═══════════════════════════════════════════ */
+.figure {
+  margin: 2.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--bg2);
+}
+
+.figure-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+
+.figure-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.figure-link {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--blue);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.figure-link:hover { color: var(--accent); }
+
+.figure iframe {
+  display: block;
+  width: 100%;
+  height: 640px;
+  border: none;
+}
+
+.figure-caption {
+  padding: 0.8rem 1.2rem;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--dim);
+  line-height: 1.65;
+  border-top: 1px solid var(--border);
+}
+
+.figure-caption strong { color: var(--text); font-weight: 400; }
+
+/* ═══════════════════════════════════════════
+   MINI-DEMO canvas boxes
+═══════════════════════════════════════════ */
+.demo-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1.2rem 1.4rem;
+  margin: 2rem 0;
+}
+
+.demo-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.8rem;
+}
+
+.demo-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+canvas.mini {
+  display: block;
+  background: #0c0c10;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+
+.demo-ctrl {
+  display: flex; gap: 0.6rem; align-items: center; margin-top: 0.8rem; flex-wrap: wrap;
+}
+
+.db {
+  background: none; border: 1px solid var(--muted); color: var(--dim);
+  font-family: var(--mono); font-size: 0.65rem; padding: 0.3rem 0.7rem;
+  border-radius: 2px; cursor: pointer; transition: all 0.14s;
+}
+.db:hover, .db.on { border-color: var(--accent); color: var(--accent); }
+.db.on { background: var(--accent); color: var(--bg); }
+
+.dv {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--accent); min-width: 2.4rem;
+}
+
+input[type=range].ds {
+  -webkit-appearance: none; width: 140px; height: 3px;
+  background: var(--muted); border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type=range].ds::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════ */
+.math-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--mono); font-size: 0.78rem;
+  margin: 1.6rem 0;
+}
+.math-table th {
+  text-align: left; padding: 0.45rem 0.9rem;
+  border-bottom: 1px solid var(--accent);
+  color: var(--accent); font-weight: 400; letter-spacing: 0.07em;
+}
+.math-table td {
+  padding: 0.45rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.math-table tr:last-child td { border-bottom: none; }
+.math-table .hi { color: var(--hi); }
+.math-table .ac { color: var(--accent); }
+.math-table .bl { color: var(--blue); }
+
+/* ═══════════════════════════════════════════
+   SEPARATOR
+═══════════════════════════════════════════ */
+.sep {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 3rem 0; color: var(--muted);
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em;
+}
+.sep::before, .sep::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ═══════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════ */
+.rv { opacity:0; transform:translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.rv.in { opacity:1; transform:none; }
+
+/* ═══════════════════════════════════════════
+   SIDEBAR NAV
+═══════════════════════════════════════════ */
+.side-nav {
+  position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 0.55rem; z-index: 100;
+}
+@media(max-width:900px){ .side-nav{display:none;} }
+
+.sn-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--muted); cursor: pointer;
+  transition: background 0.25s, transform 0.25s;
+}
+.sn-dot.active { background: var(--accent); transform: scale(1.7); }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  margin-top: 6rem; padding: 2rem 0;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 0.55rem;
+  color: var(--dim); letter-spacing: 0.1em;
+  text-align: center;
+}
+
+/* KaTeX size */
+.katex { font-size: 1.04em; }
+</style>
+</head>
+<body>
+
+<!-- SIDE NAV -->
+<nav class="side-nav" aria-hidden="true" id="sideNav"></nav>
+
+<div class="page">
+
+<!-- ════════════════════════════════════
+     MASTHEAD
+════════════════════════════════════ -->
+<header class="masthead" id="s0">
+  <div class="journal-line">McMurmerings &nbsp;·&nbsp; Pedagogical Mathematics &nbsp;·&nbsp; 2026</div>
+  <h1 class="paper-title">Filling the Circle:<br><em>An Introduction to Ergodicity and Dense Sets</em></h1>
+  <p class="paper-subtitle">From a clock hand that never repeats, to rational points on two conics, to a theorem that connects them all.</p>
+  <div class="meta-row">
+    <div class="meta-block">
+      <span class="meta-label">Author</span>
+      <span class="meta-value">LeeMcCullochJames</span>
+    </div>
+    <div class="meta-block">
+      <span class="meta-label">Level</span>
+      <span class="meta-value">Sixth Form &rarr; First Year Undergraduate</span>
+    </div>
+    <div class="meta-block">
+      <span class="meta-label">Prerequisites</span>
+      <span class="meta-value">Trigonometry, modular arithmetic, basic proof</span>
+    </div>
+    <div class="meta-block">
+      <span class="meta-label">Companion</span>
+      <span class="meta-value"><a href="https://leelemacjames.github.io/ergodic-projective.html" style="color:var(--blue);text-decoration:none">Interactive diagram</a></span>
+    </div>
+  </div>
+</header>
+
+<!-- ABSTRACT -->
+<div class="abstract narrow rv" id="s1">
+  <div class="abstract-label">Abstract</div>
+  <p>
+    We ask a simple question: if you keep adding the same irrational number to itself, modulo 1,
+    where do the results land? The answer is: everywhere. This seemingly innocent observation is an
+    instance of one of the deepest ideas in modern mathematics, ergodic theory, which concerns the
+    long-run statistical behaviour of dynamical systems. Along the way we encounter dense sets, Weyl's
+    equidistribution theorem, the continued fraction expansion of the golden ratio, rational points on
+    conics, and the Eisenstein integers. The paper is self-contained from sixth-form level and
+    accompanied by an interactive diagram that makes the key phenomena directly visible.
+  </p>
+</div>
+
+<!-- TOC -->
+<div class="toc narrow rv">
+  <div class="toc-label">Contents</div>
+  <ol>
+    <li><a href="#sec1">A clock hand that never repeats</a></li>
+    <li><a href="#sec2">Dense sets: everywhere but not everything</a></li>
+    <li><a href="#sec3">The irrational rotation</a></li>
+    <li><a href="#sec4">Ergodicity: time averages and space averages</a></li>
+    <li><a href="#sec5">Why the golden ratio is optimal</a></li>
+    <li><a href="#sec6">Rational points on the unit circle</a></li>
+    <li><a href="#sec7">The Eisenstein lattice and its conic</a></li>
+    <li><a href="#sec8">Two densities coexisting</a></li>
+    <li><a href="#sec9">Exercises</a></li>
+  </ol>
+</div>
+
+<!-- ════════════════════════════════════
+     §1
+════════════════════════════════════ -->
+<section id="sec1" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 1</span>
+    <h2>A clock hand that never repeats</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      Suppose you have a clock whose hand moves by exactly $\frac{1}{3}$ of a full rotation each
+      second. After 3 seconds it is back where it started. After $n$ seconds it occupies one of
+      exactly three positions. The motion is periodic, and the hand visits only finitely many places.
+    </p>
+    <p>
+      Now change the increment to $\frac{1}{\sqrt{2}}$ of a full rotation each second. Something
+      completely different happens. After $n$ seconds the hand is at angle $\frac{n}{\sqrt{2}}$
+      of a full turn, measured modulo 1. Because $\frac{1}{\sqrt{2}}$ is irrational, this sequence
+      of positions never repeats. More than that: the hand eventually comes arbitrarily close to
+      every point on the clock face.
+    </p>
+
+    <div class="box box-ex">
+      <div class="box-label">Motivating question</div>
+      <p>
+        Suppose a point moves around a circle, advancing by the same irrational angle each step.
+        Will it ever return exactly to where it started? Will it visit every part of the circle?
+        Will it visit some parts more often than others, in the long run?
+      </p>
+      <p>
+        These questions have precise, beautiful answers, and they are the subject of this paper.
+      </p>
+    </div>
+
+    <p>
+      To make the setting precise, we work not with angles but with fractions of a full turn.
+      Represent a position on the circle by a number $x \in [0, 1)$, where $0$ and $1$ both mean
+      the same point. Addition is always modulo 1: if the sum exceeds 1, we subtract 1.
+      This is the same arithmetic as a 12-hour clock, with 1 in place of 12.
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §2
+════════════════════════════════════ -->
+<section id="sec2" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 2</span>
+    <h2>Dense sets: everywhere but not everything</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      Before we can answer the clock question, we need a precise meaning for "visits every part."
+      The hand never lands on <em>every</em> point, since it can only visit countably many positions,
+      whereas the circle has uncountably many points. But it can come arbitrarily close to any
+      point we name. This is the notion of a dense set.
+    </p>
+
+    <div class="box box-def">
+      <div class="box-label">Definition 2.1 &nbsp;·&nbsp; Dense subset</div>
+      <p>
+        A subset $S$ of a metric space $X$ is <strong>dense</strong> in $X$ if every open ball in
+        $X$ contains at least one point of $S$. Equivalently, for every $x \in X$ and every
+        $\varepsilon > 0$, there exists $s \in S$ with $d(x, s) < \varepsilon$.
+      </p>
+    </div>
+
+    <p>
+      The canonical example, which you already know, is that the rational numbers $\mathbb{Q}$ are
+      dense in the real numbers $\mathbb{R}$. Between any two real numbers, no matter how close,
+      there is always a rational number. Yet $\mathbb{Q}$ has measure zero inside $\mathbb{R}$:
+      it takes up no space at all. Dense does not mean large; it means well-distributed.
+    </p>
+
+    <div class="box box-ex">
+      <div class="box-label">Example 2.2</div>
+      <p>
+        The set $S = \{ \{n\sqrt{2}\} : n \in \mathbb{N} \}$, where $\{x\} = x - \lfloor x \rfloor$
+        denotes the fractional part, is dense in $[0, 1)$. This is a special case of the theorem
+        we will prove (or rather, state carefully) in the next section.
+      </p>
+    </div>
+
+    <p>
+      The distinction between dense and large is worth dwelling on. The rational numbers are
+      countable: you can list them $q_1, q_2, q_3, \ldots$ The real numbers are uncountable: no
+      such list exists (Cantor's diagonal argument). Yet $\mathbb{Q}$ is dense in $\mathbb{R}$.
+      The irrationals are also dense in $\mathbb{R}$, and they are uncountable. Two sets of
+      completely different sizes can both be dense in the same space.
+    </p>
+
+    <div class="pull">
+      Density is about proximity, not quantity. A dense set is one you can never escape from,
+      even if it contains almost nothing.
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §3
+════════════════════════════════════ -->
+<section id="sec3" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 3</span>
+    <h2>The irrational rotation</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      We now define the central object of the paper precisely.
+      Fix a number $\alpha \in [0, 1)$ and define a sequence by
+    </p>
+
+    <div class="eq">
+      $$x_0 = 0, \qquad x_{n+1} = x_n + \alpha \pmod{1}.$$
+      <span class="eq-num">(3.1)</span>
+    </div>
+
+    <p>
+      Explicitly, $x_n = \{n\alpha\}$, the fractional part of $n\alpha$. Each $x_n$ is a point in
+      $[0, 1)$, which we identify with a point on the unit circle via
+    </p>
+
+    <div class="eq">
+      $$P_n = \bigl(\cos 2\pi x_n,\; \sin 2\pi x_n\bigr) = \bigl(\cos 2\pi n\alpha,\; \sin 2\pi n\alpha\bigr).$$
+      <span class="eq-num">(3.2)</span>
+    </div>
+
+    <p>
+      This defines a <strong>circle rotation</strong> $R_\alpha : \theta \mapsto \theta + 2\pi\alpha$,
+      applied repeatedly to the starting angle $\theta_0 = 0$.
+    </p>
+
+    <h3>The rational case</h3>
+    <p>
+      If $\alpha = p/q$ in lowest terms, then $x_{n+q} = x_n$ for all $n$: the sequence is
+      periodic with period $q$, visiting exactly $q$ distinct points. No matter how long you
+      wait, the hand only ever occupies those $q$ positions.
+    </p>
+
+    <h3>The irrational case</h3>
+    <p>
+      If $\alpha \notin \mathbb{Q}$, no two terms of the sequence are equal. For if $x_m = x_n$
+      with $m \neq n$, then $(m-n)\alpha \in \mathbb{Z}$, forcing $\alpha \in \mathbb{Q}$,
+      a contradiction. So the sequence is injective: it visits infinitely many distinct points,
+      all different.
+    </p>
+
+    <div class="box box-thm">
+      <div class="box-label">Theorem 3.1 &nbsp;·&nbsp; Jacobi, 1835</div>
+      <p>
+        If $\alpha \notin \mathbb{Q}$, the sequence $\{n\alpha \pmod{1} : n \in \mathbb{N}\}$
+        is <strong>dense</strong> in $[0, 1)$.
+      </p>
+      <p>
+        <em>Proof sketch.</em> The sequence is infinite and contained in $[0,1)$. By the
+        pigeonhole principle, for any $\varepsilon > 0$ we can find $m \neq n$ with
+        $|x_m - x_n| < \varepsilon$. Let $\delta = x_m - x_n \pmod{1}$. Then
+        $\delta, 2\delta, 3\delta, \ldots$ are a sequence of steps of size $|\delta| < \varepsilon$
+        around the circle, and they hit every arc of length $\varepsilon$ within $1/\delta$ steps.
+        Since $\varepsilon$ was arbitrary, the sequence is dense. $\square$
+      </p>
+    </div>
+
+    <!-- Mini demo: rational vs irrational -->
+    <div class="demo-wrap">
+      <div class="demo-label">Demo 3.A &nbsp;·&nbsp; Rational vs irrational rotation, 200 steps</div>
+      <div class="demo-row">
+        <div style="text-align:center">
+          <canvas class="mini" id="dRat" width="200" height="200"></canvas>
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);margin-top:0.4rem">$\alpha = 1/7$ &nbsp;(rational, period 7)</div>
+        </div>
+        <div style="text-align:center">
+          <canvas class="mini" id="dIrr" width="200" height="200"></canvas>
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);margin-top:0.4rem">$\alpha = (\sqrt{5}-1)/2$ &nbsp;(irrational, dense)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §4
+════════════════════════════════════ -->
+<section id="sec4" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 4</span>
+    <h2>Ergodicity: time averages equal space averages</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      Density tells us where the orbit goes. Ergodicity tells us how often it goes there.
+      The difference is subtle but fundamental.
+    </p>
+    <p>
+      Suppose you want to know what fraction of time the orbit spends in some arc $A \subset [0,1)$
+      of length $\ell$. A naive guess is $\ell$: if the arc takes up $30\%$ of the circle,
+      the orbit spends $30\%$ of its time there. This is equidistribution, and it is a stronger
+      statement than density.
+    </p>
+
+    <div class="box box-def">
+      <div class="box-label">Definition 4.1 &nbsp;·&nbsp; Equidistribution</div>
+      <p>
+        A sequence $\{x_n\}$ in $[0,1)$ is <strong>equidistributed</strong> if for every
+        subinterval $[a, b] \subset [0,1)$,
+      </p>
+      <div class="eq" style="margin:0.8rem 0 0">
+        $$\lim_{N \to \infty} \frac{1}{N} \#\bigl\{0 \le n < N : x_n \in [a, b]\bigr\} = b - a.$$
+      </div>
+    </div>
+
+    <p>
+      Weyl proved in 1916 that irrational rotations are equidistributed. His proof uses a beautiful
+      Fourier-analytic argument, but the intuition is accessible: the orbit has no preferred
+      direction on the circle, so it cannot be biased towards any arc.
+    </p>
+
+    <div class="box box-thm">
+      <div class="box-label">Theorem 4.2 &nbsp;·&nbsp; Weyl's Equidistribution Theorem, 1916</div>
+      <p>
+        If $\alpha \notin \mathbb{Q}$, then the sequence $\{n\alpha \pmod{1}\}$ is equidistributed
+        in $[0, 1)$. Equivalently, for any Riemann-integrable function $f : [0,1) \to \mathbb{R}$,
+      </p>
+      <div class="eq" style="margin:0.8rem 0 0">
+        $$\lim_{N \to \infty} \frac{1}{N} \sum_{n=0}^{N-1} f(x_n) \;=\; \int_0^1 f(x)\,dx.$$
+      </div>
+    </div>
+
+    <p>
+      This is the ergodic statement: the <strong>time average</strong> of any observable $f$
+      along the orbit equals the <strong>space average</strong> of $f$ over the circle.
+      The orbit does not know about $f$ in advance, yet it samples it perfectly on average.
+    </p>
+
+    <div class="box box-def">
+      <div class="box-label">Definition 4.3 &nbsp;·&nbsp; Ergodic system</div>
+      <p>
+        A measure-preserving dynamical system $(X, \mu, T)$ is <strong>ergodic</strong> if every
+        $T$-invariant measurable set has measure 0 or 1. Equivalently (by the ergodic theorem of
+        Birkhoff, 1931), time averages equal space averages for $\mu$-almost every starting point.
+      </p>
+    </div>
+
+    <p>
+      The circle rotation $R_\alpha$ with $\alpha \notin \mathbb{Q}$ is ergodic with respect to
+      the uniform (Lebesgue) measure on $[0,1)$. The rotation with $\alpha \in \mathbb{Q}$ is
+      <em>not</em> ergodic: the orbit is confined to finitely many points, and any arc avoiding
+      those points is invariant with measure strictly between 0 and 1.
+    </p>
+
+    <div class="box box-rmk">
+      <div class="box-label">Remark &nbsp;·&nbsp; Ergodicity in physics</div>
+      <p>
+        The ergodic hypothesis in statistical mechanics asserts that a gas of molecules, evolving
+        under Hamiltonian dynamics, will eventually visit every region of its energy surface. This
+        would justify replacing time averages (hard to compute) with ensemble averages (easier to
+        compute). Whether real physical systems are ergodic is a subtle question; the Fermi-Pasta-Ulam
+        problem (1955) showed that some systems are surprisingly non-ergodic. The circle rotation
+        is the cleanest provably ergodic system.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §5
+════════════════════════════════════ -->
+<section id="sec5" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 5</span>
+    <h2>Why the golden ratio is optimal</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      All irrational rotations are dense and equidistributed. But they do not all fill the circle
+      at the same speed. Some irrationals are very well-approximated by rationals, and near those
+      approximations the orbit nearly repeats, leaving long gaps in the circle unfilled.
+    </p>
+    <p>
+      The quality of rational approximation is measured by the <strong>continued fraction expansion</strong>.
+      Every real number has such an expansion:
+    </p>
+
+    <div class="eq">
+      $$\alpha = a_0 + \cfrac{1}{a_1 + \cfrac{1}{a_2 + \cfrac{1}{a_3 + \cdots}}} \;=\; [a_0; a_1, a_2, a_3, \ldots]$$
+      <span class="eq-num">(5.1)</span>
+    </div>
+
+    <p>
+      The <strong>convergents</strong> $p_k/q_k$ obtained by truncating this expansion are the best
+      rational approximations to $\alpha$: no fraction with denominator $\le q_k$ is closer to
+      $\alpha$. The larger the partial quotients $a_k$, the better the approximation at that step,
+      and the longer the orbit waits near a near-repetition.
+    </p>
+
+    <p>
+      The number with the <em>smallest possible</em> partial quotients is the one whose expansion
+      is all 1s:
+    </p>
+
+    <div class="eq">
+      $$\varphi = [0; 1, 1, 1, 1, \ldots] = \cfrac{1}{1 + \cfrac{1}{1 + \cfrac{1}{1 + \cdots}}}$$
+      <span class="eq-num">(5.2)</span>
+    </div>
+
+    <p>
+      This gives $\varphi = \frac{\sqrt{5}-1}{2} \approx 0.618$, the golden ratio conjugate.
+      Its convergents are $0/1, 1/1, 1/2, 2/3, 3/5, 5/8, 8/13, \ldots$: the ratios of consecutive
+      Fibonacci numbers. Because each partial quotient is only 1, the approximation at each step
+      is as poor as it can be, and the orbit fills the circle most uniformly before any near-repetition.
+    </p>
+
+    <table class="math-table">
+      <thead>
+        <tr>
+          <th>$\alpha$</th>
+          <th>Continued fraction</th>
+          <th>Best approximation denominator to fill circle evenly</th>
+          <th>Character</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="ac">$(\sqrt{5}-1)/2$</td>
+          <td>$[0;1,1,1,1,\ldots]$</td>
+          <td class="hi">Fibonacci numbers</td>
+          <td class="bl">Most uniform</td>
+        </tr>
+        <tr>
+          <td>$\sqrt{2}-1$</td>
+          <td>$[0;2,2,2,2,\ldots]$</td>
+          <td>$1,2,5,12,29,\ldots$</td>
+          <td>Good, but near-repetitions at $q=5,12,\ldots$</td>
+        </tr>
+        <tr>
+          <td>$e-2$</td>
+          <td>$[0;1,2,1,1,4,1,1,6,\ldots]$</td>
+          <td>Growing partial quotients</td>
+          <td>Irregular</td>
+        </tr>
+        <tr>
+          <td>$1/\pi$</td>
+          <td>$[0;3,1,1,1,2,\ldots]$</td>
+          <td>Irregular</td>
+          <td>Long gaps at $q=7, 106, \ldots$</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pull">
+      The golden ratio is the most irrational number: it is the hardest for any rational to
+      approximate well. This makes it the best choice for an ergodic rotation that fills space uniformly.
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §6
+════════════════════════════════════ -->
+<section id="sec6" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 6</span>
+    <h2>Rational points on the unit circle</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      Alongside the ergodic trail of irrational points, the unit circle carries a separate dense
+      family: the <strong>rational points</strong>, i.e. points $(\cos\theta, \sin\theta)$ where
+      both coordinates are rational. These correspond exactly to the Pythagorean triples.
+    </p>
+
+    <div class="box box-def">
+      <div class="box-label">Definition 6.1 &nbsp;·&nbsp; Pythagorean triple</div>
+      <p>
+        A triple $(a, b, c) \in \mathbb{Z}^3$ with $a^2 + b^2 = c^2$ is a <strong>Pythagorean
+        triple</strong>. It is <strong>primitive</strong> if $\gcd(a, b, c) = 1$. Equivalently,
+        $(a/c, b/c)$ is a rational point on the unit circle $x^2 + y^2 = 1$.
+      </p>
+    </div>
+
+    <p>
+      All rational points on the unit circle can be found by <strong>stereographic projection</strong>.
+      Draw a line through the point $(-1, 0)$ with rational slope $t = p/q$. It meets the unit
+      circle at a second point, whose coordinates are necessarily rational:
+    </p>
+
+    <div class="eq">
+      $$\Bigl(\frac{1-t^2}{1+t^2},\; \frac{2t}{1+t^2}\Bigr) \;\longleftrightarrow\; [p^2-q^2 : 2pq : p^2+q^2].$$
+      <span class="eq-num">(6.1)</span>
+    </div>
+
+    <p>
+      The triple $[p^2-q^2 : 2pq : p^2+q^2]$ is a Pythagorean triple (verify: $(p^2-q^2)^2 + (2pq)^2
+      = (p^2+q^2)^2$). Every primitive triple arises this way with $p > q > 0$, $\gcd(p,q) = 1$,
+      and $p \not\equiv q \pmod{2}$.
+    </p>
+    <p>
+      As the slope $t = p/q$ ranges over all rationals (using the Farey sequence to enumerate
+      them in order), the corresponding points are dense on the unit circle. The rational points
+      are a different kind of dense set from the ergodic trail: countable, arithmetically structured,
+      and associated with integer solutions to $a^2 + b^2 = c^2$.
+    </p>
+
+    <div class="box box-ex">
+      <div class="box-label">Example 6.2 &nbsp;·&nbsp; First few Pythagorean triples via stereographic projection</div>
+      <table class="math-table" style="margin-top:0.6rem">
+        <thead><tr><th>Slope $t=p/q$</th><th>Point on circle</th><th>Triple $[a:b:c]$</th></tr></thead>
+        <tbody>
+          <tr><td class="ac">1/1</td><td>(0, 1)</td><td class="hi">[0 : 2 : 2] ~ [0:1:1]</td></tr>
+          <tr><td class="ac">1/2</td><td>(3/5, 4/5)</td><td class="hi">[3 : 4 : 5]</td></tr>
+          <tr><td class="ac">1/3</td><td>(4/5, 3/5) rotated</td><td class="hi">[8 : 6 : 10] ~ [4:3:5]</td></tr>
+          <tr><td class="ac">2/3</td><td>(5/13, 12/13)</td><td class="hi">[5 : 12 : 13]</td></tr>
+          <tr><td class="ac">3/4</td><td>(7/25, 24/25)</td><td class="hi">[7 : 24 : 25]</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §7
+════════════════════════════════════ -->
+<section id="sec7" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 7</span>
+    <h2>The Eisenstein lattice and its conic</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      The Pythagorean story lives over the Gaussian integers $\mathbb{Z}[i]$, where $i^2 = -1$.
+      The norm $N(a + bi) = a^2 + b^2$ gives the conic $a^2 + b^2 = c^2$. There is an analogous
+      story over the <strong>Eisenstein integers</strong> $\mathbb{Z}[\omega]$, where
+      $\omega = e^{2\pi i/3}$ is a primitive cube root of unity satisfying $\omega^2 + \omega + 1 = 0$.
+    </p>
+
+    <div class="box box-def">
+      <div class="box-label">Definition 7.1 &nbsp;·&nbsp; Eisenstein integers</div>
+      <p>
+        The <strong>Eisenstein integers</strong> are $\mathbb{Z}[\omega] = \{a + b\omega : a, b \in \mathbb{Z}\}$,
+        where $\omega = \frac{-1 + i\sqrt{3}}{2}$. Their norm is
+      </p>
+      <div class="eq" style="margin:0.8rem 0 0">
+        $$N(a + b\omega) = a^2 - ab + b^2.$$
+      </div>
+      <p style="margin-top:0.6rem">
+        The lattice $\mathbb{Z}[\omega]$ is the <strong>hexagonal lattice</strong>: the integer
+        points of a triangular grid. Unlike $\mathbb{Z}[i]$ (square lattice), the basis vectors
+        $\{1, \omega\}$ are not orthogonal; they meet at an angle of $120°$.
+      </p>
+    </div>
+
+    <p>
+      The Eisenstein analogue of the Pythagorean conic is
+    </p>
+
+    <div class="eq">
+      $$a^2 - ab + b^2 = c^2.$$
+      <span class="eq-num">(7.1)</span>
+    </div>
+
+    <p>
+      Setting $c = 1$, the curve $a^2 - ab + b^2 = 1$ in the $(a,b)$ plane is an <strong>ellipse</strong>.
+      To see this, complete the square: the quadratic form $Q(a,b) = a^2 - ab + b^2$ has matrix
+    </p>
+
+    <div class="eq">
+      $$M = \begin{pmatrix} 1 & -\tfrac{1}{2} \\ -\tfrac{1}{2} & 1 \end{pmatrix}, \qquad \det M = \tfrac{3}{4} > 0.$$
+      <span class="eq-num">(7.2)</span>
+    </div>
+
+    <p>
+      Since $M$ is positive definite with eigenvalues $\tfrac{1}{2}$ and $\tfrac{3}{2}$, the
+      ellipse has semi-axes $\sqrt{2}$ and $\sqrt{2/3} \approx 0.816$, tilted at $45°$ to the
+      coordinate axes. The non-orthogonality of the basis $\{1, \omega\}$ is encoded in the
+      off-diagonal entry $-\tfrac{1}{2}$ of $M$, and the ellipse makes this visible geometrically.
+    </p>
+
+    <h3>Rational points on the Eisenstein conic</h3>
+    <p>
+      Just as for the unit circle, we find rational points by stereographic projection.
+      Starting from the rational point $(1, 0)$ and drawing a line of slope $t = p/q$:
+    </p>
+
+    <div class="eq">
+      $$a(t) = \frac{t^2 - t + 1 - t(1-t)}{t^2 - t + 1}, \qquad b(t) = \frac{2t-1}{t^2 - t + 1}.$$
+      <span class="eq-num">(7.3)</span>
+    </div>
+
+    <p>
+      One verifies that $a(t)^2 - a(t)b(t) + b(t)^2 = 1$ for all $t$. As $t$ ranges over
+      $\mathbb{Q}$, the resulting points are dense on the ellipse.
+    </p>
+
+    <div class="box box-rmk">
+      <div class="box-label">Remark &nbsp;·&nbsp; Eisenstein triples</div>
+      <p>
+        The integer solutions to $a^2 - ab + b^2 = c^2$ are called <strong>Eisenstein triples</strong>.
+        They include $(a,b,c) = (3, 5, 7)$: check $9 - 15 + 25 = 19 \ne 49$. Actually the first
+        non-trivial example is $(1, 1, 1)$: $1 - 1 + 1 = 1$. A richer family: $(3, 8, 7)$:
+        $9 - 24 + 64 = 49$. The structure parallels Pythagorean triples but lives over the
+        hexagonal lattice.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §8  INTERACTIVE
+════════════════════════════════════ -->
+<section id="sec8" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 8</span>
+    <h2>Two densities coexisting</h2>
+  </div>
+  <div class="narrow">
+    <p>
+      We now have two dense subsets of each conic:
+    </p>
+    <p>
+      The <strong>ergodic orbit</strong> $\{P_n = (\cos 2\pi n\alpha, \sin 2\pi n\alpha)\}$ is
+      dense by Jacobi's theorem and equidistributed by Weyl's. It is a sequence of irrational
+      points, generated by a single dynamical rule, uniformly spread by an ergodic system.
+    </p>
+    <p>
+      The <strong>rational points</strong> via stereographic projection are dense by an entirely
+      different mechanism: the density of $\mathbb{Q}$ in $\mathbb{R}$, lifted to the conic.
+      They are countable, arithmetically structured, and indexed by Farey fractions.
+    </p>
+    <p>
+      Both families are dense in the same circle. They interleave without pattern. The ergodic
+      orbit does not know about the rational points, and the rational points do not know about
+      the orbit. Yet they are inseparable in the topology of the circle.
+    </p>
+  </div>
+
+  <!-- INTERACTIVE EMBED -->
+  <div class="figure rv">
+    <div class="figure-bar">
+      <span class="figure-label">Figure 8.1 &nbsp;·&nbsp; Interactive diagram &mdash; ergodic orbit and rational points on two conics</span>
+      <a href="https://leelemacjames.github.io/ergodic-projective.html" target="_blank" class="figure-link">Open full page &#8599;</a>
+    </div>
+    <iframe
+      src="https://leelemacjames.github.io/ergodic-projective.html"
+      title="Ergodic trail and projective triples"
+      loading="lazy"
+      allowfullscreen>
+    </iframe>
+    <div class="figure-caption">
+      <strong>Left panel:</strong> the unit circle with the ergodic trail $P_n$ in amber and Pythagorean rational points in level colours (Farey level of the generating slope). <strong>Right panel:</strong> the Eisenstein ellipse $a^2-ab+b^2=1$ in raw $(a,b)$ coordinates with the same ergodic rotation transferred via the ellipse parametrisation. Use the N slider to add points, Play to animate, and the alpha buttons to compare golden ratio, $\sqrt{2}-1$, and $(\sqrt{3}-1)/2$.
+    </div>
+  </div>
+
+  <div class="narrow">
+    <div class="pull">
+      The ergodic trail is irrational, continuous in parametric index, and equidistributed.
+      The rational points are countable, arithmetically structured, and indexed by integer pairs.
+      Both are dense. That these two utterly different kinds of density coexist in the same topological
+      space is one of the most striking facts the diagram makes visible.
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     §9  EXERCISES
+════════════════════════════════════ -->
+<section id="sec9" class="rv">
+  <div class="sec-head narrow">
+    <span class="sec-num">Section 9</span>
+    <h2>Exercises</h2>
+  </div>
+  <div class="narrow">
+
+    <h3>Accessible (Sixth Form)</h3>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 1</div>
+      <p>
+        Let $\alpha = 1/6$. Write out the first 12 terms of the sequence $x_n = \{n/6\}$ and mark
+        them on a copy of $[0,1)$. How many distinct values appear? Explain why the sequence is
+        periodic and find its period.
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 2</div>
+      <p>
+        Use the stereographic projection formula $(6.1)$ with slopes $t = 1/2, 2/3, 3/4, 3/5$
+        to find four Pythagorean triples. Verify each by checking $a^2 + b^2 = c^2$ directly.
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 3</div>
+      <p>
+        The golden ratio satisfies $\varphi^2 + \varphi = 1$. Use this to show that the
+        continued fraction $[0;1,1,1,\ldots]$ converges to $\varphi = (\sqrt{5}-1)/2$.
+        (Hint: if $x = [0;1,1,1,\ldots]$ then $x = 1/(1+x)$.)
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 4</div>
+      <p>
+        Verify that the point $\omega = (-1 + i\sqrt{3})/2$ satisfies $\omega^2 + \omega + 1 = 0$.
+        Show that $N(a + b\omega) = a^2 - ab + b^2$ by computing $(a + b\omega)(a + b\bar\omega)$
+        where $\bar\omega = (-1 - i\sqrt{3})/2$.
+      </p>
+    </div>
+
+    <div class="sep">UNDERGRADUATE</div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 5</div>
+      <p>
+        Prove Theorem 3.1 (Jacobi's density theorem) in full. Use the pigeonhole principle to
+        find $m \neq n$ with $\{m\alpha\}$ and $\{n\alpha\}$ within $\varepsilon$ of each other,
+        then show the multiples of $\delta = \{(m-n)\alpha\}$ are $\varepsilon$-dense in $[0,1)$.
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 6</div>
+      <p>
+        Weyl's criterion states that $\{x_n\}$ is equidistributed if and only if for every
+        integer $k \neq 0$, $\frac{1}{N}\sum_{n=0}^{N-1} e^{2\pi i k x_n} \to 0$ as $N \to \infty$.
+        Use this to give a clean proof that $\{n\alpha\}$ is equidistributed when $\alpha \notin \mathbb{Q}$.
+        (The sum is a geometric series.)
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 7</div>
+      <p>
+        Show that the ellipse $a^2 - ab + b^2 = 1$ can be parametrised as
+        $a(s) = \cos s + \frac{1}{\sqrt{3}}\sin s$, $b(s) = \frac{2}{\sqrt{3}}\sin s$.
+        Verify by direct substitution. What is the relationship between the parameter $s$ and
+        the angle on the unit circle under the isomorphism $U(1) \cong SO(2)$?
+      </p>
+    </div>
+
+    <div class="box box-ex">
+      <div class="box-label">Exercise 8 &nbsp;·&nbsp; Research level</div>
+      <p>
+        The <strong>three-distance theorem</strong> (Steinhaus, 1958) states: for any $\alpha$ and
+        any $N$, the $N$ points $\{k\alpha\} $ for $k = 1, \ldots, N$ partition $[0,1)$ into
+        $N$ arcs of at most three distinct lengths. Use the interactive diagram to observe this
+        for $\alpha = (\sqrt{5}-1)/2$ with $N = F_k$ (Fibonacci). What do you notice about the
+        lengths for these special values of $N$?
+      </p>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- .page -->
+
+<footer>Constructed by Silicon &nbsp;·&nbsp; Anthropic Claude &nbsp;&nbsp;&middot;&nbsp;&nbsp; Architect Carbon &nbsp;·&nbsp; LeeMcCullochJames</footer>
+
+<!-- ════════════════════════════════════
+     MINI DEMOS (§3)
+════════════════════════════════════ -->
+<script>
+(function(){
+  const PHI = (Math.sqrt(5)-1)/2;
+
+  function drawRotation(canvasId, alpha, N, label) {
+    const c   = document.getElementById(canvasId);
+    if(!c) return;
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const cx = W/2, cy = H/2, R = W*0.4;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0c0c10'; ctx.fillRect(0,0,W,H);
+
+    // Circle
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.strokeStyle='#3a3a54'; ctx.lineWidth=1; ctx.stroke();
+
+    // Points
+    const visited = new Set();
+    for(let n=0; n<N; n++){
+      const th = 2*Math.PI*n*alpha;
+      const x  = cx + R*Math.cos(th);
+      const y  = cy - R*Math.sin(th);
+      const key = `${Math.round(th*1000)}`;
+      const isNew = !visited.has(key);
+      visited.add(key);
+      const opa = 0.15 + 0.75*(n/N);
+      ctx.beginPath(); ctx.arc(x,y,2.2,0,Math.PI*2);
+      ctx.fillStyle = `rgba(196,150,90,${opa})`; ctx.fill();
+    }
+    // Head
+    const thH = 2*Math.PI*(N-1)*alpha;
+    ctx.beginPath(); ctx.arc(cx+R*Math.cos(thH), cy-R*Math.sin(thH), 4, 0, Math.PI*2);
+    ctx.fillStyle='#e8e8f0'; ctx.fill();
+  }
+
+  function init() {
+    drawRotation('dRat', 1/7,  200);
+    drawRotation('dIrr', PHI,  200);
+  }
+
+  window.addEventListener('load', init);
+})();
+</script>
+
+<!-- ════════════════════════════════════
+     SCROLL REVEAL + SIDE NAV
+════════════════════════════════════ -->
+<script>
+(function(){
+  // Reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }});
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+  // Side nav
+  const sections = ['s0','sec1','sec2','sec3','sec4','sec5','sec6','sec7','sec8','sec9'];
+  const nav = document.getElementById('sideNav');
+  sections.forEach((id,i) => {
+    const d = document.createElement('div');
+    d.className = 'sn-dot' + (i===0?' active':'');
+    d.setAttribute('title', id);
+    d.onclick = () => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); };
+    nav.appendChild(d);
+  });
+
+  const dots = nav.querySelectorAll('.sn-dot');
+  const secObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        const idx = sections.indexOf(e.target.id);
+        if(idx>=0) dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+      }
+    });
+  }, { threshold: 0.35 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) secObs.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
