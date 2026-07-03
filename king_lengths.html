@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Lengths for a King</title>
+<style>
+  :root{
+    --ink:#0e0f12;
+    --panel:#16181d;
+    --line:#2a2d35;
+    --paper:#e7e4da;
+    --dim:#8b8f9a;
+    --geo:#6fb4d8;      /* Chebyshev, single-path, cool */
+    --res:#e0a24a;      /* resistance, whole-network, warm */
+    --king:#e7e4da;
+    --visited:#3a2f22;
+    --gone:#0a0b0d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.5;
+    padding:clamp(1.1rem,4vw,3rem);
+    max-width:1080px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    font-size:.72rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin-bottom:1rem;
+  }
+  h1{
+    font-weight:600;
+    font-size:clamp(2rem,6vw,3.4rem);
+    line-height:1.02;
+    letter-spacing:-.01em;
+    margin-bottom:.6rem;
+  }
+  h1 em{font-style:italic;color:var(--res)}
+  .lede{
+    color:var(--dim);
+    font-size:clamp(1rem,2.4vw,1.18rem);
+    max-width:60ch;
+    margin-bottom:2.4rem;
+  }
+  .stage{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+    gap:clamp(1.2rem,3vw,2.4rem);
+    align-items:start;
+  }
+  @media(max-width:720px){.stage{grid-template-columns:1fr}}
+  .boardwrap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:clamp(.7rem,2vw,1.1rem);
+  }
+  canvas{width:100%;height:auto;display:block;image-rendering:auto}
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.6rem;
+    margin-top:1rem;
+  }
+  button{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.78rem;
+    letter-spacing:.06em;
+    background:transparent;
+    color:var(--paper);
+    border:1px solid var(--line);
+    padding:.6rem .9rem;
+    cursor:pointer;
+    transition:border-color .15s,background .15s;
+  }
+  button:hover{border-color:var(--dim)}
+  button:focus-visible{outline:2px solid var(--geo);outline-offset:2px}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button.primary{border-color:var(--res);color:var(--res)}
+
+  .readout{display:flex;flex-direction:column;gap:1.1rem}
+  .metric{
+    border:1px solid var(--line);
+    padding:1rem 1.1rem;
+    position:relative;
+  }
+  .metric .tag{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.68rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--dim);
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .metric .val{
+    font-size:clamp(2.4rem,7vw,3.6rem);
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+    margin-top:.35rem;
+    transition:color .2s;
+  }
+  .metric.geo .val{color:var(--geo)}
+  .metric.res .val{color:var(--res)}
+  .metric .sub{color:var(--dim);font-size:.9rem;margin-top:.5rem;max-width:42ch}
+  .metric .delta{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.7rem;
+    color:var(--dim);
+  }
+  .gap{
+    border:1px dashed var(--line);
+    padding:.8rem 1.1rem;
+    font-size:.92rem;
+    color:var(--paper);
+  }
+  .gap b{color:var(--res);font-weight:600}
+  .legend{
+    display:flex;gap:1.2rem;flex-wrap:wrap;
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.7rem;color:var(--dim);
+    margin-top:.8rem;letter-spacing:.05em;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:.4rem}
+  .sw{width:.8rem;height:.8rem;display:inline-block;border:1px solid var(--line)}
+  .note{
+    margin-top:2.6rem;
+    padding-top:1.4rem;
+    border-top:1px solid var(--line);
+    color:var(--dim);
+    font-size:.95rem;
+    max-width:68ch;
+  }
+  .note code{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    color:var(--paper);
+    font-size:.86em;
+  }
+  footer{
+    margin-top:2.4rem;
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.68rem;
+    letter-spacing:.1em;
+    color:var(--dim);
+  }
+</style>
+</head>
+<body>
+  <div class="eyebrow">McMurmerings &middot; measurement &amp; structure</div>
+  <h1>Two Lengths for a <em>King</em></h1>
+  <p class="lede">A king measures distance by the Chebyshev rule, the same
+  displacement counted as a single cheapest chain of moves. The board he crosses
+  is a graph, and its resistance distance, a Mahalanobis-shaped quadratic form fed
+  the Laplacian pseudo-inverse, measures the whole remaining lattice instead. Both
+  numbers are measured between the two fixed corners, so stepping the king is only
+  narrative; carving squares is what thins the lattice and drives the two lengths
+  apart.</p>
+
+  <div class="stage">
+    <div>
+      <div class="boardwrap">
+        <canvas id="board" width="640" height="640" aria-label="King's move board"></canvas>
+      </div>
+      <div class="controls">
+        <button id="step" class="primary">Walk the king &rarr;</button>
+        <button id="carve">Carve squares</button>
+        <button id="reset">Reset board</button>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--king)"></i>king</span>
+        <span><i class="sw" style="background:var(--visited)"></i>visited</span>
+        <span><i class="sw" style="background:var(--gone)"></i>removed</span>
+        <span><i class="sw" style="border-color:var(--geo)"></i>corner-to-corner path</span>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="metric geo">
+        <div class="tag"><span>Chebyshev geodesic</span><span>L&infin; &middot; single path</span></div>
+        <div class="val" id="geoVal">7</div>
+        <div class="sub">Shortest chain of king moves between the two fixed corners.
+        Counts one best route and is blind to how many alternatives survive.</div>
+      </div>
+      <div class="metric res">
+        <div class="tag"><span>Resistance distance</span><span>e&#7488;L&#8314;e &middot; whole network</span></div>
+        <div class="val" id="resVal">1.1267</div>
+        <div class="sub">The Mahalanobis quadratic form with L&#8314; in the tensor
+        slot, between the same two corners. Feels every parallel route and rises as
+        connectivity thins.</div>
+      </div>
+      <div class="gap">
+        Since the start: the geodesic has moved <b id="geoDelta">+0</b> while
+        resistance has moved <b id="resDelta">+0.0000</b>. When you carve squares
+        off the cheapest chain, the geodesic holds while resistance climbs, and that
+        gap is the shrinking of possibilities a single-path length cannot see.
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+  Why not the raw adjacency matrix <code>A</code>? Because <code>A</code> has a
+  zero diagonal and eigenvalues of both signs, so it is not positive-definite and
+  <code>A&#8315;&sup1;</code> would hand back negative squared lengths. The
+  positive-semidefinite stand-in is the Laplacian <code>L = D &minus; A</code>,
+  whose pseudo-inverse <code>L&#8314;</code> occupies exactly the slot
+  <code>&Sigma;&#8315;&sup1;</code> holds in the Mahalanobis distance. Everything
+  here is computed live in the browser: the geodesic by breadth-first search, the
+  resistance by a Moore&ndash;Penrose pseudo-inverse of the current Laplacian.
+  </p>
+
+  <footer>Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</footer>
+
+<script>
+"use strict";
+const N = 8;
+const START = [0,0], TARGET = [7,7];
+
+// ---- board state -------------------------------------------------------------
+// state per square: 'open' | 'visited' | 'removed'. King sits at kingPos.
+let grid, kingPos, path, baseResistance;
+
+function fresh(){
+  grid = Array.from({length:N}, ()=>Array.from({length:N}, ()=>"open"));
+  kingPos = [...START];
+  grid[START[0]][START[1]] = "visited";
+  path = [[...START]];
+  baseResistance = null;
+}
+
+// ---- graph helpers -----------------------------------------------------------
+const key = (r,c)=>r*N+c;
+function activeNodes(){
+  const ns=[];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++)
+    if(grid[r][c] !== "removed") ns.push([r,c]);
+  return ns;
+}
+function neighbours(r,c){
+  const out=[];
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+    if(!dr && !dc) continue;
+    const nr=r+dr, nc=c+dc;
+    if(nr<0||nr>=N||nc<0||nc>=N) continue;
+    if(grid[nr][nc]==="removed") continue;
+    out.push([nr,nc]);
+  }
+  return out;
+}
+
+// ---- Chebyshev geodesic via BFS on the live graph ----------------------------
+function geodesic(src,dst){
+  const seen=new Set([key(...src)]);
+  let frontier=[src], dist=0, prev=new Map();
+  while(frontier.length){
+    for(const [r,c] of frontier)
+      if(r===dst[0]&&c===dst[1]) return {dist, prev};
+    const next=[];
+    for(const [r,c] of frontier)
+      for(const nb of neighbours(r,c)){
+        const k=key(...nb);
+        if(!seen.has(k)){seen.add(k); prev.set(k,key(r,c)); next.push(nb);}
+      }
+    frontier=next; dist++;
+  }
+  return {dist:Infinity, prev};
+}
+function geodesicPath(src,dst){
+  const {dist,prev}=geodesic(src,dst);
+  if(!isFinite(dist)) return {dist, cells:[]};
+  const cells=[]; let k=key(...dst);
+  while(k!==undefined){ cells.push([Math.floor(k/N), k%N]);
+    k = prev.get(k); if(k===key(...src)){cells.push(src); break;} }
+  return {dist, cells};
+}
+
+// ---- resistance distance: e^T L^+ e, with L^+ a Moore-Penrose pseudo-inverse -
+// Small matrices (<=64), so a plain Gram/SVD-free pinv via eigen of symmetric L.
+function laplacian(nodes){
+  const n=nodes.length, idx=new Map();
+  nodes.forEach((nd,i)=>idx.set(key(...nd),i));
+  const L=Array.from({length:n},()=>new Float64Array(n));
+  for(let i=0;i<n;i++){
+    const [r,c]=nodes[i];
+    const nbs=neighbours(r,c);
+    L[i][i]=nbs.length;                     // degree on diagonal
+    for(const nb of nbs){ const j=idx.get(key(...nb)); L[i][j]-=1; }
+  }
+  return L;
+}
+// Symmetric eigendecomposition (Jacobi) -> pseudo-inverse by inverting nonzero eigenvalues.
+function jacobiEigen(Ain){
+  const n=Ain.length;
+  const A=Ain.map(row=>Float64Array.from(row));
+  const V=Array.from({length:n},(_,i)=>{const e=new Float64Array(n);e[i]=1;return e;});
+  for(let sweep=0;sweep<100;sweep++){
+    let off=0;
+    for(let p=0;p<n;p++) for(let q=p+1;q<n;q++) off+=A[p][q]*A[p][q];
+    if(off<1e-18) break;
+    for(let p=0;p<n;p++) for(let q=p+1;q<n;q++){
+      if(Math.abs(A[p][q])<1e-15) continue;
+      const app=A[p][p], aqq=A[q][q], apq=A[p][q];
+      const phi=0.5*Math.atan2(2*apq, aqq-app);
+      const c=Math.cos(phi), s=Math.sin(phi);
+      for(let k=0;k<n;k++){
+        const akp=A[k][p], akq=A[k][q];
+        A[k][p]=c*akp - s*akq; A[k][q]=s*akp + c*akq;
+      }
+      for(let k=0;k<n;k++){
+        const apk=A[p][k], aqk=A[q][k];
+        A[p][k]=c*apk - s*aqk; A[q][k]=s*apk + c*aqk;
+      }
+      for(let k=0;k<n;k++){
+        const vkp=V[k][p], vkq=V[k][q];
+        V[k][p]=c*vkp - s*vkq; V[k][q]=s*vkp + c*vkq;
+      }
+    }
+  }
+  const eig=new Float64Array(n);
+  for(let i=0;i<n;i++) eig[i]=A[i][i];
+  return {eig, V};
+}
+function resistanceDistance(src,dst){
+  const nodes=activeNodes();
+  const idx=new Map(); nodes.forEach((nd,i)=>idx.set(key(...nd),i));
+  if(!idx.has(key(...src))||!idx.has(key(...dst))) return Infinity;
+  const L=laplacian(nodes);
+  const {eig,V}=jacobiEigen(L);
+  const i=idx.get(key(...src)), j=idx.get(key(...dst));
+  // e^T L^+ e = sum over nonzero eigenvalues of (v_k[i]-v_k[j])^2 / lambda_k
+  let acc=0;
+  for(let k=0;k<eig.length;k++){
+    if(Math.abs(eig[k])<1e-9) continue;    // drop the kernel (constant vector)
+    const d=V[i][k]-V[j][k];
+    acc += d*d/eig[k];
+  }
+  return Math.sqrt(Math.max(acc,0));
+}
+
+// ---- rendering ---------------------------------------------------------------
+const cv=document.getElementById("board"), ctx=cv.getContext("2d");
+const CSS=getComputedStyle(document.documentElement);
+const col=n=>CSS.getPropertyValue(n).trim();
+function draw(){
+  const S=cv.width, cell=S/N;
+  ctx.clearRect(0,0,S,S);
+  const geoCells=new Set(geodesicPath(START,TARGET).cells.map(([r,c])=>key(r,c)));
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const x=c*cell, y=r*cell, st=grid[r][c];
+    let fill;
+    if(st==="removed") fill=col("--gone");
+    else if(st==="visited") fill=col("--visited");
+    else fill=((r+c)%2===0)? "#1b1e24" : "#141519";
+    ctx.fillStyle=fill; ctx.fillRect(x,y,cell,cell);
+    ctx.strokeStyle=col("--line"); ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,cell-1,cell-1);
+    if(geoCells.has(key(r,c)) && st!=="removed"){
+      ctx.fillStyle="rgba(111,180,216,.16)"; ctx.fillRect(x,y,cell,cell);
+    }
+  }
+  // target marker
+  const [tr,tc]=TARGET;
+  ctx.strokeStyle=col("--res"); ctx.lineWidth=2;
+  ctx.strokeRect(tc*cell+4,tr*cell+4,cell-8,cell-8);
+  // king
+  const [kr,kc]=kingPos;
+  ctx.fillStyle=col("--king");
+  ctx.beginPath();
+  ctx.arc(kc*cell+cell/2, kr*cell+cell/2, cell*0.30, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle=col("--ink");
+  ctx.font=`${cell*0.34}px Georgia, serif`;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("\u265A", kc*cell+cell/2, kr*cell+cell/2+1);
+}
+
+// ---- readouts ----------------------------------------------------------------
+// KEY FIX: measure the FIXED pair START->TARGET, never the moving king.
+// Stepping the king is now purely narrative; only carving changes the graph,
+// so both numbers can only hold or rise, matching the "shrinking possibilities" story.
+const geoVal=document.getElementById("geoVal"), resVal=document.getElementById("resVal");
+const geoDelta=document.getElementById("geoDelta"), resDelta=document.getElementById("resDelta");
+let baseGeo=null;
+function refresh(){
+  const g=geodesic(START,TARGET).dist;          // fixed endpoints, not kingPos
+  const r=resistanceDistance(START,TARGET);
+  if(baseResistance===null){ baseResistance=r; baseGeo=g; }
+  geoVal.textContent = isFinite(g)? g : "\u221E";
+  resVal.textContent = isFinite(r)? r.toFixed(4) : "\u221E";
+  const dg = isFinite(g)? g-baseGeo : null;
+  const dr = isFinite(r)? r-baseResistance : null;
+  geoDelta.textContent = dg===null? "\u2014" : (dg>=0?"+":"")+dg;
+  resDelta.textContent = dr===null? "\u2014" : (dr>=0?"+":"")+dr.toFixed(4);
+  draw();
+}
+
+// ---- interactions ------------------------------------------------------------
+// Step is now NARRATIVE only: the king walks the fixed START->TARGET geodesic for
+// storytelling. It does not redefine what is measured, so the readouts do not move.
+document.getElementById("step").addEventListener("click", ()=>{
+  const {cells}=geodesicPath(START,TARGET);      // fixed path, dst..src order
+  if(cells.length<2) return;
+  // find where the king currently is along that path, then advance one square
+  const order=cells.slice().reverse();           // now src..dst
+  let pos=order.findIndex(([r,c])=>r===kingPos[0]&&c===kingPos[1]);
+  if(pos<0||pos>=order.length-1) return;          // stranded or already at target
+  const next=order[pos+1];
+  if(grid[next[0]][next[1]]==="removed") return;  // path square was carved away
+  grid[kingPos[0]][kingPos[1]]="visited";
+  kingPos=[...next];
+  grid[kingPos[0]][kingPos[1]]="visited";
+  if(kingPos[0]===TARGET[0]&&kingPos[1]===TARGET[1])
+    document.getElementById("step").disabled=true;
+  draw();                                         // redraw king only; numbers unchanged
+});
+
+// Carve: click any square on the board to remove it. This is the ONLY operation
+// that changes the graph, so it is the only thing that moves the two lengths.
+let carveMode=false;
+const carveBtn=document.getElementById("carve");
+carveBtn.addEventListener("click", ()=>{
+  carveMode=!carveMode;
+  carveBtn.textContent = carveMode? "Carving: click squares" : "Carve squares";
+  carveBtn.style.borderColor = carveMode? col("--res") : "";
+  cv.style.cursor = carveMode? "crosshair" : "default";
+});
+cv.addEventListener("click", (ev)=>{
+  if(!carveMode) return;
+  const rect=cv.getBoundingClientRect();
+  const cell=rect.width/N;
+  const c=Math.floor((ev.clientX-rect.left)/cell);
+  const r=Math.floor((ev.clientY-rect.top)/cell);
+  if(r<0||r>=N||c<0||c>=N) return;
+  if(r===START[0]&&c===START[1]) return;          // keep the two fixed endpoints
+  if(r===TARGET[0]&&c===TARGET[1]) return;
+  if(r===kingPos[0]&&c===kingPos[1]) return;      // do not delete under the king
+  grid[r][c] = (grid[r][c]==="removed") ? "open" : "removed";  // toggle
+  refresh();                                       // graph changed, so remeasure
+});
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  fresh();
+  document.getElementById("step").disabled=false;
+  carveMode=false; carveBtn.textContent="Carve squares"; carveBtn.style.borderColor="";
+  cv.style.cursor="default";
+  refresh();
+});
+
+// ---- boot --------------------------------------------------------------------
+fresh(); refresh();
+</script>
+</body>
+</html>
