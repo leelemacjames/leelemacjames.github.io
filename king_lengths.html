@@ -171,14 +171,14 @@
       </div>
       <div class="controls">
         <button id="step" class="primary">Walk the king &rarr;</button>
-        <button id="carve">Carve squares</button>
+        <button id="carve">Load anti-diagonal demo</button>
         <button id="reset">Reset board</button>
       </div>
       <div class="legend">
         <span><i class="sw" style="background:var(--king)"></i>king</span>
         <span><i class="sw" style="background:var(--visited)"></i>visited</span>
         <span><i class="sw" style="background:var(--gone)"></i>removed</span>
-        <span><i class="sw" style="border-color:var(--geo)"></i>corner-to-corner path</span>
+        <span>click any square to carve it</span>
       </div>
     </div>
 
@@ -273,12 +273,37 @@ function geodesic(src,dst){
   return {dist:Infinity, prev};
 }
 function geodesicPath(src,dst){
-  const {dist,prev}=geodesic(src,dst);
-  if(!isFinite(dist)) return {dist, cells:[]};
-  const cells=[]; let k=key(...dst);
-  while(k!==undefined){ cells.push([Math.floor(k/N), k%N]);
-    k = prev.get(k); if(k===key(...src)){cells.push(src); break;} }
-  return {dist, cells};
+  // BFS from src, recording the layer (distance) of every reachable node.
+  const distOf=new Map([[key(...src),0]]);
+  let frontier=[src];
+  while(frontier.length){
+    const next=[];
+    for(const [r,c] of frontier)
+      for(const nb of neighbours(r,c)){
+        const k=key(...nb);
+        if(!distOf.has(k)){ distOf.set(k, distOf.get(key(r,c))+1); next.push(nb); }
+      }
+    frontier=next;
+  }
+  const dstK=key(...dst);
+  if(!distOf.has(dstK)) return {dist:Infinity, cells:[]};
+  // Walk back from dst to src, at each step choosing a neighbour one layer closer.
+  // Break ties toward the main diagonal so the drawn path is the natural one.
+  const cells=[]; let cur=dst;
+  while(!(cur[0]===src[0]&&cur[1]===src[1])){
+    cells.push(cur);
+    const d=distOf.get(key(...cur));
+    let best=null, bestScore=Infinity;
+    for(const nb of neighbours(...cur)){
+      if(distOf.get(key(...nb))!==d-1) continue;         // must be one step closer
+      const score=Math.abs(nb[0]-nb[1]);                 // small = near the diagonal
+      if(score<bestScore){ bestScore=score; best=nb; }
+    }
+    if(!best) break;
+    cur=best;
+  }
+  cells.push(src);
+  return {dist:distOf.get(dstK), cells};
 }
 
 // ---- resistance distance: e^T L^+ e, with L^+ a Moore-Penrose pseudo-inverse -
@@ -420,35 +445,35 @@ document.getElementById("step").addEventListener("click", ()=>{
   draw();                                         // redraw king only; numbers unchanged
 });
 
-// Carve: click any square on the board to remove it. This is the ONLY operation
-// that changes the graph, so it is the only thing that moves the two lengths.
-let carveMode=false;
-const carveBtn=document.getElementById("carve");
-carveBtn.addEventListener("click", ()=>{
-  carveMode=!carveMode;
-  carveBtn.textContent = carveMode? "Carving: click squares" : "Carve squares";
-  carveBtn.style.borderColor = carveMode? col("--res") : "";
-  cv.style.cursor = carveMode? "crosshair" : "default";
-});
+// Click any square to remove it (click again to restore). Always live, no mode.
+// Carving is the ONLY operation that changes the graph, so the only thing that
+// moves the two lengths. The two fixed corners and the king's square are protected.
 cv.addEventListener("click", (ev)=>{
-  if(!carveMode) return;
   const rect=cv.getBoundingClientRect();
   const cell=rect.width/N;
   const c=Math.floor((ev.clientX-rect.left)/cell);
   const r=Math.floor((ev.clientY-rect.top)/cell);
   if(r<0||r>=N||c<0||c>=N) return;
-  if(r===START[0]&&c===START[1]) return;          // keep the two fixed endpoints
+  if(r===START[0]&&c===START[1]) return;
   if(r===TARGET[0]&&c===TARGET[1]) return;
-  if(r===kingPos[0]&&c===kingPos[1]) return;      // do not delete under the king
+  if(r===kingPos[0]&&c===kingPos[1]) return;
   grid[r][c] = (grid[r][c]==="removed") ? "open" : "removed";  // toggle
-  refresh();                                       // graph changed, so remeasure
+  refresh();                                                    // remeasure fixed pair
+});
+cv.style.cursor="crosshair";
+
+// "Carve squares" now loads the anti-diagonal demo: geodesic holds at 7 while
+// resistance rises, the cleanest illustration of the divergence.
+document.getElementById("carve").addEventListener("click", ()=>{
+  for(const [r,c] of [[0,7],[1,6],[2,5],[5,2],[6,1],[7,0]])
+    if(grid[r][c]!=="visited") grid[r][c]="removed";
+  refresh();
 });
 
 document.getElementById("reset").addEventListener("click", ()=>{
   fresh();
   document.getElementById("step").disabled=false;
-  carveMode=false; carveBtn.textContent="Carve squares"; carveBtn.style.borderColor="";
-  cv.style.cursor="default";
+  cv.style.cursor="crosshair";
   refresh();
 });
 
