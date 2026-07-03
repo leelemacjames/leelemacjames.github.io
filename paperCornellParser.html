@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperCornell — Paper to Cornell-Notes Worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0e10;
+  --panel: #17161a;
+  --panel-2: #1c1b20;
+  --border: #2a2825;
+  --border-soft: #201f22;
+  --text: #e8e6e0;
+  --muted: #8a8680;
+  --accent: #c88a5a;
+  --accent-dim: #a06f47;
+  --error: #d17370;
+  --success: #86a978;
+  --serif: 'EB Garamond', Georgia, serif;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--text);
+  font-family: var(--serif); font-size: 18px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 780px; margin: 0 auto; padding: 3rem 2rem 6rem;
+}
+header { margin-bottom: 3rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+h1 {
+  font-family: var(--serif); font-weight: 500; font-style: italic;
+  font-size: 2.6rem; margin: 0 0 0.4rem; letter-spacing: -0.01em;
+}
+.subtitle {
+  font-family: var(--sans); font-size: 0.95rem; color: var(--muted);
+  margin: 0; letter-spacing: 0.02em;
+}
+h2 {
+  font-family: var(--sans); font-weight: 500; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted);
+  margin: 0 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-soft);
+}
+h3 {
+  font-family: var(--serif); font-weight: 500; font-size: 1.1rem;
+  margin: 1.4rem 0 0.4rem; color: var(--text);
+}
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 1.8rem 2rem; margin-bottom: 1.5rem; border-radius: 2px;
+}
+p { margin: 0 0 1rem; color: var(--text); }
+p.note { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+label {
+  display: block; font-family: var(--sans); font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted); margin-bottom: 0.4rem;
+}
+input[type=text], input[type=password] {
+  width: 100%; padding: 0.7rem 0.9rem;
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 0.9rem;
+  border-radius: 2px; outline: none;
+}
+input[type=text]:focus, input[type=password]:focus {
+  border-color: var(--accent-dim);
+}
+.field { margin-bottom: 1.2rem; }
+.field:last-child { margin-bottom: 0; }
+button {
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 500;
+  letter-spacing: 0.06em; padding: 0.7rem 1.4rem;
+  background: transparent; color: var(--accent);
+  border: 1px solid var(--accent-dim); border-radius: 2px;
+  cursor: pointer; transition: all 0.15s;
+}
+button:hover:not(:disabled) {
+  background: var(--accent); color: var(--bg); border-color: var(--accent);
+}
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+button.secondary {
+  color: var(--muted); border-color: var(--border);
+}
+button.secondary:hover:not(:disabled) {
+  background: var(--panel-2); color: var(--text); border-color: var(--muted);
+}
+.button-row { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 1rem; }
+.status-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 0.5rem; vertical-align: middle;
+}
+.status-dot.on { background: var(--success); }
+.status-dot.off { background: var(--muted); opacity: 0.5; }
+.status-dot.error { background: var(--error); }
+.status-row {
+  font-family: var(--sans); font-size: 0.85rem; color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+details {
+  margin-top: 1rem; font-family: var(--sans); font-size: 0.9rem;
+  color: var(--muted);
+}
+details summary {
+  cursor: pointer; padding: 0.4rem 0;
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem;
+}
+details summary:hover { color: var(--text); }
+details ol { padding-left: 1.4rem; }
+details li { margin-bottom: 0.4rem; }
+details code {
+  font-family: var(--mono); font-size: 0.85em;
+  background: var(--panel-2); padding: 0.1em 0.4em; border-radius: 2px;
+}
+#log {
+  font-family: var(--mono); font-size: 0.82rem;
+  background: var(--panel-2); border: 1px solid var(--border-soft);
+  padding: 1rem; margin-top: 1rem; border-radius: 2px;
+  max-height: 320px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-word;
+  color: var(--muted);
+}
+#log .info { color: var(--text); }
+#log .ok { color: var(--success); }
+#log .err { color: var(--error); }
+#log .dim { color: var(--muted); }
+#downloads a {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 1rem; margin-bottom: 0.5rem;
+  background: var(--panel-2); border: 1px solid var(--border-soft);
+  color: var(--text); text-decoration: none; border-radius: 2px;
+  font-family: var(--sans); font-size: 0.9rem;
+}
+#downloads a:hover { border-color: var(--accent-dim); color: var(--accent); }
+#downloads a .fname { font-family: var(--mono); font-size: 0.82rem; }
+#downloads a .tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted);
+}
+footer {
+  margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border);
+  font-family: var(--sans); font-size: 0.75rem; color: var(--muted);
+  text-align: center; letter-spacing: 0.05em;
+}
+a { color: var(--accent); }
+a:hover { color: var(--text); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>PaperCornell</h1>
+  <p class="subtitle">A tool for turning scientific essays into Cornell-notes worksheets, drawn from a Google Drive folder and rendered as ready-to-compile LaTeX.</p>
+</header>
+
+<section class="panel">
+  <h2>1 · Credentials</h2>
+  <p class="note">Both values live only in this browser tab. Nothing is sent anywhere except directly to Google's Drive API and Anthropic's message endpoint.</p>
+
+  <div class="field">
+    <label for="googleClientId">Google OAuth Client ID</label>
+    <input type="text" id="googleClientId" placeholder="e.g. 123456789-abc...apps.googleusercontent.com" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="anthropicKey">Anthropic API key</label>
+    <input type="password" id="anthropicKey" placeholder="sk-ant-..." autocomplete="off">
+  </div>
+
+  <div class="status-row" id="statusRow">
+    <span class="status-dot off" id="dotGoogle"></span><span id="labelGoogle">Not signed in to Google</span>
+    &nbsp;·&nbsp;
+    <span class="status-dot off" id="dotAnthropic"></span><span id="labelAnthropic">No API key set</span>
+  </div>
+
+  <div class="button-row">
+    <button id="btnSignIn">Sign in with Google</button>
+    <button id="btnSignOut" class="secondary hidden">Sign out</button>
+  </div>
+
+  <details>
+    <summary>Where do I get a Google OAuth Client ID?</summary>
+    <ol>
+      <li>Visit <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> and create (or select) a project.</li>
+      <li>Under <em>APIs &amp; Services → Library</em>, enable the <em>Google Drive API</em>.</li>
+      <li>Under <em>APIs &amp; Services → OAuth consent screen</em>, configure the consent screen; for a personal tool, User Type "External" and Testing status is fine, so long as you add yourself as a test user.</li>
+      <li>Under <em>Credentials → Create Credentials → OAuth client ID</em>, choose <em>Web application</em>. Add the URL where this page will live under <em>Authorised JavaScript origins</em> (for example <code>https://leelemacjames.github.io</code>, or <code>http://localhost:8000</code> if you are testing locally).</li>
+      <li>Copy the client ID (ends in <code>.apps.googleusercontent.com</code>) into the field above.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>Where do I get an Anthropic API key?</summary>
+    <ol>
+      <li>Visit <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, sign in, and add a payment method under <em>Settings → Billing</em>.</li>
+      <li>Go to <em>Settings → API Keys → Create Key</em>, name it, and copy the <code>sk-ant-...</code> string immediately, since it is only shown once.</li>
+      <li>Paste it into the field above; it is stored in this tab's sessionStorage and cleared when the tab closes.</li>
+    </ol>
+  </details>
+</section>
+
+<section class="panel">
+  <h2>2 · Source</h2>
+  <p class="note">Path to a folder in your Google Drive, relative to <em>My Drive</em>. Any PDF inside is processed. Sub-folders are ignored; if you want sub-folders processed, run the tool once per folder.</p>
+
+  <div class="field">
+    <label for="folderPath">Drive folder path</label>
+    <input type="text" id="folderPath" value="PaperCornell/Drop" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="submitEmail">Submission email (baked into each worksheet footer)</label>
+    <input type="text" id="submitEmail" placeholder="teacher@school.edu" autocomplete="off">
+  </div>
+</section>
+
+<section class="panel">
+  <h2>3 · Run</h2>
+  <p class="note">Each PDF in the folder is processed sequentially: text extracted in your browser via pdf.js, sent to Claude for question generation, then rendered into a LaTeX source file offered for download below. The compile step (<code>pdflatex</code>) happens off-tool — download the <code>.tex</code>, then compile locally or drop it into Overleaf.</p>
+
+  <div class="button-row">
+    <button id="btnProcess" disabled>Process folder</button>
+  </div>
+
+  <div id="log" class="hidden"></div>
+</section>
+
+<section class="panel hidden" id="downloadsPanel">
+  <h2>4 · Downloads</h2>
+  <div id="downloads"></div>
+</section>
+
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+</footer>
+
+</main>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ---------- config, wiring, storage ----------
+
+const STORAGE = {
+  clientId: {get: () => localStorage.getItem("pc_client_id") || "",
+             set: v => localStorage.setItem("pc_client_id", v)},
+  folder:   {get: () => localStorage.getItem("pc_folder") || "PaperCornell/Drop",
+             set: v => localStorage.setItem("pc_folder", v)},
+  email:    {get: () => localStorage.getItem("pc_email") || "[teacher email]",
+             set: v => localStorage.setItem("pc_email", v)},
+  apiKey:   {get: () => sessionStorage.getItem("pc_api_key") || "",
+             set: v => sessionStorage.setItem("pc_api_key", v)},
+};
+
+const els = {
+  clientId: document.getElementById("googleClientId"),
+  apiKey: document.getElementById("anthropicKey"),
+  folder: document.getElementById("folderPath"),
+  email: document.getElementById("submitEmail"),
+  btnSignIn: document.getElementById("btnSignIn"),
+  btnSignOut: document.getElementById("btnSignOut"),
+  btnProcess: document.getElementById("btnProcess"),
+  dotGoogle: document.getElementById("dotGoogle"),
+  labelGoogle: document.getElementById("labelGoogle"),
+  dotAnthropic: document.getElementById("dotAnthropic"),
+  labelAnthropic: document.getElementById("labelAnthropic"),
+  log: document.getElementById("log"),
+  downloadsPanel: document.getElementById("downloadsPanel"),
+  downloads: document.getElementById("downloads"),
+};
+
+// pdf.js worker (needs its own worker file, use matching cdnjs version)
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+// hydrate fields from storage
+els.clientId.value = STORAGE.clientId.get();
+els.apiKey.value = STORAGE.apiKey.get();
+els.folder.value = STORAGE.folder.get();
+els.email.value = STORAGE.email.get();
+
+// persist as user types
+els.clientId.addEventListener("input", e => STORAGE.clientId.set(e.target.value.trim()));
+els.apiKey.addEventListener("input", e => { STORAGE.apiKey.set(e.target.value.trim()); refreshStatus(); });
+els.folder.addEventListener("input", e => STORAGE.folder.set(e.target.value.trim()));
+els.email.addEventListener("input", e => STORAGE.email.set(e.target.value.trim()));
+
+// ---------- state ----------
+
+let googleToken = null;
+let tokenClient = null;
+
+function refreshStatus() {
+  const gOn = !!googleToken;
+  els.dotGoogle.className = "status-dot " + (gOn ? "on" : "off");
+  els.labelGoogle.textContent = gOn ? "Signed in to Google" : "Not signed in to Google";
+  els.btnSignIn.classList.toggle("hidden", gOn);
+  els.btnSignOut.classList.toggle("hidden", !gOn);
+
+  const kOn = !!STORAGE.apiKey.get();
+  els.dotAnthropic.className = "status-dot " + (kOn ? "on" : "off");
+  els.labelAnthropic.textContent = kOn ? "API key set (session-scoped)" : "No API key set";
+
+  els.btnProcess.disabled = !(gOn && kOn);
+}
+refreshStatus();
+
+// ---------- logging ----------
+
+function log(msg, cls = "info") {
+  els.log.classList.remove("hidden");
+  const line = document.createElement("div");
+  line.className = cls;
+  line.textContent = msg;
+  els.log.appendChild(line);
+  els.log.scrollTop = els.log.scrollHeight;
+}
+
+// ---------- google auth (GIS) ----------
+
+function initTokenClient() {
+  const clientId = STORAGE.clientId.get();
+  if (!clientId) {
+    alert("Please paste a Google OAuth Client ID first.");
+    return null;
+  }
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    alert("Google Identity library has not loaded yet. Give it a second and try again.");
+    return null;
+  }
+  return google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: "https://www.googleapis.com/auth/drive.readonly",
+    callback: (resp) => {
+      if (resp.error) {
+        log("Google sign-in error: " + resp.error, "err");
+        return;
+      }
+      googleToken = resp.access_token;
+      log("Signed in to Google.", "ok");
+      refreshStatus();
+    },
+  });
+}
+
+els.btnSignIn.addEventListener("click", () => {
+  tokenClient = tokenClient || initTokenClient();
+  if (tokenClient) tokenClient.requestAccessToken();
+});
+
+els.btnSignOut.addEventListener("click", () => {
+  if (googleToken) {
+    google.accounts.oauth2.revoke(googleToken, () => {});
+  }
+  googleToken = null;
+  log("Signed out.", "dim");
+  refreshStatus();
+});
+
+// ---------- drive helpers ----------
+// Raw REST calls; no gapi library needed. Bearer token from GIS.
+
+async function driveFetch(url) {
+  const r = await fetch(url, { headers: { Authorization: "Bearer " + googleToken } });
+  if (!r.ok) throw new Error(`Drive API ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+
+async function findFolderIdByPath(path) {
+  // Walk from root, one segment at a time, using q= mimeType filter.
+  const segments = path.split("/").map(s => s.trim()).filter(Boolean);
+  let parent = "root";
+  for (const seg of segments) {
+    const q = `name='${seg.replace(/'/g, "\\'")}' and '${parent}' in parents ` +
+              `and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`;
+    const data = await driveFetch(url);
+    if (!data.files || !data.files.length) {
+      throw new Error(`Folder "${seg}" not found under path "${path}".`);
+    }
+    parent = data.files[0].id;
+  }
+  return parent;
+}
+
+async function listPdfsInFolder(folderId) {
+  const q = `'${folderId}' in parents and mimeType='application/pdf' and trashed=false`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,size)&pageSize=100`;
+  const data = await driveFetch(url);
+  return data.files || [];
+}
+
+async function downloadDrivePdf(fileId) {
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+  const r = await fetch(url, { headers: { Authorization: "Bearer " + googleToken } });
+  if (!r.ok) throw new Error(`Drive download ${r.status}`);
+  return r.arrayBuffer();
+}
+
+// ---------- pdf text extraction ----------
+
+async function extractText(arrayBuffer, maxChars = 60000) {
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const parts = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    parts.push(content.items.map(it => it.str).join(" "));
+  }
+  const text = parts.join("\n").trim();
+  if (!text) {
+    throw new Error("No extractable text — probably a scanned PDF, which this tool does not OCR.");
+  }
+  return text.slice(0, maxChars);
+}
+
+// ---------- claude call ----------
+
+const SYSTEM_PROMPT = `You produce Cornell-notes style prompt-question worksheets for A-level / IB physics, maths, and computer science students, in the style of a classic worked worksheet on P.W. Anderson's "More Is Different". Given the text of a "middle-brow" scientific paper or essay (accessible but substantive - written by a working scientist for a broad audience), you generate 12-15 prompt questions that:
+- reference a specific, real section heading or clearly identifiable part of the actual text supplied (e.g. "Introduction", "\\\\S\\\\ Miniaturizing the Computer", "opening anecdote") - never invent a page/column reference you can't ground in the text
+- mix close comprehension questions with ones that ask the student to explain reasoning, work through an example, or evaluate a claim
+- are written directly to the student ("What does X mean when...", "Explain...", "Why does...")
+- assume the student is capable but has not seen the text before
+
+Respond with ONLY valid JSON (no markdown fences, no commentary). Every string value must escape any literal newline as the two-character sequence \\\\n and never contain an unescaped newline. Match this schema exactly:
+{
+  "title": "Author (Year). Title.",
+  "citation": "Journal/venue, volume/issue, pages, or talk details",
+  "author_blurb": "2-4 sentences: who the author is, their scientific credentials/prize if any, and one sentence on why this piece counts as 'middle-brow' (accessible but substantive) rather than a technical paper or a puff piece",
+  "reading_note": "1-3 sentences of practical reading advice specific to this text (e.g. warn if it's dense, mention if it uses light maths, note its structure)",
+  "doctype": "essay" or "paper" or "talk" (whichever fits),
+  "questions": [ {"ref": "...", "text": "..."}, ... 12 to 15 of these ... ],
+  "summary_prompt": "one open question about why the author likely chose this title, grounded in something specific from the text",
+  "criticism_hint": "a short parenthetical nudge for the optional criticism question, specific to a real weak point or debated aspect of this piece (or empty string if nothing fits)"
+}`;
+
+async function callClaude(paperText, filenameHint) {
+  const body = {
+    model: "claude-sonnet-5",
+    max_tokens: 4000,
+    system: SYSTEM_PROMPT,
+    messages: [{
+      role: "user",
+      content: `Source filename: ${filenameHint}\n\nPaper text follows (may be truncated at the end if long):\n\n${paperText}`,
+    }],
+  };
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": STORAGE.apiKey.get(),
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    const errText = await r.text();
+    throw new Error(`Anthropic ${r.status}: ${errText.slice(0, 400)}`);
+  }
+  const data = await r.json();
+  let raw = data.content.filter(b => b.type === "text").map(b => b.text).join("").trim();
+  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    // last-ditch: scrub bare control chars inside quoted strings
+    const scrubbed = scrubBareNewlines(raw);
+    return JSON.parse(scrubbed);
+  }
+}
+
+function scrubBareNewlines(s) {
+  // Walk the string; inside "..." replace bare CR/LF with \n escape.
+  let out = "", inStr = false, escaped = false;
+  for (const ch of s) {
+    if (!inStr) {
+      if (ch === '"') inStr = true;
+      out += ch;
+      continue;
+    }
+    if (escaped) { out += ch; escaped = false; continue; }
+    if (ch === "\\") { out += ch; escaped = true; continue; }
+    if (ch === '"') { inStr = false; out += ch; continue; }
+    if (ch === "\n") { out += "\\n"; continue; }
+    if (ch === "\r") { continue; }
+    out += ch;
+  }
+  return out;
+}
+
+// ---------- latex escaping and rendering ----------
+
+const LATEX_REPL = {
+  "\\": "\\textbackslash{}", "&": "\\&", "%": "\\%", "$": "\\$",
+  "#": "\\#", "_": "\\_", "{": "\\{", "}": "\\}",
+  "~": "\\textasciitilde{}", "^": "\\textasciicircum{}",
+  "\u2018": "`", "\u2019": "'", "\u201c": "``", "\u201d": "''",
+  "\u2013": "--", "\u2014": "---", "\u2026": "\\ldots{}",
+};
+function escapeLatex(s) {
+  if (typeof s !== "string") return s;
+  let out = "";
+  for (const ch of s) out += (LATEX_REPL[ch] ?? ch);
+  return out;
+}
+function linesFor(text) {
+  const w = text.split(/\s+/).length;
+  if (w <= 35) return 3;
+  if (w <= 55) return 4;
+  if (w <= 75) return 5;
+  return 6;
+}
+// rotating palette so different papers get visually distinct boxes
+const PALETTE = [
+  ["2C3E50","F4F6F7"], ["6C3483","F5F0F9"], ["922B21","FBEEE6"],
+  ["1A5276","EBF2F8"], ["196F3D","EAF6EC"], ["B9770E","FCF3E3"],
+];
+function pickColor(title) {
+  let h = 0;
+  for (const ch of title) h = ((h << 5) - h + ch.charCodeAt(0)) | 0;
+  return PALETTE[Math.abs(h) % PALETTE.length];
+}
+function slugify(title) {
+  return (title.toLowerCase().replace(/[^a-z0-9\s-]/g, "")
+                .trim().replace(/[\s-]+/g, "_").slice(0, 60)) || "worksheet";
+}
+
+function renderTex(data) {
+  const [frame, fill] = pickColor(data.title);
+  const questionsTex = data.questions.map(q => {
+    const ref = escapeLatex(q.ref);
+    const text = escapeLatex(q.text);
+    const n = linesFor(q.text);
+    const lines = "\\answerline".repeat(n);
+    return `\\begin{qabox}\n\\qref{${ref}} ${text}\n\\tcblower\n${lines}\n\\end{qabox}`;
+  }).join("\n\n");
+  const criticism = escapeLatex(data.criticism_hint || "");
+  const critInline = criticism ? ` (${criticism})` : "";
+  return `\\documentclass[11pt]{article}
+\\usepackage[a4paper,margin=1.8cm]{geometry}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{xcolor}
+\\usepackage{tcolorbox}
+\\tcbuselibrary{raster,skins}
+\\usepackage{parskip}
+\\usepackage{enumitem}
+\\usepackage{titlesec}
+\\usepackage{hyperref}
+\\hypersetup{colorlinks=true,urlcolor=blue,linkcolor=black}
+
+\\definecolor{qbox}{HTML}{${frame}}
+\\definecolor{qfill}{HTML}{${fill}}
+
+\\titleformat{\\section}{\\large\\bfseries\\color{qbox}}{}{0em}{}
+\\titlespacing{\\section}{0pt}{12pt}{6pt}
+
+\\newcommand{\\answerline}{\\textcolor{black!25}{\\hrulefill}\\\\[9pt]}
+
+\\newtcolorbox{qabox}[1][0.48\\linewidth]{
+  enhanced, sidebyside, sidebyside align=top, sidebyside gap=8pt,
+  colback=qfill, colframe=qbox, boxrule=0.4pt, arc=1mm,
+  left=4pt, right=4pt, top=5pt, bottom=5pt,
+  lefthand width=#1,
+  before skip=8pt, after skip=8pt
+}
+
+\\newcommand{\\qref}[1]{\\textbf{\\color{qbox}(#1)}\\ }
+
+\\pagestyle{plain}
+
+\\begin{document}
+
+\\begin{center}
+{\\LARGE\\bfseries ${escapeLatex(data.title)}}\\\\[2pt]
+{\\normalsize ${escapeLatex(data.citation)}}
+\\end{center}
+
+\\vspace{4pt}
+${escapeLatex(data.author_blurb)}
+
+\\vspace{4pt}
+${escapeLatex(data.reading_note)}
+
+\\section*{Prompt Questions}
+
+${questionsTex}
+
+\\section*{Summary}
+
+${escapeLatex(data.summary_prompt)}
+
+\\vspace{6pt}
+How would you summarise this ${escapeLatex(data.doctype)} in:
+
+\\vspace{4pt}
+\\noindent\\textbf{One paragraph:}\\\\[38pt]
+
+\\noindent\\textbf{One sentence:}\\\\[18pt]
+
+\\noindent\\textit{(Optional)} Do you have any criticisms${critInline}?\\\\[24pt]
+
+\\vspace{6pt}
+\\hrule
+\\vspace{4pt}
+{\\small Submit your answers to the summary questions to: \\texttt{${escapeLatex(STORAGE.email.get() || "[teacher email]")}}}
+
+\\end{document}
+`;
+}
+
+// ---------- main loop ----------
+
+function addDownload(filename, texSource) {
+  els.downloadsPanel.classList.remove("hidden");
+  const blob = new Blob([texSource], { type: "text/x-tex" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  a.innerHTML = `<span class="fname">${filename}</span><span class="tag">Download .tex</span>`;
+  els.downloads.appendChild(a);
+}
+
+async function processFolder() {
+  els.log.innerHTML = "";
+  els.downloads.innerHTML = "";
+  els.downloadsPanel.classList.add("hidden");
+  els.btnProcess.disabled = true;
+
+  try {
+    const path = STORAGE.folder.get();
+    log(`Resolving folder path: ${path}`, "info");
+    const folderId = await findFolderIdByPath(path);
+    log(`Folder ID: ${folderId}`, "dim");
+
+    const pdfs = await listPdfsInFolder(folderId);
+    if (!pdfs.length) {
+      log("No PDFs in that folder.", "err");
+      return;
+    }
+    log(`Found ${pdfs.length} PDF${pdfs.length > 1 ? "s" : ""}.`, "info");
+
+    let ok = 0, fail = 0;
+    for (const pdf of pdfs) {
+      try {
+        log(`\n— ${pdf.name} —`, "info");
+        log("Downloading and extracting text...", "dim");
+        const buf = await downloadDrivePdf(pdf.id);
+        const text = await extractText(buf);
+        log(`Extracted ${text.length} chars. Calling Claude...`, "dim");
+        const data = await callClaude(text, pdf.name);
+        const tex = renderTex(data);
+        const stem = slugify(data.title);
+        addDownload(`${stem}_cornell_notes.tex`, tex);
+        log(`Rendered: ${stem}_cornell_notes.tex`, "ok");
+        ok++;
+      } catch (e) {
+        log(`FAILED on ${pdf.name}: ${e.message}`, "err");
+        fail++;
+      }
+    }
+    log(`\nDone: ${ok} generated, ${fail} failed.`, "info");
+  } catch (e) {
+    log(`Fatal: ${e.message}`, "err");
+  } finally {
+    refreshStatus();
+  }
+}
+
+els.btnProcess.addEventListener("click", processFolder);
+</script>
+</body>
+</html>
