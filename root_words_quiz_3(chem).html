@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Root Words III — Chemistry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12141c;
+    --panel: #1b1e29;
+    --panel-raised: #232735;
+    --line: #3a3e4d;
+    --brass: #b08d57;
+    --brass-bright: #d4b483;
+    --verdigris: #6b8f71;
+    --rust: #a6503d;
+    --parchment: #e8e3d8;
+    --parchment-dim: #a6a297;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(176,141,87,0.08), transparent 45%),
+      radial-gradient(ellipse at 90% 10%, rgba(107,143,113,0.06), transparent 40%),
+      var(--bg);
+    color:var(--parchment);
+    font-family:'Source Serif 4', serif;
+    line-height:1.55;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px 120px;}
+
+  header.hero{padding:72px 24px 48px;text-align:center;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:var(--brass);margin-bottom:18px;}
+  h1.title{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(2.4rem,6vw,3.6rem);margin:0 0 14px;}
+  h1.title em{font-style:italic;color:var(--brass-bright);}
+  .subtitle{max-width:480px;margin:0 auto;color:var(--parchment-dim);font-size:1.02rem;}
+  .carved-rule{width:120px;height:1px;margin:28px auto 0;background:linear-gradient(90deg, transparent, var(--brass), transparent);}
+
+  .progress-bar-outer{position:sticky;top:0;z-index:20;height:3px;background:var(--panel);}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg, var(--brass), var(--verdigris));transition:width 0.4s ease;}
+  .scoreboard{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.05em;color:var(--parchment-dim);padding:14px 24px 0;max-width:760px;margin:0 auto;}
+  .scoreboard .score-value{color:var(--brass-bright);}
+
+  .section{margin-top:64px;}
+  .section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;}
+  .section-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);border:1px solid var(--brass);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-head h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.7rem;margin:0;}
+  .section-desc{color:var(--parchment-dim);font-size:0.95rem;margin:0 0 28px 40px;max-width:560px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:24px 26px;margin-bottom:16px;position:relative;transition:border-color 0.25s ease;}
+  .card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--line);transition:background 0.25s ease;}
+  .card.answered.correct::before{background:var(--verdigris);}
+  .card.answered.incorrect::before{background:var(--rust);}
+  .q-index{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:0.1em;margin-bottom:8px;display:block;}
+  .q-text{font-size:1.06rem;margin:0 0 18px;color:var(--parchment);}
+  .q-text .word{color:var(--brass-bright);font-style:italic;}
+  .options{display:grid;gap:9px;}
+  .opt-btn{text-align:left;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 16px;border-radius:2px;cursor:pointer;transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;}
+  .opt-btn:hover:not(:disabled){border-color:var(--brass);background:#282c3b;}
+  .opt-btn:active:not(:disabled){transform:scale(0.995);}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.selected-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.14);}
+  .opt-btn.selected-incorrect{border-color:var(--rust);background:rgba(166,80,61,0.14);}
+  .opt-btn.reveal-correct{border-color:var(--verdigris);}
+  .feedback{margin-top:14px;font-size:0.9rem;color:var(--parchment-dim);padding-top:12px;border-top:1px dashed var(--line);display:none;}
+  .feedback.show{display:block;}
+  .feedback strong{color:var(--brass-bright);font-weight:600;}
+
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  @media(max-width:640px){.match-grid{grid-template-columns:1fr;gap:12px;}}
+  .match-col-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--parchment-dim);margin-bottom:10px;}
+  .match-item{background:var(--panel);border:1px solid var(--line);padding:12px 14px;margin-bottom:8px;border-radius:2px;cursor:pointer;font-size:0.96rem;transition:all 0.15s ease;}
+  .match-item.word{font-style:italic;color:var(--brass-bright);}
+  .match-item:hover:not(.locked){border-color:var(--brass);}
+  .match-item.selected{border-color:var(--brass);background:var(--panel-raised);box-shadow:0 0 0 1px var(--brass);}
+  .match-item.locked-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.1);cursor:default;}
+  .match-item.locked-wrong-flash{border-color:var(--rust);animation:shake 0.3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  .tricky-card textarea{width:100%;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 14px;border-radius:2px;resize:vertical;min-height:64px;margin-bottom:10px;}
+  .tricky-card textarea:focus{outline:none;border-color:var(--brass);}
+  .roots-hint{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--parchment-dim);margin-bottom:14px;}
+  .reveal-btn{background:transparent;border:1px solid var(--brass);color:var(--brass-bright);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:9px 16px;border-radius:2px;cursor:pointer;transition:all 0.15s ease;}
+  .reveal-btn:hover{background:var(--brass);color:var(--bg);}
+  .model-answer{margin-top:14px;padding:14px 16px;background:rgba(176,141,87,0.08);border-left:2px solid var(--brass);font-size:0.94rem;display:none;color:var(--parchment);}
+  .model-answer.show{display:block;}
+
+  .results-card{text-align:center;padding:48px 32px;background:var(--panel);border:1px solid var(--brass);border-radius:3px;margin-top:56px;display:none;}
+  .results-card.show{display:block;}
+  .results-card .big-score{font-family:'Cormorant Garamond',serif;font-size:3.4rem;color:var(--brass-bright);font-weight:600;margin:8px 0;}
+  .results-card p{color:var(--parchment-dim);}
+  .reset-btn{margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--parchment-dim);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;border-radius:2px;cursor:pointer;}
+  .reset-btn:hover{border-color:var(--brass);color:var(--brass-bright);}
+
+  footer.stamp{text-align:center;padding:40px 24px 30px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#565a68;}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+
+<header class="hero">
+  <div class="eyebrow">Greek &amp; Latin in the Reaction Mechanism</div>
+  <h1 class="title">Root Words <em>III</em></h1>
+  <p class="subtitle">Electrophile, nucleophile, chiral, endo, exo — the names in this subject aren't labels bolted onto the chemistry, they're doing real explanatory work.</p>
+  <div class="carved-rule"></div>
+</header>
+
+<div class="scoreboard">
+  <span>PROGRESS <span id="progressCount">0</span> / <span id="progressTotal">18</span></span>
+  <span>SCORE <span class="score-value" id="scoreCount">0</span></span>
+</div>
+
+<div class="wrap">
+
+  <section class="section" id="section1">
+    <div class="section-head">
+      <span class="section-num">I</span>
+      <h2>Chamber One — Root to Meaning</h2>
+    </div>
+    <p class="section-desc">Choose the correct meaning for each root. One try per question — the card marks itself.</p>
+    <div id="mcqContainer"></div>
+  </section>
+
+  <section class="section" id="section2">
+    <div class="section-head">
+      <span class="section-num">II</span>
+      <h2>Chamber Two — Word to Family</h2>
+    </div>
+    <p class="section-desc">Click a word on the left, then click the root family on the right that it belongs to.</p>
+    <div class="match-grid">
+      <div><div class="match-col-label">Word</div><div id="matchWords"></div></div>
+      <div><div class="match-col-label">Root Family</div><div id="matchFamilies"></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="section3">
+    <div class="section-head">
+      <span class="section-num">III</span>
+      <h2>Chamber Three — Coin Your Own</h2>
+    </div>
+    <p class="section-desc">Build a definition from the roots given, then reveal the model answer — not graded, this one's for thinking out loud.</p>
+    <div id="trickyContainer"></div>
+  </section>
+
+  <div class="results-card" id="resultsCard">
+    <div class="eyebrow">Final Tally</div>
+    <div class="big-score" id="finalScore">0 / 18</div>
+    <p id="finalMessage"></p>
+    <button class="reset-btn" onclick="resetQuiz()">Reset and try again</button>
+  </div>
+
+</div>
+
+<footer class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const mcqData = [
+  {root:"HYDRO-", q:"HYDRO- as in hydrolysis or hydrocarbon means:", options:["water","fire","air","earth"], correct:0},
+  {root:"-PHILE", q:"The suffix -phile in electrophile or hydrophilic means:", options:["fear","love, seeking","break","form"], correct:1},
+  {root:"-LYSIS", q:"-LYSIS as in hydrolysis or electrolysis means:", options:["combining","loosening, breaking apart","measuring","colouring"], correct:1},
+  {root:"-MER", q:"-MER as in isomer or polymer means:", options:["part","whole","colour","hand"], correct:0},
+  {root:"-GEN", q:"-GEN as in hydrogen or carcinogenic means:", options:["destroying","producing, born of","measuring","binding"], correct:1},
+  {root:"AMPHI-", q:"AMPHI- as in amphoteric means:", options:["neither","both, on both sides","above","within"], correct:1},
+  {root:"CHROM-", q:"CHROM- as in chromatography means:", options:["colour","heat","speed","weight"], correct:0},
+  {root:"CHIRAL/CHIR-", q:"CHIRAL comes from the Greek for:", options:["mirror","hand","light","shape"], correct:1},
+  {root:"ENDO-", q:"ENDO- as in endothermic means:", options:["outside","within","across","beside"], correct:1},
+  {root:"EXO-", q:"EXO- as in exothermic means:", options:["within","outside","beyond","together"], correct:1},
+];
+
+const matchData = [
+  {word:"cation", family:"CATA-/ANA-"},
+  {word:"precipitate", family:"SOLV-/SOLUT-/DISSOCI-"},
+  {word:"titre", family:"TITR-"},
+  {word:"sublimation", family:"VOLATIL-/SUBLIM-"},
+  {word:"stoichiometry", family:"STOICH-"},
+  {word:"enantiomer", family:"Molecular Geometry"},
+  {word:"meta-substituted", family:"ORTHO-/META-/PARA-"},
+  {word:"redox", family:"OXID-/RED-"},
+];
+
+const trickyData = [
+  {word:"Homolysis", roots:"homo- = same · lysis = breaking apart"},
+  {word:"Heterolysis", roots:"hetero- = different · lysis = breaking apart"},
+  {word:"Tautomer", roots:"tauto- = the same · -mer = part"},
+  {word:"Racemic", roots:"Latin racemus = a bunch of grapes"},
+  {word:"Isoelectronic", roots:"iso- = equal, same · electron = electron"},
+  {word:"Prochiral", roots:"pro- = before, forward toward · chiral = handed"},
+];
+
+const trickyModel = [
+  "Literally 'breaking apart the same way' — bond cleavage where each fragment keeps one electron from the shared pair, splitting symmetrically to give two radicals.",
+  "Literally 'breaking apart differently' — bond cleavage where both electrons go to one fragment, splitting asymmetrically to give a cation and an anion.",
+  "Literally 'the same part' — two isomers that interconvert by the shift of a proton (and a double bond), so the same underlying skeleton exists as two rapidly-exchanging forms.",
+  "Named from grape clusters because early tartaric acid crystals from wine-making showed this property first — a racemic mixture is an equal 50:50 blend of both enantiomers, with no net optical rotation, just as a bunch of grapes contains no single 'handedness.'",
+  "Literally 'same electrons' — species with the same number of valence electrons (and often a similar structure), even though they contain different atoms, e.g. N₂ and CO.",
+  "Literally 'before/toward handed' — a molecule that is not itself chiral but can become chiral after one more substitution or reaction step, i.e. it's 'on the way to' chirality.",
+];
+
+let score = 0;
+const gradedTotal = mcqData.length + matchData.length;
+let answeredCount = 0;
+
+/* ---------------- MCQ ---------------- */
+const mcqContainer = document.getElementById('mcqContainer');
+mcqData.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `mcq-${qi}`;
+  card.innerHTML = `
+    <span class="q-index">QUESTION ${qi+1} / ${mcqData.length}</span>
+    <p class="q-text">${item.q}</p>
+    <div class="options" id="mcq-opts-${qi}"></div>
+    <div class="feedback" id="mcq-fb-${qi}"></div>
+  `;
+  mcqContainer.appendChild(card);
+  const optsDiv = card.querySelector(`#mcq-opts-${qi}`);
+  item.options.forEach((opt, oi) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => handleMcqAnswer(qi, oi);
+    optsDiv.appendChild(btn);
+  });
+});
+
+function handleMcqAnswer(qi, oi) {
+  const card = document.getElementById(`mcq-${qi}`);
+  if (card.classList.contains('answered')) return;
+  const item = mcqData[qi];
+  const btns = document.querySelectorAll(`#mcq-opts-${qi} .opt-btn`);
+  btns.forEach(b => b.disabled = true);
+  const correct = oi === item.correct;
+  card.classList.add('answered', correct ? 'correct' : 'incorrect');
+  btns[oi].classList.add(correct ? 'selected-correct' : 'selected-incorrect');
+  if (!correct) btns[item.correct].classList.add('reveal-correct');
+  const fb = document.getElementById(`mcq-fb-${qi}`);
+  fb.classList.add('show');
+  fb.innerHTML = correct
+    ? `<strong>Correct.</strong> ${item.root} → ${item.options[item.correct]}.`
+    : `<strong>Not quite.</strong> ${item.root} means "${item.options[item.correct]}."`;
+  if (correct) score++;
+  answeredCount++;
+  updateScoreboard();
+}
+
+/* ---------------- MATCHING ---------------- */
+const wordsShuffled = [...matchData].sort(() => Math.random() - 0.5);
+const familiesShuffled = [...new Set(matchData.map(m => m.family))].sort(() => Math.random() - 0.5);
+const matchWordsDiv = document.getElementById('matchWords');
+const matchFamiliesDiv = document.getElementById('matchFamilies');
+let selectedWord = null;
+let selectedWordEl = null;
+const lockedWords = new Set();
+
+wordsShuffled.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'match-item word';
+  el.textContent = m.word;
+  el.onclick = () => {
+    if (lockedWords.has(m.word)) return;
+    document.querySelectorAll('.match-item.word').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedWord = m.word;
+    selectedWordEl = el;
+  };
+  matchWordsDiv.appendChild(el);
+});
+
+familiesShuffled.forEach(fam => {
+  const el = document.createElement('div');
+  el.className = 'match-item';
+  el.textContent = fam;
+  el.onclick = () => {
+    if (!selectedWord) return;
+    const correctFamily = matchData.find(m => m.word === selectedWord).family;
+    if (fam === correctFamily) {
+      selectedWordEl.classList.add('locked-correct','locked');
+      selectedWordEl.classList.remove('selected');
+      lockedWords.add(selectedWord);
+      score++; answeredCount++;
+      updateScoreboard();
+      selectedWord = null; selectedWordEl = null;
+    } else {
+      el.classList.add('locked-wrong-flash');
+      setTimeout(() => el.classList.remove('locked-wrong-flash'), 300);
+    }
+  };
+  matchFamiliesDiv.appendChild(el);
+});
+
+/* ---------------- TRICKY ---------------- */
+const trickyContainer = document.getElementById('trickyContainer');
+trickyData.forEach((item, ti) => {
+  const card = document.createElement('div');
+  card.className = 'card tricky-card';
+  card.innerHTML = `
+    <span class="q-index">WORD ${ti+1} / ${trickyData.length}</span>
+    <p class="q-text">${item.word}</p>
+    <div class="roots-hint">${item.roots}</div>
+    <textarea placeholder="Write your definition here, built only from the roots above…"></textarea>
+    <button class="reveal-btn" id="reveal-${ti}">Reveal model answer</button>
+    <div class="model-answer" id="model-${ti}">${trickyModel[ti]}</div>
+  `;
+  trickyContainer.appendChild(card);
+  document.getElementById(`reveal-${ti}`).onclick = () => {
+    document.getElementById(`model-${ti}`).classList.toggle('show');
+  };
+});
+
+/* ---------------- SCOREBOARD ---------------- */
+document.getElementById('progressTotal').textContent = gradedTotal;
+document.getElementById('finalScore').textContent = `0 / ${gradedTotal}`;
+
+function updateScoreboard() {
+  document.getElementById('progressCount').textContent = answeredCount;
+  document.getElementById('scoreCount').textContent = score;
+  document.getElementById('progressBar').style.width = `${(answeredCount / gradedTotal) * 100}%`;
+  if (answeredCount === gradedTotal) showResults();
+}
+
+function showResults() {
+  const card = document.getElementById('resultsCard');
+  card.classList.add('show');
+  document.getElementById('finalScore').textContent = `${score} / ${gradedTotal}`;
+  const pct = score / gradedTotal;
+  let msg;
+  if (pct === 1) msg = "Full marks. Every root landed cleanly.";
+  else if (pct >= 0.75) msg = "Strong. Scroll back to the cards marked in rust and revisit those roots.";
+  else msg = "Worth another pass — read back through the missed cards, then reset and try again.";
+  document.getElementById('finalMessage').textContent = msg;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function resetQuiz() { location.reload(); }
+</script>
+
+</body>
+</html>
