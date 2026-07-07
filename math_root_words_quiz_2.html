@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Root Words II — Scale &amp; Structure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12141c;
+    --panel: #1b1e29;
+    --panel-raised: #232735;
+    --line: #3a3e4d;
+    --brass: #b08d57;
+    --brass-bright: #d4b483;
+    --verdigris: #6b8f71;
+    --rust: #a6503d;
+    --parchment: #e8e3d8;
+    --parchment-dim: #a6a297;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(176,141,87,0.08), transparent 45%),
+      radial-gradient(ellipse at 90% 10%, rgba(107,143,113,0.06), transparent 40%),
+      var(--bg);
+    color:var(--parchment);
+    font-family:'Source Serif 4', serif;
+    line-height:1.55;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px 120px;}
+
+  header.hero{
+    padding:72px 24px 48px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin-bottom:18px;
+  }
+  h1.title{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:clamp(2.4rem,6vw,3.6rem);
+    margin:0 0 14px;
+  }
+  h1.title em{font-style:italic;color:var(--brass-bright);}
+  .subtitle{max-width:480px;margin:0 auto;color:var(--parchment-dim);font-size:1.02rem;}
+  .carved-rule{width:120px;height:1px;margin:28px auto 0;background:linear-gradient(90deg, transparent, var(--brass), transparent);}
+
+  .progress-bar-outer{position:sticky;top:0;z-index:20;height:3px;background:var(--panel);}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg, var(--brass), var(--verdigris));transition:width 0.4s ease;}
+  .scoreboard{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.05em;
+    color:var(--parchment-dim);padding:14px 24px 0;max-width:760px;margin:0 auto;
+  }
+  .scoreboard .score-value{color:var(--brass-bright);}
+
+  .section{margin-top:64px;}
+  .section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;}
+  .section-num{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);
+    border:1px solid var(--brass);border-radius:50%;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .section-head h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.7rem;margin:0;}
+  .section-desc{color:var(--parchment-dim);font-size:0.95rem;margin:0 0 28px 40px;max-width:560px;}
+
+  /* Ladder (drag-to-order) */
+  .ladder-wrap{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:22px 24px 26px;}
+  .ladder-instructions{font-size:0.9rem;color:var(--parchment-dim);margin-bottom:16px;}
+  .ladder-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .ladder-item{
+    background:var(--panel-raised);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:11px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:grab;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.92rem;
+    user-select:none;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .ladder-item.dragging{opacity:0.4;}
+  .ladder-item .factor{color:var(--brass-bright);}
+  .ladder-item.locked-correct{border-color:var(--verdigris);}
+  .ladder-check{
+    margin-top:16px;
+    background:transparent;
+    border:1px solid var(--brass);
+    color:var(--brass-bright);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    padding:9px 16px;border-radius:2px;cursor:pointer;
+  }
+  .ladder-check:hover{background:var(--brass);color:var(--bg);}
+  .ladder-feedback{margin-top:12px;font-size:0.88rem;color:var(--parchment-dim);}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:3px;
+    padding:24px 26px;margin-bottom:16px;position:relative;transition:border-color 0.25s ease;
+  }
+  .card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--line);transition:background 0.25s ease;}
+  .card.answered.correct::before{background:var(--verdigris);}
+  .card.answered.incorrect::before{background:var(--rust);}
+  .q-index{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:0.1em;margin-bottom:8px;display:block;}
+  .q-text{font-size:1.06rem;margin:0 0 18px;color:var(--parchment);}
+  .options{display:grid;gap:9px;}
+  .opt-btn{
+    text-align:left;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);
+    font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 16px;border-radius:2px;cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .opt-btn:hover:not(:disabled){border-color:var(--brass);background:#282c3b;}
+  .opt-btn:active:not(:disabled){transform:scale(0.995);}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.selected-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.14);}
+  .opt-btn.selected-incorrect{border-color:var(--rust);background:rgba(166,80,61,0.14);}
+  .opt-btn.reveal-correct{border-color:var(--verdigris);}
+  .feedback{margin-top:14px;font-size:0.9rem;color:var(--parchment-dim);padding-top:12px;border-top:1px dashed var(--line);display:none;}
+  .feedback.show{display:block;}
+  .feedback strong{color:var(--brass-bright);font-weight:600;}
+
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  @media(max-width:640px){.match-grid{grid-template-columns:1fr;gap:12px;}}
+  .match-col-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--parchment-dim);margin-bottom:10px;}
+  .match-item{background:var(--panel);border:1px solid var(--line);padding:12px 14px;margin-bottom:8px;border-radius:2px;cursor:pointer;font-size:0.96rem;transition:all 0.15s ease;}
+  .match-item.word{font-style:italic;color:var(--brass-bright);}
+  .match-item:hover:not(.locked){border-color:var(--brass);}
+  .match-item.selected{border-color:var(--brass);background:var(--panel-raised);box-shadow:0 0 0 1px var(--brass);}
+  .match-item.locked-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.1);cursor:default;}
+  .match-item.locked-wrong-flash{border-color:var(--rust);animation:shake 0.3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  .tricky-card textarea{
+    width:100%;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);
+    font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 14px;border-radius:2px;resize:vertical;min-height:64px;margin-bottom:10px;
+  }
+  .tricky-card textarea:focus{outline:none;border-color:var(--brass);}
+  .roots-hint{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--parchment-dim);margin-bottom:14px;}
+  .reveal-btn{
+    background:transparent;border:1px solid var(--brass);color:var(--brass-bright);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    padding:9px 16px;border-radius:2px;cursor:pointer;transition:all 0.15s ease;
+  }
+  .reveal-btn:hover{background:var(--brass);color:var(--bg);}
+  .model-answer{margin-top:14px;padding:14px 16px;background:rgba(176,141,87,0.08);border-left:2px solid var(--brass);font-size:0.94rem;display:none;color:var(--parchment);}
+  .model-answer.show{display:block;}
+
+  .results-card{text-align:center;padding:48px 32px;background:var(--panel);border:1px solid var(--brass);border-radius:3px;margin-top:56px;display:none;}
+  .results-card.show{display:block;}
+  .results-card .big-score{font-family:'Cormorant Garamond',serif;font-size:3.4rem;color:var(--brass-bright);font-weight:600;margin:8px 0;}
+  .results-card p{color:var(--parchment-dim);}
+  .reset-btn{
+    margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--parchment-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    padding:10px 18px;border-radius:2px;cursor:pointer;
+  }
+  .reset-btn:hover{border-color:var(--brass);color:var(--brass-bright);}
+
+  footer.stamp{text-align:center;padding:40px 24px 30px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#565a68;}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+
+<header class="hero">
+  <div class="eyebrow">Scale &amp; Structure in Mathematical Physics</div>
+  <h1 class="title">Root Words <em>II</em></h1>
+  <p class="subtitle">From nano to tera, from fraction to isomorphism — the same handful of Latin and Greek fossils, doing different jobs.</p>
+  <div class="carved-rule"></div>
+</header>
+
+<div class="scoreboard">
+  <span>PROGRESS <span id="progressCount">0</span> / <span id="progressTotal">19</span></span>
+  <span>SCORE <span class="score-value" id="scoreCount">0</span></span>
+</div>
+
+<div class="wrap">
+
+  <!-- SECTION 1: SI Ladder ordering -->
+  <section class="section" id="section1">
+    <div class="section-head">
+      <span class="section-num">I</span>
+      <h2>The Scale Ladder</h2>
+    </div>
+    <p class="section-desc">This is the one family where order carries real information. Drag the prefixes into order from smallest factor to largest, then check.</p>
+    <div class="ladder-wrap">
+      <div class="ladder-instructions">Drag to reorder, smallest at the top.</div>
+      <ul class="ladder-list" id="ladderList"></ul>
+      <button class="ladder-check" id="ladderCheckBtn">Check order</button>
+      <div class="ladder-feedback" id="ladderFeedback"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: MCQ -->
+  <section class="section" id="section2">
+    <div class="section-head">
+      <span class="section-num">II</span>
+      <h2>Root to Meaning</h2>
+    </div>
+    <p class="section-desc">Choose the correct meaning for each root. One try per question — the card marks itself.</p>
+    <div id="mcqContainer"></div>
+  </section>
+
+  <!-- SECTION 3: Matching -->
+  <section class="section" id="section3">
+    <div class="section-head">
+      <span class="section-num">III</span>
+      <h2>Word to Family</h2>
+    </div>
+    <p class="section-desc">Click a word on the left, then click the root family on the right that it belongs to.</p>
+    <div class="match-grid">
+      <div><div class="match-col-label">Word</div><div id="matchWords"></div></div>
+      <div><div class="match-col-label">Root Family</div><div id="matchFamilies"></div></div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: Tricky words -->
+  <section class="section" id="section4">
+    <div class="section-head">
+      <span class="section-num">IV</span>
+      <h2>Coin Your Own</h2>
+    </div>
+    <p class="section-desc">Build a definition from the roots given, then reveal the model answer — not graded, this one's for thinking out loud.</p>
+    <div id="trickyContainer"></div>
+  </section>
+
+  <div class="results-card" id="resultsCard">
+    <div class="eyebrow">Final Tally</div>
+    <div class="big-score" id="finalScore">0 / 19</div>
+    <p id="finalMessage"></p>
+    <button class="reset-btn" onclick="resetQuiz()">Reset and try again</button>
+  </div>
+
+</div>
+
+<footer class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const ladderCorrectOrder = ["nano-","micro-","milli-","centi-","deci-","deca-","hecto-","kilo-","mega-","giga-","tera-"];
+const ladderFactors = {
+  "nano-":"10⁻⁹", "micro-":"10⁻⁶", "milli-":"10⁻³", "centi-":"10⁻²", "deci-":"10⁻¹",
+  "deca-":"10¹", "hecto-":"10²", "kilo-":"10³", "mega-":"10⁶", "giga-":"10⁹", "tera-":"10¹²"
+};
+let ladderSolved = false;
+
+const mcqData = [
+  {root:"PER-", q:"PER- as in percent or periodic means:", options:["through, for each","hundred","across","break"], correct:0},
+  {root:"INTEGR-", q:"INTEGR- as in integer or integral means:", options:["broken apart","whole, untouched","many","reckoning"], correct:1},
+  {root:"FRACT-", q:"FRACT- as in fraction or fractal means:", options:["whole","break","form","carry"], correct:1},
+  {root:"-NOMIAL", q:"The suffix in monomial, binomial, polynomial means:", options:["named term","number","ratio","shape"], correct:0},
+  {root:"DERIV-", q:"DERIV- as in derivative shares a root meaning:", options:["to throw","flowing from (stream)","to break","back and forth"], correct:1},
+  {root:"RECIPRO-", q:"RECIPRO- as in reciprocal means:", options:["forward only","back and forth","above","many"], correct:1},
+  {root:"LOG-/LOGO-", q:"LOG-/LOGO- as in logarithm means:", options:["light","word, reckoning, ratio","form","break"], correct:1},
+  {root:"MORPH-", q:"MORPH- as in isomorphism or metamorphosis means:", options:["number","form, shape","measure","together"], correct:1},
+  {root:"PARA-", q:"PARA- as in parabola means:", options:["beyond, excess","beside, alongside","falling short","many"], correct:1},
+  {root:"HYPER-", q:"HYPER- as in hyperbola means:", options:["beside, alongside","falling short","beyond, excess","together"], correct:2},
+];
+
+const matchData = [
+  {word:"fractal", family:"FRACT-/FRAG-"},
+  {word:"binomial", family:"-NOMIAL"},
+  {word:"exponential", family:"EXPO-/EXPONENT-"},
+  {word:"quadratic", family:"QUAD-/QUART-"},
+  {word:"amorphous", family:"MORPH-/-MORPHISM"},
+  {word:"ellipse", family:"Conic sections"},
+  {word:"congruent (con- + gruere)", family:"CON-/COM-"},
+  {word:"proportional", family:"RATIO-/RATIONAL-"},
+];
+
+const trickyData = [
+  {word:"Rationalise", roots:"ratio = reckoning, comparison · -ise = to make/turn into"},
+  {word:"Bijection", roots:"bi- = twice · -jection (jacere) = to throw"},
+  {word:"Congruent", roots:"con- = together · gruere = to agree, come together"},
+  {word:"Asymptote", roots:"a- = not · syn- = together · ptotos = falling"},
+  {word:"Coefficient", roots:"co- = together · efficere = to bring about, effect"},
+  {word:"Differential", roots:"dis- = apart · ferre = to carry, bear"},
+];
+
+const trickyModel = [
+  "Literally 'to make into a ratio/reckoning' — to remove an irrational number from a position (like a denominator) by turning the expression into a clean ratio of rationals.",
+  "Literally 'a twice-throwing' — a mapping that throws every element of one set onto exactly one element of another, and back again: one-to-one and onto at once.",
+  "Literally 'coming together in agreement' — two shapes that agree exactly in size and form when placed together.",
+  "Literally 'not falling together' — a line the curve approaches but never actually meets, the curve and the line never quite 'fall together.'",
+  "Literally 'bringing about together' — the number that acts together with a variable to bring about its contribution to an expression.",
+  "Literally 'carrying apart' — describing a rate at which a quantity is carried apart, or changes, with respect to another.",
+];
+
+let score = 0;
+const gradedTotal = mcqData.length + matchData.length + 1; // +1 for ladder
+let answeredCount = 0;
+
+/* ---------------- LADDER ---------------- */
+const ladderList = document.getElementById('ladderList');
+const shuffledLadder = [...ladderCorrectOrder].sort(() => Math.random() - 0.5);
+let dragSrcEl = null;
+
+function renderLadder() {
+  ladderList.innerHTML = '';
+  shuffledLadder.forEach(prefix => {
+    const li = document.createElement('li');
+    li.className = 'ladder-item';
+    li.draggable = true;
+    li.dataset.prefix = prefix;
+    li.innerHTML = `<span>${prefix}</span><span class="factor">${ladderFactors[prefix]}</span>`;
+    li.addEventListener('dragstart', () => { dragSrcEl = li; li.classList.add('dragging'); });
+    li.addEventListener('dragend', () => li.classList.remove('dragging'));
+    li.addEventListener('dragover', e => e.preventDefault());
+    li.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcEl && dragSrcEl !== li) {
+        const items = Array.from(ladderList.children);
+        const srcIdx = items.indexOf(dragSrcEl);
+        const tgtIdx = items.indexOf(li);
+        if (srcIdx < tgtIdx) li.after(dragSrcEl); else li.before(dragSrcEl);
+      }
+    });
+    ladderList.appendChild(li);
+  });
+}
+renderLadder();
+
+document.getElementById('ladderCheckBtn').addEventListener('click', () => {
+  const current = Array.from(ladderList.children).map(li => li.dataset.prefix);
+  const isCorrect = JSON.stringify(current) === JSON.stringify(ladderCorrectOrder);
+  const fb = document.getElementById('ladderFeedback');
+  if (isCorrect) {
+    Array.from(ladderList.children).forEach(li => li.classList.add('locked-correct'));
+    fb.innerHTML = "<strong style='color:var(--verdigris)'>Correct.</strong> That's the full ladder, nano up to tera.";
+    if (!ladderSolved) { score++; answeredCount++; ladderSolved = true; updateScoreboard(); }
+  } else {
+    fb.innerHTML = "Not quite in order yet — check against the factors on the right and try again.";
+  }
+});
+
+/* ---------------- MCQ ---------------- */
+const mcqContainer = document.getElementById('mcqContainer');
+mcqData.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `mcq-${qi}`;
+  card.innerHTML = `
+    <span class="q-index">QUESTION ${qi+1} / ${mcqData.length}</span>
+    <p class="q-text">${item.q}</p>
+    <div class="options" id="mcq-opts-${qi}"></div>
+    <div class="feedback" id="mcq-fb-${qi}"></div>
+  `;
+  mcqContainer.appendChild(card);
+  const optsDiv = card.querySelector(`#mcq-opts-${qi}`);
+  item.options.forEach((opt, oi) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => handleMcqAnswer(qi, oi);
+    optsDiv.appendChild(btn);
+  });
+});
+
+function handleMcqAnswer(qi, oi) {
+  const card = document.getElementById(`mcq-${qi}`);
+  if (card.classList.contains('answered')) return;
+  const item = mcqData[qi];
+  const btns = document.querySelectorAll(`#mcq-opts-${qi} .opt-btn`);
+  btns.forEach(b => b.disabled = true);
+  const correct = oi === item.correct;
+  card.classList.add('answered', correct ? 'correct' : 'incorrect');
+  btns[oi].classList.add(correct ? 'selected-correct' : 'selected-incorrect');
+  if (!correct) btns[item.correct].classList.add('reveal-correct');
+  const fb = document.getElementById(`mcq-fb-${qi}`);
+  fb.classList.add('show');
+  fb.innerHTML = correct
+    ? `<strong>Correct.</strong> ${item.root} → ${item.options[item.correct]}.`
+    : `<strong>Not quite.</strong> ${item.root} means "${item.options[item.correct]}."`;
+  if (correct) score++;
+  answeredCount++;
+  updateScoreboard();
+}
+
+/* ---------------- MATCHING ---------------- */
+const wordsShuffled = [...matchData].sort(() => Math.random() - 0.5);
+const familiesShuffled = [...new Set(matchData.map(m => m.family))].sort(() => Math.random() - 0.5);
+const matchWordsDiv = document.getElementById('matchWords');
+const matchFamiliesDiv = document.getElementById('matchFamilies');
+let selectedWord = null;
+let selectedWordEl = null;
+const lockedWords = new Set();
+
+wordsShuffled.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'match-item word';
+  el.textContent = m.word;
+  el.onclick = () => {
+    if (lockedWords.has(m.word)) return;
+    document.querySelectorAll('.match-item.word').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedWord = m.word;
+    selectedWordEl = el;
+  };
+  matchWordsDiv.appendChild(el);
+});
+
+familiesShuffled.forEach(fam => {
+  const el = document.createElement('div');
+  el.className = 'match-item';
+  el.textContent = fam;
+  el.onclick = () => {
+    if (!selectedWord) return;
+    const correctFamily = matchData.find(m => m.word === selectedWord).family;
+    if (fam === correctFamily) {
+      selectedWordEl.classList.add('locked-correct','locked');
+      selectedWordEl.classList.remove('selected');
+      lockedWords.add(selectedWord);
+      score++; answeredCount++;
+      updateScoreboard();
+      selectedWord = null; selectedWordEl = null;
+    } else {
+      el.classList.add('locked-wrong-flash');
+      setTimeout(() => el.classList.remove('locked-wrong-flash'), 300);
+    }
+  };
+  matchFamiliesDiv.appendChild(el);
+});
+
+/* ---------------- TRICKY ---------------- */
+const trickyContainer = document.getElementById('trickyContainer');
+trickyData.forEach((item, ti) => {
+  const card = document.createElement('div');
+  card.className = 'card tricky-card';
+  card.innerHTML = `
+    <span class="q-index">WORD ${ti+1} / ${trickyData.length}</span>
+    <p class="q-text">${item.word}</p>
+    <div class="roots-hint">${item.roots}</div>
+    <textarea placeholder="Write your definition here, built only from the roots above…"></textarea>
+    <button class="reveal-btn" id="reveal-${ti}">Reveal model answer</button>
+    <div class="model-answer" id="model-${ti}">${trickyModel[ti]}</div>
+  `;
+  trickyContainer.appendChild(card);
+  document.getElementById(`reveal-${ti}`).onclick = () => {
+    document.getElementById(`model-${ti}`).classList.toggle('show');
+  };
+});
+
+/* ---------------- SCOREBOARD ---------------- */
+document.getElementById('progressTotal').textContent = gradedTotal;
+document.getElementById('finalScore').textContent = `0 / ${gradedTotal}`;
+
+function updateScoreboard() {
+  document.getElementById('progressCount').textContent = answeredCount;
+  document.getElementById('scoreCount').textContent = score;
+  document.getElementById('progressBar').style.width = `${(answeredCount / gradedTotal) * 100}%`;
+  if (answeredCount === gradedTotal) showResults();
+}
+
+function showResults() {
+  const card = document.getElementById('resultsCard');
+  card.classList.add('show');
+  document.getElementById('finalScore').textContent = `${score} / ${gradedTotal}`;
+  const pct = score / gradedTotal;
+  let msg;
+  if (pct === 1) msg = "Full marks. The ladder and every root landed cleanly.";
+  else if (pct >= 0.75) msg = "Strong. Scroll back to the cards marked in rust and revisit those roots.";
+  else msg = "Worth another pass — read back through the missed cards, then reset and try again.";
+  document.getElementById('finalMessage').textContent = msg;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function resetQuiz() { location.reload(); }
+</script>
+
+</body>
+</html>
