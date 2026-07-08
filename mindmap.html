@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Map — McMurmerings Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --bg:#0d0e11; --surface:#141519; --border:rgba(255,255,255,0.08);
+  --text:#e8e6de; --muted:rgba(232,230,222,0.42); --gold:#c8a96e; --green:#6abd8a;
+}
+body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-weight:300; min-height:100vh; display:flex; flex-direction:column; }
+header { padding:2.2rem 2rem 1.2rem; border-bottom:1px solid var(--border); }
+header h1 { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(1.7rem,3.2vw,2.5rem); letter-spacing:.04em; }
+header p { font-size:.75rem; color:var(--muted); margin-top:.35rem; font-family:'IBM Plex Mono',monospace; letter-spacing:.07em; }
+
+#controls { display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; padding:1rem 2rem; border-bottom:1px solid var(--border); background:var(--surface); }
+.ctl { display:flex; flex-direction:column; gap:.3rem; }
+.ctl label { font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
+.ctl select, .ctl input {
+  background:var(--bg); color:var(--text); border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px; padding:.45rem .6rem; font-family:'IBM Plex Sans',sans-serif;
+  font-size:.8rem; min-width:150px;
+}
+.ctl select:focus, .ctl input:focus { outline:none; border-color:var(--gold); }
+.ctl-btns { display:flex; gap:.5rem; }
+.mini-btn {
+  font-family:'IBM Plex Mono',monospace; font-size:.62rem; letter-spacing:.07em;
+  color:var(--muted); background:none; border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px; padding:.45rem .8rem; cursor:pointer; transition:color .2s,border-color .2s;
+}
+.mini-btn:hover { color:var(--gold); border-color:var(--gold); }
+#count-line { font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--muted); letter-spacing:.06em; margin-left:auto; align-self:center; }
+
+#map-wrap { flex:1; overflow:auto; position:relative; }
+#map { display:block; }
+#loading { font-family:'IBM Plex Mono',monospace; font-size:.73rem; color:var(--muted); padding:3rem 2rem; letter-spacing:.06em; }
+
+/* SVG node styling */
+.node-group { cursor:pointer; }
+.node-rect { fill:var(--surface); stroke:var(--border); rx:8; transition:stroke .2s; }
+.node-group:hover .node-rect { stroke:var(--gold); }
+.node-rect.branch { stroke:rgba(200,169,110,0.35); }
+.node-rect.leaf { stroke:rgba(106,189,138,0.25); }
+.node-label { font-family:'IBM Plex Sans',sans-serif; font-size:12px; font-weight:400; fill:var(--text); pointer-events:none; }
+.node-count { font-family:'IBM Plex Mono',monospace; font-size:9px; fill:var(--muted); pointer-events:none; }
+.node-arrow { font-size:10px; fill:var(--green); pointer-events:none; }
+.link { fill:none; stroke:rgba(255,255,255,0.13); stroke-width:1; }
+.root-label { font-family:'Cormorant Garamond',serif; font-size:20px; fill:var(--gold); }
+
+footer { padding:1.1rem 2rem; border-top:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:.58rem; letter-spacing:.08em; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Knowledge Map</h1>
+  <p>Every app hosted on the hub, arranged by a hierarchy of your choosing · click branches to fold, leaves to launch</p>
+</header>
+
+<div id="controls">
+  <div class="ctl">
+    <label for="l1">First branch</label>
+    <select id="l1"></select>
+  </div>
+  <div class="ctl">
+    <label for="l2">Second branch</label>
+    <select id="l2"></select>
+  </div>
+  <div class="ctl">
+    <label for="l3">Third branch</label>
+    <select id="l3"></select>
+  </div>
+  <div class="ctl">
+    <label for="search">Search leaves</label>
+    <input id="search" type="text" placeholder="e.g. Eisenstein, entropy…">
+  </div>
+  <div class="ctl-btns">
+    <button class="mini-btn" onclick="expandAll()">Expand all</button>
+    <button class="mini-btn" onclick="collapseAll()">Collapse all</button>
+  </div>
+  <span id="count-line"></span>
+</div>
+
+<div id="loading">Fetching sheet data…</div>
+<div id="map-wrap"><svg id="map" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const SHEET_ID   = '1OsRlN-hDqrVuPReCq_yKZfF-RZB9Umg5macHqvLz478';
+const SHEET_NAME = 'Extracting+Project+Links+and+URLs';
+const FETCH_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+// Facets offered as branching levels. Missing columns are hidden automatically.
+const BRANCH_FACETS = ['Hub', 'Subject', 'Domain', 'Theme', 'Format', 'Series', 'Level'];
+const DEFAULTS = ['Hub', 'Subject', 'Domain'];
+const LEVEL_LABELS = { 'M':'Middle School', 'H':'High School', 'U':'Undergraduate' };
+
+// Layout constants
+const NODE_H = 30, NODE_GAP = 8, DEPTH_W = 230, PAD = 40;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function splitTags(v) { return (v||'').split(';').map(s=>s.trim()).filter(Boolean); }
+function appName(a) { return a['Display Name'] || a['App Name'] || ''; }
+function cleanUrl(u) {
+  if (!u) return '';
+  u = u.trim().replace(/^['",]+|['",]+$/g,'').replace(/[\u200B-\u200D\uFEFF]/g,'');
+  if (!u) return '';
+  return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+}
+function parseCSV(text) {
+  const rows=[]; let row=[], field='', inQ=false;
+  for (let i=0;i<text.length;i++){
+    const c=text[i];
+    if (c==='"'){ if(inQ&&text[i+1]==='"'){field+='"';i++;} else inQ=!inQ; }
+    else if (c===','&&!inQ){ row.push(field.trim()); field=''; }
+    else if ((c==='\n'||c==='\r')&&!inQ){
+      if(field||row.length){row.push(field.trim());rows.push(row);}
+      row=[];field=''; if(c==='\r'&&text[i+1]==='\n')i++;
+    } else field+=c;
+  }
+  if(field||row.length){row.push(field.trim());rows.push(row);}
+  return rows;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let hubApps=[], sheetHeaders=[], root=null;
+const svg=document.getElementById('map');
+
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function loadData() {
+  const ldiv=document.getElementById('loading');
+  try {
+    const res=await fetch(FETCH_URL);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=parseCSV(await res.text());
+    if(rows.length<2) throw new Error('No data rows');
+    sheetHeaders=rows[0].map(h=>h.replace(/^"|"$/g,'').trim());
+    const apps=[];
+    for(let i=1;i<rows.length;i++){
+      const vals=rows[i];
+      if(vals.length<=1&&vals[0]==='') continue;
+      const app={};
+      sheetHeaders.forEach((h,idx)=>{
+        let v=(vals[idx]||'').replace(/^"|"$/g,'').trim();
+        if(h==='App URL') v=cleanUrl(v);
+        app[h]=v;
+      });
+      if(app['App Name']&&app['App URL']) apps.push(app);
+    }
+    // Hub membership: prefer the migrated HubFlag column; fall back to the
+    // old numeric Hub column if the sheet hasn't been migrated yet.
+    const flagCol = sheetHeaders.includes('HubFlag') ? 'HubFlag'
+                  : (!sheetHeaders.includes('Format') && sheetHeaders.includes('Hub')) ? 'Hub'
+                  : null;
+    hubApps = flagCol ? apps.filter(a=>(a[flagCol]||'').trim()==='1') : apps;
+    if(!hubApps.length) hubApps = apps;   // never show an empty map
+
+    buildControls();
+    rebuild();
+    ldiv.style.display='none';
+  } catch(e) {
+    ldiv.textContent='⚠ Error: '+e.message;
+    console.error(e);
+  }
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────
+function facetAvailable(f) {
+  // Level always exists; other facets need the column with some data.
+  if(!sheetHeaders.includes(f)) return false;
+  return hubApps.some(a=>splitTags(a[f]).length);
+}
+
+function buildControls() {
+  ['l1','l2','l3'].forEach((id,idx)=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='';
+    const none=document.createElement('option');
+    none.value=''; none.textContent='— none —';
+    if(idx>0) sel.appendChild(none);
+    BRANCH_FACETS.filter(facetAvailable).forEach(f=>{
+      const o=document.createElement('option');
+      o.value=f; o.textContent=f;
+      sel.appendChild(o);
+    });
+    // default selection, falling back to first available
+    const wanted=DEFAULTS[idx];
+    sel.value = facetAvailable(wanted) ? wanted : (idx===0 ? sel.options[0].value : '');
+    sel.addEventListener('change', rebuild);
+  });
+  document.getElementById('search').addEventListener('input', rebuild);
+}
+
+// ── Tree construction ────────────────────────────────────────────────────────
+// Multi-tag aware: an app tagged "Eisenstein; Regge" appears under both.
+function groupBy(apps, facet) {
+  const map={};
+  apps.forEach(a=>{
+    const tags = facet==='Level'
+      ? [LEVEL_LABELS[a.Level]||a.Level||'—']
+      : (splitTags(a[facet]).length ? splitTags(a[facet]) : ['—']);
+    tags.forEach(t=>(map[t]=map[t]||[]).push(a));
+  });
+  return Object.entries(map).sort((x,y)=>y[1].length-x[1].length);
+}
+
+function buildTree() {
+  const facets=['l1','l2','l3'].map(id=>document.getElementById(id).value).filter(Boolean);
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const apps = !q ? hubApps : hubApps.filter(a=>{
+    const hay=[appName(a),a.Description,a.Subject,a.Domain,a.Theme,a.Format,a.Series,a.Hub,a.Type]
+      .filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+
+  function build(name, list, depth) {
+    const node={ name, count:list.length, depth, children:[], apps:null, open:depth<1 };
+    if(depth>=facets.length){
+      node.apps=list;          // leaf container: children become app leaves
+      node.children=list.map(a=>({ name:appName(a), url:a['App URL'], leaf:true, depth:depth+1, count:0, children:[], open:false }));
+      return node;
+    }
+    groupBy(list, facets[depth]).forEach(([g,sub])=>node.children.push(build(g,sub,depth+1)));
+    return node;
+  }
+  root=build('leelemacjames.github.io', apps, 0);
+  root.open=true;
+  if(q) expandAllNodes(root);   // searching implies you want to see the hits
+  document.getElementById('count-line').textContent=
+    apps.length+' hub apps · '+(facets.join(' → ')||'flat');
+}
+
+function expandAllNodes(n){ if(!n.leaf){ n.open=true; n.children.forEach(expandAllNodes); } }
+function collapseAllNodes(n){ n.children.forEach(c=>{ c.open=false; c.children.forEach(collapseAllNodes); }); }
+function expandAll(){ expandAllNodes(root); render(); }
+function collapseAll(){ collapseAllNodes(root); root.open=true; render(); }
+
+// ── Layout & render ──────────────────────────────────────────────────────────
+// Simple in-order layout: visible nodes stacked vertically, x by depth.
+function layout() {
+  let y=PAD;
+  const placed=[];
+  function walk(n){
+    n.x = PAD + n.depth*DEPTH_W;
+    const startY=y;
+    if(n.open && n.children.length){
+      n.children.forEach(walk);
+      n.y=(n.children[0].y+n.children[n.children.length-1].y)/2;  // centre on children
+    } else {
+      n.y=y; y+=NODE_H+NODE_GAP;
+    }
+    placed.push(n);
+    void startY;
+  }
+  walk(root);
+  return { nodes:placed, height:Math.max(y+PAD, 300) };
+}
+
+function nodeWidth(n){ return Math.min(210, 30 + n.name.length*6.4 + (n.count?34:14)); }
+
+function render() {
+  const { nodes, height } = layout();
+  const maxDepth=Math.max(...nodes.map(n=>n.depth));
+  const width=PAD*2+(maxDepth+1)*DEPTH_W;
+  svg.setAttribute('width',width);
+  svg.setAttribute('height',height);
+  svg.innerHTML='';
+  const NS='http://www.w3.org/2000/svg';
+
+  // links first (under nodes)
+  nodes.forEach(n=>{
+    if(!n.open||!n.children.length) return;
+    n.children.forEach(c=>{
+      const p=document.createElementNS(NS,'path');
+      const x1=n.x+nodeWidth(n), y1=n.y+NODE_H/2, x2=c.x, y2=c.y+NODE_H/2;
+      const mx=(x1+x2)/2;
+      p.setAttribute('d',`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+      p.setAttribute('class','link');
+      svg.appendChild(p);
+    });
+  });
+
+  nodes.forEach(n=>{
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('class','node-group');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const w=nodeWidth(n);
+
+    const r=document.createElementNS(NS,'rect');
+    r.setAttribute('width',w); r.setAttribute('height',NODE_H);
+    r.setAttribute('rx',8);
+    r.setAttribute('class','node-rect '+(n.leaf?'leaf':'branch'));
+    g.appendChild(r);
+
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',10); t.setAttribute('y',NODE_H/2+4);
+    t.setAttribute('class', n.depth===0 ? 'root-label' : 'node-label');
+    const maxChars = n.leaf ? 28 : 24;
+    t.textContent = n.name.length>maxChars ? n.name.slice(0,maxChars-1)+'…' : n.name;
+    g.appendChild(t);
+
+    if(n.leaf){
+      const a=document.createElementNS(NS,'text');
+      a.setAttribute('x',w-14); a.setAttribute('y',NODE_H/2+4);
+      a.setAttribute('class','node-arrow'); a.textContent='↗';
+      g.appendChild(a);
+      g.addEventListener('click',()=>window.open(n.url,'_blank','noopener'));
+    } else {
+      const c=document.createElementNS(NS,'text');
+      c.setAttribute('x',w-6); c.setAttribute('y',NODE_H/2+3.5);
+      c.setAttribute('text-anchor','end');
+      c.setAttribute('class','node-count');
+      c.textContent=(n.open?'▾ ':'▸ ')+n.count;
+      g.appendChild(c);
+      g.addEventListener('click',()=>{ n.open=!n.open; render(); });
+    }
+    svg.appendChild(g);
+  });
+}
+
+function rebuild(){ buildTree(); render(); }
+
+loadData();
+</script>
+</body>
+</html>

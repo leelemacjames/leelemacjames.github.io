@@ -3,18 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Computer Science Apps — Thematic Pie</title>
+<title>Mathematics Apps — Thematic Pie</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg: #0d0e11; --surface: #141519; --border: rgba(255,255,255,0.08);
-  --text: #e8e6de; --muted: rgba(232,230,222,0.42); --accent: #c46bd9; --r: 12px;
+  --text: #e8e6de; --muted: rgba(232,230,222,0.42); --accent: #6abd8a; --r: 12px;
 }
 body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-weight:300; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
-header { width:100%; max-width:1120px; padding:2.5rem 2rem 1.4rem; border-bottom:1px solid var(--border); margin-bottom:2rem; }
+header { width:100%; max-width:1120px; padding:2.5rem 2rem 1.4rem; border-bottom:1px solid var(--border); margin-bottom:1.2rem; }
 header h1 { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(1.8rem,3.5vw,2.7rem); letter-spacing:.04em; }
 header p { font-size:.77rem; color:var(--muted); margin-top:.35rem; font-family:'IBM Plex Mono',monospace; letter-spacing:.07em; }
+/* Facet switcher */
+#facet-bar { width:100%; max-width:1120px; padding:0 2rem 1rem; display:flex; gap:.5rem; flex-wrap:wrap; }
+.facet-btn { font-family:'IBM Plex Mono',monospace; font-size:.63rem; letter-spacing:.08em; color:var(--muted); background:none; border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:.32rem .85rem; cursor:pointer; transition:color .2s,border-color .2s,background .2s; }
+.facet-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.3); }
+.facet-btn.active { color:var(--accent); border-color:var(--accent); background:rgba(106,189,138,0.08); }
+/* Deep-link banner */
+#filter-banner { display:none; width:100%; max-width:1120px; margin-bottom:.8rem; padding:.55rem 2rem; }
+#filter-banner-inner { background:rgba(106,189,138,0.1); border:1px solid rgba(106,189,138,0.35); border-radius:8px; padding:.55rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+#filter-banner .fb-label { font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--accent); letter-spacing:.07em; }
+#filter-banner .fb-clear { font-family:'IBM Plex Mono',monospace; font-size:.63rem; color:var(--muted); background:none; border:1px solid rgba(255,255,255,0.12); border-radius:6px; padding:.28rem .7rem; cursor:pointer; transition:color .2s,border-color .2s; }
+#filter-banner .fb-clear:hover { color:var(--text); border-color:rgba(255,255,255,0.35); }
 #stage { width:100%; max-width:1120px; padding:0 2rem 5rem; display:grid; grid-template-columns:1fr 320px; gap:3rem; align-items:start; }
 #canvas-wrap { position:relative; width:100%; aspect-ratio:1; max-width:540px; justify-self:center; }
 canvas { display:block; width:100%; height:100%; cursor:pointer; }
@@ -30,27 +41,39 @@ canvas { display:block; width:100%; height:100%; cursor:pointer; }
 .legend-item { display:flex; align-items:center; gap:.65rem; padding:.48rem 0; border-bottom:1px solid var(--border); cursor:pointer; transition:opacity .18s; }
 .legend-item:hover { opacity:.68; }
 .ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.lname { font-size:.78rem; color:var(--text); flex:1; line-height:1.35; }
-.lnum  { font-family:'IBM Plex Mono',monospace; font-size:.63rem; color:var(--muted); flex-shrink:0; }
+.lname  { font-size:.78rem; color:var(--text); flex:1; line-height:1.35; }
+.lnum   { font-family:'IBM Plex Mono',monospace; font-size:.63rem; color:var(--muted); flex-shrink:0; }
 .larrow { font-size:.75rem; color:var(--accent); flex-shrink:0; }
+.legend-item.dimmed { opacity:.28; pointer-events:none; }
 #app-list { margin-top:1.4rem; display:none; }
 #app-list h3 { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:300; color:var(--text); margin-bottom:.7rem; }
 .app-card { display:block; padding:.52rem .68rem; border:1px solid var(--border); border-radius:var(--r); margin-bottom:.42rem; text-decoration:none; background:var(--surface); transition:border-color .2s,background .2s; }
 .app-card:hover { border-color:var(--accent); background:rgba(200,169,110,.06); }
 .atitle { font-size:.78rem; color:var(--text); font-weight:400; line-height:1.35; }
 .ameta  { font-family:'IBM Plex Mono',monospace; font-size:.58rem; color:var(--muted); margin-top:.12rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.share-btn { display:inline-flex; align-items:center; gap:.4rem; background:rgba(106,189,138,0.1); border:1px solid rgba(106,189,138,0.3); color:var(--accent); font-family:'IBM Plex Mono',monospace; font-size:.62rem; letter-spacing:.07em; padding:.38rem .85rem; border-radius:6px; cursor:pointer; transition:background .2s; margin-top:.7rem; }
+.share-btn:hover { background:rgba(106,189,138,0.2); }
+.share-btn svg { flex-shrink:0; }
+.share-toast { font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--accent); margin-top:.4rem; display:none; letter-spacing:.05em; }
 #loading { font-family:'IBM Plex Mono',monospace; font-size:.73rem; color:var(--muted); padding:3rem 2rem; text-align:center; letter-spacing:.06em; line-height:2; }
-#loading a { color:var(--accent); }
-.notice { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%); background:#141519; border:1px solid rgba(217,124,91,.45); color:#d97c5b; font-family:'IBM Plex Mono',monospace; font-size:.63rem; letter-spacing:.05em; padding:.52rem 1.1rem; border-radius:8px; max-width:92vw; text-align:center; z-index:200; line-height:1.7; }
 @media(max-width:720px){ #stage{grid-template-columns:1fr;gap:1.8rem;} #canvas-wrap{max-width:90vw;} }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Computer Science Apps — Thematic Pie</h1>
-  <p>Outer ring: category · click to reveal apps · click app slice or card to open</p>
+  <h1 id="header-title">Mathematics Apps — Thematic Pie</h1>
+  <p id="header-sub">Outer ring: category · click to reveal apps · click app slice or card to open</p>
 </header>
+
+<div id="facet-bar"></div>
+
+<div id="filter-banner">
+  <div id="filter-banner-inner">
+    <span class="fb-label" id="fb-label"></span>
+    <button class="fb-clear" onclick="clearFilter()">✕ Show all categories</button>
+  </div>
+</div>
 
 <div id="loading">Fetching sheet data…</div>
 
@@ -58,7 +81,7 @@ canvas { display:block; width:100%; height:100%; cursor:pointer; }
   <div id="canvas-wrap">
     <canvas id="pie"></canvas>
     <div id="clabel">
-      <div class="ctitle" id="cl-title">Computer Science</div>
+      <div class="ctitle" id="cl-title">Mathematics</div>
       <div class="ccount" id="cl-count"></div>
     </div>
     <button id="back-btn" onclick="goBack()">← all categories</button>
@@ -70,34 +93,78 @@ canvas { display:block; width:100%; height:100%; cursor:pointer; }
     <div id="app-list">
       <h3 id="al-title"></h3>
       <div id="al-cards"></div>
+      <button class="share-btn" id="share-btn" onclick="copyShareLink()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Copy link to this category
+      </button>
+      <div class="share-toast" id="share-toast">✓ Link copied to clipboard</div>
     </div>
   </div>
 </div>
 
 <script>
-// ── Config ────────────────────────────────────────────────────────────────────
-// Same sheet ID and fetch pattern as the working web-gather app.
-// gviz/tq works fine when served from a domain (Vercel, GitHub Pages).
-// It is blocked by CORS when opened as a local file:// — deploy to use live data.
+// ── CONFIG ── the only block that differs between maths/physics/cs pies ──────
+const CONFIG = {
+  subjectMatch: 'computer',          // substring matched against the Subject column
+  subjectLabel: 'Computer Science',    // shown in the centre and the <h1>
+  defaultFacet: 'Domain',         // which column the pie aggregates by default
+  // Facets offered in the switcher bar; each falls back to `fb` if the sheet
+  // hasn't been migrated yet, so this file works with old AND new schemas.
+  facets: [
+    { name: 'Domain', fb: 'Type' },
+    { name: 'Format', fb: 'Type' },
+    { name: 'Theme'  },
+    { name: 'Series' },
+    { name: 'Hub'    },
+    { name: 'Level'  },
+  ],
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SHEET_ID   = '1OsRlN-hDqrVuPReCq_yKZfF-RZB9Umg5macHqvLz478';
 const SHEET_NAME = 'Extracting+Project+Links+and+URLs';
 const FETCH_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
 
-// ── Colours ───────────────────────────────────────────────────────────────────
 const PAL = ['#5b8dd9','#d9845b','#6abd8a','#c46bd9','#d9c45b','#5bbdd9','#d96b8a','#8abd6a','#bd8a5b','#7a5bd9','#5bd9bd','#d95b5b'];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── URL parameters ─────────────────────────────────────────────────────────
+// ?facet=Theme          → aggregate by Theme instead of the default
+// ?type=Eisenstein      → filter to one category (legacy param name kept
+//                         so existing shared links continue to work)
+// ?types=A,B            → filter to several
+function getFacetParam() {
+  const f = new URLSearchParams(location.search).get('facet');
+  return f && CONFIG.facets.some(x => x.name.toLowerCase() === f.toLowerCase())
+    ? CONFIG.facets.find(x => x.name.toLowerCase() === f.toLowerCase()).name
+    : null;
+}
+function getFilterParam() {
+  const p = new URLSearchParams(location.search);
+  const single = p.get('type');
+  const multi  = p.get('types');
+  if (single) return [single];
+  if (multi)  return multi.split(',').map(s => s.trim()).filter(Boolean);
+  return null;
+}
+function makeShareUrl(typeNames) {
+  const base = location.origin + location.pathname;
+  const facetPart = activeFacet !== CONFIG.defaultFacet ? 'facet=' + encodeURIComponent(activeFacet) : '';
+  let typePart = '';
+  if (typeNames && typeNames.length === 1) typePart = 'type=' + encodeURIComponent(typeNames[0]);
+  else if (typeNames && typeNames.length) typePart = 'types=' + typeNames.map(encodeURIComponent).join(',');
+  const qs = [facetPart, typePart].filter(Boolean).join('&');
+  return qs ? base + '?' + qs : base;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
 function cleanUrl(u) {
   if (!u) return '';
   u = u.trim().replace(/^['",]+|['",]+$/g,'').replace(/[\u200B-\u200D\uFEFF]/g,'');
   if (!u) return '';
   return /^https?:\/\//i.test(u) ? u : 'https://' + u;
 }
-
-// Verbatim from the working web-gather app
 function parseCSV(text) {
-  const rows = [];
-  let row = [], field = '', inQ = false;
+  const rows = []; let row = [], field = '', inQ = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (c === '"') {
@@ -113,23 +180,41 @@ function parseCSV(text) {
   if (field||row.length) { row.push(field.trim()); rows.push(row); }
   return rows;
 }
+function splitTags(v) { return (v||'').split(';').map(s=>s.trim()).filter(Boolean); }
+function appName(it) { return it['Display Name'] || it['App Name'] || ''; }
 
-function buildCats(items) {
-  const map={};
-  items.forEach(it=>{ const k=it.Type||'Other'; (map[k]=map[k]||[]).push(it); });
-  return Object.entries(map)
-    .sort((a,b)=>b[1].length-a[1].length)
-    .map(([name,list],i)=>({name,items:list,col:PAL[i%PAL.length]}));
+// Resolve which column the active facet reads, honouring fallbacks.
+function facetColumn(facetName) {
+  const spec = CONFIG.facets.find(f => f.name === facetName);
+  if (sheetHeaders.includes(spec.name)) return spec.name;
+  if (spec.fb && sheetHeaders.includes(spec.fb)) return spec.fb;
+  return null;
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let allPhysics=[], cats=[], mode='outer', selCat=null, hov=-1, prog=0, raf=null;
+// Multi-tag aware: an app tagged "Eisenstein; Regge" lands in both slices.
+function buildCats(items, facetName) {
+  const col = facetColumn(facetName);
+  const map = {};
+  items.forEach(it => {
+    const tags = col ? splitTags(it[col]) : [];
+    (tags.length ? tags : ['Other']).forEach(k => (map[k]=map[k]||[]).push(it));
+  });
+  return Object.entries(map)
+    .sort((a,b) => b[1].length - a[1].length)
+    .map(([name,list],i) => ({ name, items:list, col:PAL[i%PAL.length] }));
+}
 
-// ── Canvas ────────────────────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────────
+let allApps=[], sheetHeaders=[], cats=[], activeCats=[],
+    mode='outer', selCat=null, hov=-1, prog=0, raf=null;
+let filterTypes = null;
+let activeFacet = CONFIG.defaultFacet;
+
+// ── Canvas ─────────────────────────────────────────────────────────────────
 const cv=document.getElementById('pie'), ctx=cv.getContext('2d'), DPR=window.devicePixelRatio||1;
 
 function resize() {
-  const sz=cv.parentElement.clientWidth;
+  const sz = cv.parentElement.clientWidth;
   cv.width=sz*DPR; cv.height=sz*DPR;
   cv.style.width=sz+'px'; cv.style.height=sz+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -143,25 +228,27 @@ function draw(p) {
   const data=viewData(); if(!data.length) return;
   const total=data.reduce((s,d)=>s+d.items.length,0);
   let a=-Math.PI/2;
-  data.forEach((sl,i)=>{
+  data.forEach((sl,i) => {
     const span=(sl.items.length/total)*2*Math.PI*p, end=a+span, mid=a+span/2;
     const isH=i===hov, ox=isH?Math.cos(mid)*8:0, oy=isH?Math.sin(mid)*8:0;
     const s=a+GAP/2, e=end-GAP/2;
-    if(e>s){
+    if (e>s) {
       ctx.beginPath();
-      ctx.moveTo(cx+ox+Math.cos(s)*IR,cy+oy+Math.sin(s)*IR);
+      ctx.moveTo(cx+ox+Math.cos(s)*IR, cy+oy+Math.sin(s)*IR);
       ctx.arc(cx+ox,cy+oy,OR,s,e);
       ctx.arc(cx+ox,cy+oy,IR,e,s,true);
       ctx.closePath();
       ctx.fillStyle=sl.col; ctx.globalAlpha=isH?1:0.83; ctx.fill(); ctx.globalAlpha=1;
     }
-    if(p>0.88&&span>0.18){
+    if (p>0.88 && span>0.18) {
       const fs=Math.min(11,w*0.021);
-      ctx.save(); ctx.translate(cx+ox+Math.cos(mid)*OR*0.705, cy+oy+Math.sin(mid)*OR*0.705);
-      ctx.fillStyle='#0d0e11'; ctx.font=`500 ${fs}px 'IBM Plex Sans',sans-serif`;
+      ctx.save();
+      ctx.translate(cx+ox+Math.cos(mid)*OR*0.705, cy+oy+Math.sin(mid)*OR*0.705);
+      ctx.fillStyle='#0d0e11';
+      ctx.font=`500 ${fs}px 'IBM Plex Sans',sans-serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       const lbl=sl.name.length>15?sl.name.slice(0,14)+'…':sl.name, ws=lbl.split(' ');
-      if(ws.length<=2){ ctx.fillText(lbl,0,0); }
+      if (ws.length<=2) { ctx.fillText(lbl,0,0); }
       else { const h2=Math.ceil(ws.length/2); ctx.fillText(ws.slice(0,h2).join(' '),0,-fs*.62); ctx.fillText(ws.slice(h2).join(' '),0,fs*.62); }
       ctx.restore();
     }
@@ -170,170 +257,279 @@ function draw(p) {
 }
 
 function viewData() {
-  return mode==='outer' ? cats
-    : selCat.items.map((it,i)=>({name:it['App Name'],items:[it],col:PAL[i%PAL.length]}));
+  return mode==='outer' ? activeCats
+    : selCat.items.map((it,i) => ({ name:appName(it), items:[it], col:PAL[i%PAL.length] }));
 }
 
-// ── Hit test ──────────────────────────────────────────────────────────────────
-function hit(px,py){
-  const w=cv.width/DPR,h=cv.height/DPR,cx=w/2,cy=h/2;
-  const OR=Math.min(w,h)*0.445,IR=OR*0.38;
-  const dx=px-cx,dy=py-cy,d=Math.hypot(dx,dy);
-  if(d<IR||d>OR) return -1;
+// ── Hit test ────────────────────────────────────────────────────────────────
+function hit(px,py) {
+  const w=cv.width/DPR, h=cv.height/DPR, cx=w/2, cy=h/2;
+  const OR=Math.min(w,h)*0.445, IR=OR*0.38;
+  const dx=px-cx, dy=py-cy, d=Math.hypot(dx,dy);
+  if (d<IR||d>OR) return -1;
   let a=Math.atan2(dy,dx); if(a<-Math.PI/2) a+=2*Math.PI;
   const data=viewData(), total=data.reduce((s,d)=>s+d.items.length,0);
   let st=-Math.PI/2;
-  for(let i=0;i<data.length;i++){
+  for (let i=0; i<data.length; i++) {
     const sp=(data[i].items.length/total)*2*Math.PI;
-    if(a>=st&&a<st+sp) return i;
+    if (a>=st && a<st+sp) return i;
     st+=sp;
   }
   return -1;
 }
 
-// ── Events ────────────────────────────────────────────────────────────────────
-cv.addEventListener('mousemove',e=>{
-  const r=cv.getBoundingClientRect(),i=hit(e.clientX-r.left,e.clientY-r.top);
-  if(i!==hov){ hov=i; cv.style.cursor=i>=0?'pointer':'default'; draw(1); updCentre(i); }
+// ── Events ──────────────────────────────────────────────────────────────────
+cv.addEventListener('mousemove',e => {
+  const r=cv.getBoundingClientRect(), i=hit(e.clientX-r.left, e.clientY-r.top);
+  if (i!==hov) { hov=i; cv.style.cursor=i>=0?'pointer':'default'; draw(1); updCentre(i); }
 });
-cv.addEventListener('mouseleave',()=>{ hov=-1; cv.style.cursor='default'; draw(1); resetCentre(); });
-cv.addEventListener('click',e=>{
-  const r=cv.getBoundingClientRect(),i=hit(e.clientX-r.left,e.clientY-r.top);
-  if(i<0) return;
-  mode==='outer' ? drillInto(cats[i]) : openApp(selCat.items[i]);
+cv.addEventListener('mouseleave',() => { hov=-1; cv.style.cursor='default'; draw(1); resetCentre(); });
+cv.addEventListener('click',e => {
+  const r=cv.getBoundingClientRect(), i=hit(e.clientX-r.left, e.clientY-r.top);
+  if (i<0) return;
+  mode==='outer' ? drillInto(activeCats[i]) : openApp(selCat.items[i]);
 });
-cv.addEventListener('touchend',e=>{
+cv.addEventListener('touchend',e => {
   e.preventDefault();
-  const t=e.changedTouches[0],r=cv.getBoundingClientRect(),i=hit(t.clientX-r.left,t.clientY-r.top);
-  if(i<0) return;
-  mode==='outer' ? drillInto(cats[i]) : openApp(selCat.items[i]);
+  const t=e.changedTouches[0], r=cv.getBoundingClientRect(), i=hit(t.clientX-r.left, t.clientY-r.top);
+  if (i<0) return;
+  mode==='outer' ? drillInto(activeCats[i]) : openApp(selCat.items[i]);
 },{passive:false});
 
-function openApp(it){ if(it?.['App URL']) window.open(it['App URL'],'_blank','noopener'); }
+function openApp(it) { if(it?.['App URL']) window.open(it['App URL'],'_blank','noopener'); }
 
-function updCentre(i){
-  if(mode==='outer'){
-    i>=0 ? setCentre(cats[i].name,cats[i].items.length+' apps') : setCentre('Computer Science',allPhysics.length+' apps');
+function updCentre(i) {
+  if (mode==='outer') {
+    i>=0 ? setCentre(activeCats[i].name, activeCats[i].items.length+' apps')
+         : setCentre(filterTypes?filterTypes.join(', '):CONFIG.subjectLabel, countLabel());
   } else {
-    i>=0 ? setCentre(selCat.items[i]['App Name'],selCat.items[i].Type||'') : setCentre(selCat.name,selCat.items.length+' apps — click to open');
+    i>=0 ? setCentre(appName(selCat.items[i]), '')
+         : setCentre(selCat.name, selCat.items.length+' apps — click to open');
   }
 }
-function resetCentre(){
-  mode==='outer' ? setCentre('Computer Science',allPhysics.length+' apps') : setCentre(selCat.name,selCat.items.length+' — click to open');
+function resetCentre() {
+  mode==='outer'
+    ? setCentre(filterTypes?filterTypes.join(', '):CONFIG.subjectLabel, countLabel())
+    : setCentre(selCat.name, selCat.items.length+' — click to open');
 }
-function setCentre(t,c){ document.getElementById('cl-title').textContent=t; document.getElementById('cl-count').textContent=c||''; }
+function countLabel() {
+  const n=activeCats.reduce((s,c)=>s+c.items.length,0);
+  return n+' apps · by '+activeFacet.toLowerCase();
+}
+function setCentre(t,c) {
+  document.getElementById('cl-title').textContent=t;
+  document.getElementById('cl-count').textContent=c||'';
+}
 
-// ── Drill / back ──────────────────────────────────────────────────────────────
-function drillInto(cat){
+// ── Facet switcher ──────────────────────────────────────────────────────────
+function buildFacetBar() {
+  const bar = document.getElementById('facet-bar');
+  bar.innerHTML = '';
+  CONFIG.facets.forEach(spec => {
+    // Skip facets with no usable column and no data.
+    const col = facetColumn(spec.name);
+    if (!col) return;
+    const hasData = allApps.some(a => splitTags(a[col]).length);
+    if (!hasData) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'facet-btn' + (spec.name === activeFacet ? ' active' : '');
+    btn.textContent = spec.name;
+    btn.onclick = () => setFacet(spec.name);
+    bar.appendChild(btn);
+  });
+}
+
+function setFacet(name) {
+  activeFacet = name;
+  filterTypes = null;
+  document.getElementById('filter-banner').style.display='none';
+  cats = buildCats(allApps, activeFacet);
+  activeCats = cats;
+  if (mode === 'inner') goBack(); else { buildLegend(); animIn(); }
+  buildFacetBar();
+  setCentre(CONFIG.subjectLabel, countLabel());
+  history.replaceState(null,'', makeShareUrl(null));
+}
+
+// ── Drill / back ────────────────────────────────────────────────────────────
+function drillInto(cat) {
   selCat=cat; mode='inner'; hov=-1;
-  setCentre(cat.name,cat.items.length+' apps — click to open');
+  setCentre(cat.name, cat.items.length+' apps — click to open');
   document.getElementById('clabel').classList.add('hidden');
   document.getElementById('back-btn').style.display='block';
   buildSidebarInner(cat); showAppList(cat); animIn();
+  const base = location.origin + location.pathname + location.search;
+  history.replaceState(null,'', base + '#' + encodeURIComponent(cat.name));
 }
-function goBack(){
+
+function goBack() {
   mode='outer'; selCat=null; hov=-1;
   document.getElementById('back-btn').style.display='none';
   document.getElementById('clabel').classList.remove('hidden');
   document.getElementById('app-list').style.display='none';
-  setCentre('Computer Science',allPhysics.length+' apps');
+  document.getElementById('share-toast').style.display='none';
+  setCentre(filterTypes?filterTypes.join(', '):CONFIG.subjectLabel, countLabel());
+  document.getElementById('sb-title').textContent=filterTypes?'Filtered: '+filterTypes.join(', '):'Categories';
+  document.getElementById('sb-sub').textContent='Click a slice or item';
+  buildLegend(); animIn();
+  history.replaceState(null,'', location.origin + location.pathname + location.search);
+}
+
+// ── Filter apply/clear ──────────────────────────────────────────────────────
+function applyFilter(types) {
+  filterTypes = types;
+  activeCats = cats.filter(c => types.some(t => c.name.toLowerCase() === t.toLowerCase()));
+  if (!activeCats.length) {
+    activeCats = cats.filter(c => types.some(t => c.name.toLowerCase().includes(t.toLowerCase())));
+  }
+  if (!activeCats.length) activeCats = cats;
+
+  const matched = activeCats.map(c=>c.name).join(', ');
+  const total = activeCats.reduce((s,c)=>s+c.items.length,0);
+  document.getElementById('fb-label').textContent =
+    `Filtered to: ${matched} · ${total} app${total!==1?'s':''} · share this URL to send exactly these resources`;
+  document.getElementById('filter-banner').style.display='block';
+  document.getElementById('header-sub').textContent =
+    `Showing: ${matched} · ${total} apps · click a slice or card to open`;
+  setCentre(matched, total+' apps');
+  document.getElementById('sb-title').textContent='Filtered categories';
+  buildLegend();
+}
+
+function clearFilter() {
+  filterTypes = null;
+  activeCats = cats;
+  document.getElementById('filter-banner').style.display='none';
+  document.getElementById('header-sub').textContent='Outer ring: category · click to reveal apps · click app slice or card to open';
+  setCentre(CONFIG.subjectLabel, countLabel());
   document.getElementById('sb-title').textContent='Categories';
   document.getElementById('sb-sub').textContent='Click a slice or item';
   buildLegend(); animIn();
+  history.replaceState(null,'', makeShareUrl(null));
 }
 
-// ── Animation ─────────────────────────────────────────────────────────────────
-function animIn(){
+// ── Share link ──────────────────────────────────────────────────────────────
+function copyShareLink() {
+  const types = selCat ? [selCat.name] : (filterTypes || null);
+  const url = makeShareUrl(types);
+  navigator.clipboard.writeText(url).then(() => {
+    const toast = document.getElementById('share-toast');
+    toast.style.display='block';
+    toast.textContent = '✓ Copied: ' + url;
+    setTimeout(()=>{ toast.style.display='none'; }, 3500);
+  }).catch(() => { prompt('Copy this link:', url); });
+}
+
+// ── Animation ──────────────────────────────────────────────────────────────
+function animIn() {
   prog=0; if(raf) cancelAnimationFrame(raf);
-  const t0=performance.now(),DUR=640;
-  function step(now){ const t=Math.min((now-t0)/DUR,1); prog=1-Math.pow(1-t,3); draw(prog); if(t<1) raf=requestAnimationFrame(step); else prog=1; }
+  const t0=performance.now(), DUR=640;
+  function step(now) { const t=Math.min((now-t0)/DUR,1); prog=1-Math.pow(1-t,3); draw(prog); if(t<1) raf=requestAnimationFrame(step); else prog=1; }
   raf=requestAnimationFrame(step);
 }
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function buildLegend(){
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+function buildLegend() {
   const el=document.getElementById('legend'); el.innerHTML='';
-  cats.forEach(cat=>{
+  activeCats.forEach(cat => {
     const row=document.createElement('div'); row.className='legend-item';
     row.innerHTML=`<span class="ldot" style="background:${cat.col}"></span><span class="lname">${cat.name}</span><span class="lnum">${cat.items.length}</span>`;
     row.onclick=()=>drillInto(cat); el.appendChild(row);
   });
+  if (filterTypes && cats.length > activeCats.length) {
+    const hidden = cats.length - activeCats.length;
+    const info = document.createElement('div');
+    info.style.cssText='font-family:IBM Plex Mono,monospace;font-size:.6rem;color:rgba(232,230,222,0.25);padding:.5rem 0;letter-spacing:.06em;';
+    info.textContent=`+ ${hidden} other categor${hidden!==1?'ies':'y'} hidden by filter`;
+    el.appendChild(info);
+  }
 }
-function buildSidebarInner(cat){
+
+function buildSidebarInner(cat) {
   document.getElementById('sb-title').textContent=cat.name;
   document.getElementById('sb-sub').textContent=cat.items.length+' apps · click to open';
   const el=document.getElementById('legend'); el.innerHTML='';
-  cat.items.forEach((it,i)=>{
+  cat.items.forEach((it,i) => {
     const row=document.createElement('div'); row.className='legend-item';
-    row.innerHTML=`<span class="ldot" style="background:${PAL[i%PAL.length]}"></span><span class="lname">${it['App Name']}</span><span class="larrow">↗</span>`;
+    row.innerHTML=`<span class="ldot" style="background:${PAL[i%PAL.length]}"></span><span class="lname">${appName(it)}</span><span class="larrow">↗</span>`;
     row.onclick=()=>openApp(it); el.appendChild(row);
   });
 }
-function showAppList(cat){
+
+function showAppList(cat) {
   document.getElementById('app-list').style.display='block';
   document.getElementById('al-title').textContent=cat.name;
+  document.getElementById('share-toast').style.display='none';
   const cards=document.getElementById('al-cards'); cards.innerHTML='';
-  cat.items.forEach(it=>{
+  cat.items.forEach(it => {
     const a=document.createElement('a');
     a.className='app-card'; a.href=it['App URL']; a.target='_blank'; a.rel='noopener';
-    a.innerHTML=`<div class="atitle">${it['App Name']}</div><div class="ameta">${it['App URL']}</div>`;
+    a.innerHTML=`<div class="atitle">${appName(it)}</div><div class="ameta">${it['App URL']}</div>`;
     cards.appendChild(a);
   });
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-async function loadData(){
-  const ldiv = document.getElementById('loading');
-
-  // Detect local file — gviz/tq will always CORS-fail from file://
-  if (location.protocol === 'file:') {
-    ldiv.innerHTML = `⚠ Cannot fetch sheet data when opened as a local file.<br>
-      Deploy to <strong>Vercel or GitHub Pages</strong> and the data will load automatically —<br>
-      the same way your existing <em>web-gather</em> app works.<br><br>
-      <span style="font-size:.65rem;opacity:.6">Or: serve locally with <code>python3 -m http.server</code> then open http://localhost:8000</span>`;
+// ── Fetch ───────────────────────────────────────────────────────────────────
+async function loadData() {
+  const ldiv=document.getElementById('loading');
+  document.getElementById('header-title').textContent = CONFIG.subjectLabel + ' Apps — Thematic Pie';
+  document.title = CONFIG.subjectLabel + ' Apps — Thematic Pie';
+  if (location.protocol==='file:') {
+    ldiv.innerHTML=`⚠ Cannot fetch sheet data when opened as a local file.<br>Deploy to Vercel or GitHub Pages for live data.`;
     return;
   }
-
   try {
-    const res = await fetch(FETCH_URL);
+    const res=await fetch(FETCH_URL);
     if (!res.ok) throw new Error('HTTP '+res.status);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    if (rows.length < 2) throw new Error('Only '+rows.length+' rows parsed');
-
-    const headers = rows[0].map(h=>h.replace(/^"|"$/g,'').trim());
-
+    const text=await res.text();
+    const rows=parseCSV(text);
+    if (rows.length<2) throw new Error('Only '+rows.length+' rows parsed');
+    sheetHeaders=rows[0].map(h=>h.replace(/^"|"$/g,'').trim());
     const apps=[];
-    for(let i=1;i<rows.length;i++){
+    for (let i=1; i<rows.length; i++) {
       const vals=rows[i];
-      if(vals.length<=1&&vals[0]==='') continue;
+      if (vals.length<=1&&vals[0]==='') continue;
       const app={};
-      headers.forEach((h,idx)=>{
+      sheetHeaders.forEach((h,idx) => {
         let v=(vals[idx]||'').replace(/^"|"$/g,'').trim();
-        if(h==='App URL') v=cleanUrl(v);
+        if (h==='App URL') v=cleanUrl(v);
         app[h]=v;
       });
-      if(app['App Name']&&app['App URL']) apps.push(app);
+      if (app['App Name']&&app['App URL']) apps.push(app);
     }
-
-    allPhysics = apps.filter(a=>(a['Subject']||'').trim().toLowerCase().includes('computer'));
-
-    if(!allPhysics.length){
+    allApps=apps.filter(a=>(a['Subject']||'').trim().toLowerCase().includes(CONFIG.subjectMatch));
+    if (!allApps.length) {
       const subs=[...new Set(apps.map(a=>a['Subject']))].filter(Boolean).join(' | ');
-      throw new Error('No Computer Science rows found. Subjects in sheet: '+subs);
+      throw new Error('No '+CONFIG.subjectLabel+' rows found. Subjects: '+subs);
     }
 
-    cats=buildCats(allPhysics);
+    activeFacet = getFacetParam() || CONFIG.defaultFacet;
+    cats=buildCats(allApps, activeFacet);
+    activeCats=cats;
+
     ldiv.style.display='none';
     document.getElementById('stage').style.display='grid';
-    setCentre('Computer Science',allPhysics.length+' apps');
-    buildLegend(); resize(); animIn();
-    window.addEventListener('resize',resize);
+    buildFacetBar();
+    buildLegend();
+    resize();
 
+    const filterParam = getFilterParam();
+    if (filterParam) {
+      applyFilter(filterParam);
+      const hashCat = decodeURIComponent(location.hash.slice(1));
+      if (hashCat) {
+        const target = activeCats.find(c => c.name === hashCat);
+        if (target) { animIn(); setTimeout(()=>drillInto(target), 700); return; }
+      }
+    }
+
+    setCentre(filterTypes?filterTypes.join(', '):CONFIG.subjectLabel, countLabel());
+    animIn();
+    window.addEventListener('resize',resize);
   } catch(e) {
-    ldiv.innerHTML = `⚠ Error: ${e.message}<br>
-      <span style="font-size:.65rem;opacity:.6">If this is a CORS error, deploy to Vercel/GitHub Pages or run a local server.</span>`;
-    console.error('loadData:', e);
+    ldiv.innerHTML=`⚠ Error: ${e.message}`;
+    console.error('loadData:',e);
   }
 }
 
