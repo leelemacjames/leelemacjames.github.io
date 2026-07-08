@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Root Words Zero — How Words Are Built</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12141c;
+    --panel: #1b1e29;
+    --panel-raised: #232735;
+    --line: #3a3e4d;
+    --brass: #b08d57;
+    --brass-bright: #d4b483;
+    --verdigris: #6b8f71;
+    --rust: #a6503d;
+    --blue: #4a7fa8;
+    --parchment: #e8e3d8;
+    --parchment-dim: #a6a297;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(176,141,87,0.08), transparent 45%),
+      radial-gradient(ellipse at 90% 10%, rgba(107,143,113,0.06), transparent 40%),
+      var(--bg);
+    color:var(--parchment);
+    font-family:'Source Serif 4', serif;
+    line-height:1.55;
+    min-height:100vh;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:0 24px 120px;}
+
+  header.hero{padding:72px 24px 48px;text-align:center;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:var(--brass);margin-bottom:18px;}
+  h1.title{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(2.2rem,6vw,3.4rem);margin:0 0 14px;}
+  h1.title em{font-style:italic;color:var(--brass-bright);}
+  .subtitle{max-width:520px;margin:0 auto;color:var(--parchment-dim);font-size:1.02rem;}
+  .carved-rule{width:120px;height:1px;margin:28px auto 0;background:linear-gradient(90deg, transparent, var(--brass), transparent);}
+
+  .progress-bar-outer{position:sticky;top:0;z-index:20;height:3px;background:var(--panel);}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg, var(--brass), var(--verdigris));transition:width 0.4s ease;}
+  .scoreboard{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.05em;color:var(--parchment-dim);padding:14px 24px 0;max-width:780px;margin:0 auto;}
+  .scoreboard .score-value{color:var(--brass-bright);}
+
+  .section{margin-top:64px;}
+  .section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;}
+  .section-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);border:1px solid var(--brass);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-head h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.7rem;margin:0;}
+  .section-desc{color:var(--parchment-dim);font-size:0.95rem;margin:0 0 28px 40px;max-width:580px;}
+
+  /* Walkthrough (Chamber 0) */
+  .walk-card{background:var(--panel);border:1px solid var(--brass);border-radius:3px;padding:22px 24px;margin-bottom:16px;}
+  .walk-word{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--brass-bright);margin:0 0 12px;}
+  .walk-step{display:none;padding:10px 0;border-top:1px dashed var(--line);font-size:0.96rem;}
+  .walk-step.show{display:block;}
+  .walk-step .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-right:8px;}
+  .tag.prefix{background:rgba(74,127,168,0.25);color:#8fb8dd;}
+  .tag.root{background:rgba(176,141,87,0.25);color:var(--brass-bright);}
+  .tag.suffix{background:rgba(107,143,113,0.25);color:var(--verdigris);}
+  .walk-next{margin-top:12px;background:transparent;border:1px solid var(--brass);color:var(--brass-bright);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:8px 14px;border-radius:2px;cursor:pointer;}
+  .walk-next:hover{background:var(--brass);color:var(--bg);}
+  .walk-next:disabled{opacity:0.3;cursor:default;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:24px 26px;margin-bottom:16px;position:relative;transition:border-color 0.25s ease;}
+  .card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--line);transition:background 0.25s ease;}
+  .card.answered.correct::before{background:var(--verdigris);}
+  .card.answered.incorrect::before{background:var(--rust);}
+  .q-index{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:0.1em;margin-bottom:8px;display:block;}
+  .q-text{font-size:1.06rem;margin:0 0 18px;color:var(--parchment);}
+  .options{display:grid;gap:9px;}
+  .opt-btn{text-align:left;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 16px;border-radius:2px;cursor:pointer;transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;}
+  .opt-btn:hover:not(:disabled){border-color:var(--brass);background:#282c3b;}
+  .opt-btn:active:not(:disabled){transform:scale(0.995);}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.selected-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.14);}
+  .opt-btn.selected-incorrect{border-color:var(--rust);background:rgba(166,80,61,0.14);}
+  .opt-btn.reveal-correct{border-color:var(--verdigris);}
+  .feedback{margin-top:14px;font-size:0.9rem;color:var(--parchment-dim);padding-top:12px;border-top:1px dashed var(--line);display:none;}
+  .feedback.show{display:block;}
+  .feedback strong{color:var(--brass-bright);font-weight:600;}
+
+  /* Build the Word (Chamber I) */
+  .build-groups{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+  @media(max-width:640px){.build-groups{grid-template-columns:1fr;}}
+  .build-group-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+  .build-group-label.prefix{color:#8fb8dd;}
+  .build-group-label.root{color:var(--brass-bright);}
+  .build-group-label.suffix{color:var(--verdigris);}
+  .build-opt{background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);font-family:'Source Serif 4',serif;font-size:0.92rem;padding:9px 12px;border-radius:2px;cursor:pointer;margin-bottom:6px;width:100%;text-align:left;}
+  .build-opt:hover:not(:disabled){border-color:var(--brass);}
+  .build-opt.picked{border-color:var(--brass);background:rgba(176,141,87,0.14);}
+  .build-check{margin-top:6px;background:transparent;border:1px solid var(--brass);color:var(--brass-bright);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:9px 16px;border-radius:2px;cursor:pointer;}
+  .build-check:hover{background:var(--brass);color:var(--bg);}
+  .build-check:disabled{opacity:0.3;cursor:default;}
+
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  @media(max-width:640px){.match-grid{grid-template-columns:1fr;gap:12px;}}
+  .match-col-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--parchment-dim);margin-bottom:10px;}
+  .match-item{background:var(--panel);border:1px solid var(--line);padding:12px 14px;margin-bottom:8px;border-radius:2px;cursor:pointer;font-size:0.96rem;transition:all 0.15s ease;}
+  .match-item.word{font-style:italic;color:var(--brass-bright);}
+  .match-item:hover:not(.locked){border-color:var(--brass);}
+  .match-item.selected{border-color:var(--brass);background:var(--panel-raised);box-shadow:0 0 0 1px var(--brass);}
+  .match-item.locked-correct{border-color:var(--verdigris);background:rgba(107,143,113,0.1);cursor:default;}
+  .match-item.locked-wrong-flash{border-color:var(--rust);animation:shake 0.3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  .tricky-card textarea{width:100%;background:var(--panel-raised);border:1px solid var(--line);color:var(--parchment);font-family:'Source Serif 4',serif;font-size:0.98rem;padding:12px 14px;border-radius:2px;resize:vertical;min-height:64px;margin-bottom:10px;}
+  .tricky-card textarea:focus{outline:none;border-color:var(--brass);}
+  .roots-hint{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--parchment-dim);margin-bottom:14px;}
+  .reveal-btn{background:transparent;border:1px solid var(--brass);color:var(--brass-bright);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:9px 16px;border-radius:2px;cursor:pointer;transition:all 0.15s ease;}
+  .reveal-btn:hover{background:var(--brass);color:var(--bg);}
+  .model-answer{margin-top:14px;padding:14px 16px;background:rgba(176,141,87,0.08);border-left:2px solid var(--brass);font-size:0.94rem;display:none;color:var(--parchment);}
+  .model-answer.show{display:block;}
+
+  .results-card{text-align:center;padding:48px 32px;background:var(--panel);border:1px solid var(--brass);border-radius:3px;margin-top:56px;display:none;}
+  .results-card.show{display:block;}
+  .results-card .big-score{font-family:'Cormorant Garamond',serif;font-size:3.4rem;color:var(--brass-bright);font-weight:600;margin:8px 0;}
+  .results-card p{color:var(--parchment-dim);}
+  .reset-btn{margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--parchment-dim);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;border-radius:2px;cursor:pointer;}
+  .reset-btn:hover{border-color:var(--brass);color:var(--brass-bright);}
+
+  footer.stamp{text-align:center;padding:40px 24px 30px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#565a68;}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+
+<header class="hero">
+  <div class="eyebrow">Foundations — Before the Subject Sheets</div>
+  <h1 class="title">Root Words <em>Zero</em></h1>
+  <p class="subtitle">How words are built: prefix, root, suffix. The same skill a language model uses to break text into tokens, done by eye instead of by algorithm.</p>
+  <div class="carved-rule"></div>
+</header>
+
+<div class="scoreboard">
+  <span>PROGRESS <span id="progressCount">0</span> / <span id="progressTotal">23</span></span>
+  <span>SCORE <span class="score-value" id="scoreCount">0</span></span>
+</div>
+
+<div class="wrap">
+
+  <!-- Chamber 0: Modelled Walkthrough -->
+  <section class="section" id="section0">
+    <div class="section-head">
+      <span class="section-num">0</span>
+      <h2>Modelled Walkthrough</h2>
+    </div>
+    <p class="section-desc">Watch two words get decoded step by step before you try any yourself. Click through each step.</p>
+    <div id="walkContainer"></div>
+  </section>
+
+  <!-- Chamber I: Build the Word -->
+  <section class="section" id="section1">
+    <div class="section-head">
+      <span class="section-num">I</span>
+      <h2>Build the Word</h2>
+    </div>
+    <p class="section-desc">Pick one prefix, one root, and one suffix to build the word that matches the definition, then check.</p>
+    <div id="buildContainer"></div>
+  </section>
+
+  <!-- Chamber II: MCQ -->
+  <section class="section" id="section2">
+    <div class="section-head">
+      <span class="section-num">II</span>
+      <h2>Piece to Meaning</h2>
+    </div>
+    <p class="section-desc">Choose the correct meaning for each prefix, root, or suffix. One try per question.</p>
+    <div id="mcqContainer"></div>
+  </section>
+
+  <!-- Chamber III: Matching -->
+  <section class="section" id="section3">
+    <div class="section-head">
+      <span class="section-num">III</span>
+      <h2>Word to Family</h2>
+    </div>
+    <p class="section-desc">Click a word on the left, then click the root it shares on the right.</p>
+    <div class="match-grid">
+      <div><div class="match-col-label">Word</div><div id="matchWords"></div></div>
+      <div><div class="match-col-label">Shared Piece</div><div id="matchFamilies"></div></div>
+    </div>
+  </section>
+
+  <!-- Chamber IV: Challenge decoding -->
+  <section class="section" id="section4">
+    <div class="section-head">
+      <span class="section-num">IV</span>
+      <h2>Challenge: Multi-Piece Words</h2>
+    </div>
+    <p class="section-desc">These have three or more pieces. Break each one down, then reveal the model answer — not graded, this one's for thinking out loud.</p>
+    <div id="trickyContainer"></div>
+  </section>
+
+  <div class="results-card" id="resultsCard">
+    <div class="eyebrow">Final Tally</div>
+    <div class="big-score" id="finalScore">0 / 23</div>
+    <p id="finalMessage"></p>
+    <button class="reset-btn" onclick="resetQuiz()">Reset and try again</button>
+  </div>
+
+</div>
+
+<footer class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+
+const walkData = [
+  {
+    word: "unhappiness",
+    steps: [
+      {tag:"root", label:"ROOT", text:"happy — the core meaning: feeling good."},
+      {tag:"suffix", label:"SUFFIX", text:"-ness (Old English, \"state of being\") — turns the feeling into a state: \"the state of feeling good.\""},
+      {tag:"prefix", label:"PREFIX", text:"un- (\"not\") — flips it: \"the state of NOT feeling good.\""},
+    ]
+  },
+  {
+    word: "hydrophobic",
+    steps: [
+      {tag:"root", label:"ROOT", text:"hydro- (Greek, \"water\") — names the substance."},
+      {tag:"suffix", label:"SUFFIX", text:"-phobic (Greek, \"fearing, avoiding\") — names the reaction to it."},
+      {tag:"root", label:"COMBINE", text:"Put together: \"water-avoiding\" — a surface that repels water."},
+    ]
+  }
+];
+
+const buildData = [
+  {
+    definition: "\"Not capable of being seen\"",
+    prefixOptions: [{text:"in- (not)", correct:true},{text:"tele- (far off)", correct:false},{text:"sub- (under)", correct:false}],
+    rootOptions: [{text:"vis- (to see)", correct:true},{text:"phon- (sound)", correct:false},{text:"port- (to carry)", correct:false}],
+    suffixOptions: [{text:"-ible (capable of)", correct:true},{text:"-ology (study of)", correct:false},{text:"-ist (one who)", correct:false}],
+  },
+  {
+    definition: "\"The study of small life\"",
+    prefixOptions: [{text:"micro- (small)", correct:true},{text:"macro- (large)", correct:false},{text:"anti- (against)", correct:false}],
+    rootOptions: [{text:"bio- (life)", correct:true},{text:"geo- (earth)", correct:false},{text:"chrono- (time)", correct:false}],
+    suffixOptions: [{text:"-ology (study of)", correct:true},{text:"-scope (instrument)", correct:false},{text:"-graph (writing)", correct:false}],
+  },
+  {
+    definition: "\"An instrument for measuring heat\"",
+    prefixOptions: [{text:"(no prefix needed)", correct:true},{text:"sub- (under)", correct:false},{text:"inter- (between)", correct:false}],
+    rootOptions: [{text:"therm- (heat)", correct:true},{text:"hydro- (water)", correct:false},{text:"psych- (mind)", correct:false}],
+    suffixOptions: [{text:"-meter (measuring instrument)", correct:true},{text:"-itis (inflammation)", correct:false},{text:"-ism (a practice)", correct:false}],
+  },
+  {
+    definition: "\"Writing about one's own life\"",
+    prefixOptions: [{text:"auto- (self)", correct:true},{text:"poly- (many)", correct:false},{text:"post- (after)", correct:false}],
+    rootOptions: [{text:"bio- (life)", correct:true},{text:"astro- (star)", correct:false},{text:"dict- (to speak)", correct:false}],
+    suffixOptions: [{text:"-graphy (writing)", correct:true},{text:"-able (capable of)", correct:false},{text:"-phobia (fear)", correct:false}],
+  },
+  {
+    definition: "\"The belief or practice of self-rule\"",
+    prefixOptions: [{text:"auto- (self)", correct:true},{text:"anti- (against)", correct:false},{text:"super- (above)", correct:false}],
+    rootOptions: [{text:"(uses prefix as base, no separate root)", correct:true},{text:"struct- (to build)", correct:false},{text:"spec- (to look)", correct:false}],
+    suffixOptions: [{text:"-ism (a belief, system, or practice)", correct:true},{text:"-meter (measuring instrument)", correct:false},{text:"-itis (inflammation)", correct:false}],
+  },
+];
+
+const mcqData = [
+  {piece:"un- (prefix)", q:"un- as in unhappy means:", options:["not","again","before","together"], correct:0},
+  {piece:"sub- (prefix)", q:"sub- as in submarine means:", options:["above","under, below","between","far off"], correct:1},
+  {piece:"tele- (prefix)", q:"tele- as in television means:", options:["small","large","far off","self"], correct:2},
+  {piece:"hydro- (root)", q:"hydro- as in hydrate means:", options:["water","heat","earth","time"], correct:0},
+  {piece:"chrono- (root)", q:"chrono- as in chronology means:", options:["sound","time","mind","star"], correct:1},
+  {piece:"struct- (root)", q:"struct- as in construct means:", options:["to see","to speak","to build","to carry"], correct:2},
+  {piece:"-ology (suffix)", q:"-ology as in biology means:", options:["fear of","the study of","capable of","state of being"], correct:1},
+  {piece:"-phobic (suffix)", q:"-phobic as in hydrophobic means:", options:["loving, attracted to","fearing, avoiding","measuring","writing"], correct:1},
+  {piece:"-able (suffix)", q:"-able as in portable means:", options:["one who practises","a belief or system","capable of","instrument for viewing"], correct:2},
+  {piece:"anthropo- (root)", q:"anthropo- as in anthropology means:", options:["human","life","mind","star"], correct:0},
+];
+
+const matchData = [
+  {word:"predict", family:"dic-/dict- (to speak, say)"},
+  {word:"inspect", family:"spec-/spect- (to look)"},
+  {word:"transport", family:"port- (to carry)"},
+  {word:"manuscript", family:"scrib-/script- (to write)"},
+  {word:"geography", family:"geo- (earth)"},
+  {word:"symphony", family:"phon- (sound)"},
+  {word:"asteroid", family:"astro-/aster- (star)"},
+  {word:"psychic", family:"psych- (mind, soul)"},
+];
+
+const trickyData = [
+  {word:"Electroencephalogram", roots:"electro- = electricity · en- = in · cephalo- = head · -gram = a written/recorded thing"},
+  {word:"Anthropomorphism", roots:"anthropo- = human · morph- = form, shape · -ism = a practice, system"},
+  {word:"Photobiodegradable", roots:"photo- = light · bio- = life · de- = down, away · grad- = step · -able = capable of"},
+  {word:"Autotransformer", roots:"auto- = self · trans- = across · form- = shape · -er = a thing that does"},
+];
+
+const trickyModel = [
+  "Literally 'a head-in-electricity recorded thing' — a recording of the electrical activity inside the head (brain), i.e. an EEG trace.",
+  "Literally 'the practice of giving human form' — attributing human characteristics, form, or behaviour to non-human things (animals, objects, gods).",
+  "Literally 'capable of stepping down/away using light and life' — a material that breaks down step by step through the combined action of sunlight and living organisms.",
+  "Literally 'a self-shaper across' — a transformer that changes voltage using a single, self-contained winding rather than two separate ones."
+];
+
+let score = 0;
+let answeredCount = 0;
+const gradedTotal = buildData.length + mcqData.length + matchData.length;
+
+/* ---------------- CHAMBER 0: WALKTHROUGH ---------------- */
+const walkContainer = document.getElementById('walkContainer');
+walkData.forEach((item, wi) => {
+  const card = document.createElement('div');
+  card.className = 'walk-card';
+  let stepsHtml = '';
+  item.steps.forEach((s, si) => {
+    stepsHtml += `<div class="walk-step" id="walk-${wi}-${si}"><span class="tag ${s.tag}">${s.label}</span>${s.text}</div>`;
+  });
+  card.innerHTML = `
+    <p class="walk-word">${item.word}</p>
+    ${stepsHtml}
+    <button class="walk-next" id="walk-btn-${wi}">Reveal next step</button>
+  `;
+  walkContainer.appendChild(card);
+  let revealed = 0;
+  const btn = document.getElementById(`walk-btn-${wi}`);
+  btn.onclick = () => {
+    document.getElementById(`walk-${wi}-${revealed}`).classList.add('show');
+    revealed++;
+    if (revealed >= item.steps.length) {
+      btn.disabled = true;
+      btn.textContent = 'Fully decoded';
+    }
+  };
+});
+
+/* ---------------- CHAMBER I: BUILD THE WORD ---------------- */
+const buildContainer = document.getElementById('buildContainer');
+buildData.forEach((item, bi) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `build-${bi}`;
+  card.innerHTML = `
+    <span class="q-index">BUILD ${bi+1} / ${buildData.length}</span>
+    <p class="q-text">${item.definition}</p>
+    <div class="build-groups">
+      <div>
+        <div class="build-group-label prefix">Prefix</div>
+        <div id="build-prefix-${bi}"></div>
+      </div>
+      <div>
+        <div class="build-group-label root">Root</div>
+        <div id="build-root-${bi}"></div>
+      </div>
+      <div>
+        <div class="build-group-label suffix">Suffix</div>
+        <div id="build-suffix-${bi}"></div>
+      </div>
+    </div>
+    <button class="build-check" id="build-check-${bi}" disabled>Check combination</button>
+    <div class="feedback" id="build-fb-${bi}"></div>
+  `;
+  buildContainer.appendChild(card);
+
+  const picks = {prefix:null, root:null, suffix:null};
+  function renderGroup(groupName, options) {
+    const el = document.getElementById(`build-${groupName}-${bi}`);
+    options.forEach((opt, oi) => {
+      const b = document.createElement('button');
+      b.className = 'build-opt';
+      b.textContent = opt.text;
+      b.onclick = () => {
+        if (card.classList.contains('answered')) return;
+        el.querySelectorAll('.build-opt').forEach(x => x.classList.remove('picked'));
+        b.classList.add('picked');
+        picks[groupName] = opt.correct;
+        updateCheckBtn();
+      };
+      el.appendChild(b);
+    });
+  }
+  renderGroup('prefix', item.prefixOptions);
+  renderGroup('root', item.rootOptions);
+  renderGroup('suffix', item.suffixOptions);
+
+  const checkBtn = document.getElementById(`build-check-${bi}`);
+  function updateCheckBtn() {
+    checkBtn.disabled = !(picks.prefix !== null && picks.root !== null && picks.suffix !== null);
+  }
+  checkBtn.onclick = () => {
+    if (card.classList.contains('answered')) return;
+    const allCorrect = picks.prefix && picks.root && picks.suffix;
+    card.classList.add('answered', allCorrect ? 'correct' : 'incorrect');
+    checkBtn.disabled = true;
+    const fb = document.getElementById(`build-fb-${bi}`);
+    fb.classList.add('show');
+    fb.innerHTML = allCorrect
+      ? `<strong>Correct combination.</strong> Every piece fits the definition.`
+      : `<strong>Not quite.</strong> At least one piece doesn't match — check the highlighted meanings again.`;
+    if (allCorrect) score++;
+    answeredCount++;
+    updateScoreboard();
+  };
+});
+
+/* ---------------- CHAMBER II: MCQ ---------------- */
+const mcqContainer = document.getElementById('mcqContainer');
+mcqData.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `mcq-${qi}`;
+  card.innerHTML = `
+    <span class="q-index">QUESTION ${qi+1} / ${mcqData.length}</span>
+    <p class="q-text">${item.q}</p>
+    <div class="options" id="mcq-opts-${qi}"></div>
+    <div class="feedback" id="mcq-fb-${qi}"></div>
+  `;
+  mcqContainer.appendChild(card);
+  const optsDiv = card.querySelector(`#mcq-opts-${qi}`);
+  item.options.forEach((opt, oi) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => handleMcqAnswer(qi, oi);
+    optsDiv.appendChild(btn);
+  });
+});
+
+function handleMcqAnswer(qi, oi) {
+  const card = document.getElementById(`mcq-${qi}`);
+  if (card.classList.contains('answered')) return;
+  const item = mcqData[qi];
+  const btns = document.querySelectorAll(`#mcq-opts-${qi} .opt-btn`);
+  btns.forEach(b => b.disabled = true);
+  const correct = oi === item.correct;
+  card.classList.add('answered', correct ? 'correct' : 'incorrect');
+  btns[oi].classList.add(correct ? 'selected-correct' : 'selected-incorrect');
+  if (!correct) btns[item.correct].classList.add('reveal-correct');
+  const fb = document.getElementById(`mcq-fb-${qi}`);
+  fb.classList.add('show');
+  fb.innerHTML = correct
+    ? `<strong>Correct.</strong> ${item.piece} → ${item.options[item.correct]}.`
+    : `<strong>Not quite.</strong> ${item.piece} means "${item.options[item.correct]}."`;
+  if (correct) score++;
+  answeredCount++;
+  updateScoreboard();
+}
+
+/* ---------------- CHAMBER III: MATCHING ---------------- */
+const wordsShuffled = [...matchData].sort(() => Math.random() - 0.5);
+const familiesShuffled = [...new Set(matchData.map(m => m.family))].sort(() => Math.random() - 0.5);
+const matchWordsDiv = document.getElementById('matchWords');
+const matchFamiliesDiv = document.getElementById('matchFamilies');
+let selectedWord = null;
+let selectedWordEl = null;
+const lockedWords = new Set();
+
+wordsShuffled.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'match-item word';
+  el.textContent = m.word;
+  el.onclick = () => {
+    if (lockedWords.has(m.word)) return;
+    document.querySelectorAll('.match-item.word').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedWord = m.word;
+    selectedWordEl = el;
+  };
+  matchWordsDiv.appendChild(el);
+});
+
+familiesShuffled.forEach(fam => {
+  const el = document.createElement('div');
+  el.className = 'match-item';
+  el.textContent = fam;
+  el.onclick = () => {
+    if (!selectedWord) return;
+    const correctFamily = matchData.find(m => m.word === selectedWord).family;
+    if (fam === correctFamily) {
+      selectedWordEl.classList.add('locked-correct','locked');
+      selectedWordEl.classList.remove('selected');
+      lockedWords.add(selectedWord);
+      score++; answeredCount++;
+      updateScoreboard();
+      selectedWord = null; selectedWordEl = null;
+    } else {
+      el.classList.add('locked-wrong-flash');
+      setTimeout(() => el.classList.remove('locked-wrong-flash'), 300);
+    }
+  };
+  matchFamiliesDiv.appendChild(el);
+});
+
+/* ---------------- CHAMBER IV: TRICKY ---------------- */
+const trickyContainer = document.getElementById('trickyContainer');
+trickyData.forEach((item, ti) => {
+  const card = document.createElement('div');
+  card.className = 'card tricky-card';
+  card.innerHTML = `
+    <span class="q-index">WORD ${ti+1} / ${trickyData.length}</span>
+    <p class="q-text">${item.word}</p>
+    <div class="roots-hint">${item.roots}</div>
+    <textarea placeholder="Write your definition here, built only from the pieces above…"></textarea>
+    <button class="reveal-btn" id="reveal-${ti}">Reveal model answer</button>
+    <div class="model-answer" id="model-${ti}">${trickyModel[ti]}</div>
+  `;
+  trickyContainer.appendChild(card);
+  document.getElementById(`reveal-${ti}`).onclick = () => {
+    document.getElementById(`model-${ti}`).classList.toggle('show');
+  };
+});
+
+/* ---------------- SCOREBOARD ---------------- */
+document.getElementById('progressTotal').textContent = gradedTotal;
+document.getElementById('finalScore').textContent = `0 / ${gradedTotal}`;
+
+function updateScoreboard() {
+  document.getElementById('progressCount').textContent = answeredCount;
+  document.getElementById('scoreCount').textContent = score;
+  document.getElementById('progressBar').style.width = `${(answeredCount / gradedTotal) * 100}%`;
+  if (answeredCount === gradedTotal) showResults();
+}
+
+function showResults() {
+  const card = document.getElementById('resultsCard');
+  card.classList.add('show');
+  document.getElementById('finalScore').textContent = `${score} / ${gradedTotal}`;
+  const pct = score / gradedTotal;
+  let msg;
+  if (pct === 1) msg = "Full marks. You're ready for the five subject sheets.";
+  else if (pct >= 0.75) msg = "Strong. Scroll back to the cards marked in rust and revisit those pieces.";
+  else msg = "Worth another pass — read back through the missed cards, then reset and try again.";
+  document.getElementById('finalMessage').textContent = msg;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function resetQuiz() { location.reload(); }
+</script>
+
+</body>
+</html>
