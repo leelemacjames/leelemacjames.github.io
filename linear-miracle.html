@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Linear Miracle, and Where It Breaks</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f14; --bg-card:#141721; --bg-card2:#1a1e2e;
+  --text:#c8cdd8; --text-dim:#6b7280; --text-bright:#e8ecf4;
+  --accent:#d4a853; --accent-dim:#a07d30;
+  --good:#6dd4a0; --bad:#e06070; --blue:#6fa8dc;
+  --border:#252a3a;
+  --fb:'Crimson Pro',Georgia,serif; --fd:'Playfair Display',serif; --fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:19px;line-height:1.72;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+.container{max-width:780px;margin:0 auto;padding:0 28px}
+
+header{padding:100px 0 50px;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(212,168,83,0.06)0%,transparent 70%);pointer-events:none}
+header h1{font-family:var(--fd);font-weight:900;font-size:clamp(2.2rem,5vw,3.4rem);color:var(--text-bright);letter-spacing:-0.02em;line-height:1.15}
+header h1 span{display:block;font-style:italic;font-weight:400;font-size:0.46em;color:var(--accent);letter-spacing:0.04em;margin-top:10px}
+.subtitle{font-size:1.02rem;color:var(--text-dim);max-width:540px;margin:16px auto 0;font-style:italic}
+.kicker{font-family:var(--fm);font-size:0.72rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:22px}
+
+section{padding:46px 0}
+h2{font-family:var(--fd);font-weight:700;font-size:1.75rem;color:var(--text-bright);margin-bottom:20px;letter-spacing:-0.01em}
+h3{font-family:var(--fd);font-weight:700;font-size:1.25rem;color:var(--accent);margin:30px 0 12px}
+p{margin-bottom:18px}
+em{color:var(--text-bright);font-style:italic}
+.math{font-family:var(--fm);font-size:0.86em;color:var(--accent);background:rgba(212,168,83,0.08);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.box{background:var(--bg-card);border-left:3px solid var(--accent);padding:20px 24px;margin:24px 0;border-radius:0 8px 8px 0}
+.box p:last-child{margin-bottom:0}
+.divider{border:none;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:46px 0}
+
+/* controls */
+.controls{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:26px 0}
+.pill-row{display:flex;gap:0;flex-wrap:wrap}
+.pill{font-family:var(--fm);font-size:0.78rem;padding:9px 15px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer;transition:all .18s;border-right-width:0}
+.pill:first-child{border-radius:6px 0 0 6px}
+.pill:last-child{border-radius:0 6px 6px 0;border-right-width:1px}
+.pill:hover{background:var(--bg-card2);color:var(--text)}
+.pill.active{background:rgba(212,168,83,0.12);border-color:var(--accent);color:var(--accent)}
+.ctrl-label{font-family:var(--fm);font-size:0.76rem;color:var(--text-dim);margin-bottom:10px;letter-spacing:0.05em}
+
+/* matrix */
+.mat-wrap{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin:26px 0}
+.mat{display:inline-grid;grid-template-columns:repeat(3,1fr);border-left:2.5px solid var(--text-dim);border-right:2.5px solid var(--text-dim);padding:10px 8px;position:relative}
+.mat::before,.mat::after{content:'';position:absolute;width:9px;border-top:2.5px solid var(--text-dim);border-bottom:2.5px solid var(--text-dim);top:0;bottom:0}
+.mat::before{left:-1px;border-left:none}.mat::after{right:-1px;border-right:none}
+.mat span{font-family:var(--fm);font-size:0.9rem;color:var(--text-bright);padding:6px 14px;text-align:center;min-width:56px;transition:color .3s}
+.det-badge{font-family:var(--fm);font-size:1.05rem;color:var(--good);text-align:center}
+.det-badge .lbl{display:block;font-size:0.7rem;color:var(--text-dim);margin-top:4px;letter-spacing:0.05em}
+.mat-label{font-family:var(--fm);font-size:0.85rem;color:var(--text-dim)}
+
+/* collision certifier */
+.cert{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:0;margin:24px 0;overflow:hidden}
+.cert-head{display:flex;gap:0;border-bottom:1px solid var(--border)}
+.cert-tab{flex:1;font-family:var(--fm);font-size:0.8rem;padding:14px 8px;text-align:center;cursor:pointer;color:var(--text-dim);background:var(--bg);transition:all .18s;border-right:1px solid var(--border)}
+.cert-tab:last-child{border-right:none}
+.cert-tab:hover{background:var(--bg-card2)}
+.cert-tab.active{background:rgba(111,168,220,0.1);color:var(--blue)}
+.cert-body{padding:24px 26px}
+.cert-line{font-family:var(--fm);font-size:0.9rem;margin:10px 0;color:var(--text);display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.cert-line .k{color:var(--text-dim);min-width:52px}
+.cert-sub{color:var(--text-dim);font-size:0.82rem;padding-left:52px}
+.result{color:var(--bad);font-weight:500}
+.target{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-family:var(--fm);font-size:1rem;color:var(--bad);text-align:center}
+
+/* fold diagram */
+.fold{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px;margin:24px 0}
+.fold svg{width:100%;height:auto;display:block}
+
+.stamp{margin-top:56px;padding:22px 26px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:0.84rem;color:var(--text-dim)}
+.stamp a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-dim)}
+.stamp a:hover{border-bottom-color:var(--accent)}
+footer{padding:36px 0 60px;text-align:center;font-family:var(--fm);font-size:0.72rem;color:var(--text-dim);letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:30px}
+footer .rule{width:60px;height:1px;background:var(--accent-dim);margin:0 auto 20px}
+
+@media(max-width:600px){
+  body{font-size:17px}
+  header{padding:60px 0 36px}
+  .mat span{min-width:44px;padding:5px 8px;font-size:0.82rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="kicker">A companion to “One Matrix, Three Readings”</div>
+    <h1>The Linear Miracle<span>and where it breaks</span></h1>
+    <p class="subtitle">A nonzero determinant guarantees injectivity for linear maps. For polynomial maps, that guarantee fails, and here is the exact place it does.</p>
+  </div>
+</header>
+
+<main class="container">
+
+<section id="s1">
+<h2>The miracle we take for granted</h2>
+<p>A map is injective, one-to-one, when no two inputs share an output, so the map can always be undone. For a linear map there is a single clean obstruction to this. Picture the map acting on the unit cube. Its determinant is the volume of the image. If that volume is nonzero the cube is carried to a genuine solid and no direction is lost, but if the determinant is zero the cube is crushed flat, some whole direction collapses to nothing, and every point along that direction piles onto the same image. A zero determinant is exactly a fold, and a nonzero one forbids it.</p>
+
+<p>So for a linear map the determinant carries four jobs at once. It is the norm, it is the volume distortion, it is the orientation indicator, and bundled in with these it is a certificate of injectivity: <span class="math">det ≠ 0 ⟺ injective</span>, across the whole space at once.</p>
+
+<p>The quadratic rings make this concrete. Multiplication by a fixed element z = a + bθ is a linear map, and in the Gaussian integers ℤ[i] multiplication by z = 2 + i sends x + yi to (2 + i)(x + yi) = (2x − y) + (x + 2y)i. As a map of the plane that is</p>
+
+<div class="mat-wrap">
+  <span class="mat-label">M(2, 1) =</span>
+  <div class="mat" style="grid-template-columns:repeat(2,1fr)">
+    <span>2</span><span>−1</span><span>1</span><span>2</span>
+  </div>
+  <span class="det-badge"><span style="color:var(--good)">det = 5</span><span class="lbl">= N(2+i) = 2² + 1²</span></div>
+</div>
+
+<p>The determinant is 5, the norm of 2 + i, and because it is nonzero the map is injective: every Gaussian integer has at most one predecessor under multiplication by 2 + i. Injectivity fails only where the norm falls to zero, which in the elliptic rings happens at the origin alone, and in the hyperbolic and parabolic rings happens along the null directions. For a linear map the only way to lose injectivity is to lose det ≠ 0.</p>
+</section>
+
+<hr class="divider">
+
+<section id="s2">
+<h2>What a Jacobian is, and the conjecture</h2>
+<p>A polynomial map F is usually not linear, so it has no single matrix. Instead, at each point it has a best linear approximation, the map you would see if you looked at F under a microscope at that point. That approximation is recorded by the <em>Jacobian matrix</em> J<sub>F</sub>, whose entries are the first partial derivatives ∂F<sub>i</sub>/∂x<sub>j</sub>, one for each way an output can respond to a nudge in an input. Its determinant measures the local volume distortion: the factor by which F stretches a tiny cell of volume sitting at that point.</p>
+
+<p>A linear map is the special case where this approximation is not an approximation at all. If L(x) = Mx, then component i is the plain sum L<sub>i</sub> = M<sub>i1</sub>x<sub>1</sub> + M<sub>i2</sub>x<sub>2</sub> + …, so the derivative ∂L<sub>i</sub>/∂x<sub>j</sub> is simply the constant M<sub>ij</sub>. The Jacobian of a linear map is the matrix M itself, at every point, unchanging.</p>
+
+<p>Take the multiplication-by-2+i map from a moment ago, written out as L(x, y) = (2x − y, x + 2y). Differentiating each output by each input gives ∂L₁/∂x = 2 and ∂L₁/∂y = −1 from the first component, and ∂L₂/∂x = 1 and ∂L₂/∂y = 2 from the second. Not one of these depends on where you are, so the Jacobian is the same matrix at every point of the plane:</p>
+
+<div class="mat-wrap">
+  <span class="mat-label">J<sub>L</sub>(x, y) =</span>
+  <div class="mat" style="grid-template-columns:repeat(2,1fr)">
+    <span>2</span><span>−1</span><span>1</span><span>2</span>
+  </div>
+  <span class="mat-label">= M(2, 1), everywhere</span>
+</div>
+
+<p>The Jacobian recovers the original matrix exactly, with nothing left over. A linear map is its own derivative, and so the local volume factor det J<sub>L</sub> and the global injectivity certificate det M are the very same number, both equal to 5 here. There is no gap between the microscope and the whole space, because the microscope shows the whole map.</p>
+
+<p>The Jacobian Conjecture, posed by Keller in 1939, asked whether that coincidence survives when F is genuinely curved. If det J<sub>F</sub> is a nonzero constant at every point, so that F never squashes volume anywhere, must F be globally injective and invertible by a polynomial? The intuition is the linear certificate carried across to curved maps: if every infinitesimal cell is scaled by the same nonzero factor with the same orientation, how could the map ever fold two points together? For eighty-seven years no one could produce a map that did.</p>
+
+<p>The answer, announced over a weekend in July 2026, is that the coincidence does not survive. There is an explicit polynomial map of ℂ³ whose Jacobian determinant is the constant −2 at every single point, and which nonetheless sends three distinct points to one.</p>
+
+<div class="box">
+  <p>The map, with the shorthand <span class="math">u = 1 + xy</span>:</p>
+  <p style="font-family:var(--fm);font-size:0.82rem;color:var(--text-bright);line-height:2.1;margin-top:6px">
+  F₁ = u³z + y²u(4 + 3xy)<br>
+  F₂ = y + 3xu²z + 3xy²(4 + 3xy)<br>
+  F₃ = 2x − 3x²y − x³z
+  </p>
+</div>
+</section>
+
+<hr class="divider">
+
+<section id="s3">
+<h2>Constant determinant, restless matrix</h2>
+<p>A constant determinant does not mean a constant matrix. In the quadratic rings the Jacobian of multiplication is M(a, b) itself, frozen, so its determinant being constant tells you nothing further and the local data settles everything. In this map the Jacobian is instead a matrix of degree-six polynomials that lurches from point to point, and only its determinant is pinned. Move the point and watch the nine entries change while the determinant refuses to.</p>
+
+<div class="controls">
+  <div class="ctrl-label">EVALUATE THE JACOBIAN AT A POINT (x, y, z):</div>
+  <div class="pill-row" id="pt-pills">
+    <button class="pill active" data-pt="0,0,0">(0, 0, 0)</button>
+    <button class="pill" data-pt="1,-1,1">(1, −1, 1)</button>
+    <button class="pill" data-pt="2,1,-1">(2, 1, −1)</button>
+    <button class="pill" data-pt="-1,2,3">(−1, 2, 3)</button>
+    <button class="pill" data-pt="1,-1.5,6.5">(1, −3/2, 13/2)</button>
+  </div>
+</div>
+
+<div class="mat-wrap">
+  <span class="mat-label">J<sub>F</sub> =</span>
+  <div class="mat" id="jac-mat"></div>
+  <div class="det-badge"><span id="det-val">−2</span><span class="lbl">det, always</span></div>
+</div>
+
+<p>The entries roam across the integers and beyond, yet the determinant sits at −2 through every choice. The reason folding can hide here is that it lives one level up from the determinant. The Jacobian is built from first derivatives, and its determinant is a number read off from them. Whether that number stays constant is one question; whether the matrix itself stays constant is another, and the difference between them is second-order. How the Jacobian turns as you move from point to point is governed by the second derivatives of F, and for this map those second derivatives are large and busy even though the determinant they feed into never budges. All of the map's global mischief is stored in that turning. The determinant is blind to it because the determinant reads only one cell at a time and never compares one cell to the next.</p>
+</section>
+
+<hr class="divider">
+
+<section id="s4">
+<h2>Certify the fold</h2>
+<p>Three genuinely different points share a single image. You do not need to trust a solver for this; substitution alone certifies it, since plugging numbers into a polynomial is arithmetic and nothing more. Pick a point and watch it collapse onto the target.</p>
+
+<div class="cert">
+  <div class="cert-head" id="cert-tabs">
+    <div class="cert-tab active" data-c="0">(0, 0, −1/4)</div>
+    <div class="cert-tab" data-c="1">(1, −3/2, 13/2)</div>
+    <div class="cert-tab" data-c="2">(−1, 3/2, 13/2)</div>
+  </div>
+  <div class="cert-body" id="cert-body"></div>
+</div>
+
+<div class="fold">
+  <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6fa8dc"/></marker>
+    </defs>
+    <text x="150" y="55" fill="#d4a853" font-family="JetBrains Mono" font-size="15" text-anchor="middle">(0, 0, −1/4)</text>
+    <text x="150" y="125" fill="#d4a853" font-family="JetBrains Mono" font-size="15" text-anchor="middle">(1, −3/2, 13/2)</text>
+    <text x="150" y="195" fill="#d4a853" font-family="JetBrains Mono" font-size="15" text-anchor="middle">(−1, 3/2, 13/2)</text>
+    <line x1="245" y1="52" x2="470" y2="118" stroke="#6fa8dc" stroke-width="2" marker-end="url(#ah)"/>
+    <line x1="245" y1="120" x2="470" y2="120" stroke="#6fa8dc" stroke-width="2" marker-end="url(#ah)"/>
+    <line x1="245" y1="188" x2="470" y2="122" stroke="#6fa8dc" stroke-width="2" marker-end="url(#ah)"/>
+    <text x="360" y="98" fill="#6fa8dc" font-family="Playfair Display" font-style="italic" font-size="20" text-anchor="middle">F</text>
+    <text x="560" y="126" fill="#e06070" font-family="JetBrains Mono" font-size="17" text-anchor="middle">(−1/4, 0, 0)</text>
+  </svg>
+</div>
+
+<p>Three inputs, one output, and the determinant constant and nonzero the entire time. The map is a local diffeomorphism at every point, invertible in any small neighbourhood, and still it wraps the space over itself the way the exponential wraps the plane, except that here it is achieved by an honest polynomial of degree seven, which is the whole surprise.</p>
+</section>
+
+<hr class="divider">
+
+<section id="s5">
+<h2>What the determinant cannot see</h2>
+<p>The quadratic-ring picture and this one fit together cleanly. Multiplication in the rings charts the boundary of the linear world, where the determinant governs injectivity completely and the only failures live on the null cone, exactly where the norm falls to zero. This map charts the first stretch of country just past that boundary, and its message is that the polynomial world holds a second mechanism for losing injectivity, one with no linear shadow at all.</p>
+
+<p>Volume and orientation are conserved in every infinitesimal cell, and the map folds anyway, because global folding is a covering phenomenon that pointwise volume data cannot detect. The determinant remained the norm, the volume distortion, and the orientation indicator, all three, faithfully, at every point. It simply was never the certificate of injectivity that the linear case had trained us to expect. That fourth job, the one the linear miracle bundled in for free, was the one that did not survive the passage to curved maps.</p>
+
+<div class="box">
+  <p>The linear determinant answers a global question with local data. The Jacobian determinant answers only the local question, and answers it perfectly. The eighty-seven-year gap was the width of everything the local answer leaves out.</p>
+</div>
+</section>
+
+<div class="stamp">
+  <strong>Notes.</strong> The map is the ℂ³ counterexample to the Jacobian Conjecture announced by Levent Alpöge in July 2026. The determinant (constant −2) and the three-point collision were verified here by exact symbolic computation and by direct substitution. Background on class numbers and quadratic forms follows Allen Hatcher, <em>The Topology of Numbers</em>, Cornell University, <a href="https://pi.math.cornell.edu/~hatcher/TN/TNbook.pdf" target="_blank">pi.math.cornell.edu/~hatcher/TN/TNbook.pdf</a>. A weekend-fresh announcement of this scale deserves the usual caution; the specific claims here are self-certifying by substitution and do not rest on any authority.
+</div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="rule"></div>
+    Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+  </div>
+</footer>
+
+<script>
+// ── The map's nine Jacobian partials (verified against sympy) ──
+function partials(x,y,z){
+  return [
+    // dF1
+    3*x*x*y*y*y*z + 6*x*y*y*y*y + 6*x*y*y*z + 7*y*y*y + 3*y*z,
+    3*x*x*x*y*y*z + 12*x*x*y*y*y + 6*x*x*y*z + 21*x*y*y + 3*x*z + 8*y,
+    x*x*x*y*y*y + 3*x*x*y*y + 3*x*y + 1,
+    // dF2
+    9*x*x*y*y*z + 18*x*y*y*y + 12*x*y*z + 12*y*y + 3*z,
+    6*x*x*x*y*z + 27*x*x*y*y + 6*x*x*z + 24*x*y + 1,
+    3*x*x*x*y*y + 6*x*x*y + 3*x,
+    // dF3
+    -3*x*x*z - 6*x*y + 2,
+    -3*x*x,
+    -x*x*x
+  ];
+}
+function det3(m){
+  return m[0]*(m[4]*m[8]-m[5]*m[7]) - m[1]*(m[3]*m[8]-m[5]*m[6]) + m[2]*(m[3]*m[7]-m[4]*m[6]);
+}
+function fmt(v){
+  const r=Math.round(v);
+  if(Math.abs(v-r)<1e-9) return String(r);
+  return v.toFixed(2);
+}
+function renderJac(x,y,z){
+  const p=partials(x,y,z);
+  const mat=document.getElementById('jac-mat');
+  mat.innerHTML='';
+  p.forEach(v=>{const s=document.createElement('span');s.textContent=fmt(v);mat.appendChild(s);});
+  const d=det3(p);
+  document.getElementById('det-val').textContent = (Math.abs(d+2)<1e-6?'−2':fmt(d));
+}
+document.querySelectorAll('#pt-pills .pill').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#pt-pills .pill').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const[px,py,pz]=b.dataset.pt.split(',').map(Number);
+    renderJac(px,py,pz);
+  });
+});
+renderJac(0,0,0);
+
+// ── Collision certifier ──
+const COLLISIONS=[
+  {
+    pt:'(0, 0, −1/4)',
+    lines:[
+      ['x, y','0, 0, so u = 1 + xy = 1'],
+      ['note','every term carrying an x or a y vanishes'],
+      ['F₁','1³·(−1/4) + 0  =  −1/4'],
+      ['F₂','0 + 0 + 0  =  0'],
+      ['F₃','0 − 0 − 0  =  0']
+    ]
+  },
+  {
+    pt:'(1, −3/2, 13/2)',
+    lines:[
+      ['xy','1 · (−3/2) = −3/2,  so u = −1/2  and  4 + 3xy = −1/2'],
+      ['F₁','(−1/2)³·(13/2) + (−3/2)²·(−1/2)·(−1/2) = −13/16 + 9/16 = −1/4'],
+      ['F₂','−3/2 + 3·(1/4)·(13/2) + 3·(9/4)·(−1/2) = −3/2 + 39/8 − 27/8 = 0'],
+      ['F₃','2 + 9/2 − 13/2 = 0']
+    ]
+  },
+  {
+    pt:'(−1, 3/2, 13/2)',
+    lines:[
+      ['xy','(−1)·(3/2) = −3/2,  so u = −1/2  and  4 + 3xy = −1/2  (same as before)'],
+      ['note','flipping the signs of x and y leaves every cancellation intact'],
+      ['F₁','−13/16 + 9/16 = −1/4'],
+      ['F₂','3/2 − 39/8 + 27/8 = 0'],
+      ['F₃','−2 − 9/2 + 13/2 = 0']
+    ]
+  }
+];
+function renderCert(i){
+  const c=COLLISIONS[i];
+  const body=document.getElementById('cert-body');
+  let html='';
+  c.lines.forEach(([k,v])=>{
+    if(k==='note'){html+=`<div class="cert-sub">${v}</div>`;}
+    else{html+=`<div class="cert-line"><span class="k">${k}</span><span>${v}</span></div>`;}
+  });
+  html+=`<div class="target">F ${c.pt.replace(/[()]/g,m=>m)}  =  (−1/4, 0, 0)</div>`;
+  body.innerHTML=html;
+}
+document.querySelectorAll('#cert-tabs .cert-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('#cert-tabs .cert-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    renderCert(Number(t.dataset.c));
+  });
+});
+renderCert(0);
+</script>
+</body>
+</html>
