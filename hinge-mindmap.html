@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hinge Map — Teaching Through the Hinge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --fg: #d8d4cf;
+    --fg-dim: #8a857e;
+    --accent: #c5a05e;
+    --accent-dim: #8a7240;
+    --hinge-force: #e06c5a;
+    --hinge-momentum: #5a9ae0;
+    --hinge-torque: #b87de0;
+    --hinge-power: #e0a83a;
+    --hinge-wave: #4ac9a0;
+    --hinge-energy: #e05a8d;
+    --hinge-flux: #7ac4e0;
+    --hinge-number: #a3c75a;
+    --surface: #181818;
+    --surface-hover: #222;
+    --border: #2a2a2a;
+    --radius: 3px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  header h1 {
+    font-family: 'EB Garamond', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+
+  header p {
+    margin-top: 0.4rem;
+    color: var(--fg-dim);
+    font-size: 0.82rem;
+    max-width: 56ch;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .controls button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-dim);
+    font-size: 0.72rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .controls button:hover { border-color: var(--accent-dim); color: var(--fg); }
+  .controls button.active { border-color: var(--accent); color: var(--accent); }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+  }
+
+  .axis-label {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin: 1.6rem 0 0.7rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.35rem;
+  }
+
+  .branch {
+    margin-bottom: 0.15rem;
+  }
+
+  .branch-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.7rem;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .branch-head:hover { background: var(--surface); }
+
+  .branch-toggle {
+    font-size: 0.7rem;
+    color: var(--fg-dim);
+    width: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .branch.open > .branch-head .branch-toggle { transform: rotate(90deg); }
+
+  .branch-name {
+    font-weight: 500;
+    font-size: 0.88rem;
+    flex: 1;
+  }
+
+  .branch-equation {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--fg-dim);
+  }
+
+  .hinge-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .leaves {
+    display: none;
+    padding-left: 2.3rem;
+    padding-bottom: 0.3rem;
+  }
+  .branch.open > .leaves { display: block; }
+
+  .leaf {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--fg);
+    font-size: 0.8rem;
+    transition: background 0.15s, color 0.15s;
+  }
+  .leaf:hover { background: var(--surface-hover); color: var(--accent); }
+
+  .leaf-tag {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    flex-shrink: 0;
+    color: #0e0e0e;
+    font-weight: 600;
+  }
+
+  .leaf-desc {
+    color: var(--fg-dim);
+    font-size: 0.75rem;
+    margin-left: 0.3rem;
+  }
+
+  .meta-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .meta-links a {
+    font-size: 0.78rem;
+    color: var(--accent-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .meta-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.65rem;
+    color: var(--fg-dim);
+    border-top: 1px solid var(--border);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 600px) {
+    header, main { padding-left: 1rem; padding-right: 1rem; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Hinge Map</h1>
+  <p>Eight hinge worksheets, two companion documents, arranged by IB Physics theme and by shared mathematical structure. Click branches to fold; click leaves to open.</p>
+  <div class="controls">
+    <button onclick="expandAll()">Expand all</button>
+    <button onclick="collapseAll()">Collapse all</button>
+    <button onclick="switchAxis('theme')" class="active" id="btn-theme">By theme</button>
+    <button onclick="switchAxis('hinge')" id="btn-hinge">By hinge</button>
+  </div>
+</header>
+
+<main id="tree"></main>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+const BASE = "https://leelemacjames.github.io/";
+const C = {
+  force:    "var(--hinge-force)",
+  momentum: "var(--hinge-momentum)",
+  torque:   "var(--hinge-torque)",
+  power:    "var(--hinge-power)",
+  wave:     "var(--hinge-wave)",
+  energy:   "var(--hinge-energy)",
+  flux:     "var(--hinge-flux)",
+  number:   "var(--hinge-number)",
+  meta:     "var(--accent)"
+};
+
+// Each leaf: [label, url, hingeKey, description]
+const LEAVES = [
+  ["Force Hinge",      "hinge_forceHinge.pdf",      "force",    "Coulomb · Lorentz · projectile — What is the F in F = ma?"],
+  ["Momentum Hinge",   "hinge_momentumHinge.pdf",    "momentum", "Collision · rocket · gas pressure — F = dp/dt across three mechanisms"],
+  ["Torque Hinge",     "hinge_torqueHinge.pdf",      "torque",   "Gravitational · frictional · magnetic torque — τ = Iα"],
+  ["Power Hinge",      "hinge_powerHinge.pdf",       "power",    "Lifting · resistor · lamp — P = ΔE/Δt and its transfer pathways"],
+  ["Wave Hinge",       "hinge_waveHinge.pdf",        "wave",     "String · sound · light — v = fλ and three medium laws"],
+  ["Energy Hinge",     "hinge_energyHinge.pdf",      "energy",   "Kirchhoff loop · first law · nuclear binding — conservation as ledger"],
+  ["Flux Hinge",       "hinge_fluxHinge.pdf",        "flux",     "Pressure · irradiance · magnetic flux — one area operation, three meanings"],
+  ["Number Density",   "hinge_numberDensity.pdf",    "number",   "Grating · charge carriers · ideal gas — number per unit space"],
+  ["Teacher Essay",    "hinge_essayHinge.pdf",       "meta",     "Rationale, hinge map, lesson design and assessment framework"],
+  ["Student Companion","hinge_Staudentrationale.pdf", "meta",     "Four-step method, answer frames and the central question"],
+];
+
+// Theme axis: IB Physics topics → which leaves appear
+const THEME_AXIS = [
+  { name: "Mechanics",       eq: "F, p, τ, E",
+    keys: ["force","momentum","torque","energy"] },
+  { name: "Waves",           eq: "v = fλ",
+    keys: ["wave"] },
+  { name: "Thermal physics", eq: "ΔU = Q − W, PV = NkT",
+    keys: ["energy","momentum","number"] },
+  { name: "Electricity",     eq: "V = IR, P = IV",
+    keys: ["power","energy","force"] },
+  { name: "Fields",          eq: "F = GmM/r², F = qE",
+    keys: ["force","flux"] },
+  { name: "Nuclear",         eq: "E = Δmc²",
+    keys: ["energy","number"] },
+  { name: "Surface & geometry", eq: "Φ = BA cos θ, S = L/4πr²",
+    keys: ["flux","number"] },
+  { name: "Framework documents", eq: "",
+    keys: ["meta"] },
+];
+
+// Hinge axis: shared relation → which leaves
+const HINGE_AXIS = [
+  { name: "Force",            eq: "F_net = m_i a",
+    keys: ["force"] },
+  { name: "Momentum",         eq: "F = dp/dt",
+    keys: ["momentum"] },
+  { name: "Torque",           eq: "τ_net = Iα",
+    keys: ["torque"] },
+  { name: "Power",            eq: "P = ΔE/Δt",
+    keys: ["power"] },
+  { name: "Waves",            eq: "v = fλ",
+    keys: ["wave"] },
+  { name: "Energy",           eq: "ΣE_in = ΣE_out",
+    keys: ["energy"] },
+  { name: "Flux / surface",   eq: "total = local × effective area",
+    keys: ["flux"] },
+  { name: "Number density",   eq: "n = N / (length or volume)",
+    keys: ["number"] },
+  { name: "Framework",        eq: "",
+    keys: ["meta"] },
+];
+
+let currentAxis = "theme";
+
+function getLeaves(keys) {
+  return LEAVES.filter(l => keys.includes(l[2]));
+}
+
+function render(axis) {
+  const groups = axis === "theme" ? THEME_AXIS : HINGE_AXIS;
+  const main = document.getElementById("tree");
+  main.innerHTML = "";
+
+  groups.forEach((g, gi) => {
+    const leaves = getLeaves(g.keys);
+    if (!leaves.length) return;
+
+    const branch = document.createElement("div");
+    branch.className = "branch open";
+
+    const head = document.createElement("div");
+    head.className = "branch-head";
+    head.innerHTML = `
+      <span class="branch-toggle">▶</span>
+      <span class="branch-name">${g.name}</span>
+      ${g.eq ? `<span class="branch-equation">${g.eq}</span>` : ""}
+    `;
+    head.addEventListener("click", () => branch.classList.toggle("open"));
+
+    const leavesEl = document.createElement("div");
+    leavesEl.className = "leaves";
+
+    leaves.forEach(l => {
+      const a = document.createElement("a");
+      a.className = "leaf";
+      a.href = BASE + l[1];
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.innerHTML = `
+        <span class="leaf-tag" style="background:${C[l[2]]}">${l[2]}</span>
+        <span>${l[0]}</span>
+        <span class="leaf-desc">— ${l[3]}</span>
+      `;
+      leavesEl.appendChild(a);
+    });
+
+    branch.appendChild(head);
+    branch.appendChild(leavesEl);
+    main.appendChild(branch);
+  });
+
+  // Meta links
+  const meta = document.createElement("div");
+  meta.className = "meta-links";
+  meta.innerHTML = `
+    <a href="${BASE}cognitive_phlogiston.pdf" target="_blank">Educational Phlogiston</a>
+    <a href="${BASE}placeHolderForce.pdf" target="_blank">The Placeholder Force</a>
+    <a href="${BASE}mindmap.html" target="_blank">McMurmerings Knowledge Map</a>
+  `;
+  main.appendChild(meta);
+}
+
+function expandAll() {
+  document.querySelectorAll(".branch").forEach(b => b.classList.add("open"));
+}
+function collapseAll() {
+  document.querySelectorAll(".branch").forEach(b => b.classList.remove("open"));
+}
+function switchAxis(axis) {
+  currentAxis = axis;
+  document.getElementById("btn-theme").classList.toggle("active", axis === "theme");
+  document.getElementById("btn-hinge").classList.toggle("active", axis === "hinge");
+  render(axis);
+}
+
+render("theme");
+</script>
+</body>
+</html>
