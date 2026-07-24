@@ -21,6 +21,12 @@
     --hinge-energy: #e05a8d;
     --hinge-flux: #7ac4e0;
     --hinge-number: #a3c75a;
+    --hinge-boundary: #d07c52;
+    --hinge-refraction: #54b9c9;
+    --hinge-reciprocal: #c78bcf;
+    --hinge-potential: #d88d68;
+    --hinge-motion: #8fa7df;
+    --hinge-decay: #78bd72;
     --surface: #181818;
     --surface-hover: #222;
     --border: #2a2a2a;
@@ -217,12 +223,13 @@
 
 <header>
   <h1>Hinge Map</h1>
-  <p>Eight hinge worksheets, two companion documents, arranged by IB Physics theme and by shared mathematical structure. Click branches to fold; click leaves to open.</p>
+  <p>A growing set of hinge worksheets and companion documents, arranged by IB Physics theme, shared relation, or hinge type. Click branches to fold; click leaves to open.</p>
   <div class="controls">
     <button onclick="expandAll()">Expand all</button>
     <button onclick="collapseAll()">Collapse all</button>
     <button onclick="switchAxis('theme')" class="active" id="btn-theme">By theme</button>
     <button onclick="switchAxis('hinge')" id="btn-hinge">By hinge</button>
+    <button onclick="switchAxis('type')" id="btn-type">By type</button>
   </div>
 </header>
 
@@ -233,86 +240,109 @@
 <script>
 const BASE = "https://leelemacjames.github.io/";
 const C = {
-  force:    "var(--hinge-force)",
-  momentum: "var(--hinge-momentum)",
-  torque:   "var(--hinge-torque)",
-  power:    "var(--hinge-power)",
-  wave:     "var(--hinge-wave)",
-  energy:   "var(--hinge-energy)",
-  flux:     "var(--hinge-flux)",
-  number:   "var(--hinge-number)",
-  meta:     "var(--accent)"
+  force:      "var(--hinge-force)",
+  momentum:   "var(--hinge-momentum)",
+  torque:     "var(--hinge-torque)",
+  power:      "var(--hinge-power)",
+  wave:       "var(--hinge-wave)",
+  energy:     "var(--hinge-energy)",
+  flux:       "var(--hinge-flux)",
+  number:     "var(--hinge-number)",
+  boundary:   "var(--hinge-boundary)",
+  refraction: "var(--hinge-refraction)",
+  reciprocal: "var(--hinge-reciprocal)",
+  potential:  "var(--hinge-potential)",
+  motion:     "var(--hinge-motion)",
+  decay:      "var(--hinge-decay)",
+  meta:       "var(--accent)"
 };
 
-// Each leaf: [label, url, hingeKey, description]
+// Each leaf: [label, url, hingeKey, description, hingeTypes]
 const LEAVES = [
-  ["Force Hinge",      "hinge_forceHinge.pdf",      "force",    "Coulomb · Lorentz · projectile — What is the F in F = ma?"],
-  ["Momentum Hinge",   "hinge_momentumHinge.pdf",    "momentum", "Collision · rocket · gas pressure — F = dp/dt across three mechanisms"],
-  ["Torque Hinge",     "hinge_torqueHinge.pdf",      "torque",   "Gravitational · frictional · magnetic torque — τ = Iα"],
-  ["Power Hinge",      "hinge_powerHinge.pdf",       "power",    "Lifting · resistor · lamp — P = ΔE/Δt and its transfer pathways"],
-  ["Wave Hinge",       "hinge_waveHinge.pdf",        "wave",     "String · sound · light — v = fλ and three medium laws"],
-  ["Energy Hinge",     "hinge_energyHinge.pdf",      "energy",   "Kirchhoff loop · first law · nuclear binding — conservation as ledger"],
-  ["Flux Hinge",       "hinge_fluxHinge.pdf",        "flux",     "Pressure · irradiance · magnetic flux — one area operation, three meanings"],
-  ["Number Density",   "hinge_numberDensity.pdf",    "number",   "Grating · charge carriers · ideal gas — number per unit space"],
-  ["Teacher Essay",    "hinge_essayHinge.pdf",       "meta",     "Rationale, hinge map, lesson design and assessment framework"],
-  ["Student Companion","hinge_Staudentrationale.pdf", "meta",     "Four-step method, answer frames and the central question"],
+  ["Force Hinge",       "hinge_forceHinge.pdf",          "force",      "Coulomb · Lorentz · projectile — what fills the F-slot in F = ma?", ["closure"]],
+  ["Momentum Hinge",    "hinge_momentumHinge.pdf",       "momentum",   "Collision · rocket · gas pressure — momentum change, transfer and flux", ["closure","constraint","bookkeeping"]],
+  ["Torque Hinge",      "hinge_torqueHinge.pdf",         "torque",     "Gravitational · frictional · magnetic torque — what fills the τ-slot?", ["closure"]],
+  ["Power Hinge",       "hinge_powerHinge.pdf",          "power",      "Lifting · resistor · lamp — P = ΔE/Δt and its transfer pathways", ["closure","bookkeeping"]],
+  ["Wave-Speed Hinge",  "hinge_waveHinge.pdf",           "wave",       "String · sound · light — v = fλ with speed supplied by the medium", ["closure","bookkeeping"]],
+  ["Energy Hinge",      "hinge_energyHinge.pdf",         "energy",     "Kirchhoff loop · first law · nuclear binding — conservation as ledger", ["constraint"]],
+  ["Flux Hinge",        "hinge_fluxHinge.pdf",           "flux",       "Pressure · irradiance · magnetic flux — area operations with distinct meanings", ["geometric","bookkeeping"]],
+  ["Number Density",    "hinge_numberDensity.pdf",       "number",     "Grating · charge carriers · ideal gas — number per unit space", ["structural"]],
+  ["Boundary Balance",  "hinge_Boundaryhinge.pdf",       "boundary",   "Atmospheric radiation · circuit junction · thermal contact — input, output, accumulation", ["constraint"]],
+  ["Refraction Hinge",  "hinge_RefractionHinge.pdf",     "refraction", "Water depth · refractive index · Earth layers — speed change and turning", ["geometric","structural"]],
+  ["Reciprocal-Power Hinge", "hinge_ReciprocalHinge.pdf", "reciprocal", "Potential ∝ 1/r; field strength and irradiance ∝ 1/r²", ["geometric","structural"]],
+  ["Potential-Energy Hinge", "hinge_PotentialHinge.pdf",  "potential",  "Configuration · interaction · chosen zero — different potential-energy forms", ["representation","structural"]],
+  ["Equation-of-Motion Hinge", "hinge_EquationMotionHinge.pdf", "motion", "Physical law · differential equation · solution · initial conditions", ["representation"]],
+  ["Exponential Hinge", "hinge_DecayHinge.pdf",          "decay",      "Radioactive decay · capacitor discharge · attenuation — one exponential form", ["structural"]],
+  ["Interactive Hinge Map", "hinge-mindmap.html",        "meta",       "Interactive overview of the worksheet family", ["framework"]],
+  ["Teacher Essay",     "hinge_essayHinge.pdf",          "meta",       "Rationale, taxonomy, lesson design and assessment framework", ["framework"]],
+  ["Student Companion", "hinge_Staudentrationale.pdf",   "meta",       "Learner rationale, answer frames and the central hinge question", ["framework"]]
 ];
 
 // Theme axis: IB Physics topics → which leaves appear
 const THEME_AXIS = [
-  { name: "Mechanics",       eq: "F, p, τ, E",
-    keys: ["force","momentum","torque","energy"] },
-  { name: "Waves",           eq: "v = fλ",
-    keys: ["wave"] },
-  { name: "Thermal physics", eq: "ΔU = Q − W, PV = NkT",
-    keys: ["energy","momentum","number"] },
-  { name: "Electricity",     eq: "V = IR, P = IV",
-    keys: ["power","energy","force"] },
-  { name: "Fields",          eq: "F = GmM/r², F = qE",
-    keys: ["force","flux"] },
-  { name: "Nuclear",         eq: "E = Δmc²",
-    keys: ["energy","number"] },
-  { name: "Surface & geometry", eq: "Φ = BA cos θ, S = L/4πr²",
-    keys: ["flux","number"] },
+  { name: "Mechanics", eq: "F, p, τ, E_p",
+    keys: ["force","momentum","torque","energy","potential","motion","reciprocal"] },
+  { name: "Waves", eq: "v = fλ; refraction; attenuation",
+    keys: ["wave","refraction","decay","number"] },
+  { name: "Thermal physics", eq: "ΔU = Q − W; PV = NkT",
+    keys: ["energy","momentum","number","boundary","decay"] },
+  { name: "Electricity", eq: "V = IR; P = IV; Q(t)",
+    keys: ["power","energy","force","boundary","motion","decay","potential","reciprocal"] },
+  { name: "Fields", eq: "V ∝ 1/r; field ∝ 1/r²",
+    keys: ["force","flux","potential","reciprocal"] },
+  { name: "Nuclear", eq: "E = Δmc²; N = N₀e⁻ˡᵃᵐᵇᵈᵃᵗ",
+    keys: ["energy","number","decay","motion"] },
+  { name: "Surface, geometry & boundaries", eq: "area · spherical spreading · junction balance",
+    keys: ["flux","number","boundary","refraction","reciprocal"] },
   { name: "Framework documents", eq: "",
-    keys: ["meta"] },
+    keys: ["meta"] }
 ];
 
 // Hinge axis: shared relation → which leaves
 const HINGE_AXIS = [
-  { name: "Force",            eq: "F_net = m_i a",
-    keys: ["force"] },
-  { name: "Momentum",         eq: "F = dp/dt",
-    keys: ["momentum"] },
-  { name: "Torque",           eq: "τ_net = Iα",
-    keys: ["torque"] },
-  { name: "Power",            eq: "P = ΔE/Δt",
-    keys: ["power"] },
-  { name: "Waves",            eq: "v = fλ",
-    keys: ["wave"] },
-  { name: "Energy",           eq: "ΣE_in = ΣE_out",
-    keys: ["energy"] },
-  { name: "Flux / surface",   eq: "total = local × effective area",
-    keys: ["flux"] },
-  { name: "Number density",   eq: "n = N / (length or volume)",
-    keys: ["number"] },
-  { name: "Framework",        eq: "",
-    keys: ["meta"] },
+  { name: "Force", eq: "F_net = m_i a", keys: ["force"] },
+  { name: "Momentum", eq: "F = Δp/Δt", keys: ["momentum"] },
+  { name: "Torque", eq: "τ_net = Iα", keys: ["torque"] },
+  { name: "Power", eq: "P = ΔE/Δt", keys: ["power"] },
+  { name: "Wave speed", eq: "v = fλ", keys: ["wave"] },
+  { name: "Energy conservation", eq: "ΣE_in = ΣE_out", keys: ["energy","boundary"] },
+  { name: "Flux / surface", eq: "total = local × effective area", keys: ["flux"] },
+  { name: "Number density", eq: "number / length or volume", keys: ["number"] },
+  { name: "Refraction", eq: "sin θ₁ / sin θ₂ = v₁ / v₂", keys: ["refraction"] },
+  { name: "Reciprocal powers", eq: "1/r and 1/r²", keys: ["reciprocal"] },
+  { name: "Potential energy", eq: "interaction + configuration + reference", keys: ["potential"] },
+  { name: "Equation of motion", eq: "law → differential equation → solution", keys: ["motion"] },
+  { name: "Exponential change", eq: "X = X₀e⁻ᵏˣ", keys: ["decay"] },
+  { name: "Framework", eq: "", keys: ["meta"] }
+];
+
+// Type axis: epistemic role played by the shared relation
+const TYPE_AXIS = [
+  { name: "Closure hinge", eq: "general relation + case-specific law → prediction", types: ["closure"] },
+  { name: "Constraint hinge", eq: "conservation or balance restricts allowable change", types: ["constraint"] },
+  { name: "Representation hinge", eq: "one process expressed at several mathematical levels", types: ["representation"] },
+  { name: "Structural-form hinge", eq: "same mathematical form, different physical meanings", types: ["structural"] },
+  { name: "Geometric hinge", eq: "shared geometry generates parallel relations", types: ["geometric"] },
+  { name: "Bookkeeping hinge", eq: "relation coordinates rates or measured quantities", types: ["bookkeeping"] },
+  { name: "Framework documents", eq: "definitions, taxonomy and learner rationale", types: ["framework"] }
 ];
 
 let currentAxis = "theme";
 
-function getLeaves(keys) {
-  return LEAVES.filter(l => keys.includes(l[2]));
+function getLeaves(group, axis) {
+  if (axis === "type") {
+    return LEAVES.filter(l => l[4].some(t => group.types.includes(t)));
+  }
+  return LEAVES.filter(l => group.keys.includes(l[2]));
 }
 
 function render(axis) {
-  const groups = axis === "theme" ? THEME_AXIS : HINGE_AXIS;
+  const groups = axis === "theme" ? THEME_AXIS : axis === "hinge" ? HINGE_AXIS : TYPE_AXIS;
   const main = document.getElementById("tree");
   main.innerHTML = "";
 
   groups.forEach((g, gi) => {
-    const leaves = getLeaves(g.keys);
+    const leaves = getLeaves(g, axis);
     if (!leaves.length) return;
 
     const branch = document.createElement("div");
@@ -337,7 +367,7 @@ function render(axis) {
       a.target = "_blank";
       a.rel = "noopener";
       a.innerHTML = `
-        <span class="leaf-tag" style="background:${C[l[2]]}">${l[2]}</span>
+        <span class="leaf-tag" style="background:${C[l[2]]}">${axis === "type" ? g.name.replace(" hinge", "") : l[2]}</span>
         <span>${l[0]}</span>
         <span class="leaf-desc">— ${l[3]}</span>
       `;
@@ -355,7 +385,7 @@ function render(axis) {
   meta.innerHTML = `
     <a href="${BASE}cognitive_phlogiston.pdf" target="_blank">Educational Phlogiston</a>
     <a href="${BASE}placeHolderForce.pdf" target="_blank">The Placeholder Force</a>
-    <a href="${BASE}mindmap.html" target="_blank">McMurmerings Knowledge Map</a>
+    <a href="${BASE}hinge-mindmap.html" target="_blank">Hinge Map</a>
   `;
   main.appendChild(meta);
 }
@@ -370,6 +400,7 @@ function switchAxis(axis) {
   currentAxis = axis;
   document.getElementById("btn-theme").classList.toggle("active", axis === "theme");
   document.getElementById("btn-hinge").classList.toggle("active", axis === "hinge");
+  document.getElementById("btn-type").classList.toggle("active", axis === "type");
   render(axis);
 }
 
