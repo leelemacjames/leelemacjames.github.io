@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ontology Atlas · Ontological Fluency in Physics</title>
+<style>
+:root{
+  --ink:#0B0D10;
+  --plate:#12151A;
+  --plate-2:#171B21;
+  --rule:#262B33;
+  --rule-soft:#1D222A;
+  --paper:#E6E2D9;
+  --muted:#939AA6;
+  --faint:#5D6570;
+
+  --c-stage:#8FA8C0;
+  --c-family:#C0603F;
+  --c-trap:#B4913D;
+  --c-category:#4E8C7A;
+  --c-quantity:#7B7FBF;
+  --c-misconception:#C0504E;
+  --c-repair:#D6CFBE;
+
+  --serif:"Iowan Old Style","Palatino Linotype","URW Palladio L",P052,Palatino,Georgia,serif;
+  --mono:ui-monospace,"SF Mono","IBM Plex Mono","Roboto Mono",Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- masthead ---------- */
+header.masthead{
+  border-bottom:1px solid var(--rule);
+  padding:14px 20px 12px;
+  display:flex;
+  align-items:baseline;
+  gap:18px;
+  flex-wrap:wrap;
+  background:var(--plate);
+}
+.masthead .title{
+  font-size:22px;
+  letter-spacing:.01em;
+  font-weight:600;
+}
+.masthead .sub{
+  font-style:italic;
+  color:var(--muted);
+  font-size:15px;
+}
+.masthead .eyebrow{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--faint);
+  margin-left:auto;
+}
+
+/* ---------- shell ---------- */
+.shell{
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr) 340px;
+  height:calc(100vh - 108px);
+  min-height:520px;
+}
+
+/* ---------- rails ---------- */
+aside{
+  background:var(--plate);
+  overflow-y:auto;
+  padding:16px 16px 30px;
+}
+aside.rail-left{border-right:1px solid var(--rule)}
+aside.rail-right{border-left:1px solid var(--rule)}
+
+.rail-h{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--faint);
+  margin:0 0 9px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--rule-soft);
+}
+.rail-block{margin-bottom:22px}
+
+.modes{display:flex;flex-direction:column;gap:5px}
+button.mode{
+  all:unset;
+  cursor:pointer;
+  padding:7px 9px;
+  border:1px solid var(--rule);
+  color:var(--muted);
+  font-size:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+button.mode:hover{border-color:var(--faint);color:var(--paper)}
+button.mode[aria-pressed="true"]{
+  color:var(--ink);
+  background:var(--paper);
+  border-color:var(--paper);
+}
+button.mode .m-note{
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  opacity:.65;
+}
+button.mode:focus-visible,input:focus-visible,.legend-row:focus-visible,.node:focus-visible{
+  outline:2px solid var(--c-stage);
+  outline-offset:2px;
+}
+
+.legend-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:5px 4px;
+  cursor:pointer;
+  border:1px solid transparent;
+  user-select:none;
+}
+.legend-row:hover{border-color:var(--rule)}
+.legend-row .swatch{width:11px;height:11px;border-radius:50%;flex:none}
+.legend-row .lname{font-size:14px}
+.legend-row .lcount{
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--faint);
+}
+.legend-row[data-off="1"]{opacity:.34}
+
+input[type="search"]{
+  width:100%;
+  background:var(--ink);
+  border:1px solid var(--rule);
+  color:var(--paper);
+  font-family:var(--serif);
+  font-size:14px;
+  padding:7px 9px;
+}
+input[type="search"]::placeholder{color:var(--faint)}
+
+.hitlist{margin-top:8px;max-height:210px;overflow-y:auto}
+.hit{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:0;
+  border-left:2px solid transparent;
+  color:var(--muted);
+  font-family:var(--serif);
+  font-size:13.5px;
+  padding:4px 8px;
+  cursor:pointer;
+}
+.hit:hover{color:var(--paper);background:var(--plate-2)}
+
+.chain{font-family:var(--mono);font-size:11px;line-height:1.9;color:var(--muted)}
+.chain b{color:var(--paper);font-weight:500}
+
+/* ---------- canvas ---------- */
+.canvas{position:relative;background:var(--ink);overflow:hidden}
+svg#graph{width:100%;height:100%;display:block;cursor:grab}
+svg#graph.dragging{cursor:grabbing}
+
+.edge{stroke:var(--rule);stroke-width:1;fill:none}
+.edge.dim{stroke:#171B21}
+.edge.lit{stroke:var(--paper);stroke-width:1.4;opacity:.85}
+.edge-label{
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.06em;
+  fill:var(--muted);
+  text-anchor:middle;
+  paint-order:stroke;
+  stroke:var(--ink);
+  stroke-width:3.5px;
+  pointer-events:none;
+}
+
+.node{cursor:pointer}
+.node circle.body{stroke:var(--ink);stroke-width:1.5}
+.node circle.halo{fill:none;stroke:var(--paper);stroke-width:1.2;opacity:0}
+.node.sel circle.halo{opacity:.9}
+.node text{
+  font-family:var(--serif);
+  font-size:11px;
+  fill:var(--paper);
+  text-anchor:middle;
+  paint-order:stroke;
+  stroke:var(--ink);
+  stroke-width:3px;
+  pointer-events:none;
+}
+.node.small text{font-size:10px;fill:var(--muted)}
+.node.dim{opacity:.16}
+.node.dim text{opacity:.5}
+
+.stage-band{
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  fill:var(--faint);
+  text-anchor:middle;
+}
+.stage-rule{stroke:var(--rule-soft);stroke-width:1}
+
+.canvas-hint{
+  position:absolute;left:16px;bottom:12px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);pointer-events:none;
+}
+.zoomers{position:absolute;right:14px;bottom:12px;display:flex;gap:5px}
+.zoomers button{
+  all:unset;cursor:pointer;width:26px;height:26px;
+  display:grid;place-items:center;
+  border:1px solid var(--rule);color:var(--muted);
+  font-family:var(--mono);font-size:13px;
+}
+.zoomers button:hover{color:var(--paper);border-color:var(--faint)}
+
+/* ---------- inspector ---------- */
+.kicker{
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  margin:0 0 4px;
+}
+.insp-title{font-size:21px;line-height:1.25;margin:0 0 10px;font-weight:600}
+.gloss{font-size:15px;color:var(--paper);margin:0 0 14px}
+.claim{
+  border-left:2px solid var(--c-misconception);
+  padding:2px 0 2px 12px;
+  font-style:italic;
+  font-size:15.5px;
+  margin:0 0 16px;
+  color:var(--paper);
+}
+.eqn{
+  font-family:var(--mono);
+  font-size:13.5px;
+  color:var(--paper);
+  background:var(--plate-2);
+  border:1px solid var(--rule);
+  padding:8px 10px;
+  margin:0 0 14px;
+  overflow-x:auto;
+  white-space:nowrap;
+}
+.routine{list-style:none;padding:0;margin:0 0 16px;counter-reset:r}
+.routine li{
+  counter-increment:r;
+  position:relative;
+  padding-left:26px;
+  margin-bottom:9px;
+  font-size:14px;
+  color:var(--muted);
+}
+.routine li::before{
+  content:counter(r);
+  position:absolute;left:0;top:1px;
+  font-family:var(--mono);font-size:9.5px;color:var(--faint);
+  border:1px solid var(--rule);
+  width:16px;height:16px;display:grid;place-items:center;
+}
+.routine li b{color:var(--paper);font-weight:600;display:block;font-size:10px;
+  font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+
+.triples{margin:0;padding:0;list-style:none}
+.triple{
+  display:block;width:100%;text-align:left;
+  background:none;border:0;border-top:1px solid var(--rule-soft);
+  padding:8px 2px;cursor:pointer;
+  font-family:var(--serif);font-size:13.5px;color:var(--muted);
+}
+.triple:hover{background:var(--plate-2);color:var(--paper)}
+.triple .pred{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint);display:block;margin:2px 0;
+}
+.triple .end{color:var(--paper)}
+.triple:hover .pred{color:var(--muted)}
+
+.empty{color:var(--faint);font-size:14px;font-style:italic}
+
+/* ---------- footer ---------- */
+footer.stamp{
+  border-top:1px solid var(--rule);
+  background:var(--plate);
+  padding:9px 20px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.14em;
+  color:var(--faint);
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+@media (max-width:1080px){
+  .shell{grid-template-columns:220px minmax(0,1fr);height:auto}
+  aside.rail-right{
+    grid-column:1 / -1;border-left:0;border-top:1px solid var(--rule);
+  }
+  .canvas{height:62vh}
+}
+@media (max-width:720px){
+  .shell{grid-template-columns:1fr}
+  aside.rail-left{border-right:0;border-bottom:1px solid var(--rule)}
+  .canvas{height:58vh}
+  .masthead .eyebrow{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="title">The Ontology Atlas</div>
+  <div class="sub">what the student must believe a quantity <em>is</em></div>
+  <div class="eyebrow">Companion map · The Nouns Beneath the Numbers</div>
+</header>
+
+<div class="shell">
+
+  <aside class="rail-left">
+    <div class="rail-block">
+      <h2 class="rail-h">Arrangement</h2>
+      <div class="modes" id="modes">
+        <button class="mode" data-mode="atlas" aria-pressed="true">Atlas<span class="m-note">whole map</span></button>
+        <button class="mode" data-mode="families" aria-pressed="false">Five families<span class="m-note">by error type</span></button>
+        <button class="mode" data-mode="pipeline" aria-pressed="false">Pipeline<span class="m-note">where it breaks</span></button>
+      </div>
+    </div>
+
+    <div class="rail-block">
+      <h2 class="rail-h">Kinds of node</h2>
+      <div id="legend"></div>
+    </div>
+
+    <div class="rail-block">
+      <h2 class="rail-h">Find</h2>
+      <input type="search" id="search" placeholder="current, density, agent…" autocomplete="off" aria-label="Search the atlas">
+      <div class="hitlist" id="hits"></div>
+    </div>
+
+    <div class="rail-block">
+      <h2 class="rail-h">The chain</h2>
+      <div class="chain" id="chainlist"></div>
+    </div>
+  </aside>
+
+  <div class="canvas">
+    <svg id="graph" role="application" aria-label="Knowledge graph of physics ontological error traps">
+      <g id="viewport">
+        <g id="bands"></g>
+        <g id="edges"></g>
+        <g id="edgeLabels"></g>
+        <g id="nodes"></g>
+      </g>
+    </svg>
+    <div class="canvas-hint">Click a node · drag to move · scroll to zoom</div>
+    <div class="zoomers">
+      <button id="zin" title="Zoom in">+</button>
+      <button id="zout" title="Zoom out">&minus;</button>
+      <button id="zfit" title="Fit to view">&#9633;</button>
+    </div>
+  </div>
+
+  <aside class="rail-right" id="inspector"></aside>
+</div>
+
+<footer class="stamp">
+  <span>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</span>
+  <span>Ontological Fluency in Physics · Atlas of Traps</span>
+</footer>
+
+<script>
+"use strict";
+
+/* ============================================================
+   1. DATA — nodes
+   ============================================================ */
+
+const TYPES = {
+  stage:        {label:"Process stage",  colour:"#8FA8C0", r:13},
+  family:       {label:"Error family",   colour:"#C0603F", r:13},
+  trap:         {label:"Embedded trap",  colour:"#B4913D", r:6.5},
+  category:     {label:"Ontological kind",colour:"#4E8C7A",r:10},
+  quantity:     {label:"Quantity",       colour:"#7B7FBF", r:9},
+  misconception:{label:"Student claim",  colour:"#C0504E", r:7.5},
+  repair:       {label:"Repair",         colour:"#D6CFBE", r:8}
+};
+
+const N = [
+
+/* ---- the seven stages ---- */
+{id:"st-phen", type:"stage", label:"Phenomenon", gloss:"What is actually happening, before any symbol is chosen.",
+ detail:"Tests whether the solver interprets the event at all. The likely failure is that calculation begins immediately, with values lifted from the question before the situation has been read."},
+{id:"st-sys", type:"stage", label:"System", gloss:"Which body, or collection of bodies, is being analysed.",
+ detail:"Every quantity in an equation must belong to the same selected system. The likely failure is that masses, forces or energies drawn from different systems are combined without anyone noticing that the boundary moved."},
+{id:"st-ent", type:"stage", label:"Entities", gloss:"Which objects, sources and structures matter here.",
+ detail:"Interactions require a second party. The likely failure is that the source is omitted, leaving a force, a field or a transfer apparently belonging to one lonely object."},
+{id:"st-rel", type:"stage", label:"Relations", gloss:"What interacts with, transfers to, or changes what.",
+ detail:"The likely failure is that a relation is flattened into possession, so that the sentence 'the object has a force' replaces the directed statement of who acts on whom."},
+{id:"st-qty", type:"stage", label:"Quantities", gloss:"Which measurable quantities stand for those relations.",
+ detail:"The likely failure is misclassification: an amount is taken for a rate, a ratio for a total, a scalar for a vector, and the algebra proceeds on the wrong kind of thing."},
+{id:"st-eqn", type:"stage", label:"Equation", gloss:"Which symbolic relation represents this model.",
+ detail:"The likely failure is selection by surface keyword, where the word 'power' in the stem summons P = E/t regardless of whether the model licenses it."},
+{id:"st-op", type:"stage", label:"Operation", gloss:"Which manipulation or calculation is justified.",
+ detail:"The likely failure is the most invisible one: correct algebra applied faithfully to an incorrectly constructed model, producing a clean number and a wrong physics."},
+
+/* ---- five error families ---- */
+{id:"fam-sub", type:"family", label:"Substance error", gloss:"A rate, transfer or bookkeeping quantity is treated as material stuff.",
+ detail:"Storage, flow, possession and consumption are productive metaphors, and they support conservation reasoning well. They also invite a picture of an underlying substance whose movement is the phenomenon. Tests whether the student can hold an amount and a rate apart."},
+{id:"fam-agt", type:"family", label:"Agent error", gloss:"An abstract term is granted intention or causal agency.",
+ detail:"These phrases compress difficult relations into accessible verbs, so their pedagogical usefulness is real; the trouble begins when metaphorical agency is mistaken for a mechanism, and the agent starts generating spurious forces. Tests whether the student can restate agency as a relation or condition."},
+{id:"fam-att", type:"family", label:"Attribute error", gloss:"A relation or interaction is treated as a possession of one object.",
+ detail:"School questions lean on the grammar of possession, which flattens sentences of quite different physical structure into a single shape. Tests whether the student can recover the other system, the source, or the boundary."},
+{id:"fam-prc", type:"family", label:"Process–state error", gloss:"A change, rate or transfer is confused with a state or an amount.",
+ detail:"Velocity and acceleration, energy and power, charge and current, temperature and heat transfer: each pair shares a quotient form while differing in what the numerator is doing. Tests whether the student can infer the kind of quantity from its definition and its units."},
+{id:"fam-mod", type:"family", label:"Model–object error", gloss:"A representation or idealisation is taken for the phenomenon itself.",
+ detail:"Field lines, rays, arrows and ideal gases make reasoning possible, and are not dispensable decoration; their usefulness depends on a disciplined distinction between the model and the world. Tests whether the student can say what the diagram is doing."},
+
+/* ---- ontological kinds ---- */
+{id:"cat-obj", type:"category", label:"Object", gloss:"A physical system or body that has been selected.",
+ detail:"Guiding question: what system or body is under analysis? Selection is an act, and it must be recorded, since almost every later quantity is indexed to it."},
+{id:"cat-prop", type:"category", label:"Property", gloss:"A characteristic assigned to a system.",
+ detail:"Guiding question: what characteristic belongs to the chosen system? Properties divide further into extensive quantities, which scale with the sample, and intensive ones, which do not."},
+{id:"cat-int", type:"category", label:"Interaction", gloss:"Something that acts between two systems.",
+ detail:"Guiding question: what acts on what? An interaction always carries a direction and a partner, and it is represented, not possessed."},
+{id:"cat-state", type:"category", label:"State", gloss:"A description of the system at an instant.",
+ detail:"Guiding question: what is true of the system now? States are the things that rates are rates of change of."},
+{id:"cat-proc", type:"category", label:"Process", gloss:"Something changing or being transferred.",
+ detail:"Guiding question: what is happening across an interval? A process is bounded by the interval and the boundary chosen, and it is not a stock held anywhere."},
+{id:"cat-rate", type:"category", label:"Rate", gloss:"A quantity per unit time.",
+ detail:"Guiding question: what changes, transfers or crosses per second? The unit records the ontology; amperes are coulombs per second and watts are joules per second."},
+{id:"cat-ratio", type:"category", label:"Ratio property", gloss:"One amount per another amount.",
+ detail:"Guiding question: which two measurements are being compared, and do they belong to the same sample? The crowded-corridor exemplar, D = N/A, carries the whole structure before any physics arrives."},
+{id:"cat-field", type:"category", label:"Field", gloss:"A quantity assigned to locations in space and time.",
+ detail:"Guiding question: what is defined at every point? A field is neither an object carried by its source nor a set of visible filaments; it is an assignment."},
+{id:"cat-param", type:"category", label:"Model parameter", gloss:"A number characterising a model or a component.",
+ detail:"Guiding question: what does this number characterise, and within which model does it hold? Resistance is the standard case, being relational and domain-bounded."},
+{id:"cat-repr", type:"category", label:"Representation", gloss:"A symbol, arrow, line or diagram standing for something else.",
+ detail:"Guiding question: what does this mark encode, and what does it suppress? Representations are indispensable to reasoning while remaining distinct from the phenomena they organise."},
+
+/* ---- quantities ---- */
+{id:"q-mass", type:"quantity", label:"Mass", eq:"m  ·  [M]",
+ gloss:"System property and inertial parameter.",
+ detail:"Usually treated as a property of the selected system. Note the double duty inside Newtonian mechanics, where the same m that raises gravitational force also measures the inertial response, which is why the cancellation in free fall is more than an algebraic convenience."},
+{id:"q-force", type:"quantity", label:"Force", eq:"ΣF = ma = dp/dt  ·  N",
+ gloss:"Interaction represented by a vector.",
+ detail:"Force is force on one system by another, so the sentence that reports it should carry both parties and a direction. It is not stored motion, and it is not a property the moving body keeps."},
+{id:"q-accel", type:"quantity", label:"Acceleration", eq:"a = Δv/Δt  ·  m s⁻²",
+ gloss:"Rate of change of velocity, relative to a frame.",
+ detail:"The unit m s⁻² already reads as a change of m s⁻¹ per second. Acceleration concerns speed, direction, or both, and it is frame-relative, which the bare symbol a conceals."},
+{id:"q-vel", type:"quantity", label:"Velocity", eq:"v  ·  m s⁻¹",
+ gloss:"State of motion relative to a frame.",
+ detail:"Velocity is the state; acceleration is its rate of change. Confusing the two supports the belief that sustained motion needs a sustaining force."},
+{id:"q-density", type:"quantity", label:"Density", eq:"ρ = m/V  ·  [ρ] = M L⁻³",
+ gloss:"Ratio property, intensive for a homogeneous sample.",
+ detail:"The memorable phrase, the amount of stuff packed into a volume, leaves 'stuff' vague and 'packed' misleading, and it can encourage the learner to see density as the amount itself. Both m and V must be measurements of the same selected sample."},
+{id:"q-current", type:"quantity", label:"Current", eq:"I = ΔQ/Δt  ·  A = C s⁻¹",
+ gloss:"Rate of charge transfer across a section.",
+ detail:"Current is not a quantity of charge held inside a component; it is a rate associated with charge crossing a boundary. In a steady series circuit the same rate occurs at every point, while energy is transferred in the components."},
+{id:"q-charge", type:"quantity", label:"Charge", eq:"Q = It  ·  C",
+ gloss:"Amount, and a property of the carriers.",
+ detail:"Charge is the stock; current is the flow. Keeping the pair distinct is the cleanest antidote to the substance reading of circuits."},
+{id:"q-power", type:"quantity", label:"Power", eq:"P = ΔE/Δt = VI  ·  W = J s⁻¹",
+ gloss:"Rate of energy transfer.",
+ detail:"The arithmetic of 600 J over 30 s giving 20 W can be entirely correct while the ontology stays wrong, if the 20 W is then imagined as something the appliance contains."},
+{id:"q-energy", type:"quantity", label:"Energy", eq:"E  ·  J",
+ gloss:"Conserved bookkeeping quantity, defined relative to a system.",
+ detail:"Energy is defined with respect to a selected system and model, which is why 'energy contained in the appliance' invites a substance reading that the accounting does not require."},
+{id:"q-temp", type:"quantity", label:"Temperature", eq:"T  ·  K",
+ gloss:"State variable.",
+ detail:"Temperature describes the system now; heat transfer describes a process across a boundary during an interval. The pair sits alongside charge and current in structure."},
+{id:"q-efield", type:"quantity", label:"Electric field", eq:"E(r)  ·  N C⁻¹",
+ gloss:"Quantity assigned to locations, associated with a source configuration.",
+ detail:"A field is not an object carried around by a charge. It is an assignment to points, and the source configuration is part of the statement."},
+{id:"q-res", type:"quantity", label:"Resistance", eq:"V = IR  ·  Ω",
+ gloss:"Relational parameter within a circuit model.",
+ detail:"Resistance connects potential difference and current for a component under stated conditions. Read as a proportionality with a system parameter, V = IR stops being three letters in a multiplication pattern."},
+{id:"q-fieldline", type:"quantity", label:"Field line", eq:"drawn construction",
+ gloss:"Representational construct showing local direction and relative strength.",
+ detail:"Field lines are graphical devices with a density convention. They are not material threads, they do not leave and arrive as objects, and the field itself is the vector assigned to each point."},
+
+/* ---- student claims ---- */
+{id:"mis-cur", type:"misconception", label:"Current is used up", claim:"The current after the bulb is smaller, because some electricity was turned into light.",
+ belief:"Current is a consumable substance carried inside the wire, so transferring energy must consume some of the carrier.",
+ reclass:"Current is a rate of charge transfer; the quantity actually transferred to the surroundings is energy.",
+ rebuild:"I = ΔQ/Δt is the same at each point of a steady series circuit, while P = VI describes the rate of energy transfer in the bulb."},
+{id:"mis-heat", type:"misconception", label:"Heat is stored", claim:"Heat is stored in the metal.",
+ belief:"Heat is a fluid an object can hold, so it can be contained, lost or topped up.",
+ reclass:"Heat is energy transferred across a boundary because of a temperature difference; what the metal holds is internal energy.",
+ rebuild:"Distinguish the state variable, T, from the process quantity, Q, and say which boundary the transfer crosses."},
+{id:"mis-enrg", type:"misconception", label:"Energy is contained", claim:"Energy is contained inside the appliance.",
+ belief:"Energy is a material stock sitting in a container, waiting to be released.",
+ reclass:"Energy is a conserved bookkeeping quantity defined relative to a chosen system and model.",
+ rebuild:"State the system, then say which transfers cross its boundary and over what interval."},
+{id:"mis-elec", type:"misconception", label:"Electricity flows out", claim:"Electricity flows out of the battery.",
+ belief:"A single undifferentiated stuff called electricity moves from the battery to the components.",
+ reclass:"The word collapses charge, current, potential difference and energy transfer into one imagined substance.",
+ rebuild:"Name which quantity is meant, and write the relation for it: I = ΔQ/Δt, or P = VI."},
+{id:"mis-inert", type:"misconception", label:"Inertia keeps it moving", claim:"Inertia keeps the object moving.",
+ belief:"Inertia is an agent, or a stored forward push, that sustains motion until it runs out.",
+ reclass:"Inertia names the tendency expressed by the first law; it is not an extra force.",
+ rebuild:"ΣF = 0 gives a = 0, so v stays constant and non-zero. Note the risk of explaining continued motion by renaming continued motion."},
+{id:"mis-grav", type:"misconception", label:"Gravity pulls", claim:"Gravity pulls the object down.",
+ belief:"Gravity is an actor performing a pull, rather than a name for an interaction between two bodies.",
+ reclass:"The interaction has two parties, and the shorthand hides one of them.",
+ rebuild:"Earth exerts a gravitational force on the object. The phrasing survives the later move to field strength and to the geometric account."},
+{id:"mis-seek", type:"misconception", label:"Heat seeks equilibrium", claim:"Heat seeks equilibrium.",
+ belief:"A quantity has a purpose and moves in order to achieve it.",
+ reclass:"The direction of transfer is a consequence of a condition, not an intention.",
+ rebuild:"Energy transfers from the hotter to the cooler region while a temperature difference exists, and the rate falls as that difference falls."},
+{id:"mis-batt", type:"misconception", label:"The battery pushes electrons", claim:"The battery pushes electrons around the circuit.",
+ belief:"A mechanical agent shoves carriers along the wire, one push at a time.",
+ reclass:"The battery maintains a potential difference; the resulting field in the circuit produces carrier drift.",
+ rebuild:"Useful for opening a discussion, yet it conceals potential difference, field, mobility and energy transfer, so retire it before those arrive."},
+{id:"mis-hasf", type:"misconception", label:"The object has a force", claim:"The object has a force of 20 N.",
+ belief:"Force is a possession, like a length or a colour, carried by one body alone.",
+ reclass:"Force is an interaction on one system by another.",
+ rebuild:"The rope exerts a 20 N force on the object. Write the triple with a directed predicate and the second party named."},
+{id:"mis-hasc", type:"misconception", label:"The wire has current", claim:"The wire has a current of 3 A.",
+ belief:"Current belongs to the wire in the way its length does.",
+ reclass:"Current is a rate defined at a chosen cross-section over an interval.",
+ rebuild:"Charge crosses the section at 3 coulombs per second. The section and the interval are part of the statement."},
+{id:"mis-pow", type:"misconception", label:"20 W of energy", claim:"The appliance contains 20 W of energy.",
+ belief:"Watts are an amount of energy held in the device.",
+ reclass:"Power is a rate; the watt is a joule per second.",
+ rebuild:"P = E/t was computed correctly, so the arithmetic stands and only the ontology needs replacing. Read the unit aloud as the correction."},
+{id:"mis-dense", type:"misconception", label:"The bigger cube is denser", claim:"The larger cube is denser because it contains more matter.",
+ belief:"Density is an amount of matter, so more matter means more density.",
+ reclass:"Density is an intensive ratio property; mass is extensive.",
+ rebuild:"ρ = m/V for one sample. For a homogeneous material, m and V scale together and the ratio is unchanged."},
+{id:"mis-fwd", type:"misconception", label:"Motion needs a forward force", claim:"The car is moving forwards, so there must be a forward resultant force.",
+ belief:"Force is a motive property held inside the moving body, and motion is evidence that it is still there.",
+ reclass:"Force is an interaction contributing to change of momentum, not stored motion.",
+ rebuild:"At constant velocity, ΣF = 0 while v remains non-zero. Reclassifying force matters more than restating the first law."},
+{id:"mis-heavy", type:"misconception", label:"Heavier falls faster", claim:"The heavier object has greater weight, so it accelerates faster.",
+ belief:"Force alone determines acceleration, and the inertial response is not part of the account.",
+ reclass:"The same mass appears on both sides of the relation.",
+ rebuild:"a = F_g/m = mg/m = g when air resistance is neglected. The cancellation is algebraic; its meaning is ontological."},
+{id:"mis-lines", type:"misconception", label:"Field lines are threads", claim:"Magnetic field lines leave the north pole and enter the south pole.",
+ belief:"Lines are physical filaments that travel and arrive.",
+ reclass:"Lines are a drawn convention encoding direction and relative strength.",
+ rebuild:"The field assigns a vector to each point. Ask what the spacing of the lines is doing in the diagram."},
+{id:"mis-ray", type:"misconception", label:"A ray is a photon path", claim:"A ray shows the path travelled by a photon.",
+ belief:"The geometrical construction is the trajectory of a particle.",
+ reclass:"A ray is a geometrical representation within a model of propagation.",
+ rebuild:"Say which model is in use, and what the ray suppresses: width, phase, diffraction, and the quantum account."},
+{id:"mis-gas", type:"misconception", label:"A real gas disobeys the law", claim:"A real gas disobeys the ideal gas law.",
+ belief:"The real gas is a badly behaved imitation of the model.",
+ reclass:"The direction of comparison has been reversed.",
+ rebuild:"Under those conditions the model ceases to approximate the gas adequately. Models fail; gases do not misbehave."},
+{id:"mis-arrow", type:"misconception", label:"The arrow is the force", claim:"The arrow on the free-body diagram is the force itself.",
+ belief:"The representation is a visible feature attached to the object.",
+ reclass:"Three things need separating: the interaction, the physical quantity, and the vector representation.",
+ rebuild:"Name the acting body, state the quantity with its units, then say what the arrow encodes about magnitude and direction."},
+
+/* ---- embedded traps ---- */
+{id:"tr-ratio", type:"trap", label:"Amount–ratio", gloss:"A larger amount is assumed to mean a larger ratio.",
+ detail:"Appears wherever a quotient is read as a total. The corridor exemplar answers it early: eighty people in 100 m² are less crowded than fifty in 40 m²."},
+{id:"tr-mismatch", type:"trap", label:"System mismatch", gloss:"Numerator and denominator are taken from different samples.",
+ detail:"Not an arithmetic slip. The identity of the system has not been maintained across the quantities."},
+{id:"tr-net", type:"trap", label:"Single force for net force", gloss:"F is read as one force rather than the resultant.",
+ detail:"F = ma suppresses the summation, the vector character and the choice of system. Each more explicit form recovers one of them at the cost of visible notation."},
+{id:"tr-motion", type:"trap", label:"Motion–force", gloss:"Motion is assumed to require a continuing forward force.",
+ detail:"The most durable of the school misconceptions, because it is coherent once force is classified as stored motion."},
+{id:"tr-cause", type:"trap", label:"Force–acceleration shortcut", gloss:"Greater force is assumed to mean greater acceleration.",
+ detail:"True only at fixed mass. The free-fall case is the standard counterexample, and it is an ontological point about the double role of m."},
+{id:"tr-exten", type:"trap", label:"Extensive–intensive", gloss:"Size or amount is confused with a ratio property.",
+ detail:"Ask what happens to the quantity when the sample is halved. Extensive quantities halve; intensive ones do not."},
+{id:"tr-unit", type:"trap", label:"Unit blindness", gloss:"Units are treated as labels rather than as clues.",
+ detail:"A = C s⁻¹ and W = J s⁻¹ announce their ontology. The question is whether the student reads 'per second' as evidence of a rate."},
+{id:"tr-poss", type:"trap", label:"Possession grammar", gloss:"The weak predicate 'has' hides an interaction or a transfer.",
+ detail:"Replacing 'has' with a directed predicate usually exposes the missing source, mechanism or boundary."},
+{id:"tr-label", type:"trap", label:"Symbol as word label", gloss:"F, m, a and ρ are read as abbreviations for nouns.",
+ detail:"Clement's reversal error is the classic evidence: 6S = P is written because the letters are behaving as labels for groups rather than as variables for numbers."},
+{id:"tr-recipe", type:"trap", label:"Formula as recipe", gloss:"Multiplying symbols is taken to produce a new thing.",
+ detail:"Mass and volume are imagined as ingredients that yield density as a third substance, rather than as two measurements whose ratio is reported."},
+{id:"tr-complete", type:"trap", label:"Equation as complete description", gloss:"Suppressed assumptions, vectors and boundaries are ignored.",
+ detail:"The simpler expression does not remove difficulty; it moves part of the difficulty off the page, where the expert silently supplies it."},
+{id:"tr-desc", type:"trap", label:"Description–explanation", gloss:"Restating the phenomenon is mistaken for explaining it.",
+ detail:"The spoon warms because heat went into it. Three levels help: description, predictive relation, mechanistic account."},
+{id:"tr-mech", type:"trap", label:"Mechanism–ontology", gloss:"A successful model is expected to supply a familiar agent.",
+ detail:"Magnetic repulsion is the case in point: the field and quantum accounts predict and organise the interaction, while the demand for something doing the pushing goes unmet."},
+{id:"tr-obs", type:"trap", label:"Observation–inference", gloss:"Inferred objects are treated as directly observed.",
+ detail:"We say we see Sirius. Photons arrive from a narrow angular region, and the continuing object is a reconstruction. Inferred does not mean unreal."},
+{id:"tr-univ", type:"trap", label:"Universalisation", gloss:"A domain-limited model is treated as an unrestricted law.",
+ detail:"Every model has a domain, and stating it is part of using the equation rather than an optional afterthought."},
+
+/* ---- repairs ---- */
+{id:"rep-rate", type:"repair", label:"Rate, not stuff", eq:"I = ΔQ/Δt   ·   P = ΔE/Δt = VI",
+ gloss:"Separate what crosses per second from what is transferred.",
+ detail:"The pair of equations does the diagnostic work: current is the same around a steady series circuit, and the bulb transfers energy without consuming the carrier."},
+{id:"rep-spo", type:"repair", label:"Directed predicate", eq:"Earth → exerts gravitational force on → object",
+ gloss:"Replace 'has' with a predicate that names the source and direction.",
+ detail:"The triple restores the second party. Applied to the wire: charge → crosses this section per unit time → current."},
+{id:"rep-free", type:"repair", label:"Free-fall cancellation", eq:"a = F_g/m = mg/m = g",
+ gloss:"The same mass raises the force and measures the inertial response.",
+ detail:"Worth slowing down over. Students who accept the algebra often still believe the heavier body should win, because the double role of m has not been made explicit."},
+{id:"rep-unit", type:"repair", label:"Read the unit aloud", eq:"W = J s⁻¹   ·   A = C s⁻¹   ·   m s⁻² = (m s⁻¹)/s",
+ gloss:"Let the unit declare the ontology.",
+ detail:"The cheapest available diagnostic, and the one that transfers furthest. If the unit contains 'per second', the quantity is a rate."},
+{id:"rep-sample", type:"repair", label:"One sample, two measurements", eq:"ρ = m/V,  same selected sample",
+ gloss:"Bind numerator and denominator to the same system.",
+ detail:"Then check the scaling: for a homogeneous material, doubling the sample doubles m and V and leaves ρ alone."},
+{id:"rep-net", type:"repair", label:"Make the resultant explicit", eq:"ΣF = ma   ·   ΣF = 0 ⇒ a = 0,  v constant",
+ gloss:"Restore the summation, the vectors and the system.",
+ detail:"Compare F = ma, F_net = ma, ΣF = ma and Σ F_i = dp/dt, asking of each what it makes explicit and what the reader must still supply."},
+{id:"rep-assign", type:"repair", label:"A field is an assignment", eq:"E(r), B(r) at every point",
+ gloss:"Distinguish the field from the drawn line.",
+ detail:"Lines encode direction and, by their spacing, relative strength. Ask what a diagram would look like if the convention were changed."},
+{id:"rep-modeldir", type:"repair", label:"Models approximate, gases do not misbehave", eq:"model → approximates → system, within a domain",
+ gloss:"Keep the direction of comparison the right way round.",
+ detail:"Then state the domain: which pressures, temperatures and separations the approximation survives."},
+{id:"rep-routine", type:"repair", label:"The four-step diagnosis", eq:"claim → belief → reclassification → rebuild",
+ gloss:"Treat a wrong answer as evidence of a category system.",
+ detail:"Quote the claim that is wrong or incomplete; infer what kind of thing the student takes the quantity to be; replace that with a more useful classification; rebuild the explanation with an equation, a diagram or a unit."}
+];
+
+/* ============================================================
+   2. DATA — triples
+   ============================================================ */
+
+const E = [];
+const link = (s,p,o,cls) => E.push({s,p,o,cls:cls||"rel"});
+
+/* the chain */
+const CHAIN = ["st-phen","st-sys","st-ent","st-rel","st-qty","st-eqn","st-op"];
+for (let i=0;i<CHAIN.length-1;i++) link(CHAIN[i],"is followed by",CHAIN[i+1],"seq");
+
+/* quantities → their proper kind */
+link("q-mass","is classified as","cat-prop","classify");
+link("q-mass","also functions as","cat-param","classify");
+link("q-force","is classified as","cat-int","classify");
+link("q-accel","is classified as","cat-rate","classify");
+link("q-vel","is classified as","cat-state","classify");
+link("q-density","is classified as","cat-ratio","classify");
+link("q-current","is classified as","cat-rate","classify");
+link("q-charge","is classified as","cat-prop","classify");
+link("q-power","is classified as","cat-rate","classify");
+link("q-energy","is classified as","cat-state","classify");
+link("q-temp","is classified as","cat-state","classify");
+link("q-efield","is classified as","cat-field","classify");
+link("q-res","is classified as","cat-param","classify");
+link("q-fieldline","is classified as","cat-repr","classify");
+
+/* state / rate pairings */
+link("q-charge","has rate","q-current","seq");
+link("q-energy","has rate","q-power","seq");
+link("q-vel","has rate","q-accel","seq");
+link("q-temp","drives transfer of","q-energy","seq");
+
+/* claims → family */
+["mis-cur","mis-heat","mis-enrg","mis-elec"].forEach(m=>link(m,"is an instance of","fam-sub","family"));
+["mis-inert","mis-grav","mis-seek","mis-batt"].forEach(m=>link(m,"is an instance of","fam-agt","family"));
+["mis-hasf","mis-hasc","mis-fwd"].forEach(m=>link(m,"is an instance of","fam-att","family"));
+["mis-pow","mis-dense","mis-heavy"].forEach(m=>link(m,"is an instance of","fam-prc","family"));
+["mis-lines","mis-ray","mis-gas","mis-arrow"].forEach(m=>link(m,"is an instance of","fam-mod","family"));
+
+/* claims → quantity concerned */
+link("mis-cur","misclassifies","q-current","mis");
+link("mis-heat","misclassifies","q-energy","mis");
+link("mis-enrg","misclassifies","q-energy","mis");
+link("mis-elec","misclassifies","q-charge","mis");
+link("mis-inert","misclassifies","q-force","mis");
+link("mis-grav","misclassifies","q-force","mis");
+link("mis-seek","misclassifies","q-energy","mis");
+link("mis-batt","misclassifies","q-charge","mis");
+link("mis-hasf","misclassifies","q-force","mis");
+link("mis-hasc","misclassifies","q-current","mis");
+link("mis-fwd","misclassifies","q-force","mis");
+link("mis-pow","misclassifies","q-power","mis");
+link("mis-dense","misclassifies","q-density","mis");
+link("mis-heavy","misclassifies","q-mass","mis");
+link("mis-lines","misclassifies","q-fieldline","mis");
+link("mis-ray","misclassifies","q-fieldline","mis");
+link("mis-arrow","misclassifies","q-force","mis");
+link("mis-gas","misclassifies","q-temp","mis");
+
+/* claims → the kind wrongly assumed */
+link("mis-cur","is taken to be","cat-obj","wrong");
+link("mis-heat","is taken to be","cat-obj","wrong");
+link("mis-enrg","is taken to be","cat-obj","wrong");
+link("mis-elec","is taken to be","cat-obj","wrong");
+link("mis-inert","is taken to be","cat-int","wrong");
+link("mis-grav","is taken to be","cat-obj","wrong");
+link("mis-seek","is taken to be","cat-obj","wrong");
+link("mis-batt","is taken to be","cat-int","wrong");
+link("mis-hasf","is taken to be","cat-prop","wrong");
+link("mis-hasc","is taken to be","cat-prop","wrong");
+link("mis-fwd","is taken to be","cat-prop","wrong");
+link("mis-pow","is taken to be","cat-state","wrong");
+link("mis-dense","is taken to be","cat-prop","wrong");
+link("mis-heavy","is taken to be","cat-int","wrong");
+link("mis-lines","is taken to be","cat-obj","wrong");
+link("mis-ray","is taken to be","cat-obj","wrong");
+link("mis-arrow","is taken to be","cat-obj","wrong");
+link("mis-gas","is taken to be","cat-obj","wrong");
+
+/* claims → stage at which the chain breaks */
+link("mis-cur","breaks the chain at","st-qty","stage");
+link("mis-heat","breaks the chain at","st-qty","stage");
+link("mis-enrg","breaks the chain at","st-sys","stage");
+link("mis-elec","breaks the chain at","st-qty","stage");
+link("mis-inert","breaks the chain at","st-rel","stage");
+link("mis-grav","breaks the chain at","st-ent","stage");
+link("mis-seek","breaks the chain at","st-rel","stage");
+link("mis-batt","breaks the chain at","st-rel","stage");
+link("mis-hasf","breaks the chain at","st-rel","stage");
+link("mis-hasc","breaks the chain at","st-rel","stage");
+link("mis-fwd","breaks the chain at","st-rel","stage");
+link("mis-pow","breaks the chain at","st-qty","stage");
+link("mis-dense","breaks the chain at","st-qty","stage");
+link("mis-heavy","breaks the chain at","st-eqn","stage");
+link("mis-lines","breaks the chain at","st-phen","stage");
+link("mis-ray","breaks the chain at","st-phen","stage");
+link("mis-arrow","breaks the chain at","st-ent","stage");
+link("mis-gas","breaks the chain at","st-phen","stage");
+
+/* claims → repair */
+link("mis-cur","is repaired by","rep-rate","repair");
+link("mis-heat","is repaired by","rep-rate","repair");
+link("mis-enrg","is repaired by","rep-rate","repair");
+link("mis-elec","is repaired by","rep-rate","repair");
+link("mis-pow","is repaired by","rep-unit","repair");
+link("mis-inert","is repaired by","rep-net","repair");
+link("mis-fwd","is repaired by","rep-net","repair");
+link("mis-heavy","is repaired by","rep-free","repair");
+link("mis-grav","is repaired by","rep-spo","repair");
+link("mis-hasf","is repaired by","rep-spo","repair");
+link("mis-hasc","is repaired by","rep-spo","repair");
+link("mis-batt","is repaired by","rep-spo","repair");
+link("mis-seek","is repaired by","rep-spo","repair");
+link("mis-dense","is repaired by","rep-sample","repair");
+link("mis-lines","is repaired by","rep-assign","repair");
+link("mis-arrow","is repaired by","rep-assign","repair");
+link("mis-ray","is repaired by","rep-modeldir","repair");
+link("mis-gas","is repaired by","rep-modeldir","repair");
+
+/* the routine repairs everything */
+["fam-sub","fam-agt","fam-att","fam-prc","fam-mod"].forEach(f=>link("rep-routine","diagnoses",f,"repair"));
+
+/* traps → family */
+link("tr-ratio","refines","fam-prc","refine");
+link("tr-mismatch","refines","fam-att","refine");
+link("tr-net","refines","fam-mod","refine");
+link("tr-motion","refines","fam-att","refine");
+link("tr-cause","refines","fam-prc","refine");
+link("tr-exten","refines","fam-prc","refine");
+link("tr-unit","refines","fam-prc","refine");
+link("tr-poss","refines","fam-att","refine");
+link("tr-label","refines","fam-mod","refine");
+link("tr-recipe","refines","fam-sub","refine");
+link("tr-complete","refines","fam-mod","refine");
+link("tr-desc","refines","fam-agt","refine");
+link("tr-mech","refines","fam-agt","refine");
+link("tr-obs","refines","fam-mod","refine");
+link("tr-univ","refines","fam-mod","refine");
+
+/* traps → stage */
+link("tr-ratio","is tested at","st-qty","stage");
+link("tr-mismatch","is tested at","st-sys","stage");
+link("tr-net","is tested at","st-eqn","stage");
+link("tr-motion","is tested at","st-rel","stage");
+link("tr-cause","is tested at","st-op","stage");
+link("tr-exten","is tested at","st-qty","stage");
+link("tr-unit","is tested at","st-qty","stage");
+link("tr-poss","is tested at","st-rel","stage");
+link("tr-label","is tested at","st-eqn","stage");
+link("tr-recipe","is tested at","st-op","stage");
+link("tr-complete","is tested at","st-eqn","stage");
+link("tr-desc","is tested at","st-phen","stage");
+link("tr-mech","is tested at","st-phen","stage");
+link("tr-obs","is tested at","st-ent","stage");
+link("tr-univ","is tested at","st-sys","stage");
+
+/* traps → repairs and quantities */
+link("tr-unit","is answered by","rep-unit","repair");
+link("tr-mismatch","is answered by","rep-sample","repair");
+link("tr-net","is answered by","rep-net","repair");
+link("tr-poss","is answered by","rep-spo","repair");
+link("tr-univ","is answered by","rep-modeldir","repair");
+link("tr-ratio","is answered by","rep-sample","repair");
+link("tr-cause","is answered by","rep-free","repair");
+link("tr-ratio","bears on","q-density","rel");
+link("tr-exten","bears on","q-density","rel");
+link("tr-unit","bears on","q-power","rel");
+link("tr-net","bears on","q-force","rel");
+
+/* families → the kind they collapse into */
+link("fam-sub","collapses everything into","cat-obj","wrong");
+link("fam-agt","collapses everything into","cat-int","wrong");
+link("fam-att","collapses everything into","cat-prop","wrong");
+link("fam-prc","confuses rate with","cat-state","wrong");
+link("fam-mod","confuses model with","cat-repr","wrong");
+
+/* categories → chain anchor */
+link("cat-ratio","is decided at","st-qty","stage");
+link("cat-rate","is decided at","st-qty","stage");
+link("cat-int","is decided at","st-rel","stage");
+link("cat-field","is decided at","st-ent","stage");
+link("cat-repr","is decided at","st-phen","stage");
+link("cat-obj","is decided at","st-sys","stage");
+link("cat-param","is decided at","st-eqn","stage");
+link("cat-prop","is decided at","st-sys","stage");
+link("cat-state","is decided at","st-qty","stage");
+link("cat-proc","is decided at","st-rel","stage");
+
+/* ============================================================
+   3. INDEX + LAYOUT
+   ============================================================ */
+
+const byId = Object.create(null);
+N.forEach(n=>{
+  byId[n.id]=n;
+  n.r = TYPES[n.type].r;
+  n.x = (Math.random()-0.5)*700;
+  n.y = (Math.random()-0.5)*500;
+  n.vx = 0; n.vy = 0;
+  n.deg = 0;
+});
+E.forEach(e=>{ byId[e.s].deg++; byId[e.o].deg++; });
+
+const adjacency = Object.create(null);
+N.forEach(n=>adjacency[n.id]=[]);
+E.forEach((e,i)=>{ adjacency[e.s].push(i); adjacency[e.o].push(i); });
+
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* anchors per layout mode */
+const RING = {
+  stage:        {a:-Math.PI/2, rad:0,    spread:0},
+  category:     {a:0,          rad:250,  spread:Math.PI*2},
+  quantity:     {a:0,          rad:430,  spread:Math.PI*2},
+  family:       {a:0,          rad:0,    spread:0}
+};
+
+function setAnchors(mode){
+  const fams = ["fam-sub","fam-agt","fam-att","fam-prc","fam-mod"];
+  if (mode === "atlas"){
+    const cats = N.filter(n=>n.type==="category");
+    const qty  = N.filter(n=>n.type==="quantity");
+    cats.forEach((n,i)=>{ const a = (i/cats.length)*Math.PI*2; n.ax=Math.cos(a)*210; n.ay=Math.sin(a)*150; n.as=0.020; });
+    qty.forEach((n,i)=>{ const a = (i/qty.length)*Math.PI*2 + 0.2; n.ax=Math.cos(a)*370; n.ay=Math.sin(a)*250; n.as=0.014; });
+    fams.forEach((id,i)=>{ const a = (i/5)*Math.PI*2 - Math.PI/2; byId[id].ax=Math.cos(a)*560; byId[id].ay=Math.sin(a)*370; byId[id].as=0.030; });
+    N.filter(n=>n.type==="stage").forEach((n,i)=>{ n.ax=-820; n.ay=(i-3)*88; n.as=0.055; });
+    N.filter(n=>n.type==="misconception"||n.type==="trap").forEach(n=>{ n.ax=0; n.ay=0; n.as=0.004; });
+    N.filter(n=>n.type==="repair").forEach(n=>{ n.ax=820; n.ay=0; n.as=0.012; });
+  }
+  else if (mode === "families"){
+    fams.forEach((id,i)=>{
+      const a = (i/5)*Math.PI*2 - Math.PI/2;
+      byId[id].fx0 = Math.cos(a)*520; byId[id].fy0 = Math.sin(a)*360;
+      byId[id].ax = byId[id].fx0; byId[id].ay = byId[id].fy0; byId[id].as = 0.09;
+    });
+    N.forEach(n=>{
+      if (fams.includes(n.id)) return;
+      let host = null;
+      adjacency[n.id].forEach(i=>{
+        const e = E[i];
+        const other = e.s===n.id ? e.o : e.s;
+        if (fams.includes(other) && !host) host = other;
+      });
+      if (host){ n.ax = byId[host].fx0*1.20; n.ay = byId[host].fy0*1.20; n.as = 0.035; }
+      else { n.ax = 0; n.ay = 0; n.as = 0.028; }
+    });
+  }
+  else { /* pipeline */
+    const col = {};
+    CHAIN.forEach((id,i)=>{ col[id] = (i-3)*205; });
+    N.forEach(n=>{
+      if (n.type==="stage"){ n.ax = col[n.id]; n.ay = -330; n.as = 0.30; return; }
+      let host = null;
+      adjacency[n.id].forEach(i=>{
+        const e = E[i];
+        if (e.cls!=="stage") return;
+        const other = e.s===n.id ? e.o : e.s;
+        if (col[other] !== undefined && !host) host = other;
+      });
+      if (host){ n.ax = col[host]; n.ay = 90; n.as = 0.10; }
+      else { n.ax = 0; n.ay = 430; n.as = 0.05; }
+    });
+  }
+}
+
+function restLength(e){
+  if (e.cls==="seq") return 130;
+  if (e.cls==="stage") return 165;
+  if (e.cls==="repair") return 120;
+  return 105;
+}
+
+let alpha = 1;
+function tick(){
+  const n = N.length;
+  for (let i=0;i<n;i++){
+    const a = N[i];
+    for (let j=i+1;j<n;j++){
+      const b = N[j];
+      let dx = b.x-a.x, dy = b.y-a.y;
+      let d2 = dx*dx+dy*dy;
+      if (d2 < 0.01){ dx = Math.random()-0.5; dy = Math.random()-0.5; d2 = 0.01; }
+      const d = Math.sqrt(d2);
+      const rep = 2400/d2;
+      const fx = dx/d*rep, fy = dy/d*rep;
+      a.vx -= fx; a.vy -= fy;
+      b.vx += fx; b.vy += fy;
+      const minD = a.r + b.r + 16;
+      if (d < minD){
+        const push = (minD-d)*0.35;
+        a.vx -= dx/d*push; a.vy -= dy/d*push;
+        b.vx += dx/d*push; b.vy += dy/d*push;
+      }
+    }
+  }
+  for (const e of E){
+    const a = byId[e.s], b = byId[e.o];
+    const dx = b.x-a.x, dy = b.y-a.y;
+    const d = Math.max(Math.sqrt(dx*dx+dy*dy), 0.01);
+    const f = (d - restLength(e)) * 0.014;
+    const fx = dx/d*f, fy = dy/d*f;
+    a.vx += fx; a.vy += fy;
+    b.vx -= fx; b.vy -= fy;
+  }
+  for (const nd of N){
+    if (nd.pinned) { nd.vx = 0; nd.vy = 0; continue; }
+    nd.vx += (nd.ax - nd.x) * nd.as;
+    nd.vy += (nd.ay - nd.y) * nd.as;
+    nd.vx *= 0.80; nd.vy *= 0.80;
+    nd.x += nd.vx * alpha;
+    nd.y += nd.vy * alpha;
+  }
+  alpha = Math.max(alpha*0.994, 0.35);
+}
+
+/* ============================================================
+   4. RENDER
+   ============================================================ */
+
+const svg = document.getElementById("graph");
+const gView = document.getElementById("viewport");
+const gEdges = document.getElementById("edges");
+const gLabels = document.getElementById("edgeLabels");
+const gNodes = document.getElementById("nodes");
+const gBands = document.getElementById("bands");
+const SVGNS = "http://www.w3.org/2000/svg";
+
+let mode = "atlas";
+let selected = null;
+const hidden = new Set();
+
+const edgeEls = E.map(e=>{
+  const l = document.createElementNS(SVGNS,"line");
+  l.setAttribute("class","edge");
+  gEdges.appendChild(l);
+  return l;
+});
+
+const labelEls = E.map(()=>{
+  const t = document.createElementNS(SVGNS,"text");
+  t.setAttribute("class","edge-label");
+  t.style.display = "none";
+  gLabels.appendChild(t);
+  return t;
+});
+
+const nodeEls = {};
+N.forEach(n=>{
+  const g = document.createElementNS(SVGNS,"g");
+  g.setAttribute("class","node" + (n.r < 8 ? " small" : ""));
+  g.setAttribute("tabindex","0");
+  g.setAttribute("role","button");
+  g.setAttribute("aria-label", TYPES[n.type].label + ": " + n.label);
+
+  const halo = document.createElementNS(SVGNS,"circle");
+  halo.setAttribute("class","halo");
+  halo.setAttribute("r", n.r + 5);
+
+  const c = document.createElementNS(SVGNS,"circle");
+  c.setAttribute("class","body");
+  c.setAttribute("r", n.r);
+  c.setAttribute("fill", TYPES[n.type].colour);
+
+  const t = document.createElementNS(SVGNS,"text");
+  t.setAttribute("y", n.r + 12);
+  t.textContent = n.label;
+
+  g.append(halo, c, t);
+  gNodes.appendChild(g);
+  nodeEls[n.id] = g;
+
+  const open = ()=>select(n.id);
+  g.addEventListener("click", ev=>{ if(!dragMoved) open(); ev.stopPropagation(); });
+  g.addEventListener("keydown", ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); open(); }});
+  g.addEventListener("pointerdown", ev=>startNodeDrag(ev,n));
+});
+
+/* stage bands, drawn only in pipeline mode */
+const bandEls = CHAIN.map((id,i)=>{
+  const t = document.createElementNS(SVGNS,"text");
+  t.setAttribute("class","stage-band");
+  t.textContent = String(i+1).padStart(2,"0");
+  gBands.appendChild(t);
+  return t;
+});
+
+function neighbourhood(id){
+  const set = new Set([id]);
+  adjacency[id].forEach(i=>{ set.add(E[i].s); set.add(E[i].o); });
+  return set;
+}
+
+function draw(){
+  const near = selected ? neighbourhood(selected) : null;
+
+  N.forEach(n=>{
+    const el = nodeEls[n.id];
+    const off = hidden.has(n.type);
+    el.style.display = off ? "none" : "";
+    if (off) return;
+    el.setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
+    el.classList.toggle("sel", n.id === selected);
+    el.classList.toggle("dim", !!near && !near.has(n.id));
+  });
+
+  E.forEach((e,i)=>{
+    const a = byId[e.s], b = byId[e.o];
+    const el = edgeEls[i];
+    const off = hidden.has(a.type) || hidden.has(b.type);
+    el.style.display = off ? "none" : "";
+    const lit = !!selected && (e.s===selected || e.o===selected);
+    if (!off){
+      el.setAttribute("x1",a.x.toFixed(1)); el.setAttribute("y1",a.y.toFixed(1));
+      el.setAttribute("x2",b.x.toFixed(1)); el.setAttribute("y2",b.y.toFixed(1));
+      el.setAttribute("class","edge" + (lit ? " lit" : (selected ? " dim" : "")));
+    }
+    const lab = labelEls[i];
+    if (lit && !off){
+      lab.style.display = "";
+      lab.setAttribute("x", ((a.x+b.x)/2).toFixed(1));
+      lab.setAttribute("y", ((a.y+b.y)/2 - 4).toFixed(1));
+      lab.textContent = e.p;
+    } else {
+      lab.style.display = "none";
+    }
+  });
+
+  const showBands = (mode === "pipeline");
+  bandEls.forEach((t,i)=>{
+    if (!showBands){ t.style.display="none"; return; }
+    t.style.display = "";
+    t.setAttribute("x", byId[CHAIN[i]].ax);
+    t.setAttribute("y", -390);
+  });
+}
+
+/* ---- viewport transform ---- */
+let view = {x:0, y:0, k:0.85};
+function applyView(){
+  gView.setAttribute("transform",
+    "translate(" + view.x + "," + view.y + ") scale(" + view.k + ")");
+}
+function fit(){
+  const box = svg.getBoundingClientRect();
+  let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  N.forEach(n=>{
+    if (hidden.has(n.type)) return;
+    minX=Math.min(minX,n.x-60); maxX=Math.max(maxX,n.x+60);
+    minY=Math.min(minY,n.y-40); maxY=Math.max(maxY,n.y+40);
+  });
+  if (minX>maxX) return;
+  const k = Math.min(box.width/(maxX-minX), box.height/(maxY-minY), 1.6);
+  view.k = k;
+  view.x = box.width/2 - (minX+maxX)/2*k;
+  view.y = box.height/2 - (minY+maxY)/2*k;
+  applyView();
+}
+
+/* ---- interaction ---- */
+let panning=false, panStart=null, dragNode=null, dragMoved=false;
+
+svg.addEventListener("pointerdown", ev=>{
+  if (dragNode) return;
+  panning = true; dragMoved = false;
+  panStart = {x:ev.clientX - view.x, y:ev.clientY - view.y};
+  svg.classList.add("dragging");
+});
+window.addEventListener("pointermove", ev=>{
+  if (dragNode){
+    dragMoved = true;
+    const box = svg.getBoundingClientRect();
+    dragNode.x = (ev.clientX - box.left - view.x)/view.k;
+    dragNode.y = (ev.clientY - box.top - view.y)/view.k;
+    alpha = Math.max(alpha, 0.6);
+    return;
+  }
+  if (!panning) return;
+  dragMoved = true;
+  view.x = ev.clientX - panStart.x;
+  view.y = ev.clientY - panStart.y;
+  applyView();
+});
+window.addEventListener("pointerup", ()=>{
+  if (dragNode){ dragNode.pinned = false; dragNode = null; }
+  panning = false;
+  svg.classList.remove("dragging");
+});
+function startNodeDrag(ev,n){
+  ev.stopPropagation();
+  dragNode = n; n.pinned = true; dragMoved = false;
+}
+svg.addEventListener("wheel", ev=>{
+  ev.preventDefault();
+  const box = svg.getBoundingClientRect();
+  const mx = ev.clientX - box.left, my = ev.clientY - box.top;
+  const f = ev.deltaY < 0 ? 1.12 : 1/1.12;
+  const k2 = Math.min(Math.max(view.k*f, 0.25), 3);
+  view.x = mx - (mx - view.x)*(k2/view.k);
+  view.y = my - (my - view.y)*(k2/view.k);
+  view.k = k2;
+  applyView();
+}, {passive:false});
+svg.addEventListener("click", ()=>{ if(!dragMoved) select(null); });
+
+document.getElementById("zin").onclick = ()=>{ view.k=Math.min(view.k*1.2,3); applyView(); };
+document.getElementById("zout").onclick = ()=>{ view.k=Math.max(view.k/1.2,0.25); applyView(); };
+document.getElementById("zfit").onclick = fit;
+
+/* ============================================================
+   5. INSPECTOR
+   ============================================================ */
+
+const inspector = document.getElementById("inspector");
+
+function esc(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function inspectorHome(){
+  inspector.innerHTML =
+    '<p class="kicker" style="color:var(--faint)">How to read this map</p>' +
+    '<h2 class="insp-title">Every edge is a triple</h2>' +
+    '<p class="gloss">The map holds student claims, the quantities they concern, the kind of thing each quantity actually is, the family of error involved, the stage of the chain where the reasoning broke, and the repair that moves it.</p>' +
+    '<p class="gloss" style="color:var(--muted)">Select any node and its relations are written out as sentences below, in the subject, predicate, object form the workbook asks students to produce. Predicates appear on the edges themselves while a node is selected.</p>' +
+    '<p class="kicker" style="color:var(--faint);margin-top:22px">The diagnostic question</p>' +
+    '<p class="claim" style="border-color:var(--c-repair)">What must the solver believe this quantity <em>is</em> for the answer to make sense?</p>' +
+    '<p class="empty">Nothing selected.</p>';
+}
+
+function triplesFor(id){
+  const rows = [];
+  adjacency[id].forEach(i=>{
+    const e = E[i];
+    const outgoing = (e.s === id);
+    const other = outgoing ? e.o : e.s;
+    if (hidden.has(byId[other].type)) return;
+    rows.push({other, pred:e.p, outgoing, cls:e.cls});
+  });
+  const order = {family:0, wrong:1, classify:2, mis:3, repair:4, stage:5, refine:6, seq:7, rel:8};
+  rows.sort((a,b)=>(order[a.cls]||9)-(order[b.cls]||9));
+  return rows;
+}
+
+function select(id){
+  selected = id;
+  if (!id){ inspectorHome(); draw(); return; }
+  const n = byId[id];
+  const T = TYPES[n.type];
+  let html = '<p class="kicker" style="color:' + T.colour + '">' + T.label + '</p>';
+  html += '<h2 class="insp-title">' + esc(n.label) + '</h2>';
+
+  if (n.claim) html += '<p class="claim">' + esc(n.claim) + '</p>';
+  if (n.gloss) html += '<p class="gloss">' + esc(n.gloss) + '</p>';
+  if (n.eq) html += '<div class="eqn">' + esc(n.eq) + '</div>';
+
+  if (n.belief){
+    html += '<ol class="routine">' +
+      '<li><b>Claim</b>' + esc(n.claim) + '</li>' +
+      '<li><b>Believed to be</b>' + esc(n.belief) + '</li>' +
+      '<li><b>Reclassify as</b>' + esc(n.reclass) + '</li>' +
+      '<li><b>Rebuild</b>' + esc(n.rebuild) + '</li>' +
+      '</ol>';
+  }
+  if (n.detail) html += '<p class="gloss" style="color:var(--muted)">' + esc(n.detail) + '</p>';
+
+  const rows = triplesFor(id);
+  html += '<p class="kicker" style="color:var(--faint);margin-top:20px">Triples · ' + rows.length + '</p>';
+  html += '<ul class="triples">';
+  rows.forEach(r=>{
+    const other = byId[r.other];
+    const dot = '<span style="color:' + TYPES[other.type].colour + '">■</span> ';
+    html += '<li><button class="triple" data-go="' + other.id + '">' +
+      (r.outgoing
+        ? esc(n.label) + '<span class="pred">' + esc(r.pred) + ' →</span>' + dot + '<span class="end">' + esc(other.label) + '</span>'
+        : dot + '<span class="end">' + esc(other.label) + '</span><span class="pred">' + esc(r.pred) + ' →</span>' + esc(n.label)
+      ) + '</button></li>';
+  });
+  html += '</ul>';
+
+  inspector.innerHTML = html;
+  inspector.scrollTop = 0;
+  inspector.querySelectorAll("[data-go]").forEach(b=>{
+    b.onclick = ()=>select(b.getAttribute("data-go"));
+  });
+  draw();
+}
+
+/* ============================================================
+   6. RAILS
+   ============================================================ */
+
+const legend = document.getElementById("legend");
+Object.keys(TYPES).forEach(t=>{
+  const count = N.filter(n=>n.type===t).length;
+  const row = document.createElement("div");
+  row.className = "legend-row";
+  row.setAttribute("tabindex","0");
+  row.setAttribute("role","switch");
+  row.setAttribute("aria-checked","true");
+  row.innerHTML = '<span class="swatch" style="background:' + TYPES[t].colour + '"></span>' +
+                  '<span class="lname">' + TYPES[t].label + '</span>' +
+                  '<span class="lcount">' + count + '</span>';
+  const toggle = ()=>{
+    if (hidden.has(t)) hidden.delete(t); else hidden.add(t);
+    row.dataset.off = hidden.has(t) ? "1" : "";
+    row.setAttribute("aria-checked", hidden.has(t) ? "false" : "true");
+    if (selected && hidden.has(byId[selected].type)) select(null);
+    draw();
+  };
+  row.onclick = toggle;
+  row.onkeydown = ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); toggle(); }};
+  legend.appendChild(row);
+});
+
+const chainlist = document.getElementById("chainlist");
+chainlist.innerHTML = CHAIN.map((id,i)=>
+  '<div><span style="color:var(--faint)">' + String(i+1).padStart(2,"0") + '</span> ' +
+  '<b data-go="' + id + '" style="cursor:pointer">' + byId[id].label + '</b></div>'
+).join("");
+chainlist.querySelectorAll("[data-go]").forEach(b=>{
+  b.onclick = ()=>select(b.getAttribute("data-go"));
+});
+
+const search = document.getElementById("search");
+const hits = document.getElementById("hits");
+function runSearch(){
+  const q = search.value.trim().toLowerCase();
+  if (!q){ hits.innerHTML = ""; return; }
+  const found = N.filter(n=>{
+    const hay = (n.label + " " + (n.gloss||"") + " " + (n.claim||"") + " " + (n.detail||"")).toLowerCase();
+    return hay.indexOf(q) !== -1;
+  }).slice(0,14);
+  hits.innerHTML = found.length
+    ? found.map(n=>'<button class="hit" data-go="' + n.id + '"><span style="color:' +
+        TYPES[n.type].colour + '">■</span> ' + esc(n.label) + '</button>').join("")
+    : '<div class="empty" style="padding:6px 4px">No node matches that.</div>';
+  hits.querySelectorAll("[data-go]").forEach(b=>{
+    b.onclick = ()=>select(b.getAttribute("data-go"));
+  });
+}
+search.addEventListener("input", runSearch);
+
+document.getElementById("modes").addEventListener("click", ev=>{
+  const b = ev.target.closest("button.mode");
+  if (!b) return;
+  mode = b.dataset.mode;
+  document.querySelectorAll("button.mode").forEach(x=>
+    x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  N.forEach(n=>{ n.pinned = false; });
+  setAnchors(mode);
+  alpha = 1;
+  if (REDUCED){ for (let i=0;i<400;i++) tick(); draw(); }
+  setTimeout(fit, REDUCED ? 0 : 900);
+});
+
+/* ============================================================
+   7. RUN
+   ============================================================ */
+
+setAnchors(mode);
+for (let i=0;i<260;i++) tick();
+inspectorHome();
+draw();
+fit();
+
+if (REDUCED){
+  for (let i=0;i<600;i++) tick();
+  draw(); fit();
+} else {
+  (function loop(){ tick(); draw(); requestAnimationFrame(loop); })();
+}
+
+window.addEventListener("resize", ()=>{ clearTimeout(window.__rt); window.__rt = setTimeout(fit, 150); });
+document.addEventListener("keydown", ev=>{ if (ev.key === "Escape") select(null); });
+</script>
+</body>
+</html>
