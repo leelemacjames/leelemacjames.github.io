@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="An interactive Bayesian estimate of pi using Monte Carlo sampling and a Beta posterior." />
+  <title>Bayesian π</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f1eb;
+      --paper: #fffdf8;
+      --ink: #202020;
+      --muted: #68645f;
+      --line: #d9d3ca;
+      --accent: #7c2d12;
+      --accent-soft: #f3e1d6;
+      --green: #166534;
+      --red: #b91c1c;
+      --blue: #1d4ed8;
+      --shadow: 0 16px 44px rgba(35, 31, 26, 0.10);
+      --radius: 18px;
+      --max: 940px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141311;
+        --paper: #1e1c19;
+        --ink: #f3efe7;
+        --muted: #bbb3a8;
+        --line: #3b3731;
+        --accent: #fb923c;
+        --accent-soft: #432719;
+        --green: #4ade80;
+        --red: #f87171;
+        --blue: #60a5fa;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(124, 45, 18, 0.08), transparent 28rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      line-height: 1.68;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 0.09em;
+      text-underline-offset: 0.16em;
+    }
+
+    header {
+      padding: 72px 22px 44px;
+    }
+
+    .hero {
+      max-width: var(--max);
+      margin: auto;
+      padding: 46px clamp(24px, 5vw, 58px);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(3.2rem, 10vw, 7rem);
+      letter-spacing: -0.06em;
+    }
+
+    .lede {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.08rem, 2.2vw, 1.32rem);
+    }
+
+    main {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 22px 80px;
+    }
+
+    article {
+      padding: clamp(26px, 5vw, 58px);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    section + section {
+      margin-top: 62px;
+      padding-top: 46px;
+      border-top: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: clamp(2rem, 4.6vw, 3.25rem);
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      margin: 34px 0 12px;
+      font-size: clamp(1.35rem, 3vw, 1.9rem);
+    }
+
+    p { margin: 0 0 1.1em; }
+
+    .callout {
+      margin: 28px 0;
+      padding: 20px 22px;
+      border-left: 5px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      background: var(--accent-soft);
+    }
+
+    .equation {
+      overflow-x: auto;
+      margin: 26px 0;
+      padding: 18px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--paper) 90%, var(--accent) 10%);
+    }
+
+    code {
+      padding: 0.12em 0.35em;
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--paper) 76%, var(--ink) 24%);
+      font-size: 0.92em;
+    }
+
+    .lab {
+      margin-top: 28px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--paper) 94%, var(--accent) 6%);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .plots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .plot-card {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    #posteriorCanvas { aspect-ratio: 1.2 / 1; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .stat b {
+      display: block;
+      margin-top: 3px;
+      font-size: 1.16rem;
+    }
+
+    .stat small { color: var(--muted); }
+
+    ul { padding-left: 1.25rem; }
+
+    footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 22px 50px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      header { padding-top: 26px; }
+      .hero, article { padding: 24px; }
+      .plots { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls label { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="hero">
+      <p class="eyebrow">Monte Carlo · Bayesian inference · uncertainty</p>
+      <h1>Bayesian π</h1>
+      <p class="lede">
+        A point estimate tells us where our simulation has landed. A posterior distribution
+        tells us how uncertain that landing still is.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <article>
+      <section id="introduction">
+        <h2>Introduction</h2>
+
+        <p>
+          Although I usually prefer the day/month/year calendar format, month/day/year offers
+          one distinctive advantage: it gives us 3/14, officially recognised as
+          <a href="https://en.wikisource.org/wiki/H._RES._224_Supporting_the_designation_of_Pi_Day,_and_for_other_purposes">Pi Day in the United States</a>
+          and also celebrated in
+          <a href="https://www.scientificamerican.com/blog/observations/american-pi-why-the-day-belongs-to-the-u-s-and-belize/">Belize</a>.
+        </p>
+
+        <p>
+          A common Monte Carlo tutorial estimates \(\pi\) by generating random points in a
+          square and measuring the proportion that fall inside an inscribed circle. Repeating
+          the experiment produces estimates that tend to cluster around the true value.
+        </p>
+
+        <p>
+          Such demonstrations often stop at a point estimate. Bayesian inference goes further:
+          it produces a probability distribution over the plausible values of \(\pi\), allowing
+          the uncertainty to contract as observations accumulate.
+        </p>
+
+        <div class="callout">
+          The simulation uses a fixed seed derived from the digits of \(\pi\):
+          <code>314159</code>. The browser implementation below uses a deterministic
+          pseudo-random generator, so the results are reproducible.
+        </div>
+      </section>
+
+      <section id="sampling">
+        <h2>Sampling \(\pi\)</h2>
+
+        <p>
+          Sample points \((x,y)\) uniformly from the square \([-1,1]\times[-1,1]\). A point is
+          counted as a success when
+          \[
+            x^2+y^2&lt;1.
+          \]
+        </p>
+
+        <p>
+          The unit circle has area \(\pi\), while the square has area \(4\). Therefore the
+          probability \(q\) that a point lands inside the circle is
+        </p>
+
+        <div class="equation">
+          \[
+            q=\frac{\pi}{4}
+            \approx
+            \frac{\text{points inside the circle}}{\text{total points}}.
+          \]
+        </div>
+
+        <p>
+          Hence the familiar Monte Carlo estimate is
+          \[
+            \widehat{\pi}=4\frac{s}{N},
+          \]
+          where \(s\) is the number of successes among \(N\) sampled points.
+        </p>
+
+        <div class="lab" aria-label="Interactive Bayesian pi simulation">
+          <div class="controls">
+            <label for="sampleRange">
+              Number of samples: <strong id="sampleLabel">25</strong>
+              <input id="sampleRange" type="range" min="1" max="10000" value="25" step="1" />
+            </label>
+            <button id="playButton" class="primary" type="button">Animate</button>
+            <button id="resetButton" type="button">Reset</button>
+          </div>
+
+          <div class="plots">
+            <div class="plot-card">
+              <canvas id="squareCanvas" width="650" height="650"></canvas>
+            </div>
+            <div class="plot-card">
+              <canvas id="posteriorCanvas" width="760" height="630"></canvas>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><small>Successes</small><b id="successStat">–</b></div>
+            <div class="stat"><small>Point estimate</small><b id="estimateStat">–</b></div>
+            <div class="stat"><small>Posterior mean</small><b id="meanStat">–</b></div>
+            <div class="stat"><small>95% credible interval</small><b id="intervalStat">–</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="bayes">
+        <h2>Beyond the point estimate</h2>
+
+        <p>
+          Each point produces a Bernoulli outcome: success if it falls inside the circle and
+          failure otherwise. Given \(q\), the number of successes follows a binomial model:
+        </p>
+
+        <div class="equation">
+          \[
+            p(s\mid q,N)=\binom Ns q^s(1-q)^{N-s}.
+          \]
+        </div>
+
+        <h3>Posterior</h3>
+
+        <p>
+          Begin with the uniform prior \(q\sim\operatorname{Beta}(1,1)\). Beta–binomial
+          conjugacy then gives the exact posterior
+        </p>
+
+        <div class="equation">
+          \[
+            q\mid s,N
+            \sim
+            \operatorname{Beta}(s+1,N-s+1).
+          \]
+        </div>
+
+        <p>
+          This avoids numerical underflow and eliminates the need to evaluate a million-point
+          grid. The density is computed in log space in the interactive figure.
+        </p>
+
+        <h3>Transforming the posterior to \(\pi\)</h3>
+
+        <p>
+          Since \(\pi=4q\), a change of variables gives
+        </p>
+
+        <div class="equation">
+          \[
+            p(\pi\mid s,N)
+            =
+            \frac14\,p_q\!\left(\frac{\pi}{4}\,\middle|\,s,N\right),
+            \qquad 0\leq \pi\leq4.
+          \]
+        </div>
+
+        <p>
+          The right-hand plot shows this transformed posterior. The vertical line marks the
+          true value of \(\pi\), and the shaded area is an equal-tailed 95% Bayesian credible
+          interval.
+        </p>
+
+        <div class="callout">
+          A 95% credible interval means that, under the stated model and prior, the posterior
+          probability assigned to values of \(\pi\) inside the interval is 0.95. It is not a
+          claim that repeated intervals contain a fixed parameter 95% of the time.
+        </div>
+      </section>
+
+      <section id="interpretation">
+        <h2>Visualising the update</h2>
+
+        <p>
+          With only a few samples, the posterior is wide and can be strongly skewed. In the
+          seeded run used here, the earliest points may all land inside the circle, so the
+          point estimate can temporarily equal \(4\). The posterior records that this estimate
+          is still highly uncertain.
+        </p>
+
+        <p>
+          As \(N\) grows, the likelihood contributes increasing information. The posterior
+          narrows, the credible interval contracts, and its centre moves towards the true
+          value of \(\pi\). This is the essential Bayesian advantage: uncertainty is represented
+          explicitly rather than hidden behind a single reported number.
+        </p>
+
+        <p>
+          The related coin-bias tutorial is available
+          <a href="https://labpresse.com/why-do-we-need-bayesian-statistics-part-i-asserting-if-a-coin-is-biased-tutorial/">here</a>,
+          and the original notebook is available on
+          <a href="https://github.com/PessoaP/blog/blob/master/Coins/PI.ipynb">GitHub</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Happy \(\pi\) Day</h2>
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    Interactive version generated from the original Jupyter notebook.
+  </footer>
+
+  <script>
+    "use strict";
+
+    const MAX_N = 10000;
+    const PI = Math.PI;
+    const range = document.getElementById("sampleRange");
+    const label = document.getElementById("sampleLabel");
+    const playButton = document.getElementById("playButton");
+    const resetButton = document.getElementById("resetButton");
+    const squareCanvas = document.getElementById("squareCanvas");
+    const posteriorCanvas = document.getElementById("posteriorCanvas");
+    const squareCtx = squareCanvas.getContext("2d");
+    const posteriorCtx = posteriorCanvas.getContext("2d");
+
+    const css = getComputedStyle(document.documentElement);
+    const colours = {
+      ink: css.getPropertyValue("--ink").trim(),
+      muted: css.getPropertyValue("--muted").trim(),
+      line: css.getPropertyValue("--line").trim(),
+      accent: css.getPropertyValue("--accent").trim(),
+      green: css.getPropertyValue("--green").trim(),
+      red: css.getPropertyValue("--red").trim(),
+      blue: css.getPropertyValue("--blue").trim()
+    };
+
+    // Mulberry32: compact deterministic PRNG.
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    const random = mulberry32(314159);
+    const points = [];
+    const cumulativeSuccesses = new Uint32Array(MAX_N + 1);
+
+    for (let i = 0; i < MAX_N; i++) {
+      const x = 2 * random() - 1;
+      const y = 2 * random() - 1;
+      const inside = x * x + y * y < 1;
+      points.push({ x, y, inside });
+      cumulativeSuccesses[i + 1] = cumulativeSuccesses[i] + (inside ? 1 : 0);
+    }
+
+    function logGamma(z) {
+      const coefficients = [
+        676.5203681218851, -1259.1392167224028, 771.32342877765313,
+        -176.6150291621406, 12.507343278686905, -0.13857109526572012,
+        9.9843695780195716e-6, 1.5056327351493116e-7
+      ];
+      if (z < 0.5) return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
+      z -= 1;
+      let x = 0.99999999999980993;
+      for (let i = 0; i < coefficients.length; i++) x += coefficients[i] / (z + i + 1);
+      const t = z + coefficients.length - 0.5;
+      return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+    }
+
+    function logBeta(a, b) {
+      return logGamma(a) + logGamma(b) - logGamma(a + b);
+    }
+
+    function betaPdf(x, a, b) {
+      if (x <= 0 || x >= 1) return 0;
+      return Math.exp((a - 1) * Math.log(x) + (b - 1) * Math.log1p(-x) - logBeta(a, b));
+    }
+
+    // Regularised incomplete beta via continued fraction.
+    function betaContinuedFraction(a, b, x) {
+      const MAX_ITER = 200;
+      const EPS = 3e-12;
+      const FPMIN = 1e-300;
+      let qab = a + b;
+      let qap = a + 1;
+      let qam = a - 1;
+      let c = 1;
+      let d = 1 - qab * x / qap;
+      if (Math.abs(d) < FPMIN) d = FPMIN;
+      d = 1 / d;
+      let h = d;
+
+      for (let m = 1; m <= MAX_ITER; m++) {
+        const m2 = 2 * m;
+        let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        h *= d * c;
+
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        const delta = d * c;
+        h *= delta;
+        if (Math.abs(delta - 1) < EPS) break;
+      }
+      return h;
+    }
+
+    function betaCdf(x, a, b) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      const front = Math.exp(
+        logGamma(a + b) - logGamma(a) - logGamma(b)
+        + a * Math.log(x) + b * Math.log1p(-x)
+      );
+      if (x < (a + 1) / (a + b + 2)) {
+        return front * betaContinuedFraction(a, b, x) / a;
+      }
+      return 1 - front * betaContinuedFraction(b, a, 1 - x) / b;
+    }
+
+    function betaQuantile(p, a, b) {
+      let lo = 0, hi = 1;
+      for (let i = 0; i < 70; i++) {
+        const mid = (lo + hi) / 2;
+        if (betaCdf(mid, a, b) < p) lo = mid;
+        else hi = mid;
+      }
+      return (lo + hi) / 2;
+    }
+
+    function clear(ctx, canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawSquare(N) {
+      const c = squareCanvas;
+      const ctx = squareCtx;
+      clear(ctx, c);
+
+      const pad = 58;
+      const size = c.width - pad * 2;
+      const mapX = x => pad + (x + 1) * size / 2;
+      const mapY = y => pad + (1 - (y + 1) / 2) * size;
+
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(pad, pad, size, size);
+
+      ctx.beginPath();
+      ctx.arc(mapX(0), mapY(0), size / 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "#111";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      const shown = Math.min(N, 2500);
+      const stride = Math.max(1, Math.floor(N / shown));
+      for (let i = 0; i < N; i += stride) {
+        const p = points[i];
+        const px = mapX(p.x), py = mapY(p.y);
+        ctx.beginPath();
+        if (p.inside) {
+          ctx.fillStyle = "#166534";
+          ctx.arc(px, py, N < 200 ? 4.6 : 2.4, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = "#b91c1c";
+          ctx.lineWidth = N < 200 ? 2.2 : 1.2;
+          const r = N < 200 ? 4.8 : 2.8;
+          ctx.moveTo(px - r, py - r);
+          ctx.lineTo(px + r, py + r);
+          ctx.moveTo(px + r, py - r);
+          ctx.lineTo(px - r, py + r);
+          ctx.stroke();
+        }
+      }
+
+      ctx.fillStyle = "#333";
+      ctx.font = "24px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Samples in the square", c.width / 2, 34);
+      ctx.font = "19px system-ui";
+      [-1, 0, 1].forEach(v => {
+        ctx.fillText(String(v), mapX(v), c.height - 18);
+      });
+      ctx.save();
+      ctx.translate(20, c.height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("y", 0, 0);
+      ctx.restore();
+      ctx.fillText("x", c.width / 2, c.height - 2);
+    }
+
+    function drawPosterior(N, s) {
+      const c = posteriorCanvas;
+      const ctx = posteriorCtx;
+      clear(ctx, c);
+
+      const a = s + 1;
+      const b = N - s + 1;
+      const lo = 4 * betaQuantile(0.025, a, b);
+      const hi = 4 * betaQuantile(0.975, a, b);
+
+      const left = 72, right = 22, top = 52, bottom = 62;
+      const w = c.width - left - right;
+      const h = c.height - top - bottom;
+      const sampleCount = 700;
+      const values = [];
+      let maxY = 0;
+
+      for (let i = 0; i <= sampleCount; i++) {
+        const piValue = 4 * i / sampleCount;
+        const density = betaPdf(piValue / 4, a, b) / 4;
+        values.push({ x: piValue, y: density });
+        if (Number.isFinite(density)) maxY = Math.max(maxY, density);
+      }
+      if (!(maxY > 0)) maxY = 1;
+
+      const mapX = x => left + x / 4 * w;
+      const mapY = y => top + h - y / maxY * h;
+
+      ctx.fillStyle = "rgba(185, 28, 28, 0.18)";
+      ctx.beginPath();
+      ctx.moveTo(mapX(lo), mapY(0));
+      values.filter(v => v.x >= lo && v.x <= hi).forEach(v => ctx.lineTo(mapX(v.x), mapY(v.y)));
+      ctx.lineTo(mapX(hi), mapY(0));
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      values.forEach((v, i) => {
+        const x = mapX(v.x), y = mapY(v.y);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = "#1d4ed8";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(mapX(PI), top);
+      ctx.lineTo(mapX(PI), top + h);
+      ctx.strokeStyle = "#111";
+      ctx.setLineDash([10, 8]);
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, top + h);
+      ctx.lineTo(left + w, top + h);
+      ctx.stroke();
+
+      ctx.fillStyle = "#333";
+      ctx.font = "19px system-ui";
+      ctx.textAlign = "center";
+      [0, 1, 2, 3, 4].forEach(v => {
+        const x = mapX(v);
+        ctx.beginPath();
+        ctx.moveTo(x, top + h);
+        ctx.lineTo(x, top + h + 8);
+        ctx.stroke();
+        ctx.fillText(String(v), x, top + h + 31);
+      });
+
+      ctx.font = "24px system-ui";
+      ctx.fillText("Posterior distribution for π", c.width / 2, 32);
+      ctx.font = "19px system-ui";
+      ctx.fillText("Possible value of π", c.width / 2, c.height - 10);
+
+      ctx.save();
+      ctx.translate(22, c.height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Posterior density", 0, 0);
+      ctx.restore();
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#111";
+      ctx.fillText("true π", Math.min(mapX(PI) + 8, c.width - 80), top + 22);
+
+      return { lo, hi, mean: 4 * a / (a + b) };
+    }
+
+    function render() {
+      const N = Number(range.value);
+      const s = cumulativeSuccesses[N];
+      label.textContent = N.toLocaleString("en-GB");
+      drawSquare(N);
+      const summary = drawPosterior(N, s);
+
+      document.getElementById("successStat").textContent = `${s} / ${N}`;
+      document.getElementById("estimateStat").textContent = (4 * s / N).toFixed(5);
+      document.getElementById("meanStat").textContent = summary.mean.toFixed(5);
+      document.getElementById("intervalStat").textContent =
+        `[${summary.lo.toFixed(4)}, ${summary.hi.toFixed(4)}]`;
+    }
+
+    let timer = null;
+    const animationStops = [
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50,
+      75, 100, 150, 200, 300, 500, 700, 1000, 2000, 3000, 5000, 10000
+    ];
+
+    function stopAnimation() {
+      if (timer) clearInterval(timer);
+      timer = null;
+      playButton.textContent = "Animate";
+    }
+
+    playButton.addEventListener("click", () => {
+      if (timer) {
+        stopAnimation();
+        return;
+      }
+      let i = 0;
+      playButton.textContent = "Pause";
+      timer = setInterval(() => {
+        range.value = animationStops[i];
+        render();
+        i += 1;
+        if (i >= animationStops.length) stopAnimation();
+      }, 520);
+    });
+
+    resetButton.addEventListener("click", () => {
+      stopAnimation();
+      range.value = 25;
+      render();
+    });
+
+    range.addEventListener("input", () => {
+      stopAnimation();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
