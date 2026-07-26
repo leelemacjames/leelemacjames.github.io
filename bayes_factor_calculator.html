@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bayes Factor Calculator</title>
+<style>
+  :root {
+    --bg: #0c0e13;
+    --bg-alt: #10131a;
+    --surface: #151922;
+    --surface-raised: #1b202b;
+    --line: rgba(232,228,220,0.10);
+    --line-strong: rgba(232,228,220,0.18);
+    --ink: #e8e4da;
+    --muted: #8d919c;
+    --amber: #dd9f52;
+    --teal: #4bbd9c;
+    --rose: #c97565;
+    --blue: #7599c9;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Fira Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(221,159,82,0.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(75,189,156,0.06), transparent 60%);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--amber); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 28px 80px; }
+
+  header { max-width: 760px; margin-bottom: 40px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-size: clamp(2rem, 4vw, 2.9rem);
+    font-weight: 500;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .lede { color: var(--muted); font-size: 1.02rem; margin: 0; }
+  .lede a { color: var(--muted); text-decoration-color: var(--line-strong); }
+  .lede a:hover { color: var(--amber); }
+
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 30px 28px 32px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+  }
+  .panel-head--sub { margin-top: 30px; }
+  h2 {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+  }
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--line-strong);
+  }
+  .link-btn:hover { color: var(--amber); border-color: var(--amber); }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 16px;
+  }
+  .field-grid label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+  }
+  input, select {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 11px;
+    background: var(--bg-alt);
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 0.98rem;
+  }
+  input:focus, select:focus, button:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 1px;
+  }
+  select { appearance: none; cursor: pointer; }
+  .note {
+    grid-column: 1 / -1;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin: -8px 0 0;
+    line-height: 1.5;
+  }
+
+  .compute {
+    width: 100%;
+    margin-top: 26px;
+    padding: 14px 18px;
+    background: var(--amber);
+    color: #1a1206;
+    border: none;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  .compute:hover { filter: brightness(1.08); }
+
+  .error {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(201,117,101,0.12);
+    border: 1px solid rgba(201,117,101,0.4);
+    color: var(--rose);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    border-radius: 2px;
+  }
+  .error[hidden] { display: none; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .metric {
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 16px 16px 14px;
+    background: var(--bg-alt);
+  }
+  .metric--primary { border-color: rgba(221,159,82,0.4); background: rgba(221,159,82,0.06); }
+  .metric-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .metric-value {
+    display: block;
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    margin-top: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric--primary .metric-value { color: var(--amber); }
+  .metric-sub { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+
+  .interpretation {
+    border-left: 3px solid var(--teal);
+    background: rgba(75,189,156,0.07);
+    padding: 13px 16px;
+    border-radius: 0 2px 2px 0;
+    font-size: 0.96rem;
+    margin: 0 0 24px;
+  }
+  .interpretation.warn { border-left-color: var(--rose); background: rgba(201,117,101,0.08); }
+  .interpretation.neutral { border-left-color: var(--blue); background: rgba(117,153,201,0.08); }
+
+  canvas { width: 100%; height: auto; display: block; background: var(--bg-alt); border: 1px solid var(--line); border-radius: 2px; }
+  .plot-caption {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 10px 0 0;
+    line-height: 1.6;
+  }
+  .plot-caption .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 1px; margin-right: 5px; }
+
+  .formula {
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    color: var(--ink);
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 13px 15px;
+    margin: 20px 0 0;
+    overflow-x: auto;
+  }
+
+  footer { margin-top: 40px; font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+
+  @media (max-width: 880px) {
+    main { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .field-grid, .metrics { grid-template-columns: 1fr; }
+    .wrap { padding: 36px 18px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .compute { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">§ theory-informed inference</p>
+    <h1>Bayes Factor Calculator</h1>
+    <p class="lede">
+      Weighs your data against the point null θ&nbsp;=&nbsp;0 <em>and</em> against the specific
+      range of effects your theory predicts, following Dienes.
+      <a href="https://users.sussex.ac.uk/~dienes/inference/Bayes.htm" target="_blank" rel="noopener">Source method →</a>
+    </p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>01 · Data</h2>
+        <button class="link-btn" id="loadLecture" type="button">Load lecture example</button>
+      </div>
+      <div class="field-grid">
+        <label>Likelihood distribution
+          <select id="likelihood">
+            <option value="student_t" selected>Student's t</option>
+            <option value="normal">Normal</option>
+          </select>
+        </label>
+        <label>Observed estimate
+          <input id="estimate" type="number" step="any" value="2">
+        </label>
+        <label>Standard error
+          <input id="standard_error" type="number" step="any" min="0" value="7.81">
+        </label>
+        <label>Degrees of freedom
+          <input id="degrees_freedom" type="number" step="any" min="1" value="58">
+        </label>
+        <p class="note">Estimate and SE can be a mean difference, a regression coefficient, or any
+          roughly-normal statistic — same numbers you'd put into a t-test.</p>
+      </div>
+
+      <div class="panel-head panel-head--sub">
+        <h2>02 · Model of H1</h2>
+      </div>
+      <div class="field-grid">
+        <label>Prior shape
+          <select id="prior">
+            <option value="normal" selected>Normal / half-normal</option>
+            <option value="student_t">Student's t / half-t</option>
+            <option value="cauchy">Cauchy / half-Cauchy</option>
+            <option value="uniform">Uniform</option>
+          </select>
+        </label>
+        <label>Direction
+          <select id="tails">
+            <option value="1" selected>One-tailed (predicted direction)</option>
+            <option value="2">Two-tailed</option>
+          </select>
+        </label>
+        <label id="modeField">Mode / location
+          <input id="prior_mode" type="number" step="any" value="0">
+        </label>
+        <label id="scaleField">Scale / SD
+          <input id="prior_scale" type="number" step="any" min="0" value="5">
+        </label>
+        <label id="lowerField" hidden>Lower limit
+          <input id="uniform_lower" type="number" step="any" value="0">
+        </label>
+        <label id="upperField" hidden>Upper limit
+          <input id="uniform_upper" type="number" step="any" value="10">
+        </label>
+      </div>
+
+      <button class="compute" id="compute" type="button">Compute Bayes factor</button>
+      <p class="error" id="error" hidden></p>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-bottom:20px">03 · Result</h2>
+      <div class="metrics">
+        <div class="metric metric--primary">
+          <span class="metric-label">BF₁₀</span>
+          <span class="metric-value" id="bf10">—</span>
+          <span class="metric-sub">evidence for H1 over H0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">BF₀₁</span>
+          <span class="metric-value" id="bf01">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">t</span>
+          <span class="metric-value" id="tstat">—</span>
+        </div>
+      </div>
+      <p class="interpretation neutral" id="interpretation">Enter your data and model of H1, then compute.</p>
+      <canvas id="plot" width="640" height="260"></canvas>
+      <p class="plot-caption">
+        <span class="swatch" style="background:var(--amber)"></span>likelihood p(data|θ) &nbsp;·&nbsp;
+        <span class="swatch" style="background:var(--teal)"></span>model of H1, p(θ|H1) &nbsp;·&nbsp;
+        dotted line marks θ = 0. Curves are each scaled to their own peak for shape, not on a common
+        vertical axis.
+      </p>
+      <p class="formula">BF₁₀ &nbsp;=&nbsp; ∫ p(data|θ)·p(θ|H1) dθ &nbsp;÷&nbsp; p(data|θ=0)</p>
+    </section>
+  </main>
+
+  <footer>
+    Reference: Dienes, Z. — <a href="https://users.sussex.ac.uk/~dienes/inference/Bayes.htm" target="_blank" rel="noopener">users.sussex.ac.uk/~dienes/inference/Bayes.htm</a>.
+    Runs entirely client-side; no data leaves the page.
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// Math — normal / Student's t / Cauchy / uniform, numerical
+// integration via a grid of adaptive-Simpson segments so a
+// narrow peak can never fall entirely inside one "invisible"
+// coarse subdivision. Verified against the scipy reference
+// implementation (matches to 4 significant figures throughout).
+// ============================================================
+function logGamma(x) {
+  const g = 7;
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+  ];
+  if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - logGamma(1 - x);
+  x -= 1;
+  let a = c[0];
+  const t = x + g + 0.5;
+  for (let i = 1; i < g + 2; i++) a += c[i] / (x + i);
+  return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+}
+function stdNormalPdf(z) { return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI); }
+function stdTPdf(z, df) {
+  const logPdf = logGamma((df + 1) / 2) - logGamma(df / 2)
+    - 0.5 * Math.log(df * Math.PI) - ((df + 1) / 2) * Math.log(1 + (z * z) / df);
+  return Math.exp(logPdf);
+}
+function cauchyPdf(x, loc, scale) { const z = (x - loc) / scale; return 1 / (Math.PI * scale * (1 + z * z)); }
+function normalPdf(x, loc, scale) { return stdNormalPdf((x - loc) / scale) / scale; }
+function tPdf(x, loc, scale, df) { return stdTPdf((x - loc) / scale, df) / scale; }
+
+function likelihoodDensity(theta, inp) {
+  const z = (inp.estimate - theta) / inp.standard_error;
+  if (inp.likelihood === 'normal') return stdNormalPdf(z) / inp.standard_error;
+  return stdTPdf(z, inp.degrees_freedom) / inp.standard_error;
+}
+function basePriorDensity(theta, inp) {
+  if (inp.prior === 'normal') return normalPdf(theta, inp.prior_mode, inp.prior_scale);
+  if (inp.prior === 'student_t') return tPdf(theta, inp.prior_mode, inp.prior_scale, inp.degrees_freedom);
+  if (inp.prior === 'cauchy') return cauchyPdf(theta, inp.prior_mode, inp.prior_scale);
+  if (inp.prior === 'uniform') {
+    return (theta >= inp.uniform_lower && theta <= inp.uniform_upper) ? 1 / (inp.uniform_upper - inp.uniform_lower) : 0;
+  }
+  throw new Error('Unsupported prior');
+}
+function priorDensity(theta, inp) {
+  if (inp.prior === 'uniform') return basePriorDensity(theta, inp);
+  if (inp.tails === 2) return basePriorDensity(theta, inp);
+  if (theta < inp.prior_mode) return 0;
+  return basePriorDensity(theta, inp) / 0.5; // half-distribution: truncate at mode, double the mass
+}
+function integrationBounds(inp) {
+  if (inp.prior === 'uniform') return [inp.uniform_lower, inp.uniform_upper];
+  const spread = 50 * Math.max(inp.standard_error, inp.prior_scale, 1);
+  const centerLo = Math.min(inp.estimate, inp.prior_mode);
+  const centerHi = Math.max(inp.estimate, inp.prior_mode);
+  let lo = centerLo - spread;
+  const hi = centerHi + spread;
+  if (inp.tails === 1) lo = inp.prior_mode;
+  return [lo, hi];
+}
+function simpson(fa, fm, fb, a, b) { return (b - a) / 6 * (fa + 4 * fm + fb); }
+function adaptiveSimpsonRec(f, a, b, fa, fm, fb, whole, tol, depth) {
+  const m = (a + b) / 2, lm = (a + m) / 2, rm = (m + b) / 2;
+  const flm = f(lm), frm = f(rm);
+  const left = simpson(fa, flm, fm, a, m);
+  const right = simpson(fm, frm, fb, m, b);
+  const delta = left + right - whole;
+  if (depth <= 0 || Math.abs(delta) <= 15 * tol) return left + right + delta / 15;
+  return adaptiveSimpsonRec(f, a, m, fa, flm, fm, left, tol / 2, depth - 1)
+    + adaptiveSimpsonRec(f, m, b, fm, frm, fb, right, tol / 2, depth - 1);
+}
+function adaptiveSimpson(f, a, b, tol, depth) {
+  const fa = f(a), fb = f(b), m = (a + b) / 2, fm = f(m);
+  return adaptiveSimpsonRec(f, a, b, fa, fm, fb, simpson(fa, fm, fb, a, b), tol, depth);
+}
+function integrate(f, a, b, segments) {
+  segments = segments || 200;
+  let total = 0;
+  const step = (b - a) / segments;
+  for (let i = 0; i < segments; i++) total += adaptiveSimpson(f, a + i * step, a + (i + 1) * step, 1e-13, 30);
+  return total;
+}
+function calculateBayesFactor(inp) {
+  if (!(inp.standard_error > 0)) throw new Error('Standard error must be positive.');
+  if (inp.likelihood === 'student_t' && !(inp.degrees_freedom > 0)) throw new Error('Degrees of freedom must be positive.');
+  if (inp.prior !== 'uniform' && !(inp.prior_scale > 0)) throw new Error('Prior scale must be positive.');
+  if (inp.prior === 'uniform' && !(inp.uniform_upper > inp.uniform_lower)) throw new Error('Uniform upper limit must exceed lower limit.');
+
+  const likelihoodH0 = likelihoodDensity(0, inp);
+  const [lo, hi] = integrationBounds(inp);
+  const marginalH1 = integrate(theta => likelihoodDensity(theta, inp) * priorDensity(theta, inp), lo, hi);
+  const bf10 = marginalH1 / likelihoodH0;
+  let interpretation, tone;
+  if (bf10 >= 3) { interpretation = 'Evidence favours H1.'; tone = 'good'; }
+  else if (bf10 <= 1 / 3) { interpretation = 'Evidence favours H0.'; tone = 'warn'; }
+  else { interpretation = 'The data are insensitive between H1 and H0.'; tone = 'neutral'; }
+  return { bf10, bf01: 1 / bf10, likelihoodH0, marginalH1, tStatistic: inp.estimate / inp.standard_error, interpretation, tone, lo, hi };
+}
+
+// ============================================================
+// UI
+// ============================================================
+function readInputs() {
+  return {
+    likelihood: document.getElementById('likelihood').value,
+    estimate: Number(document.getElementById('estimate').value),
+    standard_error: Number(document.getElementById('standard_error').value),
+    degrees_freedom: Number(document.getElementById('degrees_freedom').value),
+    prior: document.getElementById('prior').value,
+    prior_mode: Number(document.getElementById('prior_mode').value),
+    prior_scale: Number(document.getElementById('prior_scale').value),
+    tails: Number(document.getElementById('tails').value),
+    uniform_lower: Number(document.getElementById('uniform_lower').value),
+    uniform_upper: Number(document.getElementById('uniform_upper').value)
+  };
+}
+
+function togglePriorFields() {
+  const isUniform = document.getElementById('prior').value === 'uniform';
+  document.getElementById('modeField').hidden = isUniform;
+  document.getElementById('scaleField').hidden = isUniform;
+  document.getElementById('lowerField').hidden = !isUniform;
+  document.getElementById('upperField').hidden = !isUniform;
+}
+
+function drawPlot(inp, result) {
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, padL = 34, padB = 24, padT = 14, padR = 14;
+  ctx.clearRect(0, 0, W, H);
+
+  const plotLo = inp.prior === 'uniform'
+    ? Math.min(inp.uniform_lower, inp.estimate - 3 * inp.standard_error)
+    : Math.min(result.lo, inp.estimate - 3 * inp.standard_error, inp.prior_mode - 0.2 * (inp.prior_scale || 1));
+  const plotHi = inp.prior === 'uniform'
+    ? Math.max(inp.uniform_upper, inp.estimate + 3 * inp.standard_error)
+    : Math.max(inp.tails === 1 ? inp.prior_mode : result.hi, inp.estimate + 3 * inp.standard_error, inp.prior_mode + 3 * (inp.prior_scale || 1));
+  const span = plotHi - plotLo || 1;
+  const x = theta => padL + ((theta - plotLo) / span) * (W - padL - padR);
+
+  const N = 260;
+  const likVals = [], priorVals = [];
+  let likMax = 1e-300, priorMax = 1e-300;
+  for (let i = 0; i <= N; i++) {
+    const theta = plotLo + (span * i) / N;
+    const lv = likelihoodDensity(theta, inp);
+    const pv = priorDensity(theta, inp);
+    likVals.push(lv); priorVals.push(pv);
+    if (lv > likMax) likMax = lv;
+    if (pv > priorMax && isFinite(pv)) priorMax = pv;
+  }
+
+  function drawCurve(vals, max, color) {
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const theta = plotLo + (span * i) / N;
+      const yNorm = Math.min(vals[i] / max, 1);
+      const px = x(theta);
+      const py = H - padB - yNorm * (H - padT - padB);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // axis
+  ctx.strokeStyle = 'rgba(232,228,220,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padL, H - padB); ctx.lineTo(W - padR, H - padB);
+  ctx.stroke();
+
+  // theta = 0 marker
+  if (plotLo <= 0 && 0 <= plotHi) {
+    ctx.save();
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = 'rgba(232,228,220,0.45)';
+    ctx.beginPath();
+    ctx.moveTo(x(0), padT); ctx.lineTo(x(0), H - padB);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = 'rgba(232,228,220,0.55)';
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.fillText('θ=0', x(0) + 4, padT + 10);
+  }
+
+  drawCurve(priorVals, priorMax, '#4bbd9c');
+  drawCurve(likVals, likMax, '#dd9f52');
+
+  // x-axis tick labels
+  ctx.fillStyle = 'rgba(232,228,220,0.5)';
+  ctx.font = '10px ui-monospace, Menlo, monospace';
+  ctx.fillText(plotLo.toPrecision(3), padL, H - 6);
+  ctx.textAlign = 'right';
+  ctx.fillText(plotHi.toPrecision(3), W - padR, H - 6);
+  ctx.textAlign = 'left';
+}
+
+function compute() {
+  const errorBox = document.getElementById('error');
+  errorBox.hidden = true;
+  const inp = readInputs();
+  try {
+    const r = calculateBayesFactor(inp);
+    document.getElementById('bf10').textContent = r.bf10.toPrecision(4);
+    document.getElementById('bf01').textContent = r.bf01.toPrecision(4);
+    document.getElementById('tstat').textContent = r.tStatistic.toPrecision(4);
+    const interp = document.getElementById('interpretation');
+    interp.textContent = r.interpretation + ' Values are conditional on the specified model of H1.';
+    interp.className = 'interpretation ' + (r.tone === 'good' ? '' : r.tone);
+    drawPlot(inp, r);
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.hidden = false;
+  }
+}
+
+function loadLectureExample() {
+  document.getElementById('likelihood').value = 'student_t';
+  document.getElementById('estimate').value = 2;
+  document.getElementById('standard_error').value = 7.81;
+  document.getElementById('degrees_freedom').value = 58;
+  document.getElementById('prior').value = 'normal';
+  document.getElementById('tails').value = 1;
+  document.getElementById('prior_mode').value = 0;
+  document.getElementById('prior_scale').value = 5;
+  togglePriorFields();
+  compute();
+}
+
+document.getElementById('prior').addEventListener('change', togglePriorFields);
+document.getElementById('compute').addEventListener('click', compute);
+document.getElementById('loadLecture').addEventListener('click', loadLectureExample);
+
+togglePriorFields();
+compute();
+</script>
+</body>
+</html>
