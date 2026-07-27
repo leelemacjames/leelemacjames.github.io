@@ -266,7 +266,7 @@
 
 <header>
   <h1>Knowledge Graph</h1>
-  <p>Every app, essay and tool in the McMurmerings collection, arranged by the axis of your choosing. Click branches to fold; click leaves to open. Search narrows and highlights.</p>
+  <p>Authored apps, curated simulations, quizzes, presentations, podcasts and journals — the full teaching landscape, arranged by the axis of your choosing. Toggle scope to see just your own or just external resources.</p>
   <div class="stats-line" id="stats"></div>
   <div class="controls">
     <button onclick="setAxis('Hub')" class="active" id="btn-Hub">Hub</button>
@@ -275,6 +275,9 @@
     <button onclick="setAxis('Theme')" id="btn-Theme">Theme</button>
     <button onclick="setAxis('Format')" id="btn-Format">Format</button>
     <button onclick="setAxis('Series')" id="btn-Series">Series</button>
+    <button onclick="setAxis('Origin')" id="btn-Origin">Origin</button>
+    <span class="sep"></span>
+    <button onclick="toggleScope()" id="btn-scope" class="active">All resources</button>
     <span class="sep"></span>
     <button onclick="expandAll()">Expand all</button>
     <button onclick="collapseAll()">Collapse all</button>
@@ -348,12 +351,31 @@ let allApps = [];
 let currentAxis = 'Hub';
 let searchQuery = '';
 
-const AXES = ['Hub','Subject','Domain','Theme','Format','Series'];
+const AXES = ['Hub','Subject','Domain','Theme','Format','Series','Origin'];
 // For two-level grouping: primary axis → secondary axis
 const SECONDARY = {
   Hub: 'Subject', Subject: 'Domain', Domain: 'Subject',
-  Theme: 'Subject', Format: 'Subject', Series: 'Subject'
+  Theme: 'Subject', Format: 'Domain', Series: 'Subject',
+  Origin: 'Domain'
 };
+
+// Scope: 'all', 'mine', 'external'
+let currentScope = 'all';
+function toggleScope() {
+  const order = ['all', 'mine', 'external'];
+  const labels = { all: 'All resources', mine: 'My apps only', external: 'External only' };
+  currentScope = order[(order.indexOf(currentScope) + 1) % order.length];
+  const btn = document.getElementById('btn-scope');
+  btn.textContent = labels[currentScope];
+  btn.classList.toggle('active', currentScope !== 'all');
+  render();
+}
+function scopeFilter(app) {
+  if (currentScope === 'all') return true;
+  const origin = (app.Origin || '').toLowerCase();
+  const isMine = origin === 'mcmurmerings' || origin === '' || !app.Origin;
+  return currentScope === 'mine' ? isMine : !isMine;
+}
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 async function loadData() {
@@ -401,11 +423,7 @@ async function loadData() {
 }
 
 function updateStats() {
-  const n = allApps.length;
-  const hubs = new Set(allApps.map(a => a.Hub).filter(Boolean)).size;
-  const subjs = new Set(allApps.map(a => a.Subject).filter(Boolean)).size;
-  document.getElementById('stats').textContent =
-    `${n} apps · ${subjs} subjects · ${hubs} hubs`;
+  // Stats are now rendered inside render() with scope awareness
 }
 
 // ── Search ───────────────────────────────────────────────────────────────────
@@ -442,25 +460,35 @@ function render() {
 
   const axis = currentAxis;
   const secondary = SECONDARY[axis];
-  const groups = groupByFacet(allApps, axis);
+  const scoped = allApps.filter(scopeFilter);
+  const groups = groupByFacet(scoped, axis);
 
   if (!groups.length || (groups.length === 1 && groups[0].name === '—')) {
     main.innerHTML = '<div class="no-results">No data for this axis yet. Add values to the <em>' + axis + '</em> column in the sheet.</div>';
     return;
   }
 
-  groups.forEach(g => {
-    if (g.name === '—' && groups.length > 1) return;  // skip uncategorised unless it's the only group
+  // Separate named groups from uncategorised
+  const named = groups.filter(g => g.name !== '—');
+  const uncat = groups.find(g => g.name === '—');
+
+  named.forEach(g => {
     const branch = makeBranch(g.name, g.items, axis, secondary, 0);
     if (branch) main.appendChild(branch);
   });
 
-  // Uncategorised at the bottom if there were others
-  const uncat = groups.find(g => g.name === '—');
-  if (uncat && groups.length > 1) {
+  if (uncat && named.length > 0) {
     const branch = makeBranch('Uncategorised', uncat.items, axis, secondary, 0);
     if (branch) main.appendChild(branch);
   }
+
+  // Update stats with scope info
+  const total = allApps.length;
+  const shown = scoped.length;
+  const mine = allApps.filter(a => !a.Origin || a.Origin === 'McMurmerings').length;
+  const ext = total - mine;
+  document.getElementById('stats').textContent =
+    `${shown} shown · ${mine} authored · ${ext} curated external · ${total} total`;
 }
 
 function makeBranch(name, items, axis, secondary, depth) {
@@ -468,7 +496,9 @@ function makeBranch(name, items, axis, secondary, depth) {
   if (searchQuery && !matchingItems.length) return null;
 
   const branch = document.createElement('div');
-  branch.className = 'branch' + (depth < 1 || searchQuery ? ' open' : '');
+  // Auto-expand: top-level if few groups, or when searching
+  const autoOpen = searchQuery || (depth === 0 && matchingItems.length <= 30);
+  branch.className = 'branch' + (autoOpen ? ' open' : '');
   if (depth > 0) branch.classList.add('sub-branch');
 
   const col = tagColour(name, axis);
@@ -486,7 +516,7 @@ function makeBranch(name, items, axis, secondary, depth) {
   const leavesEl = document.createElement('div');
   leavesEl.className = 'leaves';
 
-  // Two-level: if depth 0 and secondary exists and there are enough items
+  // Two-level: group when there are enough items and a secondary axis
   if (depth === 0 && secondary && matchingItems.length > 8) {
     const subs = groupByFacet(matchingItems, secondary);
     subs.forEach(sg => {
@@ -494,13 +524,9 @@ function makeBranch(name, items, axis, secondary, depth) {
       if (sub) leavesEl.appendChild(sub);
     });
   } else {
-    // Flat leaves
     matchingItems
       .sort((a, b) => displayName(a).localeCompare(displayName(b)))
-      .forEach(app => {
-        const leaf = makeLeaf(app, axis);
-        leavesEl.appendChild(leaf);
-      });
+      .forEach(app => leavesEl.appendChild(makeLeaf(app, axis)));
   }
 
   branch.appendChild(leavesEl);
@@ -526,9 +552,12 @@ function makeLeaf(app, axis) {
   const desc = app.Description || '';
   const shortDesc = desc.length > 80 ? desc.slice(0, 77) + '…' : desc;
 
-  // Micro-badges: show Hub + Level if not the primary axis
+  // Micro-badges
   let badges = '';
-  if (axis !== 'Hub' && app.Hub) badges += `<span class="leaf-micro">${app.Hub}</span>`;
+  const origin = app.Origin || '';
+  const isExternal = origin && origin !== 'McMurmerings';
+  if (isExternal && axis !== 'Origin') badges += `<span class="leaf-micro">${origin}</span>`;
+  if (!isExternal && axis !== 'Hub' && app.Hub) badges += `<span class="leaf-micro">${app.Hub}</span>`;
   if (app.Level) {
     const lbl = {M:'MYP', H:'DP', U:'Adv'}[app.Level] || app.Level;
     badges += `<span class="leaf-micro">${lbl}</span>`;
@@ -553,6 +582,11 @@ function setAxis(axis) {
     const btn = document.getElementById('btn-' + a);
     if (btn) btn.classList.toggle('active', a === axis);
   });
+  // Auto-switch scope when picking Origin axis
+  if (axis === 'Origin' && currentScope === 'mine') {
+    currentScope = 'all';
+    document.getElementById('btn-scope').textContent = 'All resources';
+  }
   render();
 }
 
