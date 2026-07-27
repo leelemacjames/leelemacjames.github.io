@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Graph — McMurmerings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --fg: #d8d4cf;
+    --fg-dim: #8a857e;
+    --accent: #c5a05e;
+    --accent-dim: #8a7240;
+    --surface: #181818;
+    --surface-hover: #222;
+    --border: #2a2a2a;
+    --radius: 3px;
+
+    /* Hub palette — first branches of the mind map */
+    --hub-teaching:   #5a9ae0;
+    --hub-research:   #e06c5a;
+    --hub-writing:    #c5a05e;
+    --hub-reference:  #4ac9a0;
+    --hub-software:   #b87de0;
+
+    /* Subject palette */
+    --subj-physics:   #e06c5a;
+    --subj-maths:     #5a9ae0;
+    --subj-cs:        #4ac9a0;
+    --subj-inter:     #b87de0;
+    --subj-general:   #8a857e;
+    --subj-econ:      #e0a83a;
+
+    /* Format palette */
+    --fmt-interactive: #5a9ae0;
+    --fmt-essay:       #c5a05e;
+    --fmt-revision:    #e06c5a;
+    --fmt-learner:     #4ac9a0;
+    --fmt-dictionary:  #b87de0;
+    --fmt-quiz:        #e0a83a;
+    --fmt-glossary:    #78bd72;
+    --fmt-notes:       #d48f6a;
+    --fmt-dashboard:   #8a857e;
+    --fmt-tool:        #9d8fd1;
+    --fmt-present:     #54b9c9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────────── */
+  header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header h1 {
+    font-family: 'EB Garamond', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+  header p {
+    margin-top: 0.4rem;
+    color: var(--fg-dim);
+    font-size: 0.82rem;
+    max-width: 64ch;
+  }
+  .stats-line {
+    margin-top: 0.6rem;
+    font-size: 0.68rem;
+    color: var(--fg-dim);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Controls ────────────────────────────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-dim);
+    font-size: 0.72rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .controls button:hover { border-color: var(--accent-dim); color: var(--fg); }
+  .controls button.active { border-color: var(--accent); color: var(--accent); }
+  .controls .sep {
+    width: 1px; height: 1.2rem; background: var(--border); margin: 0 0.3rem;
+  }
+  .search-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-size: 0.78rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius);
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--fg-dim); }
+
+  /* ── Tree ────────────────────────────────────────────────────────── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+  }
+
+  .branch { margin-bottom: 0.1rem; }
+  .branch-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .branch-head:hover { background: var(--surface); }
+  .branch-toggle {
+    font-size: 0.7rem;
+    color: var(--fg-dim);
+    width: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .branch.open > .branch-head .branch-toggle { transform: rotate(90deg); }
+  .branch-name {
+    font-weight: 500;
+    font-size: 0.88rem;
+    flex: 1;
+  }
+  .branch-count {
+    font-size: 0.65rem;
+    color: var(--fg-dim);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .branch-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Nested branches */
+  .sub-branch { padding-left: 1.6rem; }
+  .sub-branch > .branch-head .branch-name { font-size: 0.82rem; font-weight: 400; }
+
+  .leaves {
+    display: none;
+    padding-left: 2.3rem;
+    padding-bottom: 0.25rem;
+  }
+  .branch.open > .leaves { display: block; }
+
+  .leaf {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--fg);
+    font-size: 0.78rem;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+  }
+  .leaf:hover { background: var(--surface-hover); color: var(--accent); }
+  .leaf.dimmed { opacity: 0.18; pointer-events: none; }
+
+  .leaf-tag {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    flex-shrink: 0;
+    color: #0e0e0e;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .leaf-name { flex-shrink: 0; }
+  .leaf-desc {
+    color: var(--fg-dim);
+    font-size: 0.72rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .leaf-badges {
+    display: flex; gap: 0.25rem; flex-shrink: 0; margin-left: auto;
+  }
+  .leaf-micro {
+    font-size: 0.55rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-dim);
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Empty / loading ─────────────────────────────────────────────── */
+  #loading {
+    font-size: 0.78rem;
+    color: var(--fg-dim);
+    padding: 3rem 2rem;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .no-results {
+    color: var(--fg-dim);
+    font-size: 0.82rem;
+    padding: 2rem 0.7rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.65rem;
+    color: var(--fg-dim);
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 600px) {
+    header, main { padding-left: 1rem; padding-right: 1rem; }
+    header h1 { font-size: 1.5rem; }
+    .search-box { width: 100%; }
+    .leaf-desc { display: none; }
+    .leaf-badges { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Knowledge Graph</h1>
+  <p>Every app, essay and tool in the McMurmerings collection, arranged by the axis of your choosing. Click branches to fold; click leaves to open. Search narrows and highlights.</p>
+  <div class="stats-line" id="stats"></div>
+  <div class="controls">
+    <button onclick="setAxis('Hub')" class="active" id="btn-Hub">Hub</button>
+    <button onclick="setAxis('Subject')" id="btn-Subject">Subject</button>
+    <button onclick="setAxis('Domain')" id="btn-Domain">Domain</button>
+    <button onclick="setAxis('Theme')" id="btn-Theme">Theme</button>
+    <button onclick="setAxis('Format')" id="btn-Format">Format</button>
+    <button onclick="setAxis('Series')" id="btn-Series">Series</button>
+    <span class="sep"></span>
+    <button onclick="expandAll()">Expand all</button>
+    <button onclick="collapseAll()">Collapse all</button>
+    <span class="sep"></span>
+    <input class="search-box" id="search" type="text" placeholder="Search apps…" oninput="onSearch()">
+  </div>
+</header>
+
+<div id="loading">Fetching catalogue…</div>
+<main id="tree" style="display:none"></main>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+//  DATA SOURCES
+//  Priority: local catalogue.json (if found), then Google Sheet CSV.
+//  To add entries without touching the sheet, drop them into catalogue.json
+//  with the same column names. The app merges both.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SHEET_ID   = '1OsRlN-hDqrVuPReCq_yKZfF-RZB9Umg5macHqvLz478';
+const SHEET_NAME = 'Extracting+Project+Links+and+URLs';
+const SHEET_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+// ── Colour maps ──────────────────────────────────────────────────────────────
+const HUB_C   = { Teaching:'var(--hub-teaching)', Research:'var(--hub-research)', Writing:'var(--hub-writing)', Reference:'var(--hub-reference)', Software:'var(--hub-software)' };
+const SUBJ_C  = { Physics:'var(--subj-physics)', Maths:'var(--subj-maths)', Mathematics:'var(--subj-maths)', Computer:'var(--subj-cs)', 'Computer Science':'var(--subj-cs)', Interdisciplinary:'var(--subj-inter)', General:'var(--subj-general)', Economics:'var(--subj-econ)' };
+const FMT_C   = { Interactive:'var(--fmt-interactive)', Essay:'var(--fmt-essay)', Revision:'var(--fmt-revision)', Learner:'var(--fmt-learner)', Dictionary:'var(--fmt-dictionary)', Quiz:'var(--fmt-quiz)', Glossary:'var(--fmt-glossary)', Notes:'var(--fmt-notes)', Dashboard:'var(--fmt-dashboard)', Tool:'var(--fmt-tool)', Presentation:'var(--fmt-present)' };
+const FALLBACK = 'var(--fg-dim)';
+
+function tagColour(value, axis) {
+  if (axis === 'Hub')     return HUB_C[value]  || FALLBACK;
+  if (axis === 'Subject') return SUBJ_C[value] || FALLBACK;
+  if (axis === 'Format')  return FMT_C[value]  || FALLBACK;
+  // For Domain/Theme/Series, use a stable hash → hue
+  let h = 0;
+  for (let i = 0; i < value.length; i++) h = (h * 31 + value.charCodeAt(i)) & 0xffff;
+  return `hsl(${h % 360}, 45%, 55%)`;
+}
+
+// ── CSV parsing ──────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = []; let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { if (inQ && text[i+1] === '"') { field += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { row.push(field.trim()); field = ''; }
+    else if ((c === '\n' || c === '\r') && !inQ) {
+      if (field || row.length) { row.push(field.trim()); rows.push(row); }
+      row = []; field = '';
+      if (c === '\r' && text[i+1] === '\n') i++;
+    } else field += c;
+  }
+  if (field || row.length) { row.push(field.trim()); rows.push(row); }
+  return rows;
+}
+
+function cleanUrl(u) {
+  if (!u) return '';
+  u = u.trim().replace(/^['",]+|['",]+$/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+  if (!u) return '';
+  return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+}
+
+function splitTags(v) { return (v||'').split(';').map(s => s.trim()).filter(Boolean); }
+function displayName(a) { return a['Display Name'] || a['App Name'] || ''; }
+
+// ── State ────────────────────────────────────────────────────────────────────
+let allApps = [];
+let currentAxis = 'Hub';
+let searchQuery = '';
+
+const AXES = ['Hub','Subject','Domain','Theme','Format','Series'];
+// For two-level grouping: primary axis → secondary axis
+const SECONDARY = {
+  Hub: 'Subject', Subject: 'Domain', Domain: 'Subject',
+  Theme: 'Subject', Format: 'Subject', Series: 'Subject'
+};
+
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function loadData() {
+  const ldiv = document.getElementById('loading');
+  try {
+    // Try local JSON first
+    let localApps = [];
+    try {
+      const jr = await fetch('catalogue.json');
+      if (jr.ok) localApps = await jr.json();
+    } catch(e) { /* no local file, that's fine */ }
+
+    // Sheet CSV
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) throw new Error('Sheet HTTP ' + res.status);
+    const rows = parseCSV(await res.text());
+    if (rows.length < 2) throw new Error('No data rows');
+    const headers = rows[0].map(h => h.replace(/^"|"$/g, '').trim());
+    const sheetApps = [];
+    for (let i = 1; i < rows.length; i++) {
+      const vals = rows[i];
+      if (vals.length <= 1 && vals[0] === '') continue;
+      const app = {};
+      headers.forEach((h, idx) => {
+        let v = (vals[idx] || '').replace(/^"|"$/g, '').trim();
+        if (h === 'App URL') v = cleanUrl(v);
+        app[h] = v;
+      });
+      if (app['App Name'] && app['App URL']) sheetApps.push(app);
+    }
+
+    // Merge: local entries override by App Name, then append novel ones
+    const byName = new Map(sheetApps.map(a => [a['App Name'], a]));
+    localApps.forEach(a => byName.set(a['App Name'], a));
+    allApps = Array.from(byName.values());
+
+    ldiv.style.display = 'none';
+    document.getElementById('tree').style.display = 'block';
+    updateStats();
+    render();
+  } catch(e) {
+    ldiv.textContent = '⚠ ' + e.message;
+    console.error(e);
+  }
+}
+
+function updateStats() {
+  const n = allApps.length;
+  const hubs = new Set(allApps.map(a => a.Hub).filter(Boolean)).size;
+  const subjs = new Set(allApps.map(a => a.Subject).filter(Boolean)).size;
+  document.getElementById('stats').textContent =
+    `${n} apps · ${subjs} subjects · ${hubs} hubs`;
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+function onSearch() {
+  searchQuery = document.getElementById('search').value.trim().toLowerCase();
+  render();
+}
+
+function matchesSearch(app) {
+  if (!searchQuery) return true;
+  const hay = [
+    displayName(app), app.Description, app.Subject, app.Domain,
+    app.Theme, app.Format, app.Series, app.Hub, app.Tags, app.Type
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(searchQuery);
+}
+
+// ── Grouping ─────────────────────────────────────────────────────────────────
+function groupByFacet(apps, facet) {
+  const map = {};
+  apps.forEach(a => {
+    const tags = splitTags(a[facet]);
+    (tags.length ? tags : ['—']).forEach(t => (map[t] = map[t] || []).push(a));
+  });
+  return Object.entries(map)
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([name, list]) => ({ name, items: list }));
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById('tree');
+  main.innerHTML = '';
+
+  const axis = currentAxis;
+  const secondary = SECONDARY[axis];
+  const groups = groupByFacet(allApps, axis);
+
+  if (!groups.length || (groups.length === 1 && groups[0].name === '—')) {
+    main.innerHTML = '<div class="no-results">No data for this axis yet. Add values to the <em>' + axis + '</em> column in the sheet.</div>';
+    return;
+  }
+
+  groups.forEach(g => {
+    if (g.name === '—' && groups.length > 1) return;  // skip uncategorised unless it's the only group
+    const branch = makeBranch(g.name, g.items, axis, secondary, 0);
+    if (branch) main.appendChild(branch);
+  });
+
+  // Uncategorised at the bottom if there were others
+  const uncat = groups.find(g => g.name === '—');
+  if (uncat && groups.length > 1) {
+    const branch = makeBranch('Uncategorised', uncat.items, axis, secondary, 0);
+    if (branch) main.appendChild(branch);
+  }
+}
+
+function makeBranch(name, items, axis, secondary, depth) {
+  const matchingItems = items.filter(matchesSearch);
+  if (searchQuery && !matchingItems.length) return null;
+
+  const branch = document.createElement('div');
+  branch.className = 'branch' + (depth < 1 || searchQuery ? ' open' : '');
+  if (depth > 0) branch.classList.add('sub-branch');
+
+  const col = tagColour(name, axis);
+  const head = document.createElement('div');
+  head.className = 'branch-head';
+  head.innerHTML = `
+    <span class="branch-toggle">▶</span>
+    <span class="branch-dot" style="background:${col}"></span>
+    <span class="branch-name">${name}</span>
+    <span class="branch-count">${matchingItems.length}</span>
+  `;
+  head.addEventListener('click', () => branch.classList.toggle('open'));
+  branch.appendChild(head);
+
+  const leavesEl = document.createElement('div');
+  leavesEl.className = 'leaves';
+
+  // Two-level: if depth 0 and secondary exists and there are enough items
+  if (depth === 0 && secondary && matchingItems.length > 8) {
+    const subs = groupByFacet(matchingItems, secondary);
+    subs.forEach(sg => {
+      const sub = makeBranch(sg.name, sg.items, secondary, null, 1);
+      if (sub) leavesEl.appendChild(sub);
+    });
+  } else {
+    // Flat leaves
+    matchingItems
+      .sort((a, b) => displayName(a).localeCompare(displayName(b)))
+      .forEach(app => {
+        const leaf = makeLeaf(app, axis);
+        leavesEl.appendChild(leaf);
+      });
+  }
+
+  branch.appendChild(leavesEl);
+  return branch;
+}
+
+function makeLeaf(app, axis) {
+  const a = document.createElement('a');
+  a.className = 'leaf';
+  const isPay = (app.Sub || '').trim().toLowerCase() === 'pay';
+  a.href = isPay ? 'https://leemccullochjames.substack.com/subscribe' : app['App URL'];
+  a.target = '_blank';
+  a.rel = 'noopener';
+
+  // Tag: show the facet that ISN'T the current axis (most informative badge)
+  const tagFacet = axis === 'Format' ? 'Domain'
+                 : axis === 'Domain' ? 'Format'
+                 : axis === 'Hub' ? 'Format'
+                 : 'Format';
+  const tagVal = app[tagFacet] || app.Format || app.Type || '—';
+  const tagCol = tagColour(tagVal, tagFacet);
+
+  const desc = app.Description || '';
+  const shortDesc = desc.length > 80 ? desc.slice(0, 77) + '…' : desc;
+
+  // Micro-badges: show Hub + Level if not the primary axis
+  let badges = '';
+  if (axis !== 'Hub' && app.Hub) badges += `<span class="leaf-micro">${app.Hub}</span>`;
+  if (app.Level) {
+    const lbl = {M:'MYP', H:'DP', U:'Adv'}[app.Level] || app.Level;
+    badges += `<span class="leaf-micro">${lbl}</span>`;
+  }
+  if (isPay) badges += `<span class="leaf-micro">🔒</span>`;
+
+  a.innerHTML = `
+    <span class="leaf-tag" style="background:${tagCol}">${tagVal}</span>
+    <span class="leaf-name">${displayName(app)}</span>
+    <span class="leaf-desc">— ${shortDesc}</span>
+    <span class="leaf-badges">${badges}</span>
+  `;
+
+  if (searchQuery && !matchesSearch(app)) a.classList.add('dimmed');
+  return a;
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────
+function setAxis(axis) {
+  currentAxis = axis;
+  AXES.forEach(a => {
+    const btn = document.getElementById('btn-' + a);
+    if (btn) btn.classList.toggle('active', a === axis);
+  });
+  render();
+}
+
+function expandAll() {
+  document.querySelectorAll('.branch').forEach(b => b.classList.add('open'));
+}
+function collapseAll() {
+  document.querySelectorAll('.branch').forEach(b => b.classList.remove('open'));
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
