@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Kind of Force Depends on Motion? — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f; --bg-panel:#15171b; --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10); --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df; --ink-dim:#a9a297; --ink-faint:#6f6a62;
+    --brass:#c9a15a; --brass-dim:#8a713f; --teal:#6fa2ac; --teal-dim:#3c626b; --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+  body{ margin:0; background: radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%); background-color:var(--bg); color:var(--ink); font-family:var(--serif-body); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+  .kicker{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); }
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } #stagenav{ display:none; } }
+  #stagenav{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:2.4rem 1.2rem 2rem 1.5rem; border-right:1px solid var(--rule); }
+  #stagenav .navlabel{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem; }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{ display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim); font-family:var(--mono); font-size:0.78rem; line-height:1.4; padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem; margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease; }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+  main{ padding:0 1.4rem; min-width:0; }
+  .hero{ padding:4.4rem 0 2.6rem; max-width:760px; }
+  .hero h1{ font-size:clamp(2.1rem, 4.6vw, 3.3rem); font-weight:600; letter-spacing:-0.01em; line-height:1.08; margin-bottom:0.5rem; }
+  .hero .dek{ font-style:italic; color:var(--ink-dim); font-size:1.05rem; margin-bottom:1.6rem; }
+  .absent-box{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.2rem; margin:1.6rem 0; max-width:600px; }
+  .absent-box .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--danger); margin-bottom:0.6rem; display:block; }
+  .absent-box ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-family:var(--mono); font-size:0.85rem; }
+  .absent-box li{ margin-bottom:0.3rem; }
+  .callout{ border-left:2px solid var(--brass-dim); padding:0.2rem 0 0.2rem 1.1rem; margin:1.8rem 0 0.4rem; max-width:600px; }
+  .callout p{ font-style:italic; color:var(--ink-dim); font-size:0.95rem; margin:0; }
+  .stage{ padding:2.2rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.4rem; }
+  .eqn{ display:block; font-family:var(--serif-body); font-style:italic; font-size:1.05rem; color:var(--ink); background:var(--bg-panel); border:1px solid var(--rule); padding:0.85rem 1.1rem; margin:1.1rem 0; max-width:560px; border-radius:2px; }
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; max-width:600px; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+  .aside{ background:var(--bg-panel); border:1px solid var(--rule); padding:1rem 1.2rem; margin:1.2rem 0; max-width:600px; border-radius:2px; }
+  .aside .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.5rem; display:block; }
+  .aside ul{ margin:0.4rem 0 0; padding-left:1.2rem; color:var(--ink-dim); }
+  .aside li{ margin-bottom:0.35rem; }
+
+  .ltool{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.4rem; margin:1.2rem 0 1rem; }
+  .ltool-top{ display:grid; grid-template-columns:1.35fr 1fr; gap:1.6rem; }
+  @media (max-width:720px){ .ltool-top{ grid-template-columns:1fr; } }
+  .ltool-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; }
+  .ltool-figure svg{ width:100%; height:auto; display:block; touch-action:none; }
+  .b-arrow{ stroke:var(--teal); stroke-width:2.4; }
+  .v-arrow{ stroke:var(--brass); stroke-width:2.6; }
+  .axis-label{ font-family:var(--mono); font-size:14px; }
+  .origin-dot{ fill:var(--ink-faint); }
+  .v-handle{ fill:var(--brass); stroke:var(--bg); stroke-width:2; cursor:grab; }
+  .v-handle:active{ cursor:grabbing; }
+
+  .ltool-panel{ display:flex; flex-direction:column; gap:0.85rem; }
+  .ltool-readout{ display:flex; flex-direction:column; gap:0.5rem; font-family:var(--mono); font-size:0.86rem; }
+  .ltool-readout > div{ display:flex; justify-content:space-between; gap:0.6rem; border-bottom:1px dotted var(--rule); padding-bottom:0.4rem; }
+  .ltool-readout .k{ color:var(--ink-dim); }
+  .ltool-readout .v{ color:var(--brass); font-weight:500; }
+  .ltool-verdict{ font-family:var(--serif-body); font-style:italic; color:var(--ink-dim); font-size:0.95rem; min-height:2.6em; margin:0; }
+  .btn{ font-family:var(--mono); font-size:0.78rem; letter-spacing:0.03em; padding:0.55rem 0.9rem; border-radius:2px; cursor:pointer; background:transparent; color:var(--ink); }
+  .btn-ghost{ border:1px solid var(--rule-strong); color:var(--ink-dim); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .ltool-controls{ display:flex; gap:0.6rem; flex-wrap:wrap; }
+
+  details.reveal{ background:var(--bg-panel); border:1px solid var(--rule-strong); border-radius:2px; padding:1rem 1.2rem; margin:1.3rem 0; max-width:620px; }
+  details.reveal summary{ cursor:pointer; font-family:var(--mono); font-size:0.85rem; color:var(--brass); letter-spacing:0.02em; }
+  details.reveal summary::marker{ color:var(--brass-dim); }
+  details.reveal .body{ margin-top:1rem; }
+
+  .dialogue{ margin:1.2rem 0; max-width:560px; }
+  .dialogue p{ font-family:var(--serif-display); font-size:1.1rem; margin:0 0 0.55em; }
+  .dialogue .q{ color:var(--ink-dim); font-style:italic; }
+  .dialogue .a{ color:var(--brass); font-weight:600; margin-left:0.5em; }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>A charge, still</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>Set it moving</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Faster still</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>Parallel to the field</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>Perpendicular</a></li>
+      <li><a href="#stage-6"><span class="n">06</span>Reveal the law</a></li>
+      <li><a href="#extension"><span class="n">·</span>Whose force is it?</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — electromagnetism &amp; frames of reference</p>
+      <h1>What Kind of Force Depends on Motion?</h1>
+      <p class="dek">A charge beside a magnet, a question that sounds almost like a category error, and a law that only makes sense once several stranger ones have been asked first.</p>
+      <p class="measure">By this point, every force met so far has depended on where things are: gravity on mass and separation, a spring on how far it is stretched, the Coulomb force on charge and distance. None of those cares how fast anything is moving. Then a force shows up that depends on velocity, and the honest first reaction is not to calculate it, but to ask how a force could possibly depend on speed at all.</p>
+
+      <div class="absent-box">
+        <span class="label">Deliberately withheld, for now</span>
+        <ul>
+          <li>no formula for the force</li>
+          <li>no assumption that force is the same for every observer</li>
+          <li>no claim that electricity and magnetism are separate ingredients</li>
+        </ul>
+      </div>
+
+      <div class="aside">
+        <span class="label">Questions worth sitting with</span>
+        <ul>
+          <li>What if I stand beside the particle?</li>
+          <li>What if I move along with it?</li>
+          <li>Can one observer see a force while another does not?</li>
+          <li>Is force observer-dependent?</li>
+          <li>Does magnetism exist because of relativity?</li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>A charge, still</h2></div>
+      <p class="measure">Place a stationary charge beside a magnet and nothing happens; there is no force to measure at all. The tool below starts exactly there, with the velocity arrow collapsed to nothing.</p>
+
+      <div class="ltool">
+        <div class="ltool-top">
+          <div class="ltool-figure">
+            <svg id="ltoolSvg" viewBox="0 0 600 360" role="img" aria-labelledby="ltoolTitle ltoolDesc">
+              <title id="ltoolTitle">Velocity and field tool</title>
+              <desc id="ltoolDesc">A fixed magnetic field arrow and a draggable velocity arrow from a common origin, with the resulting force shown as a symbol for out of the page or into the page.</desc>
+              <defs>
+                <marker id="bHead" markerWidth="9" markerHeight="9" refX="5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--teal)"></path></marker>
+                <marker id="vHead" markerWidth="9" markerHeight="9" refX="5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--brass)"></path></marker>
+              </defs>
+              <circle class="origin-dot" cx="300" cy="180" r="3"></circle>
+              <line class="b-arrow" x1="300" y1="180" x2="432" y2="180" marker-end="url(#bHead)"></line>
+              <text class="axis-label" x="440" y="185" fill="var(--teal)">B</text>
+              <line id="vLine" class="v-arrow" x1="300" y1="180" x2="300" y2="180" marker-end="url(#vHead)"></line>
+              <text id="vLabel" class="axis-label" x="300" y="175" fill="var(--brass)"></text>
+              <circle id="vHandle" class="v-handle" cx="300" cy="180" r="9" tabindex="0" role="slider" aria-label="Velocity arrow. Drag the tip, or focus and use the arrow keys, to set the charge's speed and direction."></circle>
+              <g id="fIndicator"></g>
+              <text class="axis-label" x="300" y="330" text-anchor="middle" fill="var(--ink-faint)" font-size="12">force, out of or into the page</text>
+            </svg>
+          </div>
+          <div class="ltool-panel">
+            <div class="ltool-readout">
+              <div><span class="k">speed</span><span class="v" id="speedOut">0.00</span></div>
+              <div><span class="k">angle to B</span><span class="v" id="angleOut">—</span></div>
+              <div><span class="k">force</span><span class="v" id="forceOut">none</span></div>
+            </div>
+            <p class="ltool-verdict" id="verdictOut">Drag the tip of the brass arrow away from the centre.</p>
+            <div class="ltool-controls">
+              <button type="button" id="flipChargeBtn" class="btn btn-ghost">Flip charge sign</button>
+              <button type="button" id="resetVBtn" class="btn btn-ghost">Reset to rest</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>Set it moving</h2></div>
+      <p class="measure">Give the charge some velocity, in almost any direction, by dragging the tip of the brass arrow away from the centre. A force appears where a moment ago there was none, and nothing about the charge itself, its size, its charge, its mass, has changed at all.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>Faster still</h2></div>
+      <p class="measure">Drag the tip further out, keeping roughly the same direction. The force grows. Whatever is generating it scales with speed in a way none of the earlier forces in the course ever did.</p>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>Parallel to the field</h2></div>
+      <p class="measure">Now swing the arrow around until it lies along the teal field arrow, pointing the same way. However far out the tip is dragged, the force collapses back to nothing. Motion alone was not enough; the direction of that motion, relative to the field, turns out to matter just as much as the speed.</p>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>Perpendicular to the field</h2></div>
+      <p class="measure">Swing the arrow around until it stands at a right angle to the field instead. For a given speed, this is where the force is largest, the exact opposite of stage four.</p>
+    </section>
+
+    <section class="stage" id="stage-6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>Only afterwards, reveal the law</h2></div>
+      <p class="measure">Five stages of dragging have already established that the force depends on speed, on the angle between velocity and field, vanishes when they are parallel, and peaks when they are perpendicular. That is enough evidence to make the law below feel inevitable rather than arbitrary.</p>
+      <details class="reveal">
+        <summary>Reveal the law</summary>
+        <div class="body">
+          <div class="eqn"><b>F</b> = q<b>v</b> &times; <b>B</b></div>
+          <div class="eqn">|F| = qvB sin&theta;</div>
+          <p class="measure">The cross product is exactly the shape the tool has been demonstrating by hand: force proportional to speed, proportional to the sine of the angle between velocity and field, zero when they are parallel, maximal when they are perpendicular, and always at right angles to the velocity itself, which is why it appeared here as something happening in front of or behind the page rather than as an arrow drawn in the plane.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="stage" id="extension">
+      <div class="stage-head"><span class="stage-num">·</span><h2>Whose force is it?</h2></div>
+      <div class="dialogue">
+        <p><span class="q">Can one observer see a force while another does not?</span><span class="a">Yes.</span></p>
+        <p><span class="q">Does magnetism exist because of relativity?</span><span class="a">In a real sense, yes.</span></p>
+      </div>
+      <p class="measure">An observer who moves alongside the charge, matching its velocity exactly, sees a charge at rest beside a magnet, and stage one already established that a stationary charge feels no magnetic force whatsoever. The two observers disagree about whether a force is acting on the same charge at the same instant, and reconciling that disagreement is most of what special relativity has to say about electromagnetism: electric and magnetic fields turn out not to be two separate ingredients of nature, but a single electromagnetic field, sliced differently by observers moving at different velocities through it.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  var svg = document.getElementById('ltoolSvg');
+  if(!svg) return;
+
+  var VBW = 600;
+  var CX = 300, CY = 180;
+  var RMAX = 130;
+  var SNAP_DEG = 6;
+
+  var P = { x: CX, y: CY };
+  var qSign = 1;
+
+  var vLine = document.getElementById('vLine');
+  var vLabel = document.getElementById('vLabel');
+  var vHandle = document.getElementById('vHandle');
+  var fIndicator = document.getElementById('fIndicator');
+  var speedOut = document.getElementById('speedOut');
+  var angleOut = document.getElementById('angleOut');
+  var forceOut = document.getElementById('forceOut');
+  var verdictOut = document.getElementById('verdictOut');
+  var flipChargeBtn = document.getElementById('flipChargeBtn');
+  var resetVBtn = document.getElementById('resetVBtn');
+
+  function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  function snapAngle(dx, dy){
+    var mag = Math.hypot(dx, dy);
+    if(mag < 1e-6) return { dx:dx, dy:dy };
+    var deg = Math.atan2(dy, dx) * 180 / Math.PI;
+    var axes = [0, 90, -90, 180, -180];
+    for(var i = 0; i < axes.length; i++){
+      var diff = Math.abs(((deg - axes[i] + 540) % 360) - 180);
+      if(diff < SNAP_DEG){
+        var rad = axes[i] * Math.PI / 180;
+        return { dx: Math.cos(rad) * mag, dy: Math.sin(rad) * mag };
+      }
+    }
+    return { dx:dx, dy:dy };
+  }
+
+  function render(){
+    var rawDx = P.x - CX, rawDy = P.y - CY;
+    var snapped = snapAngle(rawDx, rawDy);
+    var dx = snapped.dx, dy = snapped.dy;
+    var speed = Math.hypot(dx, dy);
+
+    vLine.setAttribute('x2', CX + dx);
+    vLine.setAttribute('y2', CY + dy);
+    vHandle.setAttribute('cx', CX + dx);
+    vHandle.setAttribute('cy', CY + dy);
+    vLabel.setAttribute('x', CX + dx * 0.55);
+    vLabel.setAttribute('y', CY + dy * 0.55 - 8);
+    vLabel.textContent = speed > 6 ? 'v' : '';
+
+    var speedUnits = speed / RMAX;
+    speedOut.textContent = speedUnits.toFixed(2);
+
+    if(speed < 6){
+      angleOut.textContent = '\u2014';
+      forceOut.textContent = 'none';
+      verdictOut.textContent = 'Drag the tip of the brass arrow away from the centre.';
+      fIndicator.innerHTML = drawForceSymbol(0, 1);
+      return;
+    }
+
+    var angleToB = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+    angleOut.textContent = angleToB.toFixed(0) + '\u00b0';
+
+    var perp = dy; // component perpendicular to B (B is horizontal)
+    var forceIndicator = qSign * perp;
+    var forceMag = Math.abs(forceIndicator) / RMAX;
+
+    if(Math.abs(perp) < 6){
+      forceOut.textContent = 'none';
+      verdictOut.textContent = 'Velocity parallel to the field: no force at all, no matter how fast.';
+    } else if(forceIndicator > 0){
+      forceOut.textContent = 'out of the page';
+      verdictOut.textContent = 'A force out of the page, strength ' + forceMag.toFixed(2) + ' in these units.';
+    } else {
+      forceOut.textContent = 'into the page';
+      verdictOut.textContent = 'A force into the page, strength ' + forceMag.toFixed(2) + ' in these units.';
+    }
+    fIndicator.innerHTML = drawForceSymbol(forceIndicator, forceMag);
+  }
+
+  function drawForceSymbol(signedVal, mag){
+    var cx = 300, cy = 260;
+    var r = 6 + clamp(mag, 0, 1) * 22;
+    if(Math.abs(signedVal) < 6){
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="9" fill="none" stroke="var(--ink-faint)" stroke-width="1.3" stroke-dasharray="2 3"></circle>';
+    }
+    if(signedVal > 0){
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(1) + '" fill="none" stroke="var(--brass)" stroke-width="2"></circle>' +
+             '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="var(--brass)"></circle>';
+    }
+    var k = r * 0.62;
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(1) + '" fill="none" stroke="var(--brass)" stroke-width="2"></circle>' +
+           '<line x1="' + (cx-k) + '" y1="' + (cy-k) + '" x2="' + (cx+k) + '" y2="' + (cy+k) + '" stroke="var(--brass)" stroke-width="2"></line>' +
+           '<line x1="' + (cx-k) + '" y1="' + (cy+k) + '" x2="' + (cx+k) + '" y2="' + (cy-k) + '" stroke="var(--brass)" stroke-width="2"></line>';
+  }
+
+  function clientToSvg(clientX, clientY){
+    var rect = svg.getBoundingClientRect();
+    return { x: (clientX - rect.left) * (VBW / rect.width), y: (clientY - rect.top) * (VBW * (360/600) / rect.height) };
+  }
+
+  var dragging = false;
+  vHandle.addEventListener('pointerdown', function(e){
+    dragging = true;
+    try{ vHandle.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  svg.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var pt = clientToSvg(e.clientX, e.clientY);
+    var dx = clamp(pt.x - CX, -RMAX, RMAX);
+    var dy = clamp(pt.y - CY, -RMAX, RMAX);
+    var mag = Math.hypot(dx, dy);
+    if(mag > RMAX){ dx = dx / mag * RMAX; dy = dy / mag * RMAX; }
+    P.x = CX + dx; P.y = CY + dy;
+    render();
+  });
+  window.addEventListener('pointerup', function(){ dragging = false; });
+
+  vHandle.addEventListener('keydown', function(e){
+    var step = 10, handled = true;
+    var dx = P.x - CX, dy = P.y - CY;
+    if(e.key === 'ArrowLeft') dx -= step;
+    else if(e.key === 'ArrowRight') dx += step;
+    else if(e.key === 'ArrowUp') dy -= step;
+    else if(e.key === 'ArrowDown') dy += step;
+    else handled = false;
+    if(handled){
+      e.preventDefault();
+      var mag = Math.hypot(dx, dy);
+      if(mag > RMAX){ dx = dx / mag * RMAX; dy = dy / mag * RMAX; }
+      P.x = CX + dx; P.y = CY + dy;
+      render();
+    }
+  });
+
+  flipChargeBtn.addEventListener('click', function(){ qSign *= -1; render(); });
+  resetVBtn.addEventListener('click', function(){ P.x = CX; P.y = CY; render(); });
+
+  render();
+})();
+</script>
+</body>
+</html>

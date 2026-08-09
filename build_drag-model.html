@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is Drag One Law, or Many? — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f; --bg-panel:#15171b; --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10); --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df; --ink-dim:#a9a297; --ink-faint:#6f6a62;
+    --brass:#c9a15a; --brass-dim:#8a713f; --teal:#6fa2ac; --teal-dim:#3c626b; --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+  body{ margin:0; background: radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%); background-color:var(--bg); color:var(--ink); font-family:var(--serif-body); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+  .kicker{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); }
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } #stagenav{ display:none; } }
+  #stagenav{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:2.4rem 1.2rem 2rem 1.5rem; border-right:1px solid var(--rule); }
+  #stagenav .navlabel{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem; }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{ display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim); font-family:var(--mono); font-size:0.78rem; line-height:1.4; padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem; margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease; }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+  main{ padding:0 1.4rem; min-width:0; }
+  .hero{ padding:4.4rem 0 2.6rem; max-width:760px; }
+  .hero h1{ font-size:clamp(2.1rem, 4.6vw, 3.3rem); font-weight:600; letter-spacing:-0.01em; line-height:1.08; margin-bottom:0.5rem; }
+  .hero .dek{ font-style:italic; color:var(--ink-dim); font-size:1.05rem; margin-bottom:1.6rem; }
+  .absent-box{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.2rem; margin:1.6rem 0; max-width:600px; }
+  .absent-box .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--danger); margin-bottom:0.6rem; display:block; }
+  .absent-box ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-family:var(--mono); font-size:0.85rem; }
+  .absent-box li{ margin-bottom:0.3rem; }
+  .callout{ border-left:2px solid var(--brass-dim); padding:0.2rem 0 0.2rem 1.1rem; margin:1.8rem 0 0.4rem; max-width:600px; }
+  .callout p{ font-style:italic; color:var(--ink-dim); font-size:0.95rem; margin:0; }
+  .stage{ padding:2.2rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.4rem; }
+  .eqn{ display:block; font-family:var(--serif-body); font-style:italic; font-size:1.05rem; color:var(--ink); background:var(--bg-panel); border:1px solid var(--rule); padding:0.85rem 1.1rem; margin:1.1rem 0; max-width:560px; border-radius:2px; }
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; max-width:600px; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:0.55rem; margin:0.9rem 0 1.4rem; }
+  .chip{ font-family:var(--mono); font-size:0.78rem; padding:0.4rem 0.85rem; border:1px solid var(--rule-strong); border-radius:999px; color:var(--ink-dim); }
+  .predictions{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:600px; margin:1.2rem 0 1.4rem; }
+  @media (max-width:560px){ .predictions{ grid-template-columns:1fr; } }
+  .pred-card{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.1rem 1.2rem; }
+  .pred-card .word{ font-family:var(--serif-display); font-size:1.1rem; color:var(--brass); margin-bottom:0.4rem; }
+  .pred-card p{ font-size:0.9rem; color:var(--ink-dim); margin:0; }
+
+  .rig{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.4rem; margin:1.4rem 0 1rem; }
+  .rig-top{ display:grid; grid-template-columns:1.3fr 1fr; gap:1.6rem; }
+  @media (max-width:720px){ .rig-top{ grid-template-columns:1fr; } }
+  .graph-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; padding:0.6rem; }
+  .graph-figure svg{ width:100%; height:auto; display:block; }
+  .graph-axis{ stroke:var(--rule-strong); stroke-width:1; }
+  .graph-label{ font-family:var(--mono); font-size:10px; fill:var(--ink-faint); }
+  .v-trace{ stroke:var(--brass); stroke-width:2.2; fill:none; }
+  .terminal-line{ stroke:var(--teal); stroke-width:1.2; stroke-dasharray:4 4; }
+
+  .rig-panel{ display:flex; flex-direction:column; gap:0.8rem; }
+  .slider-item label{ display:block; font-family:var(--mono); font-size:0.76rem; color:var(--ink-dim); margin-bottom:0.35rem; }
+  .slider-item input[type=range]{ width:100%; accent-color:var(--brass); }
+  .rig-readout{ display:flex; flex-direction:column; gap:0.45rem; font-family:var(--mono); font-size:0.85rem; }
+  .rig-readout > div{ display:flex; justify-content:space-between; gap:0.6rem; border-bottom:1px dotted var(--rule); padding-bottom:0.35rem; }
+  .rig-readout .k{ color:var(--ink-dim); }
+  .rig-readout .v{ color:var(--brass); font-weight:500; }
+  .regime-track{ height:8px; border-radius:4px; background:var(--teal-dim); overflow:hidden; margin-top:0.2rem; }
+  .regime-fill{ height:100%; background:var(--brass); width:0%; transition:width 0.15s linear; }
+  .regime-caption{ font-family:var(--mono); font-size:0.72rem; color:var(--ink-faint); display:flex; justify-content:space-between; margin-top:0.3rem; }
+  .btn{ font-family:var(--mono); font-size:0.78rem; letter-spacing:0.03em; padding:0.55rem 0.9rem; border-radius:2px; cursor:pointer; background:transparent; color:var(--ink); }
+  .btn-primary{ background:var(--brass); color:#17130b; border:1px solid var(--brass); font-weight:500; }
+  .btn-primary:hover{ background:#d8ac68; }
+  .btn-primary:disabled{ opacity:0.5; cursor:default; }
+  .btn-ghost{ border:1px solid var(--rule-strong); color:var(--ink-dim); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .rig-controls-row{ display:flex; gap:0.6rem; flex-wrap:wrap; }
+
+  .m-table-wrap{ margin-top:1.2rem; overflow-x:auto; }
+  table.m-table{ border-collapse:collapse; width:100%; max-width:360px; font-size:0.86rem; font-family:var(--mono); }
+  table.m-table th, table.m-table td{ text-align:left; padding:0.35rem 0.65rem; border-bottom:1px solid var(--rule); }
+  table.m-table th{ color:var(--ink-faint); font-weight:500; text-transform:uppercase; font-size:0.66rem; letter-spacing:0.06em; }
+  .m-empty{ font-family:var(--mono); font-size:0.8rem; color:var(--ink-faint); margin-top:0.5rem; }
+  .implied-out{ font-family:var(--mono); font-size:0.84rem; color:var(--teal); margin-top:0.8rem; min-height:1.3em; }
+
+  details.reveal{ background:var(--bg-panel); border:1px solid var(--rule-strong); border-radius:2px; padding:1rem 1.2rem; margin:1.3rem 0; max-width:620px; }
+  details.reveal summary{ cursor:pointer; font-family:var(--mono); font-size:0.85rem; color:var(--brass); letter-spacing:0.02em; }
+  details.reveal summary::marker{ color:var(--brass-dim); }
+  details.reveal .body{ margin-top:1rem; }
+
+  table.duality{ border-collapse:collapse; width:100%; max-width:560px; margin:1.2rem 0; font-size:0.9rem; }
+  table.duality th, table.duality td{ text-align:left; padding:0.5rem 0.8rem; border-bottom:1px solid var(--rule); }
+  table.duality th{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; }
+  table.duality td:first-child{ font-family:var(--mono); font-size:0.85rem; color:var(--brass-dim); }
+  .closing-note{ max-width:620px; color:var(--ink-dim); font-style:italic; margin-top:1.6rem; }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>Something pushes back</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>Two candidate laws</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Testing by weight</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>Watch it fall</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>The regime that decides</a></li>
+      <li><a href="#stage-6"><span class="n">06</span>Not one law, but a family</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — fluid resistance &amp; the limits of a single exponent</p>
+      <h1>Is Drag One Law, or Many?</h1>
+      <p class="dek">A falling object speeds up until, eventually, it stops speeding up, and the law behind how it got there turns out to depend on how fast it was already going.</p>
+      <p class="measure">Drop something and it accelerates, faster and faster, until at some point it simply stops accelerating and falls the rest of the way at a constant speed. Something must be pushing back exactly as hard as gravity is pulling down, and the natural next question is how that push depends on how fast the object is already moving.</p>
+
+      <div class="absent-box">
+        <span class="label">Deliberately withheld, for now</span>
+        <ul>
+          <li>no assumed exponent for the speed dependence</li>
+          <li>no promise that the same law applies at every speed</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <p>An AI can quote both the linear and the quadratic drag formula correctly without blinking. It cannot tell you, for this particular object at this particular speed, which one is actually the right description, because that is a question about the world, not about the formula.</p>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>Something pushes back</h2></div>
+      <p class="measure">The moment an object stops accelerating, Newton's second law says the forces on it must be balanced. For something falling, that means whatever is resisting the motion has grown to exactly match its weight.</p>
+      <div class="eqn">mg = D(v<sub>t</sub>)</div>
+      <p class="measure">D is left deliberately unspecified here: some function of speed that starts at zero when the object is at rest and grows as it speeds up, catching gravity exactly at the terminal speed, v<sub>t</sub>.</p>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>Two candidate laws</h2></div>
+      <p class="measure">Two very different functions are both defensible starting guesses for D, and both appear, under different names, in different corners of physics.</p>
+      <div class="chip-row">
+        <span class="chip">D(v) = k&#8321;v</span>
+        <span class="chip">D(v) = k&#8322;v&sup2;</span>
+      </div>
+      <p class="measure">The first grows in direct proportion to speed, the kind of resistance associated with a thick, syrupy fluid dragging smoothly against a slow-moving object. The second grows with the square of speed, the kind associated with shoving air out of the way fast enough that its own inertia matters. Nothing said so far picks between them.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>Testing by weight, not by speed</h2></div>
+      <p class="measure">Speed cannot easily be dialled in directly here, since it is the very thing the falling object settles on by itself. Weight can be controlled directly, though, simply by stacking more of the same object together, and the balance condition turns that into an indirect but genuine test.</p>
+      <p class="measure">Writing the candidate law generally as D(v) = kv<sup>n</sup> and solving the balance condition for the terminal speed gives a clean prediction for how v<sub>t</sub> should scale with mass.</p>
+      <div class="eqn">mg = kv<sub>t</sub><sup>n</sup> &nbsp;&nbsp;&rArr;&nbsp;&nbsp; v<sub>t</sub> &prop; m<sup>1&frasl;n</sup></div>
+      <div class="predictions">
+        <div class="pred-card"><p class="word">if n = 1</p><p>doubling the weight should double the terminal speed</p></div>
+        <div class="pred-card"><p class="word">if n = 2</p><p>doubling the weight should scale terminal speed by only &radic;2, about 1.41&times;</p></div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>Watch it fall</h2></div>
+      <p class="measure">The rig below drops a simulated object under gravity and a genuine, honestly integrated drag force, not a shortcut formula for the terminal speed alone. Set the weight, drop it, and watch the speed climb and level off. A small gauge tracks, live, how much of the resistance is currently behaving like the linear candidate and how much like the quadratic one.</p>
+
+      <div class="rig">
+        <div class="rig-top">
+          <div class="graph-figure">
+            <svg id="dragSvg" viewBox="0 0 560 240" role="img" aria-labelledby="dragTitle dragDesc">
+              <title id="dragTitle">Speed against time for a falling object</title>
+              <desc id="dragDesc">A graph of speed against time as a simulated object falls and approaches a terminal speed.</desc>
+              <line class="graph-axis" x1="40" y1="10" x2="40" y2="200"></line>
+              <line class="graph-axis" x1="40" y1="200" x2="540" y2="200"></line>
+              <text class="graph-label" x="44" y="22">speed</text>
+              <text class="graph-label" x="500" y="216">time</text>
+              <line id="terminalLine" class="terminal-line" x1="40" y1="200" x2="540" y2="200"></line>
+              <path id="vTrace" class="v-trace" d=""></path>
+            </svg>
+          </div>
+          <div class="rig-panel">
+            <div class="slider-item">
+              <label for="filtersSlider">weight, as stacked filters (n)</label>
+              <input type="range" id="filtersSlider" min="1" max="12" step="1" value="1">
+            </div>
+            <div class="rig-readout">
+              <div><span class="k">current speed</span><span class="v" id="speedNowOut">0.00</span></div>
+              <div><span class="k">terminal speed, this drop</span><span class="v" id="terminalOut">&mdash;</span></div>
+            </div>
+            <div>
+              <div class="regime-track"><div class="regime-fill" id="regimeFill"></div></div>
+              <div class="regime-caption"><span>linear-dominated</span><span>quadratic-dominated</span></div>
+            </div>
+            <div class="rig-controls-row">
+              <button type="button" id="dropBtn" class="btn btn-primary">Drop</button>
+              <button type="button" id="resetDragBtn" class="btn btn-ghost">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-table-wrap">
+          <table class="m-table" id="dropTable">
+            <thead><tr><th>n (weight)</th><th>terminal speed</th></tr></thead>
+            <tbody id="dropTableBody"></tbody>
+          </table>
+          <p class="m-empty" id="dropEmpty">No drops recorded yet.</p>
+          <p class="implied-out" id="impliedOut"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>The regime that decides</h2></div>
+      <p class="measure">Recorded drops rarely sit cleanly at n = 1 or n = 2; the implied exponent tends to drift somewhere between them, and drift further as heavier or lighter stacks are tried. That drift is not measurement error to be apologised for. It is the honest answer: which candidate dominates depends on how fast the object is actually moving relative to the fluid, a balance usually summarised by a single dimensionless number.</p>
+      <details class="reveal">
+        <summary>Reveal the dimensionless number</summary>
+        <div class="body">
+          <p class="measure">The Reynolds number compares how much the fluid's own inertia matters against how much its internal friction, its viscosity, matters, for an object of a given size moving at a given speed.</p>
+          <div class="eqn">Re = &rho;vL &frasl; &eta;</div>
+          <p class="measure">Very roughly, and depending on the object's shape, small Re favours the linear candidate, large Re favours the quadratic one, and the region in between is where neither fits especially well. A dust mote settling through still air, or a marble sinking through syrup, sits at small Re. A dropped stone, a falling raindrop, or a stack of coffee filters in an ordinary classroom mostly sits at large Re, which is why the quadratic law is usually the more useful default for everyday falling objects, without ever being the only correct answer.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="stage" id="stage-6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>Not one law, but a family</h2></div>
+      <p class="measure">The two candidates from stage two are not really competitors with one true winner; they are the two extremes of a single underlying resistance that behaves like each of them in its own regime.</p>
+      <div class="eqn">D(v) = k&#8321;v + k&#8322;v&sup2;</div>
+      <p class="measure">At low speed the first term wins and the object behaves as though drag were linear; at high speed the second term wins and it behaves as though drag were quadratic; in between, neither pure power law is quite right, and that is exactly the regime the gauge on the rig above was tracking the whole time.</p>
+      <table class="duality">
+        <thead><tr><th>quantity</th><th>kind of law</th></tr></thead>
+        <tbody>
+          <tr><td>Coulomb, Lorentz</td><td>interaction law, fixed exponent</td></tr>
+          <tr><td>drag</td><td>constitutive law, exponent set by regime</td></tr>
+        </tbody>
+      </table>
+      <p class="closing-note">Drag depends on velocity, which puts it, by dependence alone, in the same family as the Lorentz force; but it is a constitutive law, the medium and the object's shape are doing the work, not a universal constant, which puts it much closer in spirit to Ohm's law. The two organising questions, what does it depend on, and what kind of claim is it, do not always point the same way, and drag is the clearest case yet of that mismatch.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  var svg = document.getElementById('dragSvg');
+  if(!svg) return;
+
+  var G = 1.0, K1 = 1.0, K2 = 0.6;
+  var MASS_PER_FILTER = 0.3;
+  var DT = 0.05;
+  var SUBSTEPS_PER_FRAME = 6;
+  var T_MAX = 30, V_MAX = 3.5;
+  var GX0 = 40, GX1 = 540, GY0 = 200, GY1 = 10;
+
+  var filtersSlider = document.getElementById('filtersSlider');
+  var speedNowOut = document.getElementById('speedNowOut');
+  var terminalOut = document.getElementById('terminalOut');
+  var regimeFill = document.getElementById('regimeFill');
+  var dropBtn = document.getElementById('dropBtn');
+  var resetDragBtn = document.getElementById('resetDragBtn');
+  var vTrace = document.getElementById('vTrace');
+  var terminalLine = document.getElementById('terminalLine');
+  var dropTableBody = document.getElementById('dropTableBody');
+  var dropEmpty = document.getElementById('dropEmpty');
+  var impliedOut = document.getElementById('impliedOut');
+
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var drops = [];
+  var running = false;
+  var sim = null;
+
+  function toGX(t){ return GX0 + clamp(t / T_MAX, 0, 1) * (GX1 - GX0); }
+  function toGY(v){ return GY0 + clamp(v / V_MAX, 0, 1) * (GY1 - GY0); }
+  function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  function terminalSpeed(m){
+    var v = 0;
+    for(var i = 0; i < 200; i++){
+      var D = K1*v + K2*v*v;
+      var a = G - D/m;
+      v += a * 0.02;
+      if(v < 0) v = 0;
+    }
+    return v;
+  }
+
+  function freshSim(n){
+    var m = MASS_PER_FILTER * n;
+    return { m:m, v:0, t:0, points:['40,200'], settleCount:0, done:false, predicted: terminalSpeed(m) };
+  }
+
+  function renderStatic(){
+    vTrace.setAttribute('d', '');
+    terminalLine.setAttribute('y1', 200);
+    terminalLine.setAttribute('y2', 200);
+    speedNowOut.textContent = '0.00';
+    terminalOut.textContent = '\u2014';
+    regimeFill.style.width = '0%';
+  }
+
+  function renderTable(){
+    dropTableBody.innerHTML = '';
+    if(drops.length === 0){
+      dropEmpty.style.display = 'block';
+    } else {
+      dropEmpty.style.display = 'none';
+      drops.forEach(function(d){
+        var tr = document.createElement('tr');
+        var tdN = document.createElement('td'); tdN.textContent = d.n;
+        var tdV = document.createElement('td'); tdV.textContent = d.v.toFixed(3);
+        tr.appendChild(tdN); tr.appendChild(tdV);
+        dropTableBody.appendChild(tr);
+      });
+    }
+    if(drops.length >= 2){
+      var a = drops[drops.length - 2], b = drops[drops.length - 1];
+      if(a.n !== b.n){
+        var p = Math.log(b.v / a.v) / Math.log(b.n / a.n);
+        var closer = Math.abs(p - 1) < Math.abs(p - 2) ? 'closer to linear (n=1)' : 'closer to quadratic (n=2)';
+        impliedOut.textContent = 'Between your last two drops, implied exponent \u2248 ' + p.toFixed(2) + ', ' + closer + '.';
+      } else {
+        impliedOut.textContent = 'Try a different weight to compare against your last drop.';
+      }
+    } else {
+      impliedOut.textContent = '';
+    }
+  }
+
+  function tickSim(){
+    var D = K1*sim.v + K2*sim.v*sim.v;
+    var a = G - D/sim.m;
+    sim.v += a * DT;
+    if(sim.v < 0) sim.v = 0;
+    sim.t += DT;
+    sim.points.push(toGX(sim.t).toFixed(1) + ',' + toGY(sim.v).toFixed(1));
+    if(sim.points.length > 900) sim.points.shift();
+    if(Math.abs(a) < 0.003) sim.settleCount += 1; else sim.settleCount = 0;
+  }
+
+  function renderFrame(){
+    vTrace.setAttribute('d', 'M' + sim.points.join(' L'));
+    speedNowOut.textContent = sim.v.toFixed(2);
+    var ratio = K2 * sim.v / K1;
+    var frac = ratio / (1 + ratio);
+    regimeFill.style.width = (frac * 100).toFixed(0) + '%';
+  }
+
+  function step(){
+    if(!running) return;
+    for(var i = 0; i < SUBSTEPS_PER_FRAME; i++){
+      if(sim.settleCount > 20 || sim.t >= T_MAX){ sim.done = true; break; }
+      tickSim();
+    }
+    renderFrame();
+    if(sim.done){
+      running = false;
+      dropBtn.disabled = false;
+      dropBtn.textContent = 'Drop';
+      terminalOut.textContent = sim.v.toFixed(3);
+      terminalLine.setAttribute('y1', toGY(sim.v));
+      terminalLine.setAttribute('y2', toGY(sim.v));
+      var n = parseInt(filtersSlider.value, 10);
+      drops.push({ n:n, v:sim.v });
+      if(drops.length > 8) drops.shift();
+      renderTable();
+      return;
+    }
+    requestAnimationFrame(step);
+  }
+
+  dropBtn.addEventListener('click', function(){
+    var n = parseInt(filtersSlider.value, 10);
+    if(reduced){
+      var predicted = terminalSpeed(MASS_PER_FILTER * n);
+      terminalOut.textContent = predicted.toFixed(3) + ' (animation skipped)';
+      drops.push({ n:n, v:predicted });
+      if(drops.length > 8) drops.shift();
+      renderTable();
+      return;
+    }
+    sim = freshSim(n);
+    running = true;
+    dropBtn.disabled = true;
+    dropBtn.textContent = 'Falling\u2026';
+    terminalOut.textContent = '\u2014';
+    requestAnimationFrame(step);
+  });
+
+  resetDragBtn.addEventListener('click', function(){
+    running = false;
+    sim = null;
+    drops = [];
+    dropBtn.disabled = false;
+    dropBtn.textContent = 'Drop';
+    renderStatic();
+    renderTable();
+  });
+
+  renderStatic();
+  renderTable();
+})();
+</script>
+</body>
+</html>

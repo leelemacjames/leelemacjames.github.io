@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Does It Know Where to Stop? — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f; --bg-panel:#15171b; --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10); --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df; --ink-dim:#a9a297; --ink-faint:#6f6a62;
+    --brass:#c9a15a; --brass-dim:#8a713f; --teal:#6fa2ac; --teal-dim:#3c626b; --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+  body{ margin:0; background: radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%); background-color:var(--bg); color:var(--ink); font-family:var(--serif-body); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+  .kicker{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); }
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } #stagenav{ display:none; } }
+  #stagenav{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:2.4rem 1.2rem 2rem 1.5rem; border-right:1px solid var(--rule); }
+  #stagenav .navlabel{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem; }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{ display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim); font-family:var(--mono); font-size:0.78rem; line-height:1.4; padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem; margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease; }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+  main{ padding:0 1.4rem; min-width:0; }
+  .hero{ padding:4.4rem 0 2.6rem; max-width:760px; }
+  .hero h1{ font-size:clamp(2.1rem, 4.6vw, 3.3rem); font-weight:600; letter-spacing:-0.01em; line-height:1.08; margin-bottom:0.5rem; }
+  .hero .dek{ font-style:italic; color:var(--ink-dim); font-size:1.05rem; margin-bottom:1.6rem; }
+  .absent-box{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.2rem; margin:1.6rem 0; max-width:600px; }
+  .absent-box .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--danger); margin-bottom:0.6rem; display:block; }
+  .absent-box ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-family:var(--mono); font-size:0.85rem; }
+  .absent-box li{ margin-bottom:0.3rem; }
+  .callout{ border-left:2px solid var(--brass-dim); padding:0.2rem 0 0.2rem 1.1rem; margin:1.8rem 0 0.4rem; max-width:600px; }
+  .callout p{ font-style:italic; color:var(--ink-dim); font-size:0.95rem; margin:0; }
+  .aside{ background:var(--bg-panel); border:1px solid var(--rule); padding:1rem 1.2rem; margin:1.2rem 0; max-width:600px; border-radius:2px; }
+  .aside .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.5rem; display:block; }
+  .stage{ padding:2.2rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.4rem; }
+  .eqn{ display:block; font-family:var(--serif-body); font-style:italic; font-size:1.05rem; color:var(--ink); background:var(--bg-panel); border:1px solid var(--rule); padding:0.85rem 1.1rem; margin:1.1rem 0; max-width:560px; border-radius:2px; }
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; max-width:600px; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+
+  .predictions{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:600px; margin:1.2rem 0 1.4rem; }
+  @media (max-width:560px){ .predictions{ grid-template-columns:1fr; } }
+  .pred-card{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.1rem 1.2rem; }
+  .pred-card .word{ font-family:var(--serif-display); font-size:1.05rem; color:var(--brass); margin-bottom:0.4rem; }
+  .pred-card p{ font-size:0.9rem; color:var(--ink-dim); margin:0; }
+
+  .machine{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.4rem; margin:1.4rem 0 1rem; }
+  .machine-controls{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1rem; margin-bottom:1.1rem; }
+  .slider-item label{ display:block; font-family:var(--mono); font-size:0.76rem; color:var(--ink-dim); margin-bottom:0.35rem; }
+  .slider-item input[type=range]{ width:100%; accent-color:var(--brass); }
+  .machine-hint{ font-family:var(--mono); font-size:0.78rem; color:var(--ink-faint); margin:0.3rem 0 1rem; min-height:1.3em; }
+
+  .line-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; padding:1rem; margin-bottom:1rem; }
+  .line-figure svg{ width:100%; height:auto; display:block; }
+  .line-axis{ stroke:var(--rule-strong); stroke-width:1.5; }
+  .line-tick{ stroke:var(--rule-strong); stroke-width:1; }
+  .line-label{ font-family:var(--mono); font-size:11px; }
+
+  .eq-readout{ font-family:var(--mono); font-size:1.3rem; color:var(--brass); margin:0.4rem 0 0.2rem; }
+  .eq-readout .lbl{ font-size:0.7rem; color:var(--ink-dim); display:block; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.2rem; }
+
+  .machine-body{ display:grid; grid-template-columns:1fr 1fr; gap:1.4rem; }
+  @media (max-width:700px){ .machine-body{ grid-template-columns:1fr; } }
+  .readout-panel{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; padding:0.9rem 1rem; font-family:var(--mono); font-size:0.85rem; }
+  .readout-panel > div{ display:flex; justify-content:space-between; gap:0.6rem; border-bottom:1px dotted var(--rule); padding-bottom:0.4rem; margin-bottom:0.4rem; }
+  .readout-panel .k{ color:var(--ink-dim); }
+  .readout-panel .v{ color:var(--ink); }
+  .readout-panel .v.hi{ color:var(--brass); font-weight:500; }
+  .chart-panel{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; padding:0.6rem; }
+  .chart-panel svg{ width:100%; height:auto; display:block; }
+  .chart-axis{ stroke:var(--rule-strong); stroke-width:1; }
+  .chart-label{ font-family:var(--mono); font-size:9px; fill:var(--ink-faint); }
+
+  details.reveal{ background:var(--bg-panel); border:1px solid var(--rule-strong); border-radius:2px; padding:1rem 1.2rem; margin:1.3rem 0; max-width:620px; }
+  details.reveal summary{ cursor:pointer; font-family:var(--mono); font-size:0.85rem; color:var(--brass); letter-spacing:0.02em; }
+  details.reveal summary::marker{ color:var(--brass-dim); }
+  details.reveal .body{ margin-top:1rem; }
+
+  .hierarchy-row{ display:flex; flex-wrap:wrap; align-items:center; gap:0.6rem; margin:1.2rem 0 1.4rem; font-family:var(--mono); font-size:0.86rem; }
+  .hierarchy-row .step{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:999px; padding:0.5rem 1rem; color:var(--ink); }
+  .hierarchy-row .arrow{ color:var(--ink-faint); }
+
+  .contrast-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:600px; margin:1.2rem 0 1.4rem; }
+  @media (max-width:560px){ .contrast-row{ grid-template-columns:1fr; } }
+  .contrast-card{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.1rem 1.2rem; }
+  .contrast-card .word{ font-family:var(--serif-display); font-size:1.05rem; color:var(--brass); margin-bottom:0.4rem; }
+  .contrast-card p{ font-size:0.9rem; color:var(--ink-dim); margin:0; }
+  .closing-note{ max-width:620px; color:var(--ink-dim); font-style:italic; margin-top:1.6rem; }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>Sketch it first</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>What "equilibrium" means</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Not necessarily halfway</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>A model arrives</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>Conservation isn't enough</a></li>
+      <li><a href="#stage-6"><span class="n">06</span>Counting returns</a></li>
+      <li><a href="#stage-7"><span class="n">07</span>The majority verdict</a></li>
+      <li><a href="#stage-8"><span class="n">08</span>Where temperature comes from</a></li>
+      <li><a href="#closing"><span class="n">·</span>The reframing</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — thermal equilibrium &amp; the return of counting</p>
+      <h1>How Does It Know Where to Stop?</h1>
+      <p class="dek">Two temperatures, one insulated box, and a stopping point that turns out to be a matter of overwhelming likelihood rather than any law pushing it there.</p>
+      <p class="measure">A hot copper ball and cold water, sealed together, end up at the same temperature; that much is familiar to the point of being unremarkable. The question worth staying with is how the system knows to stop exactly there, and whether "knows" is even the right word for something that, as this page tries to show, involves no pushing at all.</p>
+
+      <div class="absent-box">
+        <span class="label">Deliberately withheld, for now</span>
+        <ul>
+          <li>no claim that equilibrium simply means equal temperature</li>
+          <li>no formula for the equilibrium temperature, handed over early</li>
+          <li>no assumption that anything pushes energy toward balance</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <p>An AI can state that two objects in thermal contact end up at the same temperature without needing to think about it. It cannot supply the moment a student notices that nothing in the argument below ever pushes anything anywhere at all.</p>
+      </div>
+
+      <div class="aside">
+        <span class="label">Building on</span>
+        <p>This page leans on the counting machine built for <a href="./how-many-ways.html">How Many Ways Can It Look the Same?</a>, and reuses its central idea, &Omega; as a plain count of hidden arrangements, without repeating the earlier stages that earned it.</p>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>Sketch it before you calculate it</h2></div>
+      <p class="measure">A copper ball at 80&deg;C and a beaker of water at 20&deg;C go into an insulated container together. Before any arithmetic, sketch temperature against time for each object.</p>
+      <ul class="plain">
+        <li>Must the two temperatures meet?</li>
+        <li>Must they meet exactly halfway?</li>
+        <li>Could the lines cross?</li>
+        <li>Why does the transfer of energy stop when it does, rather than earlier or later?</li>
+      </ul>
+      <p class="measure">Every one of those questions is answerable from a sketch, well before a single number gets attached to anything.</p>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>What "equilibrium" actually means</h2></div>
+      <p class="measure">The word deserves an operational meaning rather than a restatement of what it is trying to explain.</p>
+      <div class="eqn">Thermal equilibrium: the macrostate in which there is no systematic net transfer of thermal energy between the objects.</div>
+      <p class="measure">That is a subtly stronger claim than saying the two objects simply end up at the same temperature. Equal temperature is how equilibrium gets recognised from the outside; it is not, on its own, an explanation of why the energy stopped moving.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>The first surprise: not necessarily halfway</h2></div>
+      <p class="measure">Two thought experiments, changing only one detail between them.</p>
+      <div class="predictions">
+        <div class="pred-card"><p class="word">case A</p><p>identical cups of water, one at 80&deg;C, one at 20&deg;C. Roughly 50&deg;C feels like a safe prediction.</p></div>
+        <div class="pred-card"><p class="word">case B</p><p>a tiny hot copper ball at 80&deg;C dropped into a large beaker of water at 20&deg;C. Is 50&deg;C still plausible?</p></div>
+      </div>
+      <p class="measure">It plainly is not. A large reservoir of water is harder to move in temperature than a small copper ball is, which is enough to introduce a new idea informally, without reaching for a formula yet: some objects respond to a given amount of energy with a large change in temperature, others with a small one. That responsiveness deserves its own name, thermal capacity, well before it deserves an equation, and well before it gets pulled apart into the two separate ingredients that are actually doing the work.</p>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>A model arrives</h2></div>
+      <p class="measure">Heat lost by the hotter object has to equal heat gained by the cooler one, since the container is insulated and energy has nowhere else to go. Before that balance can be written down properly, thermal capacity itself needs separating into the two ingredients that were quietly bundled together in stage three.</p>
+      <p class="measure">How much a given object resists changing temperature depends on how much of it there is, its mass m, and on a property of the material itself, independent of quantity, called specific heat capacity, c: the energy needed to raise one kilogram of that substance by one kelvin. The object's total heat capacity, C, is simply the product of the two.</p>
+      <div class="eqn">C = mc &nbsp;&nbsp;&nbsp;&nbsp; [C] = J&middot;K<sup>&minus;1</sup> &nbsp;&nbsp;&nbsp;&nbsp; [c] = J&middot;kg<sup>&minus;1</sup>&middot;K<sup>&minus;1</sup></div>
+      <p class="measure">c is intensive, the same number for a teaspoon of copper as for a girder of it; C is extensive, and grows with however much material is actually present. The heat balance is properly a balance of these total capacities.</p>
+      <div class="eqn">m&#8321;c&#8321;(T&#8321; &minus; T<sub>eq</sub>) = m&#8322;c&#8322;(T<sub>eq</sub> &minus; T&#8322;)</div>
+      <div class="eqn">T<sub>eq</sub> = (m&#8321;c&#8321;T&#8321; + m&#8322;c&#8322;T&#8322;) &frasl; (m&#8321;c&#8321; + m&#8322;c&#8322;)</div>
+      <p class="measure">Water's resistance to temperature change in stage three was never only a matter of there being more of it. Water also happens to carry an unusually large specific heat capacity as a material, roughly 4200 J&middot;kg<sup>&minus;1</sup>&middot;K<sup>&minus;1</sup> against copper's roughly 385, nearly eleven times as stubborn kilogram for kilogram, so a bigger mass and a more stubborn material were compounding, not a single effect wearing two names.</p>
+      <p class="measure">The tool below keeps mass and specific heat capacity as separate dials for exactly this reason. The two preset buttons recreate stage three's cases with real figures for copper and water; try pulling the sliders apart from either preset to see which ingredient, mass or material, is doing the work at any given moment.</p>
+
+      <div class="machine">
+        <div class="machine-controls">
+          <div class="slider-item"><label for="t1Slider">object A temperature, T&#8321; (&deg;C)</label><input type="range" id="t1Slider" min="0" max="100" step="1" value="80"></div>
+          <div class="slider-item"><label for="t2Slider">object B temperature, T&#8322; (&deg;C)</label><input type="range" id="t2Slider" min="0" max="100" step="1" value="20"></div>
+          <div class="slider-item"><label for="m1Slider">mass of A, m&#8321; (kg)</label><input type="range" id="m1Slider" min="0.1" max="5" step="0.1" value="0.2"></div>
+          <div class="slider-item"><label for="c1SpecSlider">specific heat of A, c&#8321; (J&middot;kg&#8315;&#185;&middot;K&#8315;&#185;)</label><input type="range" id="c1SpecSlider" min="100" max="4500" step="10" value="385"></div>
+          <div class="slider-item"><label for="m2Slider">mass of B, m&#8322; (kg)</label><input type="range" id="m2Slider" min="0.1" max="5" step="0.1" value="1.0"></div>
+          <div class="slider-item"><label for="c2SpecSlider">specific heat of B, c&#8322; (J&middot;kg&#8315;&#185;&middot;K&#8315;&#185;)</label><input type="range" id="c2SpecSlider" min="100" max="4500" step="10" value="4186"></div>
+        </div>
+        <div class="rig-controls-row" style="margin-bottom:1rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <button type="button" id="presetABtn" class="btn btn-ghost">Case A: equal cups of water</button>
+          <button type="button" id="presetBBtn" class="btn btn-ghost">Case B: copper ball in water</button>
+        </div>
+        <div class="line-figure">
+          <svg id="lineSvg" viewBox="0 0 560 90" role="img" aria-label="Number line from 0 to 100 degrees showing the two starting temperatures and the computed equilibrium temperature">
+            <line class="line-axis" x1="30" y1="50" x2="530" y2="50"></line>
+            <g id="lineTicks"></g>
+            <circle id="t1Dot" cx="30" cy="50" r="7" fill="var(--teal)"></circle>
+            <text id="t1Text" class="line-label" x="30" y="30" text-anchor="middle" fill="var(--teal)">A</text>
+            <circle id="t2Dot" cx="30" cy="50" r="7" fill="var(--brass)"></circle>
+            <text id="t2Text" class="line-label" x="30" y="30" text-anchor="middle" fill="var(--brass)">B</text>
+            <polygon id="eqMark" points="0,0 0,0 0,0" fill="var(--ink)"></polygon>
+            <text id="eqText" class="line-label" x="30" y="82" text-anchor="middle" fill="var(--ink)">eq</text>
+          </svg>
+        </div>
+        <div class="eq-readout"><span class="lbl">equilibrium temperature</span><span id="teqValue">50.0 &deg;C</span></div>
+        <p class="machine-hint" id="capsCaption"></p>
+        <p class="machine-hint" id="eqCaption"></p>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>Energy conservation isn't enough</h2></div>
+      <p class="measure">Imagine, purely as a thought experiment, a Tuesday on which the copper ball spontaneously grows hotter while the water cools further, energy quietly flowing the wrong way. Every joule that leaves the water arrives in the copper; the books balance exactly.</p>
+      <p class="measure">Ask directly: what law of physics has been violated? The honest first guess is usually conservation of energy, and it is worth sitting with the fact that this scenario does not actually break it. Something else is doing the forbidding, and it has nothing to do with bookkeeping.</p>
+    </section>
+
+    <section class="stage" id="stage-6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>Counting returns</h2></div>
+      <p class="measure">Model each object as a handful of tiny energy stores, oscillators, each able to hold any whole number of identical energy quanta. A small copper ball gets a small number of these stores; a larger, more absorbent object gets more of them. The total number of quanta shared between the two objects is fixed, since energy is conserved, but exactly how those quanta split between object A and object B is still completely open.</p>
+      <div class="eqn">q<sub>A</sub> + q<sub>B</sub> = Q &nbsp;&nbsp;&nbsp;&nbsp; &Omega;<sub>total</sub>(q<sub>A</sub>) = &Omega;<sub>A</sub>(q<sub>A</sub>) &times; &Omega;<sub>B</sub>(q<sub>B</sub>)</div>
+      <p class="measure">Move the "inspect this split" slider below through every possible division of the quanta and watch both the individual counts and their product. One split dominates overwhelmingly, and the machine marks it with a ring once you find it, or reveals it for you if you would rather look than search.</p>
+
+      <div class="machine">
+        <div class="machine-controls">
+          <div class="slider-item"><label for="nASlider">oscillators in A (small object)</label><input type="range" id="nASlider" min="1" max="10" step="1" value="5"></div>
+          <div class="slider-item"><label for="nBSlider">oscillators in B (large object)</label><input type="range" id="nBSlider" min="1" max="24" step="1" value="10"></div>
+          <div class="slider-item"><label for="qTotalSlider">total quanta, Q</label><input type="range" id="qTotalSlider" min="4" max="24" step="1" value="15"></div>
+          <div class="slider-item"><label for="qASlider">inspect this split, q<sub>A</sub></label><input type="range" id="qASlider" min="0" max="15" step="1" value="4"></div>
+        </div>
+        <div class="machine-body">
+          <div class="readout-panel">
+            <div><span class="k">&Omega;<sub>A</sub>(q<sub>A</sub>)</span><span class="v" id="omegaAOut">&mdash;</span></div>
+            <div><span class="k">&Omega;<sub>B</sub>(q<sub>B</sub>)</span><span class="v" id="omegaBOut">&mdash;</span></div>
+            <div><span class="k">product, &Omega;<sub>total</sub></span><span class="v hi" id="omegaProdOut">&mdash;</span></div>
+            <div><span class="k">most numerous split</span><span class="v hi" id="bestSplitOut">&mdash;</span></div>
+          </div>
+          <div class="chart-panel">
+            <svg id="thermChart" viewBox="0 0 300 190" role="img" aria-label="Bar chart of the total number of microstates for every possible split of quanta between the two objects"></svg>
+          </div>
+        </div>
+        <p class="machine-hint" id="thermCaption"></p>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-7">
+      <div class="stage-head"><span class="stage-num">07</span><h2>The majority verdict</h2></div>
+      <p class="measure">Three questions, asked in order, of the activity above.</p>
+      <ul class="plain">
+        <li>Did anything push the quanta toward the dominant split? No.</li>
+        <li>Was energy conserved throughout every split that was tried? Yes.</li>
+        <li>So why is that one split special? Because it corresponds to an overwhelming majority of the microscopic ways the energy could have been arranged, while every other split corresponds to comparatively few.</li>
+      </ul>
+      <p class="measure">Nothing in the counting exercise resembles a force. The dominant split wins by sheer numerical weight, the same way a fair coin tossed a thousand times overwhelmingly lands near five hundred heads without anything nudging it there.</p>
+    </section>
+
+    <section class="stage" id="stage-8">
+      <div class="stage-head"><span class="stage-num">08</span><h2>Where temperature comes from</h2></div>
+      <p class="measure">The stages above are enough to explain why equilibrium happens without ever mentioning temperature as a starting assumption. What is left, as an extension rather than a requirement, is to show that equal temperature falls out of the same argument rather than being fed into it.</p>
+      <details class="reveal">
+        <summary>Reveal where equal temperature comes from</summary>
+        <div class="body">
+          <p class="measure">At the dominant split, nudging a small amount of energy dE from A to B changes the total count by nothing at all, since that split was already the maximum.</p>
+          <div class="eqn">d&Omega;<sub>total</sub> = 0 &nbsp;&nbsp;&rArr;&nbsp;&nbsp; d(ln &Omega;<sub>A</sub>)&frasl;dE<sub>A</sub> = d(ln &Omega;<sub>B</sub>)&frasl;dE<sub>B</sub></div>
+          <p class="measure">Recall entropy as k<sub>B</sub> times the logarithm of &Omega;, and the condition becomes a statement about entropy responding equally to added energy on both sides.</p>
+          <div class="eqn">dS<sub>A</sub>&frasl;dE<sub>A</sub> = dS<sub>B</sub>&frasl;dE<sub>B</sub></div>
+          <p class="measure">Thermodynamics defines temperature through exactly this derivative, one over T as how entropy responds to a small addition of energy.</p>
+          <div class="eqn">1&frasl;T &equiv; dS&frasl;dE &nbsp;&nbsp;&rArr;&nbsp;&nbsp; T<sub>A</sub> = T<sub>B</sub> at equilibrium</div>
+          <p class="measure">Equal temperature is not the definition of equilibrium here; it is a consequence, arrived at through a short chain that starts with plain counting.</p>
+          <div class="hierarchy-row">
+            <span class="step">microstates, &Omega;</span><span class="arrow">&rarr;</span>
+            <span class="step">entropy, S = k<sub>B</sub> ln &Omega;</span><span class="arrow">&rarr;</span>
+            <span class="step">temperature, 1&frasl;T = dS&frasl;dE</span>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="stage" id="closing">
+      <div class="stage-head"><span class="stage-num">·</span><h2>The reframing</h2></div>
+      <div class="contrast-row">
+        <div class="contrast-card"><p class="word">observed</p><p>a single temperature, once the copper and the water settle: the macrostate</p></div>
+        <div class="contrast-card"><p class="word">inferred</p><p>an overwhelming majority of hidden energy splits agreeing on roughly that value: the microstates</p></div>
+      </div>
+      <p class="closing-note">Equilibrium, understood this way, has nothing to do with a system running out of things to do; it is the state that almost everything the system could be doing happens to look like from the outside, which takes entropy a long way from disorder and puts it squarely behind an ordinary, stable, boring cup of lukewarm water.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  /* ---------- equilibrium temperature tool ---------- */
+  var t1Slider = document.getElementById('t1Slider');
+  if(t1Slider){
+    var t2Slider = document.getElementById('t2Slider');
+    var m1Slider = document.getElementById('m1Slider');
+    var c1SpecSlider = document.getElementById('c1SpecSlider');
+    var m2Slider = document.getElementById('m2Slider');
+    var c2SpecSlider = document.getElementById('c2SpecSlider');
+    var teqValue = document.getElementById('teqValue');
+    var eqCaption = document.getElementById('eqCaption');
+    var capsCaption = document.getElementById('capsCaption');
+    var presetABtn = document.getElementById('presetABtn');
+    var presetBBtn = document.getElementById('presetBBtn');
+    var t1Dot = document.getElementById('t1Dot');
+    var t2Dot = document.getElementById('t2Dot');
+    var t1Text = document.getElementById('t1Text');
+    var t2Text = document.getElementById('t2Text');
+    var eqMark = document.getElementById('eqMark');
+    var eqText = document.getElementById('eqText');
+    var lineTicks = document.getElementById('lineTicks');
+
+    var LX0 = 30, LX1 = 530;
+    function toX(temp){ return LX0 + (temp / 100) * (LX1 - LX0); }
+
+    var ticksHtml = '';
+    for(var tt = 0; tt <= 100; tt += 20){
+      var x = toX(tt);
+      ticksHtml += '<line class="line-tick" x1="' + x + '" y1="46" x2="' + x + '" y2="54"></line>';
+      ticksHtml += '<text class="line-label" x="' + x + '" y="68" text-anchor="middle" fill="var(--ink-faint)">' + tt + '</text>';
+    }
+    lineTicks.innerHTML = ticksHtml;
+
+    function renderEq(){
+      var T1 = parseFloat(t1Slider.value), T2 = parseFloat(t2Slider.value);
+      var m1 = parseFloat(m1Slider.value), c1 = parseFloat(c1SpecSlider.value);
+      var m2 = parseFloat(m2Slider.value), c2 = parseFloat(c2SpecSlider.value);
+      var C1 = m1 * c1, C2 = m2 * c2;
+      var Teq = (C1 * T1 + C2 * T2) / (C1 + C2);
+
+      var x1 = toX(T1), x2 = toX(T2), xe = toX(Teq);
+      t1Dot.setAttribute('cx', x1);
+      t2Dot.setAttribute('cx', x2);
+      t1Text.setAttribute('x', x1);
+      t2Text.setAttribute('x', x2);
+      eqText.setAttribute('x', xe);
+      eqMark.setAttribute('points', (xe-6)+',66 ' + (xe+6)+',66 ' + xe+',54');
+
+      teqValue.textContent = Teq.toFixed(1) + ' \u00b0C';
+      capsCaption.textContent = 'C\u2081 = m\u2081c\u2081 = ' + C1.toFixed(0) + ' J\u00b7K\u207b\u00b9   \u00b7   C\u2082 = m\u2082c\u2082 = ' + C2.toFixed(0) + ' J\u00b7K\u207b\u00b9';
+
+      var ratio = Math.max(C1, C2) / Math.min(C1, C2);
+      if(ratio < 1.5){
+        eqCaption.textContent = 'Comparable total heat capacities: the equilibrium sits close to the midpoint, case A.';
+      } else {
+        var bigger = C1 > C2 ? 'A' : 'B';
+        eqCaption.textContent = 'Very different total heat capacities: the equilibrium sits close to object ' + bigger + '\u2019s starting temperature, case B.';
+      }
+    }
+    [t1Slider, t2Slider, m1Slider, c1SpecSlider, m2Slider, c2SpecSlider].forEach(function(s){ s.addEventListener('input', renderEq); });
+
+    presetABtn.addEventListener('click', function(){
+      m1Slider.value = 1.0; c1SpecSlider.value = 4186;
+      m2Slider.value = 1.0; c2SpecSlider.value = 4186;
+      renderEq();
+    });
+    presetBBtn.addEventListener('click', function(){
+      m1Slider.value = 0.2; c1SpecSlider.value = 385;
+      m2Slider.value = 1.0; c2SpecSlider.value = 4186;
+      renderEq();
+    });
+
+    renderEq();
+  }
+
+  /* ---------- counting-returns tool ---------- */
+  var nASlider = document.getElementById('nASlider');
+  if(!nASlider) return;
+
+  var nBSlider = document.getElementById('nBSlider');
+  var qTotalSlider = document.getElementById('qTotalSlider');
+  var qASlider = document.getElementById('qASlider');
+  var omegaAOut = document.getElementById('omegaAOut');
+  var omegaBOut = document.getElementById('omegaBOut');
+  var omegaProdOut = document.getElementById('omegaProdOut');
+  var bestSplitOut = document.getElementById('bestSplitOut');
+  var thermChart = document.getElementById('thermChart');
+  var thermCaption = document.getElementById('thermCaption');
+
+  function binomial(N, k){
+    if(k < 0 || k > N) return 0;
+    k = Math.min(k, N - k);
+    var result = 1;
+    for(var i = 1; i <= k; i++){ result = result * (N - k + i) / i; }
+    return Math.round(result);
+  }
+  function omega(q, n){ return binomial(q + n - 1, n - 1); }
+
+  function renderTherm(){
+    var nA = parseInt(nASlider.value, 10);
+    var nB = parseInt(nBSlider.value, 10);
+    var Q = parseInt(qTotalSlider.value, 10);
+    qASlider.max = Q;
+    var qA = Math.min(parseInt(qASlider.value, 10), Q);
+    qASlider.value = qA;
+    var qB = Q - qA;
+
+    var oA = omega(qA, nA), oB = omega(qB, nB);
+    var prod = oA * oB;
+    omegaAOut.textContent = oA.toLocaleString();
+    omegaBOut.textContent = oB.toLocaleString();
+    omegaProdOut.textContent = prod.toLocaleString();
+
+    var values = [], best = -1, bestQ = 0;
+    for(var q = 0; q <= Q; q++){
+      var v = omega(q, nA) * omega(Q - q, nB);
+      values.push(v);
+      if(v > best){ best = v; bestQ = q; }
+    }
+    bestSplitOut.textContent = 'q\u2090 = ' + bestQ;
+
+    var gx0 = 24, gx1 = 290, gy0 = 160, gy1 = 14;
+    var barW = (gx1 - gx0) / (Q + 1);
+    var parts = [
+      '<line class="chart-axis" x1="' + gx0 + '" y1="' + gy1 + '" x2="' + gx0 + '" y2="' + gy0 + '"></line>',
+      '<line class="chart-axis" x1="' + gx0 + '" y1="' + gy0 + '" x2="' + gx1 + '" y2="' + gy0 + '"></line>',
+      '<text class="chart-label" x="' + gx0 + '" y="10">\u03a9 total</text>',
+      '<text class="chart-label" x="' + (gx1-14) + '" y="' + (gy0+14) + '">q\u2090</text>'
+    ];
+    for(var i = 0; i <= Q; i++){
+      var h = best > 0 ? (values[i] / best) * (gy0 - gy1) : 0;
+      var x = gx0 + i * barW + 2;
+      var y = gy0 - h;
+      var w = Math.max(2, barW - 4);
+      var isCurrent = (i === qA);
+      var isBest = (i === bestQ);
+      var fill = isCurrent ? 'var(--brass)' : 'var(--teal-dim)';
+      parts.push('<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + fill + '"></rect>');
+      if(isBest){
+        parts.push('<rect x="' + (x-1.5).toFixed(1) + '" y="' + (y-1.5).toFixed(1) + '" width="' + (w+3).toFixed(1) + '" height="' + (h+3).toFixed(1) + '" fill="none" stroke="var(--ink)" stroke-width="1.4"></rect>');
+      }
+      if(Q <= 16){
+        parts.push('<text class="chart-label" x="' + (x + w/2).toFixed(1) + '" y="' + (gy0 + 10) + '" text-anchor="middle">' + i + '</text>');
+      }
+    }
+    thermChart.innerHTML = parts.join('');
+
+    thermCaption.textContent = (qA === bestQ)
+      ? 'This is the most numerous split: ' + prod.toLocaleString() + ' microscopic arrangements share it.'
+      : 'The ringed bar at q\u2090 = ' + bestQ + ' is the most numerous split; the brass bar is the one currently inspected.';
+  }
+
+  [nASlider, nBSlider, qTotalSlider, qASlider].forEach(function(s){ s.addEventListener('input', renderTherm); });
+  renderTherm();
+})();
+</script>
+</body>
+</html>

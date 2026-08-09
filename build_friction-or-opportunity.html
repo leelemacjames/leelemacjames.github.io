@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friction, or Opportunity? — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f; --bg-panel:#15171b; --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10); --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df; --ink-dim:#a9a297; --ink-faint:#6f6a62;
+    --brass:#c9a15a; --brass-dim:#8a713f; --teal:#6fa2ac; --teal-dim:#3c626b; --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+  body{ margin:0; background: radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%); background-color:var(--bg); color:var(--ink); font-family:var(--serif-body); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+  .kicker{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); }
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } #stagenav{ display:none; } }
+  #stagenav{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:2.4rem 1.2rem 2rem 1.5rem; border-right:1px solid var(--rule); }
+  #stagenav .navlabel{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem; }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{ display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim); font-family:var(--mono); font-size:0.78rem; line-height:1.4; padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem; margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease; }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+  main{ padding:0 1.4rem; min-width:0; }
+  .hero{ padding:4.4rem 0 2.6rem; max-width:760px; }
+  .hero h1{ font-size:clamp(2.1rem, 4.6vw, 3.3rem); font-weight:600; letter-spacing:-0.01em; line-height:1.08; margin-bottom:0.5rem; }
+  .hero .dek{ font-style:italic; color:var(--ink-dim); font-size:1.05rem; margin-bottom:1.6rem; }
+  .absent-box{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.2rem; margin:1.6rem 0; max-width:600px; }
+  .absent-box .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--danger); margin-bottom:0.6rem; display:block; }
+  .absent-box ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-family:var(--mono); font-size:0.85rem; }
+  .absent-box li{ margin-bottom:0.3rem; }
+  .callout{ border-left:2px solid var(--brass-dim); padding:0.2rem 0 0.2rem 1.1rem; margin:1.8rem 0 0.4rem; max-width:600px; }
+  .callout p{ font-style:italic; color:var(--ink-dim); font-size:0.95rem; margin:0; }
+  .stage{ padding:2.2rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.4rem; }
+  .eqn{ display:block; font-family:var(--serif-body); font-style:italic; font-size:1.05rem; color:var(--ink); background:var(--bg-panel); border:1px solid var(--rule); padding:0.85rem 1.1rem; margin:1.1rem 0; max-width:560px; border-radius:2px; }
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; max-width:600px; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+  .aside{ background:var(--bg-panel); border:1px solid var(--rule); padding:1rem 1.2rem; margin:1.2rem 0; max-width:600px; border-radius:2px; }
+  .aside .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.5rem; display:block; }
+
+  .mind-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:600px; margin:1.2rem 0 1.4rem; }
+  @media (max-width:560px){ .mind-row{ grid-template-columns:1fr; } }
+  .mind-card{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.1rem 1.2rem; }
+  .mind-card .word{ font-family:var(--serif-display); font-size:1.25rem; color:var(--brass); margin-bottom:0.4rem; }
+  .mind-card p{ font-size:0.92rem; color:var(--ink-dim); margin:0; }
+
+  .circuit{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.4rem; margin:1.4rem 0 1rem; }
+  .circuit-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; margin-bottom:1.2rem; }
+  .circuit-figure svg{ width:100%; height:auto; display:block; }
+  .branch-label{ font-family:var(--mono); font-size:12px; fill:var(--ink); }
+  .branch-label-dim{ font-family:var(--mono); font-size:11px; fill:var(--ink-dim); }
+  .sliders{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1rem; margin-bottom:1.2rem; }
+  .slider-item label{ display:block; font-family:var(--mono); font-size:0.76rem; color:var(--ink-dim); margin-bottom:0.35rem; }
+  .slider-item input[type=range]{ width:100%; accent-color:var(--brass); }
+  .routes{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  @media (max-width:640px){ .routes{ grid-template-columns:1fr; } }
+  .route-panel{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.1rem; }
+  .route-panel h4{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); margin:0 0 0.6rem; font-weight:500; }
+  .route-line{ font-family:var(--mono); font-size:0.84rem; color:var(--ink-dim); margin:0 0 0.35rem; }
+  .route-line .val{ color:var(--brass); }
+  .route-total{ margin-top:0.6rem; padding-top:0.5rem; border-top:1px solid var(--rule); font-family:var(--mono); font-size:0.9rem; color:var(--ink); }
+  .route-total .val{ color:var(--brass); font-weight:600; }
+
+  table.duality{ border-collapse:collapse; width:100%; max-width:560px; margin:1.2rem 0; font-size:0.9rem; }
+  table.duality th, table.duality td{ text-align:left; padding:0.5rem 0.8rem; border-bottom:1px solid var(--rule); }
+  table.duality th{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; }
+  table.duality td:first-child{ font-family:var(--mono); font-size:0.85rem; color:var(--brass-dim); }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>Two words, one wire</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>Sounds like friction</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Sounds like opportunity</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>Two paths side by side</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>The formula, unmasked</a></li>
+      <li><a href="#stage-6"><span class="n">06</span>The other direction</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — circuits &amp; the grammar of quantities</p>
+      <h1>Friction, or Opportunity?</h1>
+      <p class="dek">Resistance and conductance describe exactly the same wire, yet hand the imagination two different objects to hold onto.</p>
+      <p class="measure">Ohm's law is usually written with resistance, voltage equal to current times resistance, and school physics rarely mentions that this is a choice rather than a necessity. Many physical systems combine more naturally by adding capacities together than by subtracting obstacles apart, and it is worth asking, before reaching for either word, which one actually measures how easily current flows.</p>
+
+      <div class="absent-box">
+        <span class="label">Deliberately withheld, for now</span>
+        <ul>
+          <li>no claim that either quantity is the more real one</li>
+          <li>no formula for combining resistors, handed over in advance</li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>Two words, one wire</h2></div>
+      <p class="measure">Resistance, R, is the familiar one: it appears directly in Ohm's law, and it grows when a wire opposes current more. Its reciprocal is given its own name, conductance, and its own symbol.</p>
+      <div class="eqn">G = 1 &frasl; R</div>
+      <p class="measure">Rewriting Ohm's law in terms of G changes nothing about the physics of the wire, only which quantity is doing the describing.</p>
+      <div class="eqn">V = IR &nbsp;&nbsp;&nbsp;&nbsp; I = GV</div>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>Resistance sounds like friction</h2></div>
+      <p class="measure">Resistance behaves, in the imagination, like something in the way: a narrow doorway, a rough surface, a queue. A large resistance is a large obstacle, and two obstacles placed one after another are simply added, which already feels correct for two narrow doorways in a row.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>Conductance sounds like opportunity</h2></div>
+      <p class="measure">Conductance behaves like something closer to capacity: a wide doorway, an open lane, a route. A large conductance is a large opportunity for current, and two open lanes running side by side plainly offer more total capacity than either alone.</p>
+      <div class="mind-row">
+        <div class="mind-card"><p class="word">resistance</p><p>an obstacle to overcome; obstacles in series pile up naturally</p></div>
+        <div class="mind-card"><p class="word">conductance</p><p>a capacity to use; capacities running in parallel add up naturally</p></div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>Two paths side by side</h2></div>
+      <p class="measure">Set three resistors side by side, as three parallel routes for the same current, and adjust each one below. Watch what happens to the two totals underneath: one is built from a nested fraction that looks faintly mysterious, the other from a plain sum that does not.</p>
+
+      <div class="circuit">
+        <div class="sliders">
+          <div class="slider-item"><label for="r1Slider">R&#8321; (&Omega;)</label><input type="range" id="r1Slider" min="5" max="100" step="1" value="20"></div>
+          <div class="slider-item"><label for="r2Slider">R&#8322; (&Omega;)</label><input type="range" id="r2Slider" min="5" max="100" step="1" value="35"></div>
+          <div class="slider-item"><label for="r3Slider">R&#8323; (&Omega;)</label><input type="range" id="r3Slider" min="5" max="100" step="1" value="60"></div>
+        </div>
+
+        <div class="circuit-figure">
+          <svg viewBox="0 0 500 220" role="img" aria-label="Three resistors arranged as parallel branches between two rails">
+            <line x1="70" y1="20" x2="70" y2="200" stroke="var(--ink-dim)" stroke-width="2"></line>
+            <line x1="430" y1="20" x2="430" y2="200" stroke="var(--ink-dim)" stroke-width="2"></line>
+            <g transform="translate(0,50)">
+              <line x1="70" y1="0" x2="170" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <path d="M170,0 L182,-12 L194,12 L206,-12 L218,12 L230,-12 L242,12 L254,-12 L266,0" fill="none" stroke="var(--brass)" stroke-width="2"></path>
+              <line x1="266" y1="0" x2="430" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <text id="r1Label" class="branch-label" x="218" y="-20" text-anchor="middle">R&#8321;</text>
+              <text id="g1Label" class="branch-label-dim" x="218" y="22" text-anchor="middle">G&#8321;</text>
+            </g>
+            <g transform="translate(0,110)">
+              <line x1="70" y1="0" x2="170" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <path d="M170,0 L182,-12 L194,12 L206,-12 L218,12 L230,-12 L242,12 L254,-12 L266,0" fill="none" stroke="var(--brass)" stroke-width="2"></path>
+              <line x1="266" y1="0" x2="430" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <text id="r2Label" class="branch-label" x="218" y="-20" text-anchor="middle">R&#8322;</text>
+              <text id="g2Label" class="branch-label-dim" x="218" y="22" text-anchor="middle">G&#8322;</text>
+            </g>
+            <g transform="translate(0,170)">
+              <line x1="70" y1="0" x2="170" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <path d="M170,0 L182,-12 L194,12 L206,-12 L218,12 L230,-12 L242,12 L254,-12 L266,0" fill="none" stroke="var(--brass)" stroke-width="2"></path>
+              <line x1="266" y1="0" x2="430" y2="0" stroke="var(--rule-strong)" stroke-width="1.5"></line>
+              <text id="r3Label" class="branch-label" x="218" y="-20" text-anchor="middle">R&#8323;</text>
+              <text id="g3Label" class="branch-label-dim" x="218" y="22" text-anchor="middle">G&#8323;</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="routes">
+          <div class="route-panel">
+            <h4>the resistance-first route</h4>
+            <p class="route-line" id="parResistLine1">1&frasl;R = 1&frasl;R&#8321; + 1&frasl;R&#8322; + 1&frasl;R&#8323;</p>
+            <div class="route-total">R<sub>total</sub> = <span class="val" id="parRTotalOut1">&mdash;</span> &Omega;</div>
+          </div>
+          <div class="route-panel">
+            <h4>the conductance-first route</h4>
+            <p class="route-line" id="parConductLine1">G = G&#8321; + G&#8322; + G&#8323;</p>
+            <div class="route-total">R<sub>total</sub> = 1&frasl;G = <span class="val" id="parRTotalOut2">&mdash;</span> &Omega;</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>The formula, unmasked</h2></div>
+      <p class="measure">The two totals above always agree, because they are the same arithmetic, only performed in a different order. The nested fraction on the left is what "capacities to conduct add" looks like once it has been rewritten back in terms of resistance; the plain sum on the right is what it looks like left alone.</p>
+      <div class="eqn">1&frasl;R<sub>total</sub> = 1&frasl;R&#8321; + 1&frasl;R&#8322; + 1&frasl;R&#8323; &nbsp;&nbsp;&nbsp;&nbsp; &equiv; &nbsp;&nbsp;&nbsp;&nbsp; G<sub>total</sub> = G&#8321; + G&#8322; + G&#8323;</div>
+      <p class="measure">The formula on the left is the one most students meet first, and the one most students find mysterious; the formula on the right is the same statement, translated into the language it was always more comfortable speaking.</p>
+    </section>
+
+    <section class="stage" id="stage-6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>The other direction</h2></div>
+      <p class="measure">Take the very same three resistors from the tool above and imagine them end to end instead of side by side, one path for the current rather than three. The duality flips completely: it is now resistance that adds simply, and conductance that hides behind a nested fraction.</p>
+
+      <table class="duality" id="dualityTable">
+        <thead><tr><th>arrangement</th><th>adds simply</th><th>hides behind a fraction</th></tr></thead>
+        <tbody>
+          <tr><td>series</td><td id="seriesRSimple">R<sub>total</sub> = &mdash;</td><td id="seriesGFrac">G<sub>total</sub> = &mdash;</td></tr>
+          <tr><td>parallel</td><td id="parallelGSimple">G<sub>total</sub> = &mdash;</td><td id="parallelRFrac">R<sub>total</sub> = &mdash;</td></tr>
+        </tbody>
+      </table>
+
+      <p class="measure">Resistance is the natural language of series circuits; conductance is the natural language of parallel ones. Neither quantity is more fundamental than the other; each is simply the one that speaks plainly about a particular kind of arrangement, and reaches for a nested fraction the moment it is asked to describe the other.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  var r1Slider = document.getElementById('r1Slider');
+  var r2Slider = document.getElementById('r2Slider');
+  var r3Slider = document.getElementById('r3Slider');
+  if(!r1Slider) return;
+
+  var r1Label = document.getElementById('r1Label');
+  var r2Label = document.getElementById('r2Label');
+  var r3Label = document.getElementById('r3Label');
+  var g1Label = document.getElementById('g1Label');
+  var g2Label = document.getElementById('g2Label');
+  var g3Label = document.getElementById('g3Label');
+  var parRTotalOut1 = document.getElementById('parRTotalOut1');
+  var parRTotalOut2 = document.getElementById('parRTotalOut2');
+  var seriesRSimple = document.getElementById('seriesRSimple');
+  var seriesGFrac = document.getElementById('seriesGFrac');
+  var parallelGSimple = document.getElementById('parallelGSimple');
+  var parallelRFrac = document.getElementById('parallelRFrac');
+
+  function render(){
+    var R1 = parseFloat(r1Slider.value);
+    var R2 = parseFloat(r2Slider.value);
+    var R3 = parseFloat(r3Slider.value);
+    var G1 = 1/R1, G2 = 1/R2, G3 = 1/R3;
+
+    r1Label.textContent = 'R\u2081 = ' + R1.toFixed(0) + ' \u03a9';
+    r2Label.textContent = 'R\u2082 = ' + R2.toFixed(0) + ' \u03a9';
+    r3Label.textContent = 'R\u2083 = ' + R3.toFixed(0) + ' \u03a9';
+    g1Label.textContent = 'G\u2081 = ' + G1.toFixed(3) + ' S';
+    g2Label.textContent = 'G\u2082 = ' + G2.toFixed(3) + ' S';
+    g3Label.textContent = 'G\u2083 = ' + G3.toFixed(3) + ' S';
+
+    var Gtotal = G1 + G2 + G3;
+    var Rtotal = 1 / Gtotal;
+    parRTotalOut1.textContent = Rtotal.toFixed(2);
+    parRTotalOut2.textContent = Rtotal.toFixed(2);
+
+    var Rseries = R1 + R2 + R3;
+    var Gseries = 1 / (1/G1 + 1/G2 + 1/G3);
+    seriesRSimple.textContent = 'R\u209c\u2092\u209c\u2090\u2097 = ' + Rseries.toFixed(0) + ' \u03a9';
+    seriesGFrac.textContent = 'G\u209c\u2092\u209c\u2090\u2097 = ' + Gseries.toFixed(3) + ' S';
+    parallelGSimple.textContent = 'G\u209c\u2092\u209c\u2090\u2097 = ' + Gtotal.toFixed(3) + ' S';
+    parallelRFrac.textContent = 'R\u209c\u2092\u209c\u2090\u2097 = ' + Rtotal.toFixed(2) + ' \u03a9';
+  }
+
+  [r1Slider, r2Slider, r3Slider].forEach(function(s){ s.addEventListener('input', render); });
+  render();
+})();
+</script>
+</body>
+</html>

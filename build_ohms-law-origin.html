@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Does Ohm's Law Come From? — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f; --bg-panel:#15171b; --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10); --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df; --ink-dim:#a9a297; --ink-faint:#6f6a62;
+    --brass:#c9a15a; --brass-dim:#8a713f; --teal:#6fa2ac; --teal-dim:#3c626b; --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+  body{ margin:0; background: radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%); background-color:var(--bg); color:var(--ink); font-family:var(--serif-body); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+  .kicker{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); }
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } #stagenav{ display:none; } }
+  #stagenav{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:2.4rem 1.2rem 2rem 1.5rem; border-right:1px solid var(--rule); }
+  #stagenav .navlabel{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem; }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{ display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim); font-family:var(--mono); font-size:0.78rem; line-height:1.4; padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem; margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease; }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+  main{ padding:0 1.4rem; min-width:0; }
+  .hero{ padding:4.4rem 0 2.6rem; max-width:760px; }
+  .hero h1{ font-size:clamp(2.1rem, 4.6vw, 3.3rem); font-weight:600; letter-spacing:-0.01em; line-height:1.08; margin-bottom:0.5rem; }
+  .hero .dek{ font-style:italic; color:var(--ink-dim); font-size:1.05rem; margin-bottom:1.6rem; }
+  .absent-box{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem 1.2rem; margin:1.6rem 0; max-width:600px; }
+  .absent-box .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--danger); margin-bottom:0.6rem; display:block; }
+  .absent-box ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-family:var(--mono); font-size:0.85rem; }
+  .absent-box li{ margin-bottom:0.3rem; }
+  .stage{ padding:2.2rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.4rem; }
+  .eqn{ display:block; font-family:var(--serif-body); font-style:italic; font-size:1.05rem; color:var(--ink); background:var(--bg-panel); border:1px solid var(--rule); padding:0.85rem 1.1rem; margin:1.1rem 0; max-width:560px; border-radius:2px; }
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; max-width:600px; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+  .aside{ background:var(--bg-panel); border:1px solid var(--rule); padding:1rem 1.2rem; margin:1.2rem 0; max-width:600px; border-radius:2px; }
+  .aside .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.5rem; display:block; }
+
+  .drift{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.4rem; margin:1.4rem 0 1rem; }
+  .drift-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; }
+  .drift-figure svg{ width:100%; height:auto; display:block; }
+  .field-arrow{ stroke:var(--teal); stroke-width:2; }
+  .track-path{ stroke:var(--brass); stroke-width:1.6; fill:none; opacity:0.9; }
+  .carrier-dot{ fill:var(--brass); }
+  .start-dot{ fill:var(--ink-faint); }
+
+  .drift-controls{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1rem; margin:1.1rem 0; }
+  .slider-item label{ display:block; font-family:var(--mono); font-size:0.76rem; color:var(--ink-dim); margin-bottom:0.35rem; }
+  .slider-item input[type=range]{ width:100%; accent-color:var(--brass); }
+  .drift-readout{ display:flex; flex-direction:column; gap:0.5rem; font-family:var(--mono); font-size:0.86rem; margin-bottom:1rem; }
+  .drift-readout > div{ display:flex; justify-content:space-between; gap:0.6rem; border-bottom:1px dotted var(--rule); padding-bottom:0.4rem; max-width:420px; }
+  .drift-readout .k{ color:var(--ink-dim); }
+  .drift-readout .v{ color:var(--brass); font-weight:500; }
+  .btn{ font-family:var(--mono); font-size:0.78rem; letter-spacing:0.03em; padding:0.55rem 0.9rem; border-radius:2px; cursor:pointer; background:transparent; color:var(--ink); }
+  .btn-primary{ background:var(--brass); color:#17130b; border:1px solid var(--brass); font-weight:500; }
+  .btn-primary:hover{ background:#d8ac68; }
+  .btn-ghost{ border:1px solid var(--rule-strong); color:var(--ink-dim); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .drift-controls-row{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.4rem; }
+  .drift-status{ font-family:var(--mono); font-size:0.8rem; color:var(--teal); min-height:1.3em; margin:0.6rem 0 0; }
+
+  .contrast-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; max-width:600px; margin:1.2rem 0 1.4rem; }
+  @media (max-width:560px){ .contrast-row{ grid-template-columns:1fr; } }
+  .contrast-card{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1.1rem 1.2rem; }
+  .contrast-card .word{ font-family:var(--serif-display); font-size:1.15rem; color:var(--brass); margin-bottom:0.4rem; }
+  .contrast-card p{ font-size:0.9rem; color:var(--ink-dim); margin:0; }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>What makes it drift?</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>What slows it down?</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Watch one carrier</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>From drift to current</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>A constitutive law</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — circuits &amp; constitutive laws</p>
+      <h1>Where Does Ohm's Law Come From?</h1>
+      <p class="dek">A law usually handed over as voltage equals current times resistance, rebuilt instead from a single charge carrier bouncing through a lattice.</p>
+      <p class="measure">Rather than beginning from the finished statement of Ohm's law, it is worth starting much smaller: imagine a single charge carrier inside a conductor, and ask what actually makes it drift, what slows it down, and why it does not simply accelerate forever under a steady field.</p>
+
+      <div class="absent-box">
+        <span class="label">Deliberately withheld, for now</span>
+        <ul>
+          <li>no V = IR handed over as a starting point</li>
+          <li>no assumption that Ohm's law is a law of nature in the way Coulomb's is</li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>What makes it drift?</h2></div>
+      <p class="measure">A charge carrier sitting inside a conductor with an electric field switched on feels a steady force, and a steady force on a free carrier should mean a steadily increasing speed, exactly as it would for any charged particle in empty space.</p>
+      <div class="eqn">a = qE &frasl; m</div>
+      <p class="measure">Left alone, that acceleration would let the carrier's speed grow without bound, which is plainly not what happens in an ordinary wire carrying an ordinary current.</p>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>What slows it down?</h2></div>
+      <p class="measure">A real conductor is not empty space; it is a lattice of atoms, impurities, and vibrations, and a moving carrier collides with that structure over and over, each collision scrambling its direction of travel. Between one collision and the next, the field has only a short average time, called the collision time, to do any accelerating at all.</p>
+      <p class="measure">This is why the carrier does not accelerate forever: it is constantly being reset. What survives, once the resetting is averaged over many collisions, is a small steady drift superimposed on a much larger, randomly directed motion.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>Watch one carrier</h2></div>
+      <p class="measure">The rig below simulates exactly that: a single carrier accelerated by a field, colliding at random intervals set by the average collision time, and reset to a random direction at each collision. Watch the path it traces, and compare the drift it actually achieves against the value the model below predicts.</p>
+
+      <div class="drift">
+        <div class="drift-controls">
+          <div class="slider-item"><label for="eSlider">field strength, E</label><input type="range" id="eSlider" min="0.15" max="1.0" step="0.05" value="0.4"></div>
+          <div class="slider-item"><label for="tauSlider">average collision time, &tau;</label><input type="range" id="tauSlider" min="3" max="12" step="1" value="6"></div>
+        </div>
+
+        <div class="drift-figure">
+          <svg id="driftSvg" viewBox="0 0 600 260" role="img" aria-labelledby="driftTitle driftDesc">
+            <title id="driftTitle">Charge carrier drift simulation</title>
+            <desc id="driftDesc">A single simulated charge carrier moving under a field, colliding at random intervals, tracing a jagged path that drifts slowly toward the field direction.</desc>
+            <line class="field-arrow" x1="20" y1="20" x2="80" y2="20"></line>
+            <text x="86" y="25" font-family="var(--mono)" font-size="13" fill="var(--teal)">E</text>
+            <circle class="start-dot" cx="20" cy="130" r="4"></circle>
+            <path id="trackPath" class="track-path" d=""></path>
+            <circle id="carrierDot" class="carrier-dot" cx="20" cy="130" r="5"></circle>
+          </svg>
+        </div>
+
+        <div class="drift-readout" style="margin-top:1rem;">
+          <div><span class="k">predicted drift velocity</span><span class="v" id="predictedOut">&mdash;</span></div>
+          <div><span class="k">measured drift velocity</span><span class="v" id="measuredOut">&mdash;</span></div>
+          <div><span class="k">collisions so far</span><span class="v" id="collisionsOut">0</span></div>
+        </div>
+        <div class="drift-controls-row">
+          <button type="button" id="runBtn" class="btn btn-primary">Run</button>
+          <button type="button" id="resetDriftBtn" class="btn btn-ghost">Reset</button>
+        </div>
+        <p class="drift-status" id="driftStatus" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>From drift to current</h2></div>
+      <p class="measure">Averaged over the collision time, the field manages to build up a small mean velocity before each reset, called the drift velocity.</p>
+      <div class="eqn">v<sub>d</sub> = a&tau; = qE&tau; &frasl; m</div>
+      <p class="measure">It is convenient to collect the carrier's own properties into a single number called its mobility, so that drift velocity becomes simply mobility times field.</p>
+      <div class="eqn">&mu; = q&tau; &frasl; m &nbsp;&nbsp;&nbsp;&nbsp; v<sub>d</sub> = &mu;E</div>
+      <p class="measure">Current density is charge per carrier, times how many carriers there are per unit volume, times how fast they drift, which lands on a relationship between current density and field that looks exactly like Ohm's law, because it is one.</p>
+      <div class="eqn">J = nqv<sub>d</sub> = nq&mu;E = &sigma;E</div>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>Ohm's law as a constitutive law</h2></div>
+      <p class="measure">Every quantity in that last line except the field itself, the carrier density, the collision time, the mobility, describes a property of the particular material, not a universal constant of nature. That makes Ohm's law a fundamentally different kind of statement from Coulomb's law.</p>
+      <div class="contrast-row">
+        <div class="contrast-card"><p class="word">interaction law</p><p>holds between any two charges, anywhere, built from geometry and a universal constant</p></div>
+        <div class="contrast-card"><p class="word">constitutive law</p><p>describes how a particular material happens to respond, valid only in the regime it was measured in</p></div>
+      </div>
+      <p class="measure">Ohm's law belongs in the second category, alongside Hooke's law for a spring: both are linear-response approximations that hold well over some range of conditions and quietly stop holding outside it, rather than exact statements about the structure of the universe. Treating the two kinds of law as interchangeable, just because both are eventually written down as a tidy equation, is exactly the habit worth unlearning here.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  var svg = document.getElementById('driftSvg');
+  if(!svg) return;
+
+  var THERMAL_SPEED = 4;
+  var START = { x:20, y:130 };
+  var YMIN = 30, YMAX = 230;
+  var XMAX = 580;
+  var MAX_TICKS = 3000;
+  var TICKS_PER_FRAME = 8;
+
+  var eSlider = document.getElementById('eSlider');
+  var tauSlider = document.getElementById('tauSlider');
+  var trackPath = document.getElementById('trackPath');
+  var carrierDot = document.getElementById('carrierDot');
+  var predictedOut = document.getElementById('predictedOut');
+  var measuredOut = document.getElementById('measuredOut');
+  var collisionsOut = document.getElementById('collisionsOut');
+  var runBtn = document.getElementById('runBtn');
+  var resetDriftBtn = document.getElementById('resetDriftBtn');
+  var driftStatus = document.getElementById('driftStatus');
+
+  var state = null;
+  var running = false;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function freshState(){
+    return {
+      x: START.x, y: START.y,
+      vx: THERMAL_SPEED, vy: 0,
+      ticks: 0, collisions: 0,
+      untilCollision: 3,
+      points: [START.x + ',' + START.y],
+      finished: false
+    };
+  }
+
+  function updatePrediction(){
+    var E = parseFloat(eSlider.value);
+    var tau = parseFloat(tauSlider.value);
+    predictedOut.textContent = (E * tau).toFixed(2) + ' px/tick';
+  }
+
+  function renderStatic(){
+    trackPath.setAttribute('d', '');
+    carrierDot.setAttribute('cx', START.x);
+    carrierDot.setAttribute('cy', START.y);
+    measuredOut.textContent = '\u2014';
+    collisionsOut.textContent = '0';
+    driftStatus.textContent = '';
+    updatePrediction();
+  }
+
+  function tick(){
+    var E = parseFloat(eSlider.value);
+    var tau = parseFloat(tauSlider.value);
+
+    state.vx += E;
+    state.x += state.vx * 0.6;
+    state.y += state.vy * 0.6;
+
+    if(state.y < YMIN){ state.y = YMIN; state.vy = Math.abs(state.vy); }
+    if(state.y > YMAX){ state.y = YMAX; state.vy = -Math.abs(state.vy); }
+
+    state.untilCollision -= 1;
+    if(state.untilCollision <= 0){
+      var angle = Math.random() * Math.PI * 2;
+      state.vx = THERMAL_SPEED * Math.cos(angle);
+      state.vy = THERMAL_SPEED * Math.sin(angle);
+      state.collisions += 1;
+      state.untilCollision = Math.max(1, Math.round(-tau * Math.log(Math.random())));
+    }
+
+    state.ticks += 1;
+    if(state.ticks % 2 === 0){
+      state.points.push(state.x.toFixed(1) + ',' + state.y.toFixed(1));
+      if(state.points.length > 1500) state.points.shift();
+    }
+  }
+
+  function renderFrame(){
+    trackPath.setAttribute('d', 'M' + state.points.join(' L'));
+    carrierDot.setAttribute('cx', state.x);
+    carrierDot.setAttribute('cy', state.y);
+    var netX = state.x - START.x;
+    var measured = state.ticks > 0 ? netX / state.ticks : 0;
+    measuredOut.textContent = measured.toFixed(2) + ' px/tick';
+    collisionsOut.textContent = String(state.collisions);
+  }
+
+  function step(){
+    if(!running) return;
+    for(var i = 0; i < TICKS_PER_FRAME; i++){
+      if(state.x >= XMAX || state.ticks >= MAX_TICKS){
+        state.finished = true;
+        break;
+      }
+      tick();
+    }
+    renderFrame();
+    if(state.finished){
+      running = false;
+      runBtn.textContent = 'Run';
+      driftStatus.textContent = state.x >= XMAX
+        ? 'Reached the far side after ' + state.ticks + ' ticks and ' + state.collisions + ' collisions.'
+        : 'Stopped after ' + MAX_TICKS + ' ticks; drift is real but slow at this setting.';
+      return;
+    }
+    requestAnimationFrame(step);
+  }
+
+  runBtn.addEventListener('click', function(){
+    if(!state) state = freshState();
+    if(state.finished) return;
+    if(reduced){
+      var E = parseFloat(eSlider.value), tau = parseFloat(tauSlider.value);
+      var predicted = E * tau;
+      measuredOut.textContent = '\u2248 ' + predicted.toFixed(2) + ' px/tick (animation skipped)';
+      driftStatus.textContent = 'Motion is reduced in this browser; showing the predicted value directly.';
+      return;
+    }
+    running = !running;
+    runBtn.textContent = running ? 'Pause' : 'Run';
+    if(running) requestAnimationFrame(step);
+  });
+
+  resetDriftBtn.addEventListener('click', function(){
+    running = false;
+    runBtn.textContent = 'Run';
+    state = freshState();
+    renderStatic();
+  });
+
+  eSlider.addEventListener('input', updatePrediction);
+  tauSlider.addEventListener('input', updatePrediction);
+
+  state = freshState();
+  renderStatic();
+})();
+</script>
+</body>
+</html>

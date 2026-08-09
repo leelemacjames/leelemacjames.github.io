@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fastest Fall — A Staged Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;0,900;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c0f;
+    --bg-panel:#15171b;
+    --bg-panel-2:#1b1e23;
+    --rule: rgba(233,230,223,0.10);
+    --rule-strong: rgba(233,230,223,0.18);
+    --ink:#e9e6df;
+    --ink-dim:#a9a297;
+    --ink-faint:#6f6a62;
+    --brass:#c9a15a;
+    --brass-dim:#8a713f;
+    --teal:#6fa2ac;
+    --teal-dim:#3c626b;
+    --danger:#c07a63;
+    --serif-display:'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --serif-body:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 1200px 700px at 50% -10%, #16181d 0%, var(--bg) 55%);
+    background-color:var(--bg);
+    color:var(--ink);
+    font-family:var(--serif-body);
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--brass-dim); color:#0b0c0f; }
+
+  a{ color:var(--brass); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--brass);
+    outline-offset:3px;
+  }
+
+  h1,h2,h3{ font-family:var(--serif-display); font-weight:600; margin:0 0 0.4em; color:var(--ink); }
+  p{ margin:0 0 1em; color:var(--ink); }
+  .measure{ max-width:640px; }
+
+  .kicker{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:220px minmax(0,1fr);
+    gap:0;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  @media (max-width:900px){
+    .layout{ grid-template-columns:1fr; }
+    #stagenav{ display:none; }
+  }
+
+  /* ---------- sticky stage nav ---------- */
+  #stagenav{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:2.4rem 1.2rem 2rem 1.5rem;
+    border-right:1px solid var(--rule);
+  }
+  #stagenav .navlabel{
+    font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.9rem;
+  }
+  #stagenav ol{ list-style:none; margin:0; padding:0; }
+  #stagenav li{ margin:0 0 0.55rem; }
+  #stagenav a{
+    display:flex; gap:0.55em; text-decoration:none; color:var(--ink-dim);
+    font-family:var(--mono); font-size:0.78rem; line-height:1.4;
+    padding:0.15rem 0; border-left:2px solid transparent; padding-left:0.6rem;
+    margin-left:-0.62rem; transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  #stagenav a:hover{ color:var(--ink); }
+  #stagenav a.active{ color:var(--brass); border-left-color:var(--brass); }
+  #stagenav .n{ color:var(--ink-faint); }
+  #stagenav a.active .n{ color:var(--brass-dim); }
+
+  main{ padding:0 1.4rem; min-width:0; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:4.4rem 0 2.6rem;
+    max-width:760px;
+  }
+  .hero h1{
+    font-size:clamp(2.3rem, 5vw, 3.6rem);
+    font-weight:600;
+    letter-spacing:-0.01em;
+    line-height:1.05;
+    margin-bottom:0.5rem;
+  }
+  .hero .dek{
+    font-style:italic;
+    color:var(--ink-dim);
+    font-size:1.05rem;
+    margin-bottom:1.6rem;
+  }
+  .hero-figure{ margin:1.6rem 0 2rem; }
+  .hero-figure svg{ width:100%; max-width:420px; height:auto; display:block; }
+  .hero-figure .rule{ stroke:var(--rule-strong); stroke-width:1; stroke-dasharray:3 5; }
+  .hero-figure .pt{ fill:var(--ink); }
+  .hero-figure text{ font-family:var(--mono); font-size:13px; fill:var(--ink-dim); }
+
+  .callout{
+    border-left:2px solid var(--brass-dim);
+    padding:0.2rem 0 0.2rem 1.1rem;
+    margin:1.8rem 0 0.4rem;
+    max-width:600px;
+  }
+  .callout p{ font-style:italic; color:var(--ink-dim); font-size:0.95rem; margin:0; }
+
+  hr.rule{ border:none; border-top:1px solid var(--rule); margin:2.6rem 0; }
+
+  /* ---------- stage sections ---------- */
+  .stage{ padding:2.6rem 0; border-top:1px solid var(--rule); scroll-margin-top:2rem; }
+  .stage:first-of-type{ border-top:none; }
+  .stage-head{ display:flex; align-items:baseline; gap:0.9rem; margin-bottom:1.1rem; }
+  .stage-num{ font-family:var(--mono); font-size:0.85rem; color:var(--brass); white-space:nowrap; }
+  .stage h2{ font-size:1.5rem; }
+
+  .eqn{
+    display:block;
+    font-family:var(--serif-body);
+    font-style:italic;
+    font-size:1.08rem;
+    color:var(--ink);
+    background:var(--bg-panel);
+    border:1px solid var(--rule);
+    padding:0.85rem 1.1rem;
+    margin:1.1rem 0;
+    max-width:560px;
+    border-radius:2px;
+  }
+  .eqn i{ font-style:italic; }
+
+  ul.plain, ol.plain{ padding-left:1.3rem; margin:0.6rem 0 1.1rem; }
+  ul.plain li, ol.plain li{ margin-bottom:0.4rem; }
+
+  .aside{
+    background:var(--bg-panel);
+    border:1px solid var(--rule);
+    padding:1rem 1.2rem;
+    margin:1.2rem 0;
+    max-width:560px;
+    border-radius:2px;
+  }
+  .aside .label{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.5rem; display:block; }
+
+  /* ---------- stage 1 sketches ---------- */
+  .sketch-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+    gap:1rem;
+    margin:1.3rem 0 1.6rem;
+    max-width:640px;
+  }
+  .sketch{
+    background:var(--bg-panel);
+    border:1px solid var(--rule);
+    padding:0.7rem 0.7rem 0.9rem;
+    border-radius:2px;
+  }
+  .sketch svg{ width:100%; height:auto; display:block; }
+  .sketch .cap{ font-family:var(--mono); font-size:0.72rem; color:var(--ink-dim); text-align:center; margin-top:0.5rem; letter-spacing:0.02em; }
+  .sketch .guide{ stroke:var(--rule-strong); stroke-width:1.5; stroke-dasharray:3 4; fill:none; }
+  .sketch .curve{ stroke:var(--brass); stroke-width:2.2; fill:none; }
+  .sketch .node{ fill:var(--ink); }
+
+  /* ---------- interactive tool ---------- */
+  .tool{
+    background:var(--bg-panel);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:1.4rem;
+    margin:1.4rem 0 1.8rem;
+    display:grid;
+    grid-template-columns:1.35fr 1fr;
+    gap:1.6rem;
+  }
+  @media (max-width:720px){ .tool{ grid-template-columns:1fr; } }
+  .tool-figure svg{ width:100%; height:auto; display:block; touch-action:none; }
+  .tool-figure{ background:var(--bg); border:1px solid var(--rule); border-radius:2px; }
+
+  .path-straight{ stroke:var(--teal-dim); stroke-width:2; stroke-dasharray:5 6; fill:none; }
+  .path-bent{ stroke:var(--brass); stroke-width:2.6; fill:none; }
+  .anchor{ fill:var(--ink); }
+  .pt-label{ font-family:var(--mono); font-size:15px; fill:var(--ink-dim); }
+  .bead{ r:6; }
+  .bead-straight{ fill:var(--teal); }
+  .bead-bent{ fill:var(--brass); }
+  .handle{ fill:var(--brass); stroke:var(--bg); stroke-width:2; cursor:grab; }
+  .handle:active{ cursor:grabbing; }
+
+  .tool-panel{ display:flex; flex-direction:column; gap:0.9rem; }
+  .tool-readout{ display:flex; flex-direction:column; gap:0.5rem; font-family:var(--mono); font-size:0.86rem; }
+  .tool-readout > div{ display:flex; justify-content:space-between; gap:0.6rem; border-bottom:1px dotted var(--rule); padding-bottom:0.4rem; }
+  .tool-readout .k{ color:var(--ink-dim); }
+  .tool-readout .v{ color:var(--ink); }
+  .tool-total .k, .tool-total .v{ color:var(--brass); font-weight:500; }
+  .tool-verdict{ font-family:var(--serif-body); font-style:italic; color:var(--ink-dim); font-size:0.95rem; min-height:2.6em; margin:0; }
+
+  .tool-controls{ display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.03em;
+    padding:0.55rem 0.95rem; border-radius:2px; cursor:pointer;
+    background:transparent; color:var(--ink);
+  }
+  .btn-primary{ background:var(--brass); color:#17130b; border:1px solid var(--brass); font-weight:500; }
+  .btn-primary:hover{ background:#d8ac68; }
+  .btn-ghost{ border:1px solid var(--rule-strong); color:var(--ink-dim); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .tool-clock{ font-family:var(--mono); font-size:0.82rem; color:var(--ink-faint); }
+  .tool-status{ font-family:var(--mono); font-size:0.78rem; color:var(--teal); min-height:1.4em; margin:0; }
+  .tool-status.warn{ color:var(--danger); }
+
+  .tool-hint{ font-size:0.85rem; color:var(--ink-faint); margin-top:-0.3rem; }
+
+  /* ---------- family diagram (stage 4) ---------- */
+  .family-figure{ background:var(--bg-panel); border:1px solid var(--rule); border-radius:2px; padding:1rem; max-width:560px; margin:1rem 0 1.4rem; }
+  .family-figure svg{ width:100%; height:auto; display:block; }
+  .family-figure .cap{ font-family:var(--mono); font-size:0.72rem; color:var(--ink-dim); margin-top:0.6rem; }
+
+  /* ---------- stuck grid ---------- */
+  .stuck-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+    gap:1rem;
+    margin-top:1.4rem;
+  }
+  .stuck-card{
+    background:var(--bg-panel);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:1rem 1.1rem;
+  }
+  .stuck-card .idx{ font-family:var(--mono); font-size:0.72rem; color:var(--brass-dim); }
+  .stuck-card .move{ font-family:var(--serif-display); font-weight:600; font-size:1rem; margin:0.35rem 0 0.5rem; }
+  .stuck-card .ex{ font-style:italic; color:var(--ink-dim); font-size:0.9rem; margin:0; }
+
+  /* ---------- reflection ---------- */
+  .notes-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin:1.4rem 0; }
+  @media (max-width:640px){ .notes-grid{ grid-template-columns:1fr; } }
+  .notes-col h3{ font-size:1rem; color:var(--ink-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:0.08em; font-weight:500; margin-bottom:0.9rem; }
+  .stem{ display:block; margin-bottom:1rem; }
+  .stem span{ display:block; font-size:0.92rem; color:var(--ink-dim); margin-bottom:0.3rem; }
+  .stem textarea{
+    width:100%; resize:vertical; min-height:2.6em;
+    background:transparent; border:none; border-bottom:1px solid var(--rule-strong);
+    color:var(--ink); font-family:var(--serif-body); font-size:0.98rem; padding:0.2rem 0;
+  }
+  .tiny-note{ font-size:0.82rem; color:var(--ink-faint); margin-top:0.8rem; }
+
+  /* ---------- handout ---------- */
+  .handout-card{
+    background:var(--bg-panel);
+    border:1px solid var(--rule-strong);
+    border-radius:2px;
+    padding:1.6rem 1.8rem;
+    max-width:640px;
+    margin-top:1.2rem;
+  }
+  .handout-kicker{ font-family:var(--mono); font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); margin-bottom:0.3rem; }
+  .handout-card h3{ font-size:1.6rem; margin-bottom:0.8rem; }
+  .handout-criterion{
+    font-style:italic; color:var(--brass); border-top:1px solid var(--rule); padding-top:0.9rem; margin-top:1rem;
+  }
+
+  .closing-note{ max-width:600px; color:var(--ink-dim); font-style:italic; margin-top:1.6rem; }
+
+  footer{ padding:2.6rem 0 3.4rem; text-align:center; }
+  .stamp{
+    font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint);
+  }
+
+  @media print{
+    #stagenav, .hero-figure, .tool-controls, .tool-clock, #printBtn, .callout{ display:none !important; }
+    body{ background:#fff; color:#111; }
+    .layout{ grid-template-columns:1fr; max-width:100%; }
+    .stage, .stuck-grid, .aside, .sketch-row, .family-figure, .handout-card{ display:none !important; }
+    #reflection, #handout, footer{ display:block !important; }
+    #reflection *, #handout *{ color:#111 !important; }
+    .stem textarea{ border-bottom:1px solid #999; }
+    .handout-card{ border:1px solid #999; background:#fff; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav id="stagenav" aria-label="Stages">
+    <div class="navlabel">Stages</div>
+    <ol>
+      <li><a href="#stage-1"><span class="n">01</span>Qualitative prediction</a></li>
+      <li><a href="#stage-2"><span class="n">02</span>Energy</a></li>
+      <li><a href="#stage-3"><span class="n">03</span>Many small pieces</a></li>
+      <li><a href="#stage-4"><span class="n">04</span>Restricted families</a></li>
+      <li><a href="#stage-5"><span class="n">05</span>Experiment</a></li>
+      <li><a href="#stage-6"><span class="n">06</span>Dimensional analysis</a></li>
+      <li><a href="#stage-7"><span class="n">07</span>Scaling</a></li>
+      <li><a href="#stage-8"><span class="n">08</span>Refraction analogy</a></li>
+      <li><a href="#stage-9"><span class="n">09</span>Numerical optimisation</a></li>
+      <li><a href="#stage-10"><span class="n">10</span>Limiting cases</a></li>
+      <li><a href="#stuck"><span class="n">·</span>Productive stuck</a></li>
+      <li><a href="#reflection"><span class="n">·</span>Field notes</a></li>
+      <li><a href="#handout"><span class="n">·</span>Task sheet</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="kicker">A staged problem — mechanics &amp; variational reasoning</p>
+      <h1>The Fastest Fall</h1>
+      <p class="dek">Two fixed points, a frictionless bead, and a question whose famous answer is, for once, not the point of asking it.</p>
+      <p class="measure">Points A and B are fixed in a vertical plane, with B lower than A. A small bead, released from rest at A, slides without friction along whatever track connects the two points. The question this page stages, in ten stages, is which shape of track carries the bead from A to B in the least possible time.</p>
+
+      <div class="hero-figure">
+        <svg viewBox="0 0 420 220" role="img" aria-label="Diagram of point A above and to the left of point B, joined by a dashed straight reference line">
+          <line class="rule" x1="60" y1="40" x2="360" y2="180"></line>
+          <circle class="pt" cx="60" cy="40" r="4"></circle>
+          <circle class="pt" cx="360" cy="180" r="4"></circle>
+          <text x="44" y="28">A</text>
+          <text x="368" y="196">B</text>
+        </svg>
+      </div>
+
+      <div class="callout">
+        <p>A model can name the answer to this problem in a matter of seconds, and naming it is close to the least useful thing anyone could do with it here. What follows treats that as an opening rather than an obstacle: the intellectual work was never really in knowing the word for the curve, but in building, piece by piece, the reasons for believing one shape beats another.</p>
+      </div>
+    </header>
+
+    <section class="stage" id="stage-1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>Qualitative prediction</h2></div>
+      <p class="measure">The straight line is the shortest path between A and B, though shortest is not the same claim as fastest. A track that drops steeply near the start lets the bead pick up speed early, even if the price of that early speed is a longer road to travel afterward, and this tension between distance and speed is what the rest of the page tries to make precise.</p>
+      <p class="measure">Before any calculation, sketch three candidate tracks: a straight line, a curve that dips well below it, and a curve that stays close above it. Predict which one wins, and hold on to the reasons rather than the guess.</p>
+
+      <div class="sketch-row">
+        <div class="sketch">
+          <svg viewBox="0 0 200 120"><path class="curve" d="M20,20 L180,100"></path><circle class="node" cx="20" cy="20" r="3"></circle><circle class="node" cx="180" cy="100" r="3"></circle></svg>
+          <p class="cap">straight</p>
+        </div>
+        <div class="sketch">
+          <svg viewBox="0 0 200 120"><path class="guide" d="M20,20 L180,100"></path><path class="curve" d="M20,20 Q65,115 180,100"></path><circle class="node" cx="20" cy="20" r="3"></circle><circle class="node" cx="180" cy="100" r="3"></circle></svg>
+          <p class="cap">deep dip</p>
+        </div>
+        <div class="sketch">
+          <svg viewBox="0 0 200 120"><path class="guide" d="M20,20 L180,100"></path><path class="curve" d="M20,20 Q140,35 180,100"></path><circle class="node" cx="20" cy="20" r="3"></circle><circle class="node" cx="180" cy="100" r="3"></circle></svg>
+          <p class="cap">shallow</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>Energy</h2></div>
+      <p class="measure">At a vertical drop <i>h</i> below the start, conservation of energy gives half the bead's mass times its speed squared equal to its weight times that drop, so the mass cancels and the speed depends only on how far below A the bead currently sits.</p>
+      <div class="eqn">½<i>mv</i>² = <i>mgh</i>  &nbsp;&rarr;&nbsp;  <i>v</i> = √(2<i>gh</i>)</div>
+      <p class="measure">This single relation already gives away a surprising amount without touching the shape of the track at all: the mass never mattered, the speed is zero exactly at the starting point, and dropping early is rewarded immediately, since speed depends only on depth already fallen, not on how that depth was reached.</p>
+    </section>
+
+    <section class="stage" id="stage-3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>Time as many small pieces</h2></div>
+      <p class="measure">For a short segment of track of length <i>&Delta;s</i>, travelled at roughly constant speed <i>v</i>, the time taken is just distance over speed, and the total journey time is the sum of all such pieces.</p>
+      <div class="eqn"><i>&Delta;t</i> = <i>&Delta;s</i> ⁄ <i>v</i> &nbsp;&nbsp;&nbsp; <i>T</i> = &Sigma; <i>&Delta;s</i> ⁄ <i>v</i></div>
+      <p class="measure">None of this needs calculus yet. A candidate track drawn on squared paper can be cut into segments by hand, each segment's speed estimated from the energy relation above, and an approximate travel time built up piece by piece. The continuous version below is only the limit of that same sum as the pieces shrink.</p>
+      <div class="eqn"><i>T</i> = &int;<sub>A</sub><sup>B</sup> <i>ds</i> ⁄ <i>v</i></div>
+    </section>
+
+    <section class="stage" id="stage-4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>Compare restricted families</h2></div>
+      <p class="measure">Rather than asking for the best curve among all possible curves, it helps to ask smaller, answerable questions within limited families: straight lines through different intermediate points, two-segment tracks with a movable elbow, circular arcs of varying radius, or power-law curves of the form <i>y</i> &prop; <i>x<sup>n</sup></i> for different <i>n</i>. Each of these turns an apparently impossible problem into a finite, checkable comparison.</p>
+
+      <div class="aside">
+        <span class="label">Try it</span>
+        <p>Drag the point P below to bend the track from A to B into two straight segments. The tool computes each segment's travel time honestly, from the same energy relation above, including cases where the bead simply cannot make it up a final rise. Try to beat the straight line; you will not find the true minimum this way, but you will generate real evidence about what the answer should look like.</p>
+      </div>
+
+      <div class="tool">
+        <div class="tool-figure">
+          <svg id="trackSvg" viewBox="0 0 640 460" role="img" aria-labelledby="toolTitle toolDesc">
+            <title id="toolTitle">Two-segment track builder</title>
+            <desc id="toolDesc">A diagram with fixed points A and B and a draggable point P between them, forming a two-segment track that can be compared against the straight line.</desc>
+            <path id="pathStraight" class="path-straight" d="M90,70 L560,300"></path>
+            <path id="pathBent" class="path-bent" d="M90,70 L255,260 L560,300"></path>
+            <circle id="ptA" class="anchor" cx="90" cy="70" r="5"></circle>
+            <circle id="ptB" class="anchor" cx="560" cy="300" r="5"></circle>
+            <text class="pt-label" x="72" y="54">A</text>
+            <text class="pt-label" x="566" y="326">B</text>
+            <circle id="beadStraight" class="bead bead-straight" cx="90" cy="70" r="6"></circle>
+            <circle id="beadBent" class="bead bead-bent" cx="90" cy="70" r="6"></circle>
+            <circle id="handleP" class="handle" cx="255" cy="260" r="9" tabindex="0" role="slider" aria-label="Point P. Drag, or focus and use arrow keys, to reshape the track."></circle>
+          </svg>
+        </div>
+        <div class="tool-panel">
+          <div class="tool-readout">
+            <div><span class="k">segment A&rarr;P</span><span class="v" id="seg1out">—</span></div>
+            <div><span class="k">segment P&rarr;B</span><span class="v" id="seg2out">—</span></div>
+            <div class="tool-total"><span class="k">your total time</span><span class="v" id="totalOut">—</span></div>
+            <div><span class="k">straight line</span><span class="v" id="straightOut">—</span></div>
+          </div>
+          <p class="tool-verdict" id="verdictOut">Drag P, or tab to it and use the arrow keys.</p>
+          <div class="tool-controls">
+            <button type="button" id="raceBtn" class="btn btn-primary">Race the two beads</button>
+            <button type="button" id="resetBtn" class="btn btn-ghost">Reset P</button>
+            <span class="tool-clock" id="raceClock"></span>
+          </div>
+          <p class="tool-status" id="raceStatus" aria-live="polite"></p>
+          <p class="tool-hint">Teal, dashed: the straight line. Brass, solid: your track.</p>
+        </div>
+      </div>
+
+      <div class="family-figure">
+        <svg viewBox="0 0 400 160" role="img" aria-label="Three circular arcs of different radius, all connecting the same two points">
+          <line x1="30" y1="20" x2="330" y2="140" stroke="var(--rule-strong)" stroke-width="1" stroke-dasharray="3 5"></line>
+          <path d="M30,20 A180,180 0 0,1 330,140" fill="none" stroke="var(--teal)" stroke-width="1.6" opacity="0.75"></path>
+          <path d="M30,20 A320,320 0 0,1 330,140" fill="none" stroke="var(--brass)" stroke-width="2" opacity="0.9"></path>
+          <path d="M30,20 A700,700 0 0,1 330,140" fill="none" stroke="var(--ink-dim)" stroke-width="1.4" opacity="0.7"></path>
+          <circle cx="30" cy="20" r="3.5" fill="var(--ink)"></circle>
+          <circle cx="330" cy="140" r="3.5" fill="var(--ink)"></circle>
+        </svg>
+        <p class="cap">circular arcs of three different radii, one restricted family among several worth comparing</p>
+      </div>
+    </section>
+
+    <section class="stage" id="stage-5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>Experiment</h2></div>
+      <p class="measure">A practical version needs only flexible tubing or track, a marble or ball bearing, a phone camera for timing, and a few fixed endpoints tried with differently shaped tracks. Real apparatus introduces complications that the idealised problem hides: the ball rolls rather than slides, friction is never quite zero, timing has real uncertainty, the track is never quite the shape it was meant to be, and a fast enough bead can leave the track altogether.</p>
+      <p class="measure">Rolling changes the energy balance directly, since some energy goes into spin rather than translation. For a solid sphere of radius <i>r</i>, with moment of inertia <sup>2</sup>&frasl;<sub>5</sub><i>mr</i>² and angular speed &omega; = <i>v</i>⁄<i>r</i>, conservation of energy gives:</p>
+      <div class="eqn">½<i>mv</i>² + ½<i>I&omega;</i>² = <i>mgh</i> &nbsp;&rarr;&nbsp; <i>v</i> = √(10<i>gh</i> ⁄ 7)</div>
+      <p class="measure">The speed-depth relation changes by a constant factor compared with frictionless sliding; whether the optimal shape of track changes as well is itself a fair conjecture to test, not something to assume either way.</p>
+    </section>
+
+    <section class="stage" id="stage-6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>Dimensional analysis</h2></div>
+      <p class="measure">Suppose the whole problem has a vertical scale <i>H</i> and a horizontal scale <i>L</i>. The only quantities available are <i>H</i>, <i>L</i>, and <i>g</i>, and from <i>H</i> and <i>g</i> alone the natural unit of time is √(<i>H</i>⁄<i>g</i>). Whatever the true minimum time turns out to be, it must take the form:</p>
+      <div class="eqn"><i>T</i> = √(<i>H</i>⁄<i>g</i>) &middot; <i>f</i>(<i>L</i>⁄<i>H</i>)</div>
+      <p class="measure">for some dimensionless function <i>f</i> of the aspect ratio alone. This does not find the track, but it rules out every proposed answer that does not have this shape, which is a genuine constraint obtained before any optimisation at all.</p>
+    </section>
+
+    <section class="stage" id="stage-7">
+      <div class="stage-head"><span class="stage-num">07</span><h2>Scaling</h2></div>
+      <p class="measure">If every length in the diagram is stretched by a factor <i>&lambda;</i>, speeds scale as √<i>&lambda;</i>, since speed depends on the square root of a drop, while distances scale as <i>&lambda;</i> itself. Time, being distance over speed, therefore scales as √<i>&lambda;</i> as well.</p>
+      <div class="eqn"><i>T</i>(<i>&lambda;</i>) = √<i>&lambda;</i> &middot; <i>T</i>(1)</div>
+      <p class="measure">A track twice as large in every dimension, with <i>&lambda;</i> = 2, does not take twice as long to traverse; it takes √2, or roughly 1.41, times as long. That is a firm, checkable conclusion, reached without solving the optimisation problem at all.</p>
+    </section>
+
+    <section class="stage" id="stage-8">
+      <div class="stage-head"><span class="stage-num">08</span><h2>Refraction analogy</h2></div>
+      <p class="measure">Divide the vertical region into thin horizontal layers, and within each layer treat the bead's speed as roughly constant. The upper layers, where the bead is still slow, behave like a slow optical medium, while the lower layers behave like a fast one. The fastest route through layered media of this kind is governed by a Snell-like condition, familiar from optics, relating the angle of travel in each layer to the local speed.</p>
+      <div class="eqn">sin&theta; ⁄ <i>v</i> = constant</div>
+      <p class="measure">The natural question this raises is whether the bead's path bends for exactly the reason light bends crossing between media of different propagation speed, which turns a mechanics problem into an optics problem without changing a single equation.</p>
+    </section>
+
+    <section class="stage" id="stage-9">
+      <div class="stage-head"><span class="stage-num">09</span><h2>Numerical optimisation</h2></div>
+      <p class="measure">A track can be represented as a finite set of movable points between A and B; the total time is estimated from the discrete sum introduced in stage three, one point is nudged at a time, and any change that lowers the total is kept. This can be done by hand, in a spreadsheet, in a short script, with a physical string-and-pin model, or through an evolutionary search. Whatever curve emerges is evidence to interpret and question, not an answer to copy down.</p>
+    </section>
+
+    <section class="stage" id="stage-10">
+      <div class="stage-head"><span class="stage-num">10</span><h2>Limiting cases</h2></div>
+      <p class="measure">Any working conjecture should survive being pushed to its edges. Worth testing against each of the following, without necessarily answering all of them:</p>
+      <ul class="plain">
+        <li>What happens as B moves to sit almost directly below A?</li>
+        <li>What happens as B moves very far horizontally from A?</li>
+        <li>Should the track leave A horizontally, vertically, or at some other angle?</li>
+        <li>Can a track usefully dip below the level of B and rise again to reach it?</li>
+        <li>Would a sharp corner, a cusp, in the track ever be physically sensible?</li>
+        <li>Can an arbitrarily steep initial drop make the total time arbitrarily small?</li>
+      </ul>
+    </section>
+
+    <section class="stage" id="stuck">
+      <div class="stage-head"><span class="stage-num">·</span><h2>Seven ways to be productively stuck</h2></div>
+      <p class="measure">Being unable to solve the full problem is not the same as having nothing to show for the attempt. Each of the moves below counts as real progress on its own terms.</p>
+      <div class="stuck-grid">
+        <div class="stuck-card"><span class="idx">01</span><p class="move">Eliminate a possibility</p><p class="ex">"The straight line is not always fastest."</p></div>
+        <div class="stuck-card"><span class="idx">02</span><p class="move">Identify an invariant</p><p class="ex">"The mass of the bead does not matter."</p></div>
+        <div class="stuck-card"><span class="idx">03</span><p class="move">Identify a scale</p><p class="ex">"The characteristic time is proportional to √(<i>H</i>⁄<i>g</i>)."</p></div>
+        <div class="stuck-card"><span class="idx">04</span><p class="move">Produce evidence</p><p class="ex">"A two-segment path with a steep first section beats the direct line here."</p></div>
+        <div class="stuck-card"><span class="idx">05</span><p class="move">Translate the problem</p><p class="ex">"This resembles light crossing layers where speed varies with depth."</p></div>
+        <div class="stuck-card"><span class="idx">06</span><p class="move">Refine the model</p><p class="ex">"A real marble rolls, so rotational kinetic energy has to be included."</p></div>
+        <div class="stuck-card"><span class="idx">07</span><p class="move">Formulate the missing question</p><p class="ex">"I need to know how changing a small piece of the path changes the total time."</p></div>
+      </div>
+    </section>
+
+    <section class="stage" id="reflection">
+      <div class="stage-head"><span class="stage-num">·</span><h2>Field notes</h2></div>
+      <p class="measure">A short written record, completed before any whole-class discussion and again afterward, keeps a model honest enough to be revised. The spoken phase generates and argues over possibilities; the written phase pins the current model down long enough to be inspected.</p>
+      <div class="notes-grid">
+        <div class="notes-col">
+          <h3>Before discussion</h3>
+          <label class="stem"><span>I first assumed that&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>This assumption became doubtful when&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>One quantity I can calculate is&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>A smaller version of the problem I could investigate is&hellip;</span><textarea rows="2"></textarea></label>
+        </div>
+        <div class="notes-col">
+          <h3>After discussion</h3>
+          <label class="stem"><span>Another person's idea changed my model because&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>My current conjecture is&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>The strongest evidence I have is&hellip;</span><textarea rows="2"></textarea></label>
+          <label class="stem"><span>The part I still cannot connect is&hellip;</span><textarea rows="2"></textarea></label>
+        </div>
+      </div>
+      <button type="button" id="printBtn" class="btn btn-ghost">Print these notes and the task sheet</button>
+      <p class="tiny-note">Nothing typed here is saved once the page closes; print or copy anything worth keeping.</p>
+    </section>
+
+    <section class="stage" id="handout">
+      <div class="stage-head"><span class="stage-num">·</span><h2>The classroom formulation</h2></div>
+      <div class="handout-card">
+        <p class="handout-kicker">Task sheet</p>
+        <h3>The Fastest Fall</h3>
+        <p>A bead starts from rest at A and must reach the lower point B by sliding along a frictionless track. Design the fastest possible track.</p>
+        <p><strong>You are not expected to find the exact curve.</strong> Your task is to establish as many defensible facts about it as possible.</p>
+        <p>You may:</p>
+        <ul class="plain">
+          <li>compare particular tracks;</li>
+          <li>derive relevant equations;</li>
+          <li>construct an experiment;</li>
+          <li>build a numerical model;</li>
+          <li>use dimensional analysis;</li>
+          <li>examine limiting cases;</li>
+          <li>identify analogies with other areas of physics;</li>
+          <li>formulate conjectures;</li>
+          <li>disprove plausible claims.</li>
+        </ul>
+        <p class="handout-criterion">Every substantial claim must be accompanied by a reason, calculation, measurement, diagram, simulation, or counterexample.</p>
+      </div>
+      <p class="closing-note">This is, in miniature, the same discipline that keeps an unsolved problem in number theory worth returning to for decades: the point was never to arrive at the named result by the end of the lesson, but to leave with more true things established than the class walked in with.</p>
+    </section>
+
+    <footer>
+      <p class="stamp">Constructed by Silicon &middot; Anthropic Claude — Architect Carbon &middot; LeeMcCullochJames</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- stage nav scrollspy ---------------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#stagenav a'));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-10% 0px -75% 0px', threshold:0 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  /* ---------------- two-segment track tool ---------------- */
+  var svg = document.getElementById('trackSvg');
+  if(!svg) return;
+
+  var G = 9.8;
+  var SCALE = 0.02; // metres per svg unit
+  var VBW = 640, VBH = 460;
+  var A = { x:90, y:70 };
+  var B = { x:560, y:300 };
+  var DEFAULT_P = { x:255, y:260 };
+  var P = { x:DEFAULT_P.x, y:DEFAULT_P.y };
+  var BOUNDS = { minX:120, maxX:530, minY:90, maxY:430 };
+
+  var pathBent = document.getElementById('pathBent');
+  var handle = document.getElementById('handleP');
+  var beadStraight = document.getElementById('beadStraight');
+  var beadBent = document.getElementById('beadBent');
+  var seg1out = document.getElementById('seg1out');
+  var seg2out = document.getElementById('seg2out');
+  var totalOut = document.getElementById('totalOut');
+  var straightOut = document.getElementById('straightOut');
+  var verdictOut = document.getElementById('verdictOut');
+  var raceBtn = document.getElementById('raceBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var raceClock = document.getElementById('raceClock');
+  var raceStatus = document.getElementById('raceStatus');
+  var printBtn = document.getElementById('printBtn');
+
+  function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+  function toM(pt){ return { x: pt.x * SCALE, y: pt.y * SCALE }; }
+  function fmt(n){ return isFinite(n) ? n.toFixed(2) + ' s' : '\u2014'; }
+
+  function segCalc(p0, p1, v0){
+    var dx = p1.x - p0.x, dy = p1.y - p0.y;
+    var s = Math.sqrt(dx*dx + dy*dy);
+    if(s < 1e-6) return { t:0, v1:v0, a:0, s:0, ok:true };
+    var sinT = dy / s;
+    var a = G * sinT;
+    if(Math.abs(a) < 1e-6){
+      if(v0 < 1e-6) return { t:Infinity, v1:0, a:a, s:s, ok:false };
+      return { t: s / v0, v1: v0, a:a, s:s, ok:true };
+    }
+    var disc = v0*v0 + 2*a*s;
+    if(disc < 0) return { t:Infinity, v1:0, a:a, s:s, ok:false };
+    var t = (-v0 + Math.sqrt(disc)) / a;
+    if(!isFinite(t) || t < 0) return { t:Infinity, v1:0, a:a, s:s, ok:false };
+    return { t:t, v1: Math.max(0, v0 + a*t), a:a, s:s, ok:true };
+  }
+
+  function compute(){
+    var Am = toM(A), Bm = toM(B), Pm = toM(P);
+    var seg1 = segCalc(Am, Pm, 0);
+    var seg2 = seg1.ok ? segCalc(Pm, Bm, seg1.v1) : { t:Infinity, ok:false };
+    var straight = segCalc(Am, Bm, 0);
+    var total = (seg1.ok && seg2.ok) ? (seg1.t + seg2.t) : Infinity;
+    return { seg1:seg1, seg2:seg2, straight:straight, total:total };
+  }
+
+  function render(){
+    pathBent.setAttribute('d', 'M' + A.x + ',' + A.y + ' L' + P.x + ',' + P.y + ' L' + B.x + ',' + B.y);
+    handle.setAttribute('cx', P.x);
+    handle.setAttribute('cy', P.y);
+    updateReadout();
+  }
+
+  function updateReadout(){
+    var r = compute();
+    seg1out.textContent = r.seg1.ok ? fmt(r.seg1.t) : '\u2014';
+    seg2out.textContent = r.seg2.ok ? fmt(r.seg2.t) : 'stuck';
+    straightOut.textContent = fmt(r.straight.t);
+
+    if(!r.seg1.ok || !r.seg2.ok){
+      totalOut.textContent = '\u2014';
+      verdictOut.textContent = 'This shape strands the bead, usually on a final rise it cannot climb. Move P lower or further from B.';
+      raceBtn.disabled = true;
+      return;
+    }
+    raceBtn.disabled = false;
+    totalOut.textContent = fmt(r.total);
+    var diff = r.straight.t - r.total;
+    var pct = Math.abs(diff) / r.straight.t * 100;
+    if(diff > 0.005){
+      verdictOut.textContent = 'Your track beats the straight line by about ' + pct.toFixed(1) + '%.';
+    } else if(diff < -0.005){
+      verdictOut.textContent = 'Your track is slower than the straight line by about ' + pct.toFixed(1) + '%.';
+    } else {
+      verdictOut.textContent = 'Almost exactly tied with the straight line.';
+    }
+  }
+
+  /* ---- dragging: pointer events ---- */
+  function clientToSvg(clientX, clientY){
+    var rect = svg.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (VBW / rect.width),
+      y: (clientY - rect.top) * (VBH / rect.height)
+    };
+  }
+
+  var dragging = false;
+  handle.addEventListener('pointerdown', function(e){
+    dragging = true;
+    try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  svg.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var pt = clientToSvg(e.clientX, e.clientY);
+    P.x = clamp(pt.x, BOUNDS.minX, BOUNDS.maxX);
+    P.y = clamp(pt.y, BOUNDS.minY, BOUNDS.maxY);
+    render();
+  });
+  window.addEventListener('pointerup', function(){ dragging = false; });
+
+  handle.addEventListener('keydown', function(e){
+    var step = 8, handled = true;
+    if(e.key === 'ArrowLeft') P.x -= step;
+    else if(e.key === 'ArrowRight') P.x += step;
+    else if(e.key === 'ArrowUp') P.y -= step;
+    else if(e.key === 'ArrowDown') P.y += step;
+    else handled = false;
+    if(handled){
+      e.preventDefault();
+      P.x = clamp(P.x, BOUNDS.minX, BOUNDS.maxX);
+      P.y = clamp(P.y, BOUNDS.minY, BOUNDS.maxY);
+      render();
+    }
+  });
+
+  resetBtn.addEventListener('click', function(){
+    P.x = DEFAULT_P.x; P.y = DEFAULT_P.y;
+    render();
+    raceStatus.textContent = '';
+  });
+
+  /* ---- race animation ---- */
+  function buildSegments(points){
+    var segs = [], v = 0;
+    for(var i = 0; i < points.length - 1; i++){
+      var p0 = points[i], p1 = points[i+1];
+      var res = segCalc(toM(p0), toM(p1), v);
+      segs.push({ p0:p0, p1:p1, v0:v, a:res.a, s:res.s, dur: res.ok ? res.t : 0, ok:res.ok });
+      v = res.v1;
+    }
+    return segs;
+  }
+
+  function posAlong(segs, elapsed){
+    var cum = 0;
+    for(var i = 0; i < segs.length; i++){
+      var seg = segs[i];
+      if(elapsed < cum + seg.dur || i === segs.length - 1){
+        var local = Math.max(0, elapsed - cum);
+        var sTraveled = seg.v0 * local + 0.5 * seg.a * local * local;
+        var frac = seg.s > 1e-6 ? clamp(sTraveled / seg.s, 0, 1) : 1;
+        return {
+          x: seg.p0.x + (seg.p1.x - seg.p0.x) * frac,
+          y: seg.p0.y + (seg.p1.y - seg.p0.y) * frac
+        };
+      }
+      cum += seg.dur;
+    }
+    var last = segs[segs.length - 1];
+    return { x:last.p1.x, y:last.p1.y };
+  }
+
+  var raceRunning = false;
+
+  raceBtn.addEventListener('click', function(){
+    if(raceRunning) return;
+    var r = compute();
+    if(!r.seg1.ok || !r.seg2.ok) return;
+
+    var bentSegs = buildSegments([A, P, B]);
+    var straightSegs = buildSegments([A, B]);
+    var totalBent = r.total;
+    var totalStraight = r.straight.t;
+    var maxT = Math.max(totalBent, totalStraight);
+
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    beadBent.setAttribute('cx', A.x); beadBent.setAttribute('cy', A.y);
+    beadStraight.setAttribute('cx', A.x); beadStraight.setAttribute('cy', A.y);
+
+    function finish(){
+      raceRunning = false;
+      var lead = totalBent < totalStraight ? 'Your track' : (totalStraight < totalBent ? 'The straight line' : 'Neither');
+      if(totalBent === totalStraight){
+        raceStatus.textContent = 'Dead heat.';
+      } else {
+        raceStatus.textContent = lead + ' arrived first, by ' + Math.abs(totalBent - totalStraight).toFixed(2) + ' s.';
+      }
+      raceClock.textContent = '';
+    }
+
+    if(reduced){
+      var endBent = posAlong(bentSegs, totalBent + 1);
+      var endStraight = posAlong(straightSegs, totalStraight + 1);
+      beadBent.setAttribute('cx', endBent.x); beadBent.setAttribute('cy', endBent.y);
+      beadStraight.setAttribute('cx', endStraight.x); beadStraight.setAttribute('cy', endStraight.y);
+      finish();
+      return;
+    }
+
+    raceRunning = true;
+    raceStatus.textContent = '';
+    var start = null;
+    function tick(now){
+      if(start === null) start = now;
+      var elapsed = (now - start) / 1000;
+      var pb = posAlong(bentSegs, Math.min(elapsed, totalBent));
+      var ps = posAlong(straightSegs, Math.min(elapsed, totalStraight));
+      beadBent.setAttribute('cx', pb.x); beadBent.setAttribute('cy', pb.y);
+      beadStraight.setAttribute('cx', ps.x); beadStraight.setAttribute('cy', ps.y);
+      raceClock.textContent = elapsed.toFixed(2) + ' s';
+      if(elapsed < maxT){
+        requestAnimationFrame(tick);
+      } else {
+        beadBent.setAttribute('cx', B.x); beadBent.setAttribute('cy', B.y);
+        beadStraight.setAttribute('cx', B.x); beadStraight.setAttribute('cy', B.y);
+        finish();
+      }
+    }
+    requestAnimationFrame(tick);
+  });
+
+  if(printBtn){
+    printBtn.addEventListener('click', function(){ window.print(); });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
