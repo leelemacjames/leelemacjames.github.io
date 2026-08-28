@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Who Is Shouldering Whom? — IDU slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D0E11; --panel:#14161B; --panel2:#191C22; --rule:#2A2E37;
+  --gold:#C8A24A; --gold-dim:#8A6F33;
+  --paper:#E9E5DB; --muted:#8E8B84; --dim:#BFBBB1;
+  --bio:#7E9B76; --ias:#7B95AC; --phil:#A493B8; --maths:#C8A24A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--paper)}
+body{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+
+/* ---------- stage ---------- */
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:clamp(2.6rem,6vh,4.5rem) clamp(1.1rem,5vw,4rem) clamp(3.4rem,8vh,5rem)}
+.slide{width:100%;max-width:56rem;max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+.slide::-webkit-scrollbar{width:3px}
+.slide::-webkit-scrollbar-thumb{background:var(--rule)}
+
+/* ---------- slide chrome ---------- */
+.tag{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.6rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.tag .dot{width:7px;height:7px;border-radius:50%;background:var(--strand);flex:none}
+.tag .id{color:var(--strand)}
+h2.stitle{font-family:"Cormorant Garamond",Georgia,serif;font-weight:400;font-size:clamp(1.5rem,4.2vw,2.3rem);line-height:1.15;letter-spacing:-.01em;margin:0 0 1.5rem;color:var(--paper)}
+
+/* ---------- content atoms ---------- */
+.lead{font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;font-size:clamp(2.1rem,7.5vw,4rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 1.3rem;color:var(--paper)}
+.lead.sm{font-size:clamp(1.45rem,4.6vw,2.5rem);line-height:1.2;color:var(--gold)}
+.sub{font-size:clamp(1rem,2.4vw,1.22rem);line-height:1.62;color:var(--dim);margin:0 0 1.15rem;max-width:46rem}
+.q{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:clamp(1.2rem,3.2vw,1.62rem);line-height:1.42;color:var(--paper);margin:1.5rem 0 0;padding-left:1.1rem;border-left:2px solid var(--gold-dim);max-width:46rem}
+.reveal{display:inline-block;font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(1.25rem,3.4vw,1.75rem);color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:.25rem;margin:1.3rem 0 0}
+.struck{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(1.25rem,3.4vw,1.7rem);color:var(--muted);text-decoration:line-through;text-decoration-color:var(--gold-dim);margin:.4rem 0 1.2rem}
+.frame{font-family:"IBM Plex Mono",monospace;font-size:clamp(.8rem,2vw,.95rem);line-height:1.9;color:var(--dim);background:var(--panel);padding:1.1rem 1.2rem;border-left:2px solid var(--ias);margin:1.4rem 0 0}
+
+ul.stack,ol.numbered{margin:0 0 1.1rem;padding:0;list-style:none}
+ul.stack li{font-size:clamp(1rem,2.5vw,1.28rem);line-height:1.55;color:var(--dim);padding:.42rem 0 .42rem 1.15rem;position:relative}
+ul.stack li::before{content:"";position:absolute;left:0;top:1.03em;width:5px;height:1px;background:var(--strand)}
+ul.stack.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));column-gap:1.8rem}
+ol.numbered{counter-reset:z}
+ol.numbered li{counter-increment:z;font-size:clamp(1rem,2.5vw,1.28rem);line-height:1.55;color:var(--dim);padding:.42rem 0 .42rem 2.1rem;position:relative}
+ol.numbered li::before{content:counter(z);position:absolute;left:0;top:.5em;font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--strand)}
+ol.ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));column-gap:1.4rem}
+
+.eq{font-family:"IBM Plex Mono",monospace;font-size:clamp(.9rem,2.4vw,1.15rem);line-height:1.7;color:var(--paper);background:var(--panel);border-left:2px solid var(--gold-dim);padding:.95rem 1.1rem;margin:0 0 1.15rem;overflow-x:auto}
+.eq.big{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(1.6rem,5vw,2.6rem);letter-spacing:.01em;background:none;border-left:none;padding:.5rem 0;color:var(--gold)}
+.eq sub,.eq sup{font-size:.62em}
+
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem .2rem;margin:1.2rem 0}
+.chain span{font-family:"IBM Plex Mono",monospace;font-size:clamp(.68rem,1.8vw,.86rem);letter-spacing:.04em;color:var(--paper);background:var(--panel2);border:1px solid var(--rule);padding:.45rem .7rem;white-space:nowrap}
+.chain span+span::before{content:"\2192";color:var(--gold-dim);margin-right:.7rem;margin-left:-.05rem}
+.chain.small span{font-size:clamp(.6rem,1.6vw,.75rem);padding:.35rem .55rem}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.6rem;margin:0 0 1.2rem}
+.two>div{background:var(--panel);padding:1.1rem 1.2rem;border-top:1px solid var(--rule)}
+.two h4{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 .8rem;font-weight:500}
+.two ul{margin:0;padding-left:1rem}
+.two li{font-size:clamp(.9rem,2.1vw,1.05rem);line-height:1.65;color:var(--dim);margin-bottom:.15rem}
+.two p{font-size:clamp(.9rem,2.1vw,1.05rem);line-height:1.6;color:var(--dim);margin:0;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic}
+
+.triple{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1rem;margin:1.4rem 0}
+.triple.four{grid-template-columns:repeat(auto-fit,minmax(7rem,1fr))}
+.triple>div{background:var(--panel);padding:1rem 1.1rem;border-top:1px solid var(--gold-dim)}
+.triple b{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-weight:400;font-size:clamp(1.3rem,3.6vw,1.8rem);color:var(--gold);line-height:1.1}
+.triple span{display:block;font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.5rem}
+.triple i{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-size:1rem;color:var(--dim);margin-top:.4rem}
+
+table{width:100%;border-collapse:collapse;margin:0 0 1.2rem;font-size:clamp(.85rem,2.1vw,1.02rem)}
+th{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--rule)}
+td{padding:.55rem .6rem;color:var(--dim);border-bottom:1px solid rgba(42,46,55,.55)}
+.r{text-align:right;font-family:"IBM Plex Mono",monospace}
+
+/* ---------- title & divider slides ---------- */
+.title-slide .kicker{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:2rem}
+.title-slide h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;font-size:clamp(2.6rem,10vw,5.6rem);line-height:.98;letter-spacing:-.02em;margin:0 0 1.2rem}
+.title-slide h1 em{font-style:italic;color:var(--gold)}
+.title-slide .strap{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(1.1rem,3vw,1.5rem);line-height:1.5;color:var(--dim);max-width:38rem;margin:0 0 2.4rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1.1rem;border-top:1px solid var(--rule);padding-top:1.4rem}
+.meta div{font-size:.9rem;line-height:1.5;color:var(--dim)}
+.meta b{display:block;font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;font-weight:500}
+.divider .dk{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1.4rem}
+.divider h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;font-size:clamp(2.2rem,8vw,4.2rem);line-height:1.02;margin:0 0 1rem}
+.divider p{font-size:clamp(1rem,2.6vw,1.25rem);color:var(--dim);max-width:38rem;line-height:1.6;margin:0}
+
+/* ---------- shoulder rail ---------- */
+#rail{position:fixed;left:0;right:0;bottom:0;height:3.1rem;display:flex;align-items:flex-end;padding:0 clamp(1.1rem,5vw,4rem) .95rem;pointer-events:none;z-index:5}
+#railbar{position:relative;flex:1;height:2px;background:var(--rule)}
+#railfill{position:absolute;left:0;top:0;height:2px;background:var(--gold-dim)}
+#railmark{position:absolute;top:-7px;width:2px;height:16px;background:var(--gold);transition:left .28s ease}
+#counter{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.14em;color:var(--muted);margin-left:1rem;white-space:nowrap}
+#stamp{position:fixed;left:clamp(1.1rem,5vw,4rem);bottom:1.75rem;font-family:"IBM Plex Mono",monospace;font-size:.52rem;letter-spacing:.11em;color:#4C4A46;z-index:5;pointer-events:none;max-width:60vw}
+
+/* ---------- notes ---------- */
+#notes{position:fixed;right:0;top:0;bottom:0;width:min(25rem,92vw);background:var(--panel);border-left:1px solid var(--rule);padding:2.2rem 1.7rem 4rem;overflow-y:auto;transform:translateX(101%);transition:transform .3s ease;z-index:20}
+#notes.open{transform:none}
+#notes h3{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 1.3rem;font-weight:500}
+#notes p{font-size:.92rem;line-height:1.68;color:var(--dim);margin:0 0 1rem}
+#notes b{color:var(--paper);font-weight:500}
+#notes .vis{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;color:var(--muted);font-size:1rem}
+#notes blockquote{margin:1rem 0;padding-left:1rem;border-left:2px solid var(--gold-dim);font-family:"Cormorant Garamond",Georgia,serif;font-size:1.05rem;line-height:1.55;color:var(--paper)}
+
+/* ---------- grid index ---------- */
+#grid{position:fixed;inset:0;background:rgba(13,14,17,.985);z-index:30;overflow-y:auto;padding:3rem clamp(1.1rem,5vw,4rem);display:none}
+#grid.open{display:block}
+#grid h3{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 1.4rem;font-weight:500}
+.gwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.5rem}
+.gcell{background:var(--panel);border-top:1px solid var(--rule);padding:.7rem .8rem;cursor:pointer;text-align:left;font:inherit;color:var(--dim);display:block;width:100%}
+.gcell:hover,.gcell:focus-visible{background:var(--panel2);outline:none;border-top-color:var(--gold)}
+.gcell .gn{font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.14em;display:block;margin-bottom:.3rem}
+.gcell .gt{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.02rem;line-height:1.25;color:var(--paper)}
+
+/* ---------- help ---------- */
+#help{position:fixed;right:clamp(1.1rem,5vw,4rem);bottom:1.6rem;font-family:"IBM Plex Mono",monospace;font-size:.55rem;letter-spacing:.12em;color:#4C4A46;z-index:6;text-align:right;line-height:1.9}
+#help kbd{color:var(--muted);font:inherit}
+@media (max-width:720px){#help{display:none}}
+button.nav{position:fixed;top:0;bottom:3.1rem;width:22%;background:none;border:none;cursor:pointer;z-index:4;opacity:0}
+button.nav.prev{left:0}button.nav.next{right:0;width:34%}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="stage"><div class="slide" id="slide"></div></div>
+
+<button class="nav prev" id="prevzone" aria-label="Previous slide"></button>
+<button class="nav next" id="nextzone" aria-label="Next slide"></button>
+
+<div id="rail"><div id="railbar"><div id="railfill"></div><div id="railmark"></div></div><div id="counter"></div></div>
+<div id="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+<div id="help"><kbd>&larr; &rarr;</kbd> move &nbsp;·&nbsp; <kbd>N</kbd> teacher notes &nbsp;·&nbsp; <kbd>G</kbd> index &nbsp;·&nbsp; <kbd>F</kbd> full screen</div>
+
+<aside id="notes"><h3>Teacher notes</h3><div id="notesbody"></div></aside>
+<div id="grid"><h3>Slide index — press G to close</h3><div class="gwrap" id="gwrap"></div></div>
+
+<script>
+const DECK_A = [
+{n:"A1", strand:"bio", title:"Everybody stand",
+body:`<p class="lead">Everybody stand.</p>
+<p class="sub">You are standing because somewhere upstream, a photon arrived.</p>
+<p class="q">How far back can we trace the energy that is holding you upright?</p>
+<div class="chain"><span>Sun</span><span>plant</span><span>herbivore</span><span>predator</span><span>you</span></div>`,
+notes:`<p class="vis">Visual: a dark classroom silhouette with one shaft of sunlight entering from the left.</p>
+<p><b>Teacher move.</b> Do not explain immediately. Let the class stand.</p>
+<blockquote>The photon that struck a leaf is not literally still travelling around inside you. Its energy has been absorbed, transformed, stored, transferred and dissipated many times. But your standing body has an energetic ancestry.</blockquote>`},
+
+{n:"A2", strand:"bio", title:"Shouldering a photon",
+body:`<div class="chain"><span>Sunlight</span><span>producer</span><span>consumer</span><span>predator</span><span>you</span></div>
+<p class="sub">At every step:</p>
+<div class="eq">energy received &nbsp;=&nbsp; energy passed onward &nbsp;+&nbsp; energy dispersed elsewhere</div>
+<p class="reveal">No trophic level creates the energy it passes on.</p>`,
+notes:`<p class="vis">Visual: five students shoulder-to-shoulder passing a glowing token.</p>
+<p><b>Teacher move.</b> Link explicitly to the energy-accounting worksheet, and use the language: <b>pass-through</b>, <b>wasted from this pathway</b>, <b>cumulative loss</b>, <b>final useful fraction</b>.</p>`},
+
+{n:"A3", strand:"bio", title:"The one at the top",
+body:`<p class="lead">Who looks powerful?</p>
+<p class="sub">An apex predator appears to stand <b>above</b> the food web. But:</p>
+<div class="eq">top position &nbsp;&ne;&nbsp; independence</div>
+<p class="q">Could the predator exist without the energy shoulder beneath it?</p>`,
+notes:`<p class="vis">Visual: a trophic pyramid with a large wolf silhouette on a tiny apex and an enormous producer base below.</p>
+<p><b>Teacher note.</b> Introduce the first Goliath.</p>
+<blockquote>A Goliath can look self-sufficient precisely because the support beneath it has become invisible.</blockquote>`},
+
+{n:"A4", strand:"ias", title:"The first pivot: biology to society",
+body:`<ul class="stack">
+<li>A wolf stands on prey.</li>
+<li>A city stands on infrastructure.</li>
+<li>A financial centre stands on flows.</li>
+<li>A political centre stands on institutions.</li>
+<li>A social-media hub stands on connections.</li></ul>
+<p class="lead sm">Does a powerful node possess power, or does the network lend it power?</p>`,
+notes:`<p class="vis">Visual: five network diagrams, each with one highlighted central node.</p>
+<p><b>Teacher note.</b> This is the Individuals &amp; Societies pivot. Do not yet discuss morality; keep the first claim structural.</p>
+<blockquote>Position in a network can make one node disproportionately consequential.</blockquote>`},
+
+{n:"A5", strand:"maths", title:"The naive model",
+body:`<p class="sub">Students already know:</p>
+<div class="eq">y &prop; x &nbsp;&nbsp;&nbsp; so &nbsp;&nbsp;&nbsp; 2x &rarr; 2y</div>
+<ul class="stack">
+<li>twice the people &rarr; twice the houses?</li>
+<li>twice the prey &rarr; twice the predators?</li>
+<li>twice the city &rarr; twice the road?</li>
+<li>twice the connections &rarr; twice the ideas?</li></ul>
+<p class="q">Must twice as much system mean twice as much everything?</p>`,
+notes:`<p><b>Teacher note.</b> This is the bridge from ordinary proportionality to scaling. Collect predictions before offering any answer.</p>`},
+
+{n:"A6", strand:"maths", title:"When the whole changes the rule",
+body:`<div class="eq big">Y &prop; X<sup>&beta;</sup></div>
+<div class="triple">
+<div><b>&beta; &lt; 1</b><span>sublinear</span><i>grows more slowly</i></div>
+<div><b>&beta; = 1</b><span>linear</span><i>grows in proportion</i></div>
+<div><b>&beta; &gt; 1</b><span>superlinear</span><i>grows faster</i></div></div>`,
+notes:`<p class="vis">Visual: three simple curves from the origin, labelled less than proportional, proportional, more than proportional.</p>
+<p><b>Teacher move.</b> Avoid logarithms. Ask only: if X doubles, does Y less-than-double, double, or more-than-double?</p>`},
+
+{n:"A7", strand:"bio", title:"Food webs refuse to scale neatly",
+body:`<p class="sub">Predator biomass often scales sublinearly with prey biomass. A simplified pattern:</p>
+<div class="eq big">B<sub>predator</sub> &prop; B<sub>prey</sub><sup>3/4</sup></div>
+<p class="sub">If prey biomass grows by a factor of 16, then 16<sup>3/4</sup> = 8, so predator biomass grows by only a factor of 8.</p>
+<p class="q">Why does the top become proportionally smaller as the base becomes larger?</p>`,
+notes:`<p><b>Teacher note.</b> The aim is not memorising three quarters. The aim is seeing that <b>scale changes proportion</b>.</p>`},
+
+{n:"A8", strand:"ias", title:"Cities do the same strange thing",
+body:`<div class="two">
+<div><h4>Sublinear</h4><ul><li>road length</li><li>infrastructure</li><li>resource-distribution networks</li></ul></div>
+<div><h4>Superlinear</h4><ul><li>interactions</li><li>innovation</li><li>some economic activity</li><li>some social problems</li></ul></div></div>
+<p class="sub">A city of two million is not simply two copies of a city of one million.</p>
+<p class="q">What is the extra ingredient?</p>
+<p class="reveal">Connections.</p>`,
+notes:`<p><b>Teacher move.</b> Hold the reveal back until at least three student suggestions have been heard and written up.</p>`},
+
+{n:"A9", strand:"ias", title:"A node becomes a hub",
+body:`<p class="sub">Most nodes have a few links. Some nodes accumulate many.</p>
+<div class="chain"><span>ordinary node</span><span>hub</span><span>Goliath</span></div>
+<p class="sub">Remove one ordinary node. Then remove the hub.</p>
+<p class="q">What changes?</p>`,
+notes:`<p class="vis">Visual: a simple network with one high-degree node.</p>
+<p><b>Teacher note.</b> Introduce degree, centrality, dependence, bottleneck and resilience without formal graph theory.</p>`},
+
+{n:"A10", strand:"ias", title:"The Goliath paradox",
+body:`<p class="lead sm">The hub looks like it carries everyone. But perhaps everyone is carrying the hub.</p>
+<ul class="stack two-col">
+<li>predator &larr; prey</li>
+<li>capital city &larr; roads, labour, food, energy</li>
+<li>airport hub &larr; feeder routes</li>
+<li>platform &larr; users</li>
+<li>megacity &larr; hinterland</li>
+<li>financial centre &larr; transactions</li></ul>
+<p class="q">Which direction does dependence run?</p>`,
+notes:`<p><b>Teacher note.</b> The answer is often both directions. This is the point at which power becomes relational rather than merely possessed.</p>`},
+
+{n:"A11", strand:"bio", title:"From web to world",
+body:`<div class="chain"><span>organism</span><span>population</span><span>food web</span><span>ecosystem</span><span>biosphere</span></div>
+<p class="sub">At each scale: matter circulates; energy passes through; feedback changes future conditions; no node is fully independent.</p>
+<p class="q">Where does the individual stop?</p>`,
+notes:`<p><b>Teacher note.</b> This introduces Gaia as a <b>systems question</b>, not as a claim that Earth is literally an organism.</p>`},
+
+{n:"A12", strand:"bio", title:"Gaia without mysticism",
+body:`<p class="sub">Life changes atmospheric gases, soils, carbon cycling, water cycling, albedo and nutrient flows. Those altered conditions then change life.</p>
+<div class="eq big">life &nbsp;&harr;&nbsp; environment</div>
+<p class="q">If organism and environment continually remake one another, what counts as the system?</p>`,
+notes:`<p><b>Teacher move.</b> Keep the arrow double-headed on the board for the rest of the unit; students should be able to point to it during the Daisyworld discussion.</p>`},
+
+{n:"A13", strand:"phil", title:"The philosophy smuggled inside the maths",
+body:`<ul class="stack">
+<li>A neuron is not a mind.</li>
+<li>A wolf is not a food web.</li>
+<li>A citizen is not a city.</li>
+<li>A photon is not a biosphere.</li></ul>
+<p class="sub">And yet the larger pattern cannot exist without the smaller parts.</p>
+<p class="lead sm">Some properties belong to arrangements, not to individual objects.</p>`,
+notes:`<p><b>Teacher note.</b> Vocabulary can now be revealed: reductionism, emergence, holism, levels of organisation, feedback, interdependence.</p>`},
+
+{n:"A14", strand:"phil", title:"Schopenhauer enters",
+body:`<p class="sub">Schopenhauer presents striving as ceaseless: desire renews itself, satisfaction is temporary, and suffering is woven into willing.</p>
+<div class="chain"><span>light</span><span>life</span><span>striving</span><span>seeing</span></div>
+<p class="q">Must striving be understood only as suffering?</p>`,
+notes:`<p><b>Teacher note.</b> Do not present this as a refutation of Schopenhauer. Frame it as a challenge.</p>
+<blockquote>If striving is also the process through which organised life maintains itself, perceives, builds relationships, and eventually becomes capable of contemplating the light from which its energy came, is blind purposeless suffering the only available description?</blockquote>`},
+
+{n:"A15", strand:"phil", title:"The photon looks back",
+body:`<p class="sub">The energy that entered as light has travelled through photosynthesis, metabolism, food webs, nervous systems, societies, language and thought. Until eventually:</p>
+<p class="lead sm">Matter organised by sunlight becomes capable of seeing sunlight.</p>
+<p class="q">Is that purpose? Or merely a remarkable consequence of a purposeless process?</p>`,
+notes:`<p><b>Teacher note.</b> Do not close the question. That unresolved distinction is the philosophy.</p>`},
+
+{n:"A16", strand:"phil", title:"Exit question",
+body:`<p class="sub">Choose one:</p>
+<ol class="numbered">
+<li>Power belongs to individuals.</li>
+<li>Power belongs to positions in networks.</li>
+<li>Power belongs to the whole system.</li>
+<li>The question is badly formed.</li></ol>
+<p class="q">Defend your answer using one food-web example, one human-geography example and one scaling idea.</p>`,
+notes:`<p><b>Teacher move.</b> Take a show of hands before the writing, and again at the end of Deck B, so movement between positions becomes visible to the class.</p>`}
+];
+
+const DECK_B = [
+{n:"B1", strand:"bio", title:"Opening enactment: the photon relay",
+body:`<p class="sub">Five students: Sunlight, Plant, Herbivore, Predator, Apex predator. Sunlight holds 1000 energy units. At each transfer, physically separate the account into <b>passed through</b> and <b>not passed through</b>.</p>
+<table><thead><tr><th>Stage</th><th class="r">Pass-through</th></tr></thead><tbody>
+<tr><td>incident sunlight &rarr; plant chemical store</td><td class="r">2%</td></tr>
+<tr><td>plant &rarr; herbivore biomass</td><td class="r">12%</td></tr>
+<tr><td>herbivore &rarr; predator biomass</td><td class="r">10%</td></tr>
+<tr><td>predator &rarr; next consumer</td><td class="r">8%</td></tr></tbody></table>
+<p class="q">At which stage is the biggest percentage lost? Is that the same as asking where the greatest absolute amount of energy is lost?</p>`,
+notes:`<p><b>Teacher move.</b> The two questions come apart, and that is the point: the largest percentage loss and the largest absolute loss sit at different stages because the absolute quantities are already collapsing.</p>`},
+
+{n:"B2", strand:"bio", title:"Double-entry ecology",
+body:`<div class="eq">E<sub>in</sub> = E<sub>pass</sub> + E<sub>waste</sub></div>
+<div class="eq">E<sub>initial</sub> = E<sub>final</sub> + &sum; E<sub>waste</sub></div>
+<p class="q">Why is this like accounting?</p>`,
+notes:`<p><b>Teacher note.</b> Stress conservation. Waste means energy no longer available to the specified trophic pathway, not energy destroyed. Possible destinations: thermal energy, respiration, uneaten tissue, excretion, movement, decomposition.</p>`},
+
+{n:"B3", strand:"maths", title:"The pyramid appears",
+body:`<div class="eq big">E<sub>final</sub> = E<sub>0</sub> &eta;<sub>1</sub> &eta;<sub>2</sub> &eta;<sub>3</sub> &hellip;</div>
+<p class="sub">Do <b>not</b> add efficiencies. 10% + 10% + 10% does not describe three successive transfers. Instead:</p>
+<div class="eq">0.1 &times; 0.1 &times; 0.1 = 0.001 = 0.1%</div>
+<p class="q">Why are apex predators rare?</p>`,
+notes:`<p><b>Teacher move.</b> Let a student make the addition error out loud first, then multiply. The gap between 30% and 0.1% does the teaching.</p>`},
+
+{n:"B4", strand:"bio", title:"The apex is supported from below",
+body:`<div class="two">
+<div><h4>Apex predators are</h4><ul><li>large</li><li>visible</li><li>culturally powerful</li><li>ecologically consequential</li></ul></div>
+<div><h4>But energetically</h4><ul><li>few can be supported</li><li>they depend on the biomass beneath them</li><li>their position is expensive</li></ul></div></div>
+<p class="lead sm">Goliath stands on the shoulders of prey.</p>
+<p class="q">Does being on top mean being least dependent?</p>`,
+notes:`<p><b>Teacher move.</b> Hold both columns on the board simultaneously; the contradiction between them is the unit in miniature.</p>`},
+
+{n:"B5", strand:"maths", title:"Body size and abundance",
+body:`<p class="sub">Across many groups, larger organisms tend to occur at lower population density. A stylised relationship:</p>
+<div class="eq big">N &prop; M<sup>&minus;&alpha;</sup></div>
+<p class="sub">As individual body mass M increases, population density N tends to decrease.</p>
+<p class="q">Could an ecosystem contain as many elephants as mice? Why not?</p>`,
+notes:`<p><b>Teacher note.</b> No need to insist on one universal exponent. The conceptual target is the inverse power-law pattern.</p>`},
+
+{n:"B6", strand:"maths", title:"Biomass complicates the picture",
+body:`<div class="eq">B = N M</div>
+<p class="sub">If M rises while N falls, what happens to B?</p>
+<table><thead><tr><th>Species</th><th class="r">Individual mass</th><th class="r">Number per km&sup2;</th></tr></thead><tbody>
+<tr><td>A</td><td class="r">0.1 kg</td><td class="r">1000</td></tr>
+<tr><td>B</td><td class="r">1 kg</td><td class="r">180</td></tr>
+<tr><td>C</td><td class="r">10 kg</td><td class="r">32</td></tr>
+<tr><td>D</td><td class="r">100 kg</td><td class="r">6</td></tr></tbody></table>
+<p class="q">Calculate biomass density for each.</p>`,
+notes:`<p><b>Purpose.</b> Separate three things students routinely conflate: size of individual, number of individuals, and total population biomass.</p>
+<p>Answers: A 100, B 180, C 320, D 600 kg per km&sup2;.</p>`},
+
+{n:"B7", strand:"maths", title:"Predator biomass against prey biomass",
+body:`<div class="eq big">B<sub>P</sub> &prop; B<sub>R</sub><sup>3/4</sup></div>
+<p class="sub">If prey biomass changes by a factor of 4, 16 or 81, estimate the predator multiplier.</p>
+<div class="triple">
+<div><b>4<sup>3/4</sup></b><span>&asymp; 2.83</span></div>
+<div><b>16<sup>3/4</sup></b><span>= 8</span></div>
+<div><b>81<sup>3/4</sup></b><span>= 27</span></div></div>
+<p class="q">Why does predator biomass become proportionally smaller in richer systems?</p>`,
+notes:`<p><b>Teacher move.</b> Ask for predictions before the arithmetic; most students expect proportionality and the discrepancy is worth naming.</p>`},
+
+{n:"B8", strand:"phil", title:"Same exponent, same cause?",
+body:`<p class="sub">Suppose two completely different systems both show:</p>
+<div class="eq big">Y &prop; X<sup>3/4</sup></div>
+<p class="q">Does that prove they work by the same mechanism?</p>
+<ul class="stack two-col"><li>yes</li><li>no</li><li>sometimes</li><li>we need more evidence</li></ul>`,
+notes:`<p><b>Teacher note.</b> This is epistemology through scaling. Introduce the principle: <b>same mathematical shape does not guarantee same cause</b>.</p>`},
+
+{n:"B9", strand:"ias", title:"Now cross the disciplinary border",
+body:`<p class="lead sm">Food web &rarr; city</p>
+<ul class="stack">
+<li>organism &rarr; person or institution</li>
+<li>trophic connection &rarr; transport, communication, trade</li>
+<li>energy flow &rarr; goods, money, information</li>
+<li>apex node &rarr; capital, hub, dominant institution</li></ul>
+<p class="q">What survives the analogy? What breaks?</p>`,
+notes:`<p><b>Teacher move.</b> Record the breakages on a running list; students will need one for the synthesis task at B39.</p>`},
+
+{n:"B10", strand:"ias", title:"A city as a network",
+body:`<p class="sub">A city is not merely many people. It also contains:</p>
+<div class="eq">people + infrastructure + connections + flows</div>
+<p class="q">If every person remained but all roads, telecommunications, markets and institutions vanished, would the city remain the same kind of thing?</p>`,
+notes:`<p><b>Teacher move.</b> Push for a criterion rather than a verdict: what would have to be true for it still to count as a city?</p>`},
+
+{n:"B11", strand:"maths", title:"Linear expectations",
+body:`<p class="sub">Suppose a city doubles in population. Before seeing any data, classify each prediction as less than double, exactly double, or more than double.</p>
+<ul class="stack two-col">
+<li>road length</li><li>electrical cable</li><li>petrol stations</li><li>hospitals</li>
+<li>patents</li><li>wages</li><li>crime</li><li>infectious contacts</li></ul>`,
+notes:`<p><b>Teacher move.</b> Hypothesis before answer. Have every student commit in writing; the wrong predictions are the teaching material for B12 and B13.</p>`},
+
+{n:"B12", strand:"ias", title:"Sublinear cities",
+body:`<p class="sub">Some infrastructure tends to grow more slowly than population.</p>
+<div class="eq big">Y &prop; N<sup>0.85</sup></div>
+<p class="sub">Double the population: 2<sup>0.85</sup> &asymp; 1.80, so infrastructure rises by roughly 80%, not 100%.</p>
+<p class="lead sm">Economies of scale</p>
+<p class="q">How can more people share infrastructure?</p>`,
+notes:`<p><b>Teacher move.</b> Ask for the physical picture: one pipe, one road, one substation serving more households.</p>`},
+
+{n:"B13", strand:"ias", title:"Superlinear cities",
+body:`<p class="sub">Some interaction-dependent outputs grow faster than population.</p>
+<div class="eq big">Y &prop; N<sup>1.15</sup></div>
+<p class="sub">Double the population: 2<sup>1.15</sup> &asymp; 2.22.</p>
+<p class="lead sm">Increasing returns to interaction</p>
+<p class="q">Why might twice as many people generate more than twice as many possible encounters?</p>`,
+notes:`<p><b>Teacher move.</b> Do not answer; the next slide answers it arithmetically.</p>`},
+
+{n:"B14", strand:"maths", title:"Connections explode",
+body:`<p class="sub">If every person could connect to every other person, the number of possible pairs is</p>
+<div class="eq big">N(N &minus; 1) / 2</div>
+<div class="triple">
+<div><b>4 people</b><span>6 pairs</span></div>
+<div><b>8 people</b><span>28 pairs</span></div>
+<div><b>&times;2 people</b><span>&asymp; &times;4 pairs</span></div></div>`,
+notes:`<p><b>Teacher note.</b> Do not suggest actual cities are complete graphs. Use this only to reveal why <b>interaction opportunity</b> can grow faster than population.</p>`},
+
+{n:"B15", strand:"ias", title:"From node to hub",
+body:`<p class="sub">A network has nodes and links; it may contain hubs and bottlenecks.</p>
+<p class="sub"><b>Task.</b> Draw a 12-node network where most nodes have two or three links and one has at least seven. Now remove, first, a peripheral node, and second, the hub.</p>
+<p class="q">Compare the damage.</p>`,
+notes:`<p><b>Teacher move.</b> Have two students draw on the same network so the comparison is like for like.</p>`},
+
+{n:"B16", strand:"ias", title:"Human Goliaths",
+body:`<ul class="stack two-col">
+<li>megacity</li><li>major port</li><li>airport hub</li><li>financial centre</li>
+<li>search platform</li><li>social-media platform</li><li>political capital</li></ul>
+<p class="q">Why does traffic concentrate there? Did the node become powerful because it was already powerful?</p>`,
+notes:`<p><b>Teacher note.</b> Introduce <b>preferential attachment</b> informally: connections can attract more connections.</p>`},
+
+{n:"B17", strand:"ias", title:"Goliath stands on shoulders",
+body:`<p class="lead sm">The apparent giant is often a compression point for hidden support.</p>
+<div class="two">
+<div><h4>London stands on</h4><ul><li>national transport</li><li>imported food</li><li>electricity generation</li><li>communication systems</li><li>labour</li><li>finance</li><li>legal institutions</li></ul></div>
+<div><h4>An apex predator stands on</h4><ul><li>plants</li><li>herbivores</li><li>decomposers</li><li>water</li><li>nutrient cycles</li><li>sunlight</li></ul></div></div>
+<p class="q">Which is more independent?</p>`,
+notes:`<p><b>Teacher move.</b> Resist a verdict; ask instead what measurement would settle it.</p>`},
+
+{n:"B18", strand:"ias", title:"Power as a network property",
+body:`<p class="sub">Traditional question: who has power? Network question: through which relationships can this node make things happen?</p>
+<ul class="stack two-col">
+<li>access</li><li>dependence</li><li>centrality</li>
+<li>control of bottlenecks</li><li>resilience</li><li>redundancy</li></ul>
+<p class="frame">Node A appears powerful because __________, but its power depends on __________.</p>`,
+notes:`<p><b>Teacher move.</b> Collect six completed sentence frames and read them aloud without attribution.</p>`},
+
+{n:"B19", strand:"ias", title:"Attack the hub",
+body:`<p class="sub">Two networks can contain the same number of nodes and links but respond very differently to failure. Compare an evenly distributed network with a hub-and-spoke network; remove random nodes, then remove the highest-degree node.</p>
+<p class="q">Which network is efficient? Resilient? Vulnerable? Easier to control?</p>`,
+notes:`<p><b>I&amp;S connection.</b> Transport systems, trade, media, governance, finance.</p>
+<p>The efficient network and the vulnerable network are frequently the same network, which is the finding students should leave with.</p>`},
+
+{n:"B20", strand:"ias", title:"Centralisation is a bargain",
+body:`<div class="two">
+<div><h4>Benefits</h4><ul><li>efficiency</li><li>coordination</li><li>rapid distribution</li><li>economies of scale</li></ul></div>
+<div><h4>Costs</h4><ul><li>fragility</li><li>bottlenecks</li><li>unequal access</li><li>concentration of power</li></ul></div></div>
+<p class="q">Can the same structural feature be both an advantage and a vulnerability?</p>`,
+notes:`<p><b>Teacher move.</b> Ask students to name one system where the bargain has recently been renegotiated, and by whom.</p>`},
+
+{n:"B21", strand:"bio", title:"Return to trophic webs",
+body:`<p class="sub">A food web is not a simple chain. Draw one producer linked to several herbivores, omnivores spanning levels, decomposers, multiple predators, and one keystone node.</p>
+<p class="q">What happens if a highly connected species disappears?</p>`,
+notes:`<p><b>Teacher note.</b> This is the ecological analogue of the transport hub; say so explicitly and point back to B19.</p>`},
+
+{n:"B22", strand:"bio", title:"Keystone is not the same as biggest",
+body:`<ul class="stack">
+<li>importance &ne; mass</li>
+<li>importance &ne; abundance</li>
+<li>importance &ne; trophic height</li></ul>
+<p class="q">What else could make a species disproportionately important?</p>
+<p class="reveal">Its relationships.</p>`,
+notes:`<p><b>Teacher move.</b> Hold the reveal until at least two wrong-but-reasonable answers have been offered and recorded.</p>`},
+
+{n:"B23", strand:"ias", title:"Individuals and Societies mirror",
+body:`<ul class="stack">
+<li>importance &ne; population alone</li>
+<li>importance &ne; geographic size alone</li>
+<li>importance &ne; wealth alone</li></ul>
+<p class="q">Could a small location possess enormous network importance?</p>`,
+notes:`<p><b>Teacher note.</b> Let students generate examples before supplying them. Possible examples: a canal, a strait, a semiconductor production centre, a financial clearing hub, a data centre cluster.</p>`},
+
+{n:"B24", strand:"ias", title:"The map is not the network",
+body:`<p class="sub">Two places may be geographically close but poorly connected. Two places may be geographically distant but tightly linked.</p>
+<p class="q">Which distance matters more?</p>
+<ul class="stack two-col">
+<li>kilometres</li><li>travel time</li><li>cost</li>
+<li>number of connections</li><li>cultural proximity</li><li>informational distance</li></ul>`,
+notes:`<p><b>Philosophy hiding here.</b> A relation can matter more than location.</p>`},
+
+{n:"B25", strand:"phil", title:"Scaling changes ontology",
+body:`<div class="triple">
+<div><b>one scale</b><span>individuals</span></div>
+<div><b>another</b><span>patterns of interaction</span></div>
+<div><b>another</b><span>system-level behaviour</span></div></div>
+<p class="sub">One commuter makes a choice. Millions of commuters make congestion.</p>
+<p class="q">Where is congestion? It is not contained inside any one driver.</p>`,
+notes:`<p><b>Teacher move.</b> This slide is the hinge between the mathematics and the philosophy; do not rush it.</p>`},
+
+{n:"B26", strand:"phil", title:"Emergence",
+body:`<p class="lead sm">A property is emergent when it makes sense primarily at the level of the interacting system.</p>
+<ul class="stack two-col">
+<li>traffic jam</li><li>market price</li><li>flock</li>
+<li>food-web stability</li><li>urban congestion</li><li>language</li></ul>
+<p class="q">Can you point to the single individual who contains the phenomenon?</p>`,
+notes:`<p><b>Teacher move.</b> Ask for a counterexample: a system property that <i>is</i> located in one individual. The difficulty of producing one is instructive.</p>`},
+
+{n:"B27", strand:"phil", title:"Is the whole more than the sum?",
+body:`<div class="two">
+<div><h4>Reductionist instinct</h4><p>If we understand every part, we understand the whole.</p></div>
+<div><h4>Systems instinct</h4><p>Relationships create patterns that are not visible in isolated parts.</p></div></div>
+<p class="q">Give one example supporting each claim.</p>`,
+notes:`<p><b>Teacher note.</b> Avoid forcing a winner. The productive issue is <b>which level of explanation is useful for which question</b>.</p>`},
+
+{n:"B28", strand:"bio", title:"Gaia enters through feedback",
+body:`<p class="sub">Life changes the environment. The changed environment changes life.</p>
+<div class="eq big">L &rarr; E &rarr; L &nbsp;&nbsp;&nbsp; so &nbsp;&nbsp;&nbsp; L &harr; E</div>
+<ul class="stack two-col">
+<li>photosynthesis and atmospheric gases</li><li>vegetation and water cycling</li>
+<li>plankton and carbon transfer</li><li>soils and microbial life</li>
+<li>surface cover and albedo</li></ul>`,
+notes:`<p><b>Teacher move.</b> Ask which of the five examples students could measure at school, and how.</p>`},
+
+{n:"B29", strand:"bio", title:"Daisyworld thought experiment",
+body:`<p class="sub">Imagine a planet with dark daisies absorbing more radiation, pale daisies reflecting more radiation, and temperature affecting which daisies thrive.</p>
+<p class="q">Could local competition produce a degree of global temperature regulation?</p>`,
+notes:`<p><b>Teacher note.</b> This is a model, not proof that Earth behaves as one organism. Use it to show how feedback among individually self-interested organisms can generate system-level behaviour.</p>`},
+
+{n:"B30", strand:"phil", title:"Does the Earth strive?",
+body:`<p class="sub">A dangerous sentence:</p>
+<p class="struck">The Earth wants to regulate itself.</p>
+<p class="sub">Replace it with:</p>
+<p class="reveal">Feedback can produce regulation-like behaviour without a central planner.</p>
+<p class="q">What is gained by avoiding intentional language?</p>`,
+notes:`<p><b>Philosophy.</b> Purpose-like pattern does not necessarily imply conscious purpose. Have a student cross the first sentence out on the board themselves.</p>`},
+
+{n:"B31", strand:"phil", title:"Schopenhauer's challenge",
+body:`<ul class="stack">
+<li>living beings strive</li>
+<li>satisfaction is temporary</li>
+<li>desire renews itself</li>
+<li>striving therefore carries suffering</li></ul>
+<p class="q">If life continually needs energy simply to remain organised, does thermodynamic dependence strengthen this pessimism?</p>`,
+notes:`<p><b>Teacher note.</b> Invite the yes case first. Life must keep acquiring free energy because equilibrium is death for an organism.</p>`},
+
+{n:"B32", strand:"phil", title:"The counter-image: striving borne by light",
+body:`<p class="sub">Yet the same energetic dependence produces growth, perception, movement, relationship, ecosystems, cities, culture and inquiry.</p>
+<p class="lead sm">The struggle is shouldered by sunlight.</p>
+<p class="q">Does dependence make life futile, or make its achievements more astonishing?</p>`,
+notes:`<p><b>Teacher move.</b> Split the room and require each half to argue the side it did not choose.</p>`},
+
+{n:"B33", strand:"phil", title:"The photon becomes witness",
+body:`<div class="chain small"><span>stellar fusion</span><span>photon</span><span>leaf</span><span>chemical free energy</span><span>food web</span><span>nervous system</span><span>thought</span></div>
+<p class="lead sm">Light enters the system. Eventually the system learns to see.</p>`,
+notes:`<p><b>Teacher note.</b> This is metaphor, not teleology. State that distinction explicitly and out loud.</p>`},
+
+{n:"B34", strand:"phil", title:"Is this a refutation of Schopenhauer?",
+body:`<p class="lead">No.</p>
+<p class="sub">It raises a different question. Schopenhauer asks what striving feels like and what willing entails; systems science asks what striving <b>does</b> in an open energy-flowing system.</p>
+<p class="q">Can both descriptions be true? Striving may entail suffering, and striving may also generate organisation, relation, perception and meaning.</p>`,
+notes:`<p><b>Teacher move.</b> This slide protects the unit from looking like a triumphalist answer to a philosopher students have not yet read.</p>`},
+
+{n:"B35", strand:"phil", title:"Purpose without a planner?",
+body:`<ol class="numbered">
+<li>Purpose is imposed from outside.</li>
+<li>Purpose emerges from living systems.</li>
+<li>There is function but no purpose.</li></ol>
+<p class="sub"><b>Task.</b> Place each of these into one category: heart pumping blood; predator hunting; city traffic pattern; Gaia-like feedback; student choosing a goal.</p>`,
+notes:`<p><b>Teacher note.</b> This is the deepest slide. Let disagreement remain unresolved.</p>`},
+
+{n:"B36", strand:"ias", title:"Return to power",
+body:`<ul class="stack">
+<li>The apex predator depends on prey.</li>
+<li>The hub depends on links.</li>
+<li>The megacity depends on flows.</li>
+<li>The biosphere depends on sunlight.</li></ul>
+<p class="lead sm">Dominance and dependence can coexist.</p>
+<p class="q">Does recognising dependence weaken power, or explain where power comes from?</p>`,
+notes:`<p><b>Teacher move.</b> Return to the show of hands taken at A16 and ask who has moved.</p>`},
+
+{n:"B37", strand:"ias", title:"The Goliath rule",
+body:`<p class="sub">A provisional principle:</p>
+<p class="lead sm">The taller the Goliath, the more support may be hidden beneath it.</p>
+<p class="sub">Test it against: predator, corporation, capital city, airport hub, dominant online platform, human civilisation.</p>
+<p class="q">Find one counterexample.</p>`,
+notes:`<p><b>Teacher move.</b> The instruction to look for a counterexample is the corrigibility move; a rule offered without one is a slogan.</p>`},
+
+{n:"B38", strand:"maths", title:"Scaling as a way of seeing",
+body:`<ul class="stack">
+<li><b>Scaling asks:</b> when the system gets larger, what changes in proportion?</li>
+<li><b>Networks ask:</b> which relationships make those changes possible?</li>
+<li><b>Philosophy asks:</b> at what level does the explanation belong?</li></ul>
+<div class="chain"><span>size</span><span>connection</span><span>power</span><span>system</span><span>meaning</span></div>`,
+notes:`<p><b>Board synthesis.</b> Build this chain across the board as students supply each term; do not present it complete.</p>`},
+
+{n:"B39", strand:"ias", title:"Student synthesis task",
+body:`<p class="sub">Choose one paired comparison:</p>
+<ul class="stack two-col">
+<li>wolf pack &harr; capital city</li><li>food web &harr; transport network</li>
+<li>keystone species &harr; financial hub</li><li>trophic pyramid &harr; social hierarchy</li>
+<li>ecosystem &harr; city</li><li>biosphere &harr; global economy</li></ul>
+<p class="sub"><b>Produce a one-page explanation containing:</b> nodes; links; flows; one hub or Goliath; one scaling relationship; one dependency; one emergent property; one place where the analogy fails.</p>`,
+notes:`<p><b>Assessment note.</b> The eighth requirement carries most of the marks in practice; an analogy a student cannot break is an analogy they have not examined.</p>`},
+
+{n:"B40", strand:"phil", title:"Final seminar question",
+body:`<p class="sub">We began standing because of a photon. We found that energy is passed through webs; apex nodes depend on what lies beneath; cities amplify some things and economise others; hubs acquire power through relationships; systems can exhibit properties no individual possesses; life alters the conditions of life.</p>
+<p class="lead sm">If life is striving, is striving merely blind suffering, or is it also the means by which the universe becomes organised enough to witness itself?</p>
+<p class="q">No answer earns credit unless it uses one mathematical idea, one biological example and one Individuals &amp; Societies example.</p>`,
+notes:`<p><b>Teacher move.</b> Read the rule out before the discussion begins, not after.</p>`}
+];
+
+const DECK_C = [
+{n:"N1", strand:"maths", title:"Mathematical boundary",
+body:`<p class="sub">The unit can remain mathematically accessible by keeping the central interpretation at</p>
+<div class="eq big">Y = a X<sup>&beta;</sup></div>
+<p class="sub">and asking only whether the increase is less than proportional, proportional, or more than proportional. Students do not require logarithms to reason with multiplier examples.</p>
+<div class="triple four">
+<div><b>2<sup>0.75</sup></b><span>&asymp; 1.68</span></div>
+<div><b>2<sup>0.85</sup></b><span>&asymp; 1.80</span></div>
+<div><b>2<sup>1</sup></b><span>= 2</span></div>
+<div><b>2<sup>1.15</sup></b><span>&asymp; 2.22</span></div></div>`,
+notes:`<p>Useful numerical anchors to keep on the back board throughout the unit.</p>`},
+
+{n:"N2", strand:"maths", title:"Conceptual vocabulary ladder",
+body:`<p class="sub">Introduce terms only after students have encountered the phenomenon.</p>
+<ol class="numbered ladder">
+<li>proportion</li><li>scale</li><li>power law</li><li>node</li><li>link</li>
+<li>hub</li><li>flow</li><li>bottleneck</li><li>dependence</li><li>centrality</li>
+<li>feedback</li><li>emergence</li><li>reductionism</li><li>holism</li><li>teleology</li></ol>`,
+notes:`<p>Concrete before abstract. A term introduced before its phenomenon becomes something students recite rather than use.</p>`},
+
+{n:"N3", strand:"ias", title:"The central recurring sentence",
+body:`<p class="lead sm">A powerful node may be powerful precisely because a network is shouldering it.</p>
+<ul class="stack">
+<li>A predator is shouldered by prey.</li>
+<li>A city is shouldered by infrastructure.</li>
+<li>A hub is shouldered by connections.</li>
+<li>A biosphere is shouldered by incoming stellar energy.</li>
+<li>A civilisation capable of contemplating the stars is shouldered, ultimately, by stellar energy itself.</li></ul>`,
+notes:`<p>Use this sentence repeatedly across the unit, varying only the pair. Repetition is the retrieval structure.</p>`},
+
+{n:"N4", strand:"phil", title:"Philosophical guardrail",
+body:`<div class="two">
+<div><h4>Science can support</h4><ul>
+<li>living systems require energy throughput</li>
+<li>trophic networks distribute and dissipate energy</li>
+<li>network structure affects system behaviour</li>
+<li>scaling laws reveal non-proportional changes with system size</li>
+<li>feedback can produce regulation-like patterns without central control</li></ul></div>
+<div><h4>Science alone does not establish</h4><ul>
+<li>cosmic purpose</li>
+<li>intrinsic meaning</li>
+<li>Gaia as a conscious agent</li>
+<li>that Schopenhauer is empirically refuted</li></ul></div></div>
+<p class="lead sm">Evidence constrains interpretation without uniquely determining metaphysics.</p>`,
+notes:`<p>The final poetic move should remain explicitly distinguishable from scientific inference. The IDU becomes richer if students can see the boundary and say where it lies.</p>`}
+];
+
+
+const STRAND={bio:"var(--bio)",ias:"var(--ias)",phil:"var(--phil)",maths:"var(--maths)"};
+const STRANDNAME={bio:"Biology / ESS",ias:"Individuals & Societies",phil:"Philosophy",maths:"Mathematics"};
+
+const TITLE={kind:"title"};
+const DIVA={kind:"divider",dk:"Deck A",h:"The overarching arc",p:"A short conceptual deck that carries the whole story, from a photon arriving to the question of where power lives."};
+const DIVB={kind:"divider",dk:"Deck B",h:"Drill-down and expansion",p:"A longer teaching sequence dancing between ecology, human geography, networks and philosophy."};
+const DIVC={kind:"divider",dk:"Appendix",h:"Teacher notes",p:"Mathematical boundary, vocabulary ladder, the recurring sentence, and the philosophical guardrail."};
+
+const S=[TITLE,DIVA,...DECK_A,DIVB,...DECK_B,DIVC,...DECK_C];
+let i=0, notesOpen=false;
+
+function titleHTML(){return '<div class="title-slide">'+
+'<p class="kicker">Interdisciplinary Unit · Year 9</p>'+
+'<h1>Who Is <em>Shouldering</em> Whom?</h1>'+
+'<p class="strap">Scaling, food webs, cities, power and the light that holds the system up.</p>'+
+'<div class="meta">'+
+'<div><b>IDU frame</b>Mathematics &times; Individuals &amp; Societies &times; Biology / ESS</div>'+
+'<div><b>Mathematical entry</b>Proportionality, then sublinear and superlinear scaling, then simple power laws</div>'+
+'<div><b>Conceptual entry</b>Individuals, relationships, networks, hubs, emergent systems</div>'+
+'<div><b>Philosophical question</b>When many individuals become a system, where does the power really live?</div>'+
+'</div></div>';}
+
+function render(){
+  const s=S[i], el=document.getElementById('slide');
+  el.scrollTop=0;
+  if(s.kind==='title'){el.innerHTML=titleHTML();document.documentElement.style.setProperty('--strand','var(--gold)');}
+  else if(s.kind==='divider'){el.innerHTML='<div class="divider"><p class="dk">'+s.dk+'</p><h1>'+s.h+'</h1><p>'+s.p+'</p></div>';document.documentElement.style.setProperty('--strand','var(--gold)');}
+  else{
+    document.documentElement.style.setProperty('--strand',STRAND[s.strand]);
+    el.innerHTML='<div class="tag"><span class="dot"></span><span class="id">'+s.n+'</span><span>'+STRANDNAME[s.strand]+'</span></div>'+
+      '<h2 class="stitle">'+s.title+'</h2>'+s.body;
+  }
+  document.getElementById('notesbody').innerHTML=(s.notes)||'<p style="color:var(--muted)">No teacher notes for this slide.</p>';
+  const pct=(i/(S.length-1))*100;
+  document.getElementById('railfill').style.width=pct+'%';
+  document.getElementById('railmark').style.left=pct+'%';
+  document.getElementById('counter').textContent=(s.n? s.n+'  ':'')+(i+1)+' / '+S.length;
+  try{ if(location.hash.slice(1)!==String(i)) history.replaceState(null,'','#'+i); }catch(e){ /* sandboxed iframe: no history access */ }
+}
+function go(n){i=Math.max(0,Math.min(S.length-1,n));render();}
+function next(){go(i+1)}function prev(){go(i-1)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(S.length-1)}
+  else if(e.key==='n'||e.key==='N'){notesOpen=!notesOpen;document.getElementById('notes').classList.toggle('open',notesOpen);}
+  else if(e.key==='g'||e.key==='G'){document.getElementById('grid').classList.toggle('open');}
+  else if(e.key==='f'||e.key==='F'){try{if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}else{document.exitFullscreen();}}catch(err){}}
+  else if(e.key==='Escape'){document.getElementById('grid').classList.remove('open');notesOpen=false;document.getElementById('notes').classList.remove('open');}
+});
+document.getElementById('nextzone').onclick=next;
+document.getElementById('prevzone').onclick=prev;
+
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].clientX;ty=e.changedTouches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.6){dx<0?next():prev();}
+},{passive:true});
+
+const gw=document.getElementById('gwrap');
+S.forEach((s,k)=>{
+  const b=document.createElement('button');
+  b.className='gcell';
+  const label=s.kind==='title'?'Title':(s.kind==='divider'?s.dk:s.n);
+  const t=s.kind==='title'?'Who Is Shouldering Whom?':(s.kind==='divider'?s.h:s.title);
+  const col=s.strand?STRAND[s.strand]:'var(--gold)';
+  b.innerHTML='<span class="gn" style="color:'+col+'">'+label+'</span><span class="gt">'+t+'</span>';
+  b.onclick=()=>{go(k);document.getElementById('grid').classList.remove('open');};
+  gw.appendChild(b);
+});
+
+try{ const h=parseInt(location.hash.slice(1),10); if(!isNaN(h)) i=Math.max(0,Math.min(S.length-1,h)); }catch(e){}
+render();
+</script>
+</body>
+</html>
