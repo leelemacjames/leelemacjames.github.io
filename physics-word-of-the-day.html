@@ -197,6 +197,58 @@ footer.stamp{
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
   color:#6d675e;text-transform:uppercase;
 }
+/* ---------- matching exercise ---------- */
+section.matching{margin-top:46px;border-top:1px solid var(--line);padding-top:26px}
+.match-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.match-score{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 20px;
+}
+.match-score b{color:var(--gold);font-weight:500}
+.match-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:22px;align-items:start}
+.pool{
+  display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;
+  border:1px solid var(--line);background:var(--bg2);border-radius:var(--r);
+  padding:16px;min-height:120px;
+}
+.pool-label,.roots-label{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 9px;
+}
+.chip-word{
+  font-family:"Cormorant Garamond",serif;font-size:1.02rem;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);padding:7px 13px;cursor:pointer;
+  color:var(--ink);transition:.14s;
+}
+.chip-word:hover{border-color:var(--gold)}
+.chip-word.selected{border-color:var(--gold);background:rgba(201,162,39,.13);color:var(--gold)}
+.chip-word.shake{animation:shake .32s}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  75%{transform:translateX(5px)}
+}
+.roots{display:flex;flex-direction:column;gap:10px}
+.root-card{
+  border:1px solid var(--line);background:var(--panel);border-radius:var(--r);
+  padding:13px 16px;cursor:pointer;transition:.14s;
+}
+.root-card:hover{border-color:#454c58}
+.root-card.armed{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(201,162,39,.35)}
+.root-card.complete{border-color:var(--ok)}
+.root-card .rc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+.root-card .rc-root{font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.02em}
+.root-card .rc-gloss{font-size:12.5px;color:var(--muted);font-style:italic}
+.root-card .rc-caught{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;min-height:4px}
+.root-card .rc-caught span{
+  font-family:"Cormorant Garamond",serif;font-style:italic;font-size:.95rem;color:var(--ok);
+  border-bottom:1px solid rgba(127,166,107,.4);
+}
+.match-note{color:var(--muted);font-size:12.5px;margin:14px 0 0;max-width:60ch}
+@media (max-width:760px){
+  .match-layout{grid-template-columns:1fr}
+}
+
 @media (max-width:720px){
   .rail{grid-template-columns:1fr}
   .options,.grid2{grid-template-columns:1fr}
@@ -298,6 +350,34 @@ footer.stamp{
   </div>
   <div style="margin-bottom:14px"><button class="btn" id="unlockBtn">Show all words</button></div>
   <div class="cycle-grid" id="cycleGrid"></div>
+</section>
+
+<section class="matching">
+  <div class="sec-head">
+    <h2>Root families: match the words</h2>
+    <p class="sec-note">Several derived words share one root. Select a word, then select the root it belongs to. A root card can catch more than one word.</p>
+  </div>
+  <div class="match-controls">
+    <div class="chips" id="setSizeChips">
+      <button class="chip" data-size="6" aria-pressed="false">Few · 6 roots</button>
+      <button class="chip" data-size="10" aria-pressed="false">More · 10 roots</button>
+      <button class="chip" data-size="99" aria-pressed="true">All roots in view</button>
+    </div>
+    <button class="btn" id="matchShuffleBtn">Shuffle set</button>
+    <button class="btn" id="matchResetBtn">Reset attempt</button>
+  </div>
+  <p class="match-score" id="matchScore"></p>
+  <div class="match-layout">
+    <div>
+      <p class="pool-label">Derived words</p>
+      <div class="pool" id="matchPool"></div>
+    </div>
+    <div>
+      <p class="roots-label">Roots</p>
+      <div class="roots" id="matchRoots"></div>
+    </div>
+  </div>
+  <p class="match-note" id="matchNote">Root families are drawn from whichever programme band is selected above, so the exercise always matches the day you are on.</p>
 </section>
 
 <div class="key">
@@ -995,6 +1075,119 @@ const BANDS = [
 const BAND_NAME = {MYP9:"MYP Year 9",MYP10:"MYP Year 10",MYP11:"MYP Year 11",DP12:"DP Year 12",DP13:"DP Year 13"};
 
 /* ============================================================
+   Root-family clusters for the many-to-one matching exercise.
+   Each cluster is one root; "words" are several derived forms
+   of that root, hand-checked so every word genuinely shares it.
+   "bands" tags which programme years the cluster is relevant to,
+   so the exercise can be filtered the same way as the daily card.
+   ============================================================ */
+const MATCH_SETS = [
+ {root:"flect",lang:"L",gloss:"bend",bands:["MYP9","MYP10"],words:["reflect","reflection","deflect","inflection"]},
+ {root:"fract",lang:"L",gloss:"break",bands:["MYP10","MYP11"],words:["fracture","refraction","diffraction","fraction"]},
+ {root:"duct",lang:"L",gloss:"lead",bands:["MYP9","MYP10"],words:["conduct","conductor","induction","aqueduct"]},
+ {root:"vect",lang:"L",gloss:"carry",bands:["MYP9"],words:["convection","vector","advection"]},
+ {root:"puls",lang:"L",gloss:"drive, push",bands:["MYP9","DP12"],words:["impulse","propel","repulsion","pulse"]},
+ {root:"grad",lang:"L",gloss:"step",bands:["DP12"],words:["gradient","degrade","progress","retrograde"]},
+ {root:"therm",lang:"G",gloss:"heat",bands:["MYP11","DP12"],words:["thermal","isothermal","thermodynamics","thermometer"]},
+ {root:"trop",lang:"G",gloss:"turning",bands:["MYP11","DP13"],words:["entropy","isotropic","tropic","heliotrope"]},
+ {root:"iso",lang:"G",gloss:"equal, the same",bands:["MYP11","DP12","DP13"],words:["isotope","isothermal","isotropic","isobar"]},
+ {root:"dens",lang:"L",gloss:"thick, crowded",bands:["MYP9"],words:["density","condense","condensation"]},
+ {root:"sist",lang:"L",gloss:"stand",bands:["MYP9"],words:["resistance","persist","consist","insist"]},
+ {root:"spec",lang:"L",gloss:"look, appearance",bands:["MYP10"],words:["spectrum","inspect","spectacle","spectroscopy"]},
+ {root:"vari",lang:"L",gloss:"change",bands:["DP13"],words:["invariance","variable","variant"]},
+ {root:"cad",lang:"L",gloss:"fall",bands:["MYP11"],words:["decay","cadence","cascade","decadent"]},
+ {root:"lat",lang:"L",gloss:"carried, borne",bands:["DP13"],words:["dilation","relativity","translate"]},
+ {root:"mitt",lang:"L",gloss:"let go, send",bands:["DP12"],words:["permittivity","transmit","emission","admit"]},
+ {root:"nihil",lang:"L",gloss:"nothing",bands:["DP13"],words:["annihilation","nihilism"]},
+ {root:"tenu",lang:"L",gloss:"thin",bands:["MYP11"],words:["attenuation","tenuous","extenuate"]},
+ {root:"posit",lang:"L",gloss:"placed",bands:["DP12"],words:["superposition","deposit","position"]},
+ {root:"vibr",lang:"L",gloss:"shake",bands:["MYP9"],words:["vibration","vibrate","vibrato"]}
+];
+
+function matchPoolFilter(){
+  if(state.band==="ALL") return MATCH_SETS;
+  if(state.band==="MYP") return MATCH_SETS.filter(c=>c.bands.some(b=>b.startsWith("MYP")));
+  if(state.band==="DP")  return MATCH_SETS.filter(c=>c.bands.some(b=>b.startsWith("DP")));
+  return MATCH_SETS.filter(c=>c.bands.includes(state.band));
+}
+
+const matchState = {size:99, sets:[], caught:{}, selected:null};
+
+function buildMatchSet(){
+  let avail = matchPoolFilter();
+  if(avail.length < 4) avail = MATCH_SETS;           // guard tiny single-band filters
+  const rng = mulberry32(hash32(state.seed + "|match|" + state.band + "|" + matchState.size + "|" + (matchState.reshuffleNonce||0)));
+  const shuffled = shuffle(avail, rng);
+  const n = Math.min(matchState.size, shuffled.length);
+  matchState.sets = shuffled.slice(0, n);
+  matchState.caught = {};
+  matchState.sets.forEach(c => matchState.caught[c.root] = []);
+  matchState.selected = null;
+}
+
+function matchWordPool(){
+  const all = [];
+  matchState.sets.forEach(c => c.words.forEach(w => {
+    if(!matchState.caught[c.root].includes(w)) all.push({word:w, root:c.root});
+  }));
+  const rng = mulberry32(hash32(state.seed + "|pool|" + state.band + (matchState.reshuffleNonce||0)));
+  return shuffle(all, rng);
+}
+
+function renderMatch(){
+  $("setSizeChips").querySelectorAll("button").forEach(btn=>{
+    btn.setAttribute("aria-pressed", String(+btn.dataset.size===matchState.size));
+    btn.onclick = () => { matchState.size = +btn.dataset.size; buildMatchSet(); renderMatch(); };
+  });
+
+  const totalWords = matchState.sets.reduce((s,c)=>s+c.words.length,0);
+  const caughtWords = Object.values(matchState.caught).reduce((s,a)=>s+a.length,0);
+  $("matchScore").innerHTML = `Matched <b>${caughtWords}</b> of <b>${totalWords}</b> · ${matchState.sets.length} root${matchState.sets.length===1?"":"s"} in this set`;
+
+  const words = matchWordPool();
+  $("matchPool").innerHTML = words.length
+    ? words.map(w => `<button class="chip-word" data-word="${w.word}" data-root="${w.root}">${w.word}</button>`).join("")
+    : `<span style="color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:.08em">All words matched. Shuffle for a fresh set.</span>`;
+  $("matchPool").querySelectorAll(".chip-word").forEach(el=>{
+    el.onclick = () => {
+      if(matchState.selected===el.dataset.word) { matchState.selected=null; }
+      else { matchState.selected = el.dataset.word; matchState.selectedRoot = el.dataset.root; }
+      renderMatch();
+    };
+    if(matchState.selected===el.dataset.word) el.classList.add("selected");
+  });
+
+  $("matchRoots").innerHTML = matchState.sets.map(c => `
+    <div class="root-card" data-root="${c.root}">
+      <div class="rc-head">
+        <span class="rc-root">${c.root}<span class="lang ${c.lang}" style="font-size:.6em;vertical-align:.5em;margin-left:.4em">${c.lang}</span></span>
+        <span class="rc-gloss">${c.gloss}</span>
+      </div>
+      <div class="rc-caught">${matchState.caught[c.root].map(w=>`<span>${w}</span>`).join("")}</div>
+    </div>`).join("");
+
+  $("matchRoots").querySelectorAll(".root-card").forEach(card=>{
+    const r = card.dataset.root;
+    if(matchState.selected && matchState.selectedRoot===r) card.classList.add("armed");
+    const set = matchState.sets.find(c=>c.root===r);
+    if(set && matchState.caught[r].length===set.words.length) card.classList.add("complete");
+    card.onclick = () => {
+      if(!matchState.selected) return;
+      if(matchState.selectedRoot === r){
+        matchState.caught[r].push(matchState.selected);
+        matchState.selected = null;
+        renderMatch();
+      } else {
+        const chip = $("matchPool").querySelector(`[data-word="${matchState.selected}"]`);
+        if(chip){ chip.classList.add("shake"); setTimeout(()=>chip.classList.remove("shake"),320); }
+        matchState.selected = null;
+        setTimeout(renderMatch, 260);
+      }
+    };
+  });
+}
+
+/* ============================================================
    Deterministic pseudo-randomisation
    A 32-bit hash of the seed feeds mulberry32; the same seed and
    the same filter always give the same running order, so every
@@ -1053,7 +1246,7 @@ function renderChips(){
   $("bandChips").innerHTML = BANDS.map(b =>
     `<button class="chip" data-band="${b.id}" aria-pressed="${state.band===b.id}">${b.label}</button>`).join("");
   $("bandChips").querySelectorAll("button").forEach(btn =>
-    btn.onclick = () => { state.band = btn.dataset.band; state.revealed=false; state.chosen=null; render(); });
+    btn.onclick = () => { state.band = btn.dataset.band; state.revealed=false; state.chosen=null; buildMatchSet(); render(); });
   $("dirChips").querySelectorAll("button").forEach(btn => {
     btn.setAttribute("aria-pressed", String(state.dir===btn.dataset.dir));
     btn.onclick = () => { state.dir = btn.dataset.dir; state.revealed=false; state.chosen=null; render(); };
@@ -1139,6 +1332,7 @@ function render(){
       window.scrollTo({top:0, behavior:"smooth"});
     });
   $("unlockBtn").textContent = state.unlocked ? "Hide later words" : "Show all words";
+  renderMatch();
 }
 
 function choose(k, correctKey){ state.chosen = k; mark(k, correctKey); }
@@ -1156,6 +1350,8 @@ $("nextBtn").onclick = ()=>{ state.offset++; state.revealed=false; state.chosen=
 $("todayBtn").onclick = ()=>{ state.offset = todayOffset(); state.revealed=false; state.chosen=null; render(); };
 $("revealBtn").onclick = ()=>{ state.revealed = !state.revealed; render(); };
 $("unlockBtn").onclick = ()=>{ state.unlocked = !state.unlocked; render(); };
+$("matchShuffleBtn").onclick = () => { matchState.reshuffleNonce = (matchState.reshuffleNonce||0)+1; buildMatchSet(); renderMatch(); };
+$("matchResetBtn").onclick = () => { buildMatchSet(); renderMatch(); };
 $("dateIn").onchange = e => {
   const d = new Date(e.target.value + "T00:00:00Z");
   if(!isNaN(d)) { state.offset = Math.floor((d.getTime()-EPOCH)/DAY); state.revealed=false; state.chosen=null; render(); }
@@ -1169,6 +1365,7 @@ document.addEventListener("keydown", e=>{
 });
 
 state.offset = todayOffset();
+buildMatchSet();
 render();
 </script>
 </body>
