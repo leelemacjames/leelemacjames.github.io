@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eleven Views of a Chiral BF Theory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{
+  --ink:#0A0D12;
+  --panel:#11151C;
+  --rule:#212936;
+  --parchment:#E9E4D8;
+  --muted:#8A93A3;
+  --gold:#D9A93C;
+  --teal:#5BB8C7;
+  --violet:#9B7BC4;
+  --rose:#C9556A;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--ink);color:var(--parchment);
+  font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+#app{display:grid;grid-template-columns:minmax(360px,38%) 1fr;height:100vh;height:100dvh}
+
+/* ---------- left: the reading column ---------- */
+#read{
+  position:relative;display:flex;flex-direction:column;
+  background:var(--panel);border-right:1px solid var(--rule);
+  min-height:0;
+}
+#masthead{padding:26px 34px 18px;border-bottom:1px solid var(--rule)}
+#masthead h1{
+  margin:0;font-weight:300;font-size:27px;line-height:1.14;letter-spacing:.01em;
+}
+#masthead h1 span{display:block;font-style:italic;color:var(--gold);font-size:20px;margin-top:6px}
+#byline{margin:12px 0 0;font-family:var(--sans);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+
+#scroller{flex:1;overflow-y:auto;padding:26px 34px 30px;min-height:0;scrollbar-width:thin}
+#scroller::-webkit-scrollbar{width:7px}
+#scroller::-webkit-scrollbar-thumb{background:#242c3a;border-radius:4px}
+
+.kicker{
+  font-family:var(--mono);font-size:11px;color:var(--gold);
+  letter-spacing:.08em;margin:0 0 10px;
+}
+.kicker b{color:var(--muted);font-weight:400}
+h2#title{font-weight:400;font-size:29px;line-height:1.2;margin:0 0 20px}
+#body p{
+  font-size:18.5px;line-height:1.62;margin:0 0 17px;color:#DCD7CB;
+  max-width:62ch;
+}
+#body p:last-child{margin-bottom:0}
+#body em{color:var(--gold);font-style:italic}
+#body b{font-weight:600;color:var(--parchment)}
+
+.tex{
+  margin:22px 0;padding:15px 16px;border-left:2px solid var(--gold);
+  background:rgba(217,169,60,.045);overflow-x:auto;overflow-y:hidden;
+  font-size:15px;color:#F0EBDF;
+}
+.tex .note{
+  display:block;margin-top:9px;font-family:var(--sans);font-size:11.5px;
+  color:var(--muted);letter-spacing:.01em;line-height:1.5;
+}
+.tex .raw{font-family:var(--mono);font-size:13px;color:#CFC9BB}
+.katex{color:#F2EDE1}
+
+/* ---------- controls ---------- */
+#controls{border-top:1px solid var(--rule);padding:16px 34px 18px;background:#0D1117}
+#dialrow{display:flex;align-items:center;gap:14px;margin-bottom:15px}
+#dialrow label{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  letter-spacing:.05em;white-space:nowrap;flex:0 0 auto;
+}
+#dialrow output{
+  font-family:var(--mono);font-size:12px;color:var(--gold);
+  min-width:74px;text-align:right;flex:0 0 auto;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;height:2px;background:#2A3342;
+  border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--gold);cursor:grab;border:none;
+}
+input[type=range]::-moz-range-thumb{
+  width:15px;height:15px;border-radius:50%;background:var(--gold);
+  cursor:grab;border:none;
+}
+input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(217,169,60,.3)}
+
+#nav{display:flex;align-items:center;gap:10px}
+button{
+  font-family:var(--sans);font-size:12.5px;background:transparent;
+  color:var(--parchment);border:1px solid var(--rule);border-radius:2px;
+  padding:8px 15px;cursor:pointer;transition:border-color .18s,color .18s;
+}
+button:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+button:disabled{opacity:.28;cursor:default}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#counter{
+  margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)
+}
+
+#rail{display:flex;gap:3px;padding:0 34px 14px;background:#0D1117}
+#rail i{
+  flex:1;height:2px;background:#242C3A;cursor:pointer;transition:background .2s;
+}
+#rail i:hover{background:#3A4557}
+#rail i.on{background:var(--gold)}
+#rail i.seen{background:#6B5726}
+
+/* ---------- right: the stage ---------- */
+#stage{position:relative;min-width:0;background:
+  radial-gradient(ellipse at 50% 40%,#141A24 0%,#080A0E 72%);}
+#gl{position:absolute;inset:0;display:block}
+#hint{
+  position:absolute;left:20px;bottom:16px;font-family:var(--mono);font-size:10.5px;
+  color:#4E5768;letter-spacing:.05em;pointer-events:none;
+}
+#readout{
+  position:absolute;right:20px;top:18px;font-family:var(--mono);font-size:12px;
+  color:var(--gold);text-align:right;line-height:1.7;pointer-events:none;
+  text-shadow:0 0 12px rgba(0,0,0,.9);
+}
+#readout u{display:block;text-decoration:none;color:var(--muted);font-size:10.5px}
+
+#stamp{
+  position:absolute;left:0;right:0;bottom:0;padding:9px 20px;
+  font-family:var(--mono);font-size:9.5px;color:#3C4453;letter-spacing:.04em;
+  text-align:right;pointer-events:none;
+}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  #app{grid-template-columns:1fr;grid-template-rows:46vh auto;height:auto}
+  #stage{order:1;height:46vh;position:sticky;top:0;z-index:5}
+  #read{order:2;border-right:none;border-top:1px solid var(--rule);height:auto}
+  #masthead{padding:20px 22px 14px}
+  #masthead h1{font-size:23px}
+  #scroller{overflow:visible;padding:20px 22px 24px}
+  #body p{font-size:17px}
+  #controls,#rail{padding-left:22px;padding-right:22px;position:sticky;bottom:0}
+  #rail{bottom:66px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="read">
+    <header id="masthead">
+      <h1>Eleven Views of a Chiral <span>BF-like theory of gravito-electromagnetic waves</span></h1>
+      <p id="byline">After the 2019 paper by Lee McCulloch-James. Turn the dial under each view; drag the picture to look around it.</p>
+    </header>
+    <div id="scroller">
+      <p class="kicker" id="kicker"></p>
+      <h2 id="title"></h2>
+      <div id="body"></div>
+    </div>
+    <div id="rail"></div>
+    <div id="controls">
+      <div id="dialrow">
+        <label id="dialLabel" for="dial"></label>
+        <input type="range" id="dial" min="0" max="1" step="0.001" value="0">
+        <output id="dialOut"></output>
+      </div>
+      <div id="nav">
+        <button id="prev">Back</button>
+        <button id="next">Onward</button>
+        <span id="counter"></span>
+      </div>
+    </div>
+  </section>
+  <section id="stage">
+    <canvas id="gl"></canvas>
+    <div id="readout"></div>
+    <div id="hint">drag to orbit · scroll to zoom</div>
+    <div id="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+/* ============================================================
+   Palette and small three.js helpers
+   ============================================================ */
+const C = {
+  gold:0xD9A93C, teal:0x5BB8C7, violet:0x9B7BC4,
+  parch:0xE9E4D8, dim:0x39424F, rose:0xC9556A, faint:0x1E2530
+};
+const R = Math.random, TAU = Math.PI*2;
+const V = (x,y,z)=>new THREE.Vector3(x,y,z);
+
+function line(pts, color, opacity=1, width=1){
+  const g = new THREE.BufferGeometry().setFromPoints(pts);
+  const m = new THREE.LineBasicMaterial({color, transparent:true, opacity, linewidth:width});
+  return new THREE.Line(g,m);
+}
+function loopLine(pts, color, opacity=1){
+  const g = new THREE.BufferGeometry().setFromPoints(pts);
+  return new THREE.LineLoop(g, new THREE.LineBasicMaterial({color,transparent:true,opacity}));
+}
+function circlePts(r, n=72, plane='xy'){
+  const p=[];
+  for(let i=0;i<=n;i++){
+    const a=i/n*TAU, c=Math.cos(a)*r, s=Math.sin(a)*r;
+    p.push(plane==='xy'?V(c,s,0):plane==='xz'?V(c,0,s):V(0,c,s));
+  }
+  return p;
+}
+function quadMesh(color, opacity=0.22){
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(18),3));
+  const m = new THREE.MeshBasicMaterial({color, transparent:true, opacity,
+    side:THREE.DoubleSide, depthWrite:false});
+  const mesh = new THREE.Mesh(g,m);
+  mesh.setCorners = (a,b,c,d)=>{
+    const p = g.attributes.position.array;
+    const put=(i,v)=>{p[i]=v.x;p[i+1]=v.y;p[i+2]=v.z;};
+    put(0,a);put(3,b);put(6,c);put(9,a);put(12,c);put(15,d);
+    g.attributes.position.needsUpdate = true;
+  };
+  return mesh;
+}
+function dot(color, size=0.13){
+  return new THREE.Mesh(new THREE.SphereGeometry(size,14,10),
+    new THREE.MeshBasicMaterial({color, transparent:true, opacity:1}));
+}
+function label(text, color='#E9E4D8', h=0.32){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=128;
+  const x=cv.getContext('2d');
+  x.font='500 54px "IBM Plex Mono", monospace';
+  x.fillStyle=color; x.textAlign='center'; x.textBaseline='middle';
+  x.fillText(text,256,68);
+  const t=new THREE.CanvasTexture(cv); t.minFilter=THREE.LinearFilter;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));
+  s.scale.set(h*4,h,1);
+  s.retext = (txt,col)=>{
+    x.clearRect(0,0,512,128); x.fillStyle=col||color; x.fillText(txt,256,68);
+    t.needsUpdate=true;
+  };
+  return s;
+}
+function points(vecs, color, size=0.055, opacity=1){
+  const g=new THREE.BufferGeometry().setFromPoints(vecs);
+  return new THREE.Points(g,new THREE.PointsMaterial({color,size,transparent:true,
+    opacity, sizeAttenuation:true, depthWrite:false}));
+}
+function sphereDirs(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    const u=2*R()-1, a=R()*TAU, s=Math.sqrt(1-u*u);
+    out.push(V(s*Math.cos(a), u, s*Math.sin(a)));
+  }
+  return out;
+}
+function wireSphere(r,color,op){
+  const g=new THREE.Group();
+  for(let i=1;i<6;i++){
+    const y=-r+2*r*i/6, rr=Math.sqrt(Math.max(r*r-y*y,0));
+    const l=loopLine(circlePts(rr,64,'xz'),color,op); l.position.y=y; g.add(l);
+  }
+  for(let i=0;i<6;i++){
+    const l=loopLine(circlePts(r,64,'xy'),color,op); l.rotation.y=i/6*Math.PI; g.add(l);
+  }
+  return g;
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const ease=t=>t*t*(3-2*t);
+
+/* ============================================================
+   The eleven views
+   ============================================================ */
+const VIEWS = [];
+
+/* ---- 1. the eon that ends in light ---------------------- */
+VIEWS.push({
+  kicker:'Preface · conformal cyclic cosmology',
+  title:'The eon that ends in light',
+  paras:[
+    `Begin where the paper begins, which is at the far end of everything. In Penrose's cyclic cosmology the material content of a universe eventually evaporates, so that after the last black hole has finished radiating there is nothing left except massless fields tracing null geodesics, with no rest mass anywhere to serve as a standard of length.`,
+    `Once every clock has stopped there is no way to compare one interval to another, and the metric survives only up to an arbitrary scaling; what remains is the <em>conformal</em> structure, the record of angles and light cones. That scale-free endgame is not an afterthought in this paper, it is the setting that motivates the whole construction, because it asks which objects still carry meaning when the metric has dissolved.`,
+    `Turn the dial and watch the matter go. What is left over is exactly the pair of fields the paper wants to unify, a Weyl curvature that no longer peels off to infinity and a Faraday field riding alongside it.`
+  ],
+  math:[{tex:String.raw`ds^{2}\;\longmapsto\;\Omega^{2}\,ds^{2}`,
+    note:'Conformal rescaling. Angles and null cones survive; lengths do not.'}],
+  dial:{label:'eon clock', min:0, max:1, step:0.001, value:0.12,
+        fmt:v=>v<0.35?'matter':v<0.75?'evaporating':'radiation only'},
+  make(){
+    const g=new THREE.Group();
+    const dirs=sphereDirs(900);
+    const shell=points(dirs.map(d=>d.clone()),C.violet,0.05,0.9); g.add(shell);
+    const matter=points(sphereDirs(340).map(d=>d.multiplyScalar(0.5+R()*1.6)),C.gold,0.07,1);
+    g.add(matter);
+    const bh=new THREE.Mesh(new THREE.SphereGeometry(0.55,20,14),
+      new THREE.MeshBasicMaterial({color:0x05070A}));
+    const halo=loopLine(circlePts(0.58,80,'xy'),C.rose,0.7);
+    g.add(bh); g.add(halo);
+    const coneUp=[],coneDn=[];
+    for(let i=0;i<24;i++){
+      const a=i/24*TAU;
+      coneUp.push(V(0,0,0),V(Math.cos(a)*3.6,3.6,Math.sin(a)*3.6));
+      coneDn.push(V(0,0,0),V(Math.cos(a)*1.6,-1.6,Math.sin(a)*1.6));
+    }
+    const cone=new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(coneUp.concat(coneDn)),
+      new THREE.LineBasicMaterial({color:C.dim,transparent:true,opacity:0.5}));
+    g.add(cone);
+    return {group:g, update(t,p){
+      const e=ease(p);
+      shell.scale.setScalar(0.6+e*4.4);
+      shell.material.opacity=clamp(e*1.4,0,0.95);
+      matter.scale.setScalar(1+e*0.5);
+      matter.material.opacity=clamp(1.15-e*1.6,0,1);
+      bh.scale.setScalar(clamp(1-e*1.25,0.001,1));
+      halo.scale.setScalar(clamp(1-e*1.25,0.001,1));
+      halo.material.opacity=clamp(0.8-e,0,0.8);
+      halo.rotation.z=t*0.4;
+      g.rotation.y=t*0.06;
+    }, readout:(p)=>[p<0.75?'rest mass present':'rest mass absent',
+        p<0.75?'scale is meaningful':'conformal structure only']};
+  }
+});
+
+/* ---- 2. an event is where rays agree -------------------- */
+VIEWS.push({
+  kicker:'Metric emergence · the twistor turn',
+  title:'An event is where the rays agree',
+  paras:[
+    `If length has gone and only rays remain, the usual order of construction can be reversed. A twistor <b>Z<sup>α</sup> = (ρ<sup>A</sup>, π<sub>A′</sub>)</b> records the entire history of a free massless particle of definite helicity, so the primitive object in the theory is a ray, and a point of space-time appears afterwards as the place where a family of rays happens to meet.`,
+    `Drag the dial to pull the rays apart and the event dissolves into nothing in particular, which is the visual content of the paper's claim that the metric is a derived and unobservable gauge quantity. Two-valent antisymmetric infinity twistors are what put the metric structure back, locally, once you want one.`,
+    `Everything that follows in the paper inherits this attitude. The connection and a basis of two-forms are the dynamical variables, and <em>g<sub>μν</sub></em> arrives later, on shell, as a solution rather than as an input.`
+  ],
+  math:[{tex:String.raw`Z^{\alpha}=(\rho^{A},\,\pi_{A'})`,
+    note:'Space-time as the common intersections of ray families, rather than the arena they live in.'}],
+  dial:{label:'ray coherence', min:0, max:1, step:0.001, value:1,
+        fmt:v=>v>0.97?'one event':v>0.5?'a fuzzy region':'no event at all'},
+  make(){
+    const g=new THREE.Group(), N=16, dirs=[], offs=[], lines=[];
+    for(let i=0;i<N;i++){
+      const u=2*R()-1,a=R()*TAU,s=Math.sqrt(1-u*u);
+      dirs.push(V(s*Math.cos(a),u,s*Math.sin(a)).normalize());
+      offs.push(V(R()-0.5,R()-0.5,R()-0.5).multiplyScalar(2.6));
+      const l=line([V(0,0,0),V(0,0,0)], i%2?C.gold:C.teal, 0.55);
+      lines.push(l); g.add(l);
+    }
+    const ev=dot(C.parch,0.16); g.add(ev);
+    const glow=loopLine(circlePts(0.4,50,'xy'),C.parch,0.5); g.add(glow);
+    const fuzz=points(offs.map(o=>o.clone()),C.rose,0.09,0);
+    g.add(fuzz);
+    return {group:g, update(t,p){
+      const q=1-p;
+      lines.forEach((l,i)=>{
+        const c=offs[i].clone().multiplyScalar(q);
+        const a=c.clone().addScaledVector(dirs[i],-3.2);
+        const b=c.clone().addScaledVector(dirs[i],3.2);
+        l.geometry.setFromPoints([a,b]);
+      });
+      const f=fuzz.geometry.attributes.position;
+      offs.forEach((o,i)=>{const c=o.clone().multiplyScalar(q);
+        f.setXYZ(i,c.x,c.y,c.z);});
+      f.needsUpdate=true;
+      fuzz.material.opacity=clamp(q*1.6,0,0.8);
+      ev.scale.setScalar(clamp(p*1.3-0.3,0.001,1));
+      ev.material.opacity=p;
+      glow.material.opacity=clamp(p-0.3,0,0.55);
+      glow.scale.setScalar(1+0.15*Math.sin(t*2));
+      g.rotation.y=t*0.1;
+    }, readout:p=>[p>0.97?'rays concurrent':'rays independent',
+      p>0.97?'an event is defined':'the event is gauge']};
+  }
+});
+
+/* ---- 3. half a turn short ------------------------------- */
+VIEWS.push({
+  kicker:'Spin structure · the double cover',
+  title:'Half a turn short of coming home',
+  paras:[
+    `The group that ties this together is <b>SL(2,ℂ)</b>, the universal cover of the restricted Lorentz group, which wraps around it twice. A future-pointing null vector factorises as the outer product of a Weyl spinor with its conjugate, so a null direction is a spinor squared, and the spinor retains one more piece of information than the direction does.`,
+    `The picture is Penrose's flagpole. The pole points along the null direction and the flag records a phase; carry the pole once around and the flag comes back inverted, and only after a second circuit does the spinor itself return. Watch the phase dial turn at exactly half the rate of the pole.`,
+    `That halving is why the paper can speak of handedness at all. Complexifying the Lorentz algebra splits it into two commuting copies, one for unprimed indices and one for primed, and a theory is chiral precisely when it uses one copy and declines the other.`
+  ],
+  math:[
+    {tex:String.raw`\mathfrak{so}(1,3)_{\mathbb C}\;\xrightarrow{\ \sim\ }\;\mathfrak{sl}(2,\mathbb C)\oplus\overline{\mathfrak{sl}(2,\mathbb C)}`,
+     note:'Equation (1) of the paper. The two summands are the left and right handed halves.'},
+    {tex:String.raw`k^{a}\;\leftrightarrow\;\kappa^{A}\bar\kappa^{A'}`,
+     note:'A null vector as a spinor and its conjugate.'}
+  ],
+  dial:{label:'rotation of the pole', min:0, max:2, step:0.002, value:0,
+        fmt:v=>(v.toFixed(2)+' × 2π')},
+  make(){
+    const g=new THREE.Group();
+    g.add(wireSphere(1.9,C.faint,0.55));
+    const pole=line([V(0,0,0),V(0,0,0)],C.gold,1); g.add(pole);
+    const tip=dot(C.gold,0.11); g.add(tip);
+    const flag=quadMesh(C.gold,0.4); g.add(flag);
+    const dialRing=loopLine(circlePts(0.55,60,'xy'),C.dim,0.8);
+    dialRing.position.set(0,-2.7,0); g.add(dialRing);
+    const needle=line([V(0,0,0),V(0.55,0,0)],C.teal,1);
+    needle.position.set(0,-2.7,0); g.add(needle);
+    const lab=label('φ/2','#5BB8C7',0.28); lab.position.set(0,-3.5,0); g.add(lab);
+    const lab2=label('flagpole','#D9A93C',0.28); lab2.position.set(0,2.4,0); g.add(lab2);
+    const tilt=0.75;
+    return {group:g, update(t,p){
+      const phi=p*TAU;
+      const d=V(Math.sin(tilt)*Math.cos(phi),Math.cos(tilt),Math.sin(tilt)*Math.sin(phi));
+      const end=d.clone().multiplyScalar(1.9);
+      pole.geometry.setFromPoints([V(0,0,0),end]);
+      tip.position.copy(end);
+      const side=V(-Math.sin(phi),0,Math.cos(phi)).multiplyScalar(0.42);
+      flag.setCorners(d.clone().multiplyScalar(0.95),
+                      d.clone().multiplyScalar(1.85),
+                      d.clone().multiplyScalar(1.85).add(side),
+                      d.clone().multiplyScalar(0.95).add(side));
+      const half=phi/2, sgn=Math.cos(half)>=0;
+      needle.geometry.setFromPoints([V(0,0,0),V(Math.cos(half)*0.55,Math.sin(half)*0.55,0)]);
+      needle.material.color.setHex(sgn?C.teal:C.rose);
+      flag.material.color.setHex(sgn?C.gold:C.rose);
+      g.rotation.y=t*0.08;
+    }, readout:p=>{
+      const s=p<0.001?'spinor at rest':(Math.abs(p-1)<0.02?'pole home, spinor reversed':
+        (Math.abs(p-2)<0.02?'both home':'in transit'));
+      return [s, 'phase = '+(p/2).toFixed(2)+' × 2π'];
+    }};
+  }
+});
+
+/* ---- 4. the freely falling frame ------------------------ */
+VIEWS.push({
+  kicker:'Soldering · Cartan structure equations',
+  title:'The frame that falls freely',
+  paras:[
+    `The object that ties an abstract spin bundle to an actual space-time is the soldering form, <b>θ<sup>a</sup> = σ<sup>a</sup><sub>μ</sub> dx<sup>μ</sup></b>, which identifies coordinates at an event with the measurements of an observer who is falling freely through it. Einstein's lift is encoded in that single index conversion, and the equivalence principle amounts to saying such a frame always exists.`,
+    `These co-frames are anholonomic, meaning they do not integrate to a coordinate system, and the failure is visible in transport. Take a small loop, carry a frame around it, and it does not return to where it started; the gap grows with the area, and its two-form measure is torsion, <b>Θ<sup>AA′</sup> = ∇θ<sup>AA′</sup></b>.`,
+    `Turn the dial to grow the loop and watch the mismatch open. In the finished theory this same failure to close is what the connection is for, and the Faraday field will turn out to be hiding inside it.`
+  ],
+  math:[{tex:String.raw`\Theta^{AA'}=d\theta^{AA'}-\theta^{AB'}\!\wedge\bar\Gamma^{A'}{}_{B'}-\theta^{BA'}\!\wedge\Gamma^{A}{}_{B}`,
+    note:"Cartan's first structure equation, with the symplectic spinor metric held fixed so that Γ is traceless."}],
+  dial:{label:'loop size', min:0, max:1, step:0.001, value:0.5,
+        fmt:v=>'gap ≈ '+(v*v*1.0).toFixed(3)},
+  make(){
+    const g=new THREE.Group();
+    const well=r=>-1.9/(0.55+r*r);
+    const seg=[];
+    for(let i=-6;i<=6;i++){
+      const row=[];
+      for(let j=-24;j<=24;j++){
+        const x=i*0.5, z=j*0.125, r=Math.hypot(x,z);
+        row.push(V(x,well(r)+2.0,z));
+      }
+      for(let k=0;k<row.length-1;k++) seg.push(row[k],row[k+1]);
+    }
+    for(let j=-6;j<=6;j++){
+      const row=[];
+      for(let i=-24;i<=24;i++){
+        const z=j*0.5, x=i*0.125, r=Math.hypot(x,z);
+        row.push(V(x,well(r)+2.0,z));
+      }
+      for(let k=0;k<row.length-1;k++) seg.push(row[k],row[k+1]);
+    }
+    g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg),
+      new THREE.LineBasicMaterial({color:C.faint,transparent:true,opacity:0.85})));
+    const loop=line([],C.teal,0.95); g.add(loop);
+    const gap=line([],C.rose,1); g.add(gap);
+    const tri=[line([],C.gold,1),line([],C.gold,1),line([],C.gold,1)];
+    tri.forEach(l=>g.add(l));
+    const start=dot(C.parch,0.08), fin=dot(C.rose,0.08);
+    g.add(start); g.add(fin);
+    const at=(x,z)=>V(x,well(Math.hypot(x,z))+2.0,z);
+    return {group:g, update(t,p){
+      const s=0.25+p*1.55, pts=[];
+      const cx=-0.1, cz=0.1;
+      for(let i=0;i<=64;i++){
+        const a=i/64*TAU;
+        pts.push(at(cx+Math.cos(a)*s, cz+Math.sin(a)*s));
+      }
+      loop.geometry.setFromPoints(pts);
+      const k=(t*0.28)%1, a=k*TAU;
+      const P=at(cx+Math.cos(a)*s, cz+Math.sin(a)*s);
+      const T=at(cx+Math.cos(a+0.05)*s, cz+Math.sin(a+0.05)*s).sub(P).normalize();
+      const hol=p*p*1.0;
+      const rot=hol*TAU;
+      const up=V(0,1,0), e1=T.clone(), e2=up.clone().cross(e1).normalize();
+      const c=Math.cos(rot), sn=Math.sin(rot);
+      const f1=e1.clone().multiplyScalar(c).addScaledVector(e2,sn);
+      const f2=e2.clone().multiplyScalar(c).addScaledVector(e1,-sn);
+      tri[0].geometry.setFromPoints([P,P.clone().addScaledVector(f1,0.55)]);
+      tri[1].geometry.setFromPoints([P,P.clone().addScaledVector(f2,0.55)]);
+      tri[2].geometry.setFromPoints([P,P.clone().addScaledVector(up,0.5)]);
+      const S=at(cx+s,cz);
+      start.position.copy(S);
+      const e1s=V(0,0,1), fin1=e1s.clone().multiplyScalar(Math.cos(rot))
+        .addScaledVector(V(1,0,0),Math.sin(rot));
+      fin.position.copy(S.clone().addScaledVector(fin1,0.55));
+      gap.geometry.setFromPoints([S.clone().addScaledVector(e1s,0.55),fin.position]);
+      gap.material.opacity=clamp(hol*3,0,1);
+      g.rotation.y=t*0.09;
+    }, readout:p=>['frame transported round the loop',
+      p<0.02?'no measurable mismatch':'returns rotated by '+(p*p*360).toFixed(0)+'°']};
+  }
+});
+
+/* ---- 5. the mirror that splits the algebra -------------- */
+VIEWS.push({
+  kicker:'Chirality · the Hodge split',
+  title:'A mirror that cuts the algebra in two',
+  paras:[
+    `Bivectors, the oriented plane elements of space-time, form a six dimensional space, and the Hodge star maps it to itself. Over the complexified algebra the star squares to minus one, so it has eigenvalues ±i and the six dimensions split cleanly into two three dimensional halves, the self-dual and the anti-self-dual.`,
+    `Plebański uses that split as an algebraic idempotent structure on the gauge bundle, and a basis of anti-self-dual two-forms <b>Σ<sup>AB</sup> = ½ θ<sup>A</sup><sub>A′</sub> ∧ θ<sup>BA′</sup></b> becomes the fundamental dynamical field. A duality rotation, which the dial performs, turns the gold half forward and the teal half backward by the same angle; the two halves are genuinely independent.`,
+    `Choosing to build a Lagrangian out of only one of them is what the word <em>chiral</em> means throughout this paper, and it is a choice with a price that comes due three views from now.`
+  ],
+  math:[
+    {tex:String.raw`\Lambda^{2}U_{\mathbb C}=\Lambda^{2}_{-}U_{\mathbb C}\oplus\Lambda^{2}_{+}U_{\mathbb C},\qquad \ast^{2}=-1`,
+     note:'Six real dimensions become three complex ones twice over.'},
+    {tex:String.raw`\Sigma^{AB}:=\tfrac12\,\theta^{A}{}_{A'}\wedge\theta^{BA'}`,
+     note:'The archetypal B field of BF theory, built here from the co-frame.'}
+  ],
+  dial:{label:'duality rotation α', min:0, max:1, step:0.001, value:0.15,
+        fmt:v=>'α = '+(v*360).toFixed(0)+'°'},
+  make(){
+    const g=new THREE.Group();
+    const mk=(color,x)=>{
+      const grp=new THREE.Group(); grp.position.x=x;
+      const q=quadMesh(color,0.2); grp.add(q);
+      const ring=loopLine(circlePts(1.05,60,'xy'),color,0.5); grp.add(ring);
+      const nd=line([V(0,0,0),V(1.05,0,0)],color,1); grp.add(nd);
+      grp.q=q; grp.nd=nd;
+      g.add(grp); return grp;
+    };
+    const L=mk(C.gold,-2.5), Rg=mk(C.teal,2.5), M=mk(C.parch,0);
+    M.q.material.opacity=0.14;
+    const lab1=label('Σ⁻  self-dual','#D9A93C',0.3); lab1.position.set(-2.5,-1.6,0);
+    const lab2=label('Σ⁺  anti-self-dual','#5BB8C7',0.3); lab2.position.set(2.5,-1.6,0);
+    const lab3=label('B  =  Σ⁻ + Σ⁺','#E9E4D8',0.3); lab3.position.set(0,-1.6,0);
+    g.add(lab1); g.add(lab2); g.add(lab3);
+    return {group:g, update(t,p){
+      const a=p*TAU;
+      const set=(grp,ang)=>{
+        const c=Math.cos(ang),s=Math.sin(ang);
+        const u=V(c,s,0).multiplyScalar(0.9), v=V(-s,c,0).multiplyScalar(0.55);
+        grp.q.setCorners(u.clone().add(v),u.clone().sub(v),
+          u.clone().negate().sub(v),u.clone().negate().add(v));
+        grp.nd.geometry.setFromPoints([V(0,0,0),V(c*1.05,s*1.05,0)]);
+      };
+      set(L,a); set(Rg,-a); set(M,0);
+      const c=Math.cos(a);
+      M.q.material.opacity=0.06+0.16*Math.abs(c);
+      g.rotation.y=Math.sin(t*0.25)*0.35;
+    }, readout:p=>['duality rotation acts as e^{+iα} on Σ⁻',
+      'and as e^{−iα} on Σ⁺']};
+  }
+});
+
+/* ---- 6. BF plus a multiplier ---------------------------- */
+VIEWS.push({
+  kicker:'Plebański · a constrained topological theory',
+  title:'A theory with nothing local to say, until it is constrained',
+  paras:[
+    `Pure BF theory pairs a two-form with a curvature and has no local degrees of freedom whatsoever; every solution is locally trivial, and the only information in the theory is carried by holonomies around loops that cannot be contracted. At the left of the dial that is what you are looking at, a flat lattice where all the content sits in the gold circuit.`,
+    `Plebański then adds a Lagrange multiplier term. Varying the multiplier <b>Ψ<sub>ABCD</sub></b>, which turns out to be the Weyl curvature spinor of the gravitational field, forces the Ricci part of the curvature to vanish and forces Σ<sup>AB</sup> to come from a tetrad up to transformations on primed indices.`,
+    `The constraint is what breathes life into the thing. Move the dial and local excitations appear on the lattice; those ripples are the graviton, and general relativity has emerged from a topological field theory by the addition of a simplicity condition.`
+  ],
+  math:[{tex:String.raw`\tfrac{i}{2}\,\mathcal L_{\Sigma}=\Sigma^{AB}\!\wedge F_{AB}-\tfrac12\Psi_{ABCD}\,\Sigma^{AB}\!\wedge\Sigma^{CD}`,
+    note:'Equation (7). The first term is BF; the second is what makes it BF-like, with local degrees of freedom.'}],
+  dial:{label:'multiplier Ψ', min:0, max:1, step:0.001, value:0,
+        fmt:v=>v<0.03?'pure BF, topological':'BF-like, ' + (v*100).toFixed(0)+'% constrained'},
+  make(){
+    const g=new THREE.Group(), n=11, cells=[];
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const q=quadMesh(C.gold,0.1);
+      cells.push({q,i:i-(n-1)/2,j:j-(n-1)/2}); g.add(q);
+    }
+    const circ=loopLine(circlePts(2.9,80,'xz'),C.gold,0.9); g.add(circ);
+    const bead=dot(C.gold,0.1); g.add(bead);
+    const lab=label('holonomy','#D9A93C',0.3); lab.position.set(0,1.3,3.3); g.add(lab);
+    return {group:g, update(t,p){
+      const e=ease(p), s=0.42;
+      cells.forEach(c=>{
+        const x=c.i*s, z=c.j*s;
+        const h=e*0.75*Math.sin(x*1.9-t*1.6)*Math.cos(z*1.4+t*0.6);
+        const a=V(x-s*0.42,h,z-s*0.42), b=V(x+s*0.42,h,z-s*0.42),
+              cc=V(x+s*0.42,h,z+s*0.42), d=V(x-s*0.42,h,z+s*0.42);
+        c.q.setCorners(a,b,cc,d);
+        c.q.material.opacity=0.07+Math.abs(h)*0.55;
+        c.q.material.color.setHex(h<-0.02?C.teal:C.gold);
+      });
+      const a=t*0.7;
+      bead.position.set(Math.cos(a)*2.9,0,Math.sin(a)*2.9);
+      circ.material.opacity=clamp(0.95-e*0.75,0.15,0.95);
+      lab.material.opacity=clamp(1-e*1.4,0,1);
+      g.rotation.y=t*0.07; g.rotation.x=0.35;
+    }, readout:p=>[p<0.03?'0 local degrees of freedom':'2 local degrees of freedom',
+      p<0.03?'holonomies only':'a graviton propagates']};
+  }
+});
+
+/* ---- 7. the trace is the photon ------------------------- */
+VIEWS.push({
+  kicker:'The hinge · GL(2,ℂ) instead of SL(2,ℂ)',
+  title:'The trace of the connection is the photon',
+  paras:[
+    `Here is the move the whole paper turns on. Take the connection to be valued in the full <b>GL(2,ℂ)</b> rather than in SL(2,ℂ), which is eight real parameters instead of six, and split the resulting matrix of one-forms into a traceless part and a trace.`,
+    `The traceless part is the ordinary self-dual gravitational connection. The trace, a single complex one-form, is identified with the Faraday gauge potential, <b>γ<sup>C</sup><sub>C</sub> = 2A</b>, and its gauge freedom falls out of the group structure rather than being posted in by hand; a GL(2,ℂ) transformation shifts it by <em>d ln ξ</em>, which is exactly an electromagnetic gauge transformation.`,
+    `Pull the dial and watch the diagonal lift out. Gravity is what is left in the traceless block, electromagnetism is what rises off the diagonal, and neither was inserted separately; they are two projections of one connection.`
+  ],
+  math:[
+    {tex:String.raw`\gamma^{A}{}_{B}=\Gamma^{A}{}_{B}+\delta^{A}{}_{B}\,\mathcal A,\qquad \gamma^{C}{}_{C}:=\gamma=2A`,
+     note:'The decomposition of the GL(2,ℂ) connection into gravity and the Maxwell potential.'},
+    {tex:String.raw`\tilde\gamma=\gamma-d\ln\xi`,
+     note:'Equation (27). Electromagnetic gauge freedom as a change of spinor frame.'}
+  ],
+  dial:{label:'extract the trace', min:0, max:1, step:0.001, value:0,
+        fmt:v=>v<0.03?'γᴬ_B intact':'Γᴬ_B + δᴬ_B 𝒜, '+(v*100).toFixed(0)+'%'},
+  make(){
+    const g=new THREE.Group();
+    const box=(color)=>new THREE.Mesh(new THREE.BoxGeometry(0.9,0.9,0.28),
+      new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.55}));
+    const edge=(m,color)=>{
+      const e=new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),
+        new THREE.LineBasicMaterial({color})); m.add(e); return m;
+    };
+    const cells=[];
+    for(let i=0;i<2;i++)for(let j=0;j<2;j++){
+      const diag=(i===j);
+      const m=edge(box(diag?C.violet:C.gold),diag?C.violet:C.gold);
+      m.position.set((j-0.5)*1.15,(0.5-i)*1.15,0);
+      cells.push({m,diag,base:m.position.clone()}); g.add(m);
+    }
+    const trace=[];
+    for(let i=0;i<2;i++){
+      const m=edge(box(C.violet),C.violet);
+      m.material.opacity=0; m.position.set((i-0.5)*1.15,(0.5-i)*1.15,0);
+      trace.push({m,base:m.position.clone()}); g.add(m);
+    }
+    const wave=line([],C.violet,0); g.add(wave);
+    const l1=label('Γᴬ_B   gravity','#D9A93C',0.3); l1.position.set(0,-1.5,0); g.add(l1);
+    const l2=label('δᴬ_B 𝒜   photon','#9B7BC4',0.3); l2.position.set(0,2.6,0);
+    l2.material.opacity=0; g.add(l2);
+    return {group:g, update(t,p){
+      const e=ease(p);
+      cells.forEach(c=>{
+        c.m.position.copy(c.base);
+        c.m.material.opacity=c.diag?0.55*(1-e*0.92):0.55;
+        c.m.scale.setScalar(c.diag?1-e*0.55:1);
+      });
+      trace.forEach(o=>{
+        o.m.position.copy(o.base); o.m.position.y+=e*2.0;
+        o.m.material.opacity=e*0.6; o.m.scale.setScalar(0.35+e*0.65);
+      });
+      const pts=[];
+      for(let i=0;i<=90;i++){
+        const x=-2.6+i/90*5.2;
+        pts.push(V(x, 1.05+e*2.0+Math.sin(x*2.4-t*3)*0.24*e, 0));
+      }
+      wave.geometry.setFromPoints(pts);
+      wave.material.opacity=e*0.95;
+      l2.material.opacity=e;
+      g.rotation.y=Math.sin(t*0.3)*0.3;
+    }, readout:p=>['8 real parameters in GL(2,ℂ)',
+      p<0.03?'6 gravitational + 2 undecided':'6 gravitational + 2 electromagnetic']};
+  }
+});
+
+/* ---- 8. weights and the ambiguity of the metric --------- */
+VIEWS.push({
+  kicker:'Appendix 2 · densities and the ∞² ambiguity',
+  title:'Where the electromagnetic gauge freedom was hiding',
+  paras:[
+    `A GL(2,ℂ) frame change has a determinant, and writing <b>f<sup>2</sup> = det ξ</b> lets every spinorial object carry a weight and an anti-weight recording how it scales. The soldering form must be assigned <em>w = w̄ = −½</em> for the construction to close, which is a small calculation with a large consequence.`,
+    `Following it through, a given proper orthochronous Lorentz transformation is induced by a whole two-parameter family of GL(2,ℂ) transformations. Eight parameters map onto six, and the two real parameters left undetermined are not a defect in the bookkeeping; they are precisely the electromagnetic gauge potential freedom found in the previous view.`,
+    `Turn the dial to rescale the spinor dyad and watch the arrows scale by <em>f</em> while the area they span scales by <em>f<sup>2</sup></em>. That is the whole meaning of weight, and it is why the paper insists the symplectic spinor metric is primary while <em>g<sub>μν</sub></em> is derived.`
+  ],
+  math:[
+    {tex:String.raw`f^{2}:=\xi=\det(\xi^{A}{}_{B}),\qquad w=\bar w=-\tfrac12\ \ \text{for}\ \ \theta^{AA'}`,
+     note:'A weighted spinor density picks up f^{2w} f̄^{2w̄} under a change of frame.'},
+    {tex:String.raw`GL(2,\mathbb C)\;\big[\infty^{2}\!\leftrightarrow\!1\big]\;SO^{+}(1,3)`,
+     note:'Two real parameters of the covering are free, and they carry the Maxwell potential.'}
+  ],
+  dial:{label:'frame scaling f', min:0.45, max:2.0, step:0.005, value:1,
+        fmt:v=>'f = '+v.toFixed(2)+',  f² = '+(v*v).toFixed(2)},
+  make(){
+    const g=new THREE.Group();
+    const kA=line([],C.gold,1), lA=line([],C.teal,1);
+    g.add(kA); g.add(lA);
+    const area=quadMesh(C.parch,0.16); g.add(area);
+    const ghosts=[];
+    for(let i=0;i<26;i++){
+      const l=line([],C.violet,0.16); ghosts.push(l); g.add(l);
+    }
+    const l1=label('kᴬ','#D9A93C',0.3), l2=label('lᴬ','#5BB8C7',0.3);
+    g.add(l1); g.add(l2);
+    const l3=label('ε_AB kᴬlᴮ  =  f²','#E9E4D8',0.32); l3.position.set(0,-2.1,0); g.add(l3);
+    return {group:g, update(t,f){
+      const u=V(1.5,0.15,0).multiplyScalar(f), v=V(0.4,1.5,0).multiplyScalar(f);
+      kA.geometry.setFromPoints([V(0,0,0),u]);
+      lA.geometry.setFromPoints([V(0,0,0),v]);
+      area.setCorners(V(0,0,0),u,u.clone().add(v),v);
+      l1.position.copy(u).multiplyScalar(1.12);
+      l2.position.copy(v).multiplyScalar(1.12);
+      ghosts.forEach((l,i)=>{
+        const a=i/ghosts.length*TAU + t*0.3;
+        const ph=V(Math.cos(a),Math.sin(a),0);
+        const uu=u.clone().applyAxisAngle(V(0,0,1),0).addScaledVector(ph,0.22*Math.sin(t+i));
+        l.geometry.setFromPoints([V(0,0,0),uu.addScaledVector(V(0,0,1),Math.sin(a)*0.35)]);
+      });
+      g.rotation.y=Math.sin(t*0.22)*0.4;
+    }, readout:f=>['arrows scale by f = '+f.toFixed(2),
+      'the area they span scales by f² = '+(f*f).toFixed(2)]};
+  }
+});
+
+/* ---- 9. reality by hand --------------------------------- */
+VIEWS.push({
+  kicker:'Simplicity conditions · imposed off shell',
+  title:'Reality, put in by hand',
+  paras:[
+    `A chiral Lagrangian built from one handedness gives complex field equations for a complex metric, and to recover a real Lorentzian space-time two conditions have to be imposed on the two-forms. They do not arise as Euler–Lagrange equations, so they are imposed off shell, which is the standing objection to Plebański-type formulations.`,
+    `The paper's answer is to refuse to treat this as a unique embarrassment. Gauge fixing is everywhere in classical field theory; the Lorenz condition alone does not remove longitudinal and time-like modes from a U(1) theory, and Ward identities are needed to suppress them, just as ad hoc Ward constructions resolved the googly problem in Penrose's palatial twistor programme.`,
+    `Smolin and Speziale take the opposite road, embracing the conditions inside a non-chiral action so that parity breaking arises at the level of the field equations. Slide the dial to watch the complex solution space collapse onto its real slice, and note the wedge volume going to zero as it does.`
+  ],
+  math:[{tex:String.raw`S^{AB}\!\wedge S^{A'B'}=0,\qquad S^{AB}\!\wedge S_{AB}+S^{A'B'}\!\wedge S_{A'B'}=0`,
+    note:'Equation (8) in its GL(2,ℂ) form. Chirality is preserved by keeping these off shell.'}],
+  dial:{label:'impose the conditions', min:0, max:1, step:0.001, value:0,
+        fmt:v=>v<0.03?'complex metric':(v>0.97?'real Lorentzian':(v*100).toFixed(0)+'%')},
+  make(){
+    const g=new THREE.Group(), n=520, base=[];
+    for(let i=0;i<n;i++) base.push(V(R()*6-3,R()*4-2,R()*6-3));
+    const cloud=points(base.map(b=>b.clone()),C.violet,0.055,0.75); g.add(cloud);
+    const sheet=new THREE.Mesh(new THREE.PlaneGeometry(6,6,1,1),
+      new THREE.MeshBasicMaterial({color:C.parch,transparent:true,opacity:0,
+      side:THREE.DoubleSide,depthWrite:false}));
+    sheet.rotation.x=-Math.PI/2; g.add(sheet);
+    const boxG=new THREE.BoxGeometry(1,1,1);
+    const vol=new THREE.Mesh(boxG,new THREE.MeshBasicMaterial({color:C.rose,
+      transparent:true,opacity:0.3}));
+    const volE=new THREE.LineSegments(new THREE.EdgesGeometry(boxG),
+      new THREE.LineBasicMaterial({color:C.rose}));
+    vol.add(volE); vol.position.set(0,2.5,0); g.add(vol);
+    const lab=label('S ∧ S̄','#C9556A',0.32); lab.position.set(0,3.5,0); g.add(lab);
+    return {group:g, update(t,p){
+      const e=ease(p), a=cloud.geometry.attributes.position;
+      base.forEach((b,i)=>{
+        a.setXYZ(i,b.x,lerp(b.y,0,e)+Math.sin(t*0.5+i)*0.02*(1-e),b.z);
+      });
+      a.needsUpdate=true;
+      cloud.material.color.setHex(e>0.8?C.parch:C.violet);
+      sheet.material.opacity=e*0.06;
+      vol.scale.set(1,clamp(1-e,0.001,1),1);
+      vol.material.opacity=0.3*(1-e);
+      volE.material.opacity=clamp(1-e,0,1); volE.material.transparent=true;
+      lab.material.opacity=clamp(1-e*1.2,0,1);
+      g.rotation.y=t*0.1;
+    }, readout:p=>[p<0.03?'metric complex, theory chiral':'metric real and Lorentzian',
+      p<0.03?'S ∧ S̄ ≠ 0':'S ∧ S̄ = 0, imposed off shell']};
+  }
+});
+
+/* ---- 10. one operator, four null directions ------------- */
+VIEWS.push({
+  kicker:'Petrov · the eigenbivector problem',
+  title:'One operator, four null directions',
+  paras:[
+    `Now the payoff. In the GL(2,ℂ) formulation the multiplier spinor is not Weyl alone; it carries the Faraday field in its trace parts, so a single object <b>Ξ<sub>ABCD</sub></b> holds ten independent components of Weyl curvature in five complex scalars together with six of the electromagnetic field strength in three.`,
+    `Treat it as a linear operator on bivectors and ask for its eigenbivectors. The characteristic equation is a quartic, its roots give four principal null directions, and the coincidences among them are exactly the Petrov classification; the far field of a radiative space-time is type N, with all four directions coincident and Ψ<sub>4</sub> the only surviving scalar.`,
+    `Turn the dial to merge the directions and watch the type descend. The coincidence noted by Bondi and revisited here is that a plane gravitational wave has a five dimensional isometry group isomorphic to that of a plane electromagnetic wave, and among all Ricci-flat metrics with symmetry of dimension four or more there is exactly one such class.`
+  ],
+  math:[
+    {tex:String.raw`\Xi_{ABCD}=\Psi_{ABCD}+\epsilon_{AB}\phi_{CD}+\phi_{AB}\epsilon_{CD}`,
+     note:'Equation (34). Weyl curvature and the Faraday spinor inside one curvature object.'},
+    {tex:String.raw`\tfrac12\,\Xi^{AB}{}_{CD}\,S^{CD}=\lambda\,S^{AB}`,
+     note:'Eigenbivectors of the generalised curvature operator; a quartic in λ.'}
+  ],
+  dial:{label:'degeneracy of the roots', min:0, max:4, step:0.001, value:0,
+        fmt:v=>['type I','type II','type D','type III','type N'][Math.min(4,Math.round(v))]},
+  make(){
+    const g=new THREE.Group();
+    g.add(wireSphere(2.0,C.faint,0.5));
+    const N=V(0,1,0);
+    const conf=[
+      [V(0.9,0.6,0.4),V(-0.7,0.5,0.8),V(0.2,-0.8,0.6),V(-0.5,-0.3,-0.9)],
+      [V(0.8,0.7,0.3),V(0.8,0.7,0.3),V(0.2,-0.8,0.6),V(-0.5,-0.3,-0.9)],
+      [V(0.8,0.7,0.3),V(0.8,0.7,0.3),V(-0.5,-0.6,-0.5),V(-0.5,-0.6,-0.5)],
+      [V(0.6,0.85,0.2),V(0.6,0.85,0.2),V(0.6,0.85,0.2),V(-0.5,-0.6,-0.5)],
+      [N.clone(),N.clone(),N.clone(),N.clone()]
+    ].map(c=>c.map(v=>v.normalize()));
+    const pnds=[],rays=[],roots=[];
+    for(let i=0;i<4;i++){
+      const d=dot(C.gold,0.13); g.add(d); pnds.push(d);
+      const l=line([],C.gold,0.55); g.add(l); rays.push(l);
+      const r=dot(C.teal,0.075); r.position.y=-2.9; g.add(r); roots.push(r);
+    }
+    const disc=loopLine(circlePts(1.0,60,'xz'),C.dim,0.6);
+    disc.position.y=-2.9; g.add(disc);
+    const lab=label('roots of the quartic','#5BB8C7',0.3);
+    lab.position.set(0,-3.6,0); g.add(lab);
+    const typeLab=label('type I','#D9A93C',0.4); typeLab.position.set(0,2.9,0); g.add(typeLab);
+    let last=-1;
+    return {group:g, update(t,p){
+      const k=clamp(Math.floor(p),0,3), f=ease(clamp(p-k,0,1));
+      const A=conf[k], B=conf[Math.min(k+1,4)];
+      for(let i=0;i<4;i++){
+        const d=A[i].clone().lerp(B[i],f).normalize();
+        pnds[i].position.copy(d).multiplyScalar(2.0);
+        rays[i].geometry.setFromPoints([V(0,0,0),d.clone().multiplyScalar(3.1)]);
+        const ang=Math.atan2(d.z,d.x), rad=0.35+0.65*(1-d.y*0.5);
+        roots[i].position.set(Math.cos(ang)*rad,-2.9,Math.sin(ang)*rad);
+      }
+      const idx=Math.min(4,Math.round(p));
+      if(idx!==last){
+        last=idx;
+        typeLab.retext(['type I','type II','type D','type III','type N'][idx],
+          idx===4?'#5BB8C7':'#D9A93C');
+      }
+      g.rotation.y=t*0.13;
+    }, readout:p=>{
+      const idx=Math.min(4,Math.round(p));
+      return [['4 distinct directions','2 coincide','2 pairs coincide',
+        '3 coincide','all 4 coincide'][idx],
+        idx===4?'Ψ₄ alone survives at infinity':'algebraically '+(idx?'special':'general')];
+    }};
+  }
+});
+
+/* ---- 11. coda ------------------------------------------- */
+VIEWS.push({
+  kicker:'Coda · entropy and susceptibility',
+  title:'What is left when the dielectric goes',
+  paras:[
+    `The Bel-Robinson tensor, the gravitational analogue of Maxwell's stress-energy and a candidate measure of the entropy of the gravitational field, reads in two-component spinors as Ψ<sub>ABCD</sub> paired with its conjugate. Replace Ψ by the combined curvature Ξ and the same construction offers itself as the entropy of the joint propagating field, which is the natural quantity to carry across a conformal boundary.`,
+    `The closing observation concerns susceptibility. In matter the constitutive relations dress the fields with polarisation and magnetisation, while in vacuum they reduce to the Hodge dual alone, so our polarisable epoch is bookended by two conformal eras in which <b>G = ∗F</b> exactly. Turn the dial to strip the dielectric away and the two fields become fully intertwined by an operator that does not care about scale.`,
+    `Which leaves the three questions the paper ends on. Whether gauge freedom is an artefact of this material epoch alone; what remains ontologically interesting in a semi-classical gravito-electrodynamics; and to which potential or curvature we would attribute an Aharonov–Bohm phase in a universe holding two charged fermions and one last black hole.`
+  ],
+  math:[
+    {tex:String.raw`\tilde T_{abcd}\;\leftrightarrow\;\Xi_{ABCD}\,\bar\Xi_{A'B'C'D'}`,
+     note:'Bel-Robinson entropy for the combined graviton-photon field.'},
+    {tex:String.raw`G=\chi(\ast)F=\ast F`,
+     note:'Vacuum susceptibility taken as trivial; the endgame is conformally invariant.'}
+  ],
+  dial:{label:'susceptibility χ', min:0, max:1, step:0.001, value:0.8,
+        fmt:v=>v>0.6?'polarisable medium':(v<0.06?'vacuum, χ trivial':'thinning')},
+  make(){
+    const g=new THREE.Group();
+    const dip=[], grid=[];
+    for(let i=-3;i<=3;i++)for(let j=-3;j<=3;j++)for(let k=-1;k<=1;k++){
+      grid.push(V(i*0.8,k*0.9,j*0.8));
+    }
+    grid.forEach(()=>{const l=line([],C.rose,0.6); dip.push(l); g.add(l);});
+    const dirs=sphereDirs(700);
+    const shell=points(dirs.map(d=>d.clone()),C.gold,0.05,0.85); g.add(shell);
+    const shell2=points(dirs.map(d=>d.clone().multiplyScalar(0.82)),C.teal,0.045,0.7);
+    g.add(shell2);
+    const l1=label('Ξ','#D9A93C',0.34), l2=label('Ξ̄','#5BB8C7',0.34);
+    l1.position.set(-3.2,2.4,0); l2.position.set(3.2,2.4,0); g.add(l1); g.add(l2);
+    return {group:g, update(t,p){
+      const e=1-ease(p);
+      dip.forEach((l,i)=>{
+        const b=grid[i], amp=(1-e)*0.3;
+        l.geometry.setFromPoints([b.clone().addScaledVector(V(0,1,0),-amp),
+          b.clone().addScaledVector(V(0,1,0),amp)]);
+        l.material.opacity=(1-e)*0.75;
+      });
+      const r=1.0+e*2.4;
+      shell.scale.setScalar(r); shell2.scale.setScalar(r*0.86);
+      shell.material.opacity=0.25+e*0.65;
+      shell2.material.opacity=0.2+e*0.55;
+      shell.rotation.y=t*0.05; shell2.rotation.y=-t*0.05;
+      l1.material.opacity=e; l2.material.opacity=e;
+      g.rotation.y=t*0.05;
+    }, readout:p=>[p>0.6?'D = ε₀E + P,   B = μ₀H + M':'D = ε₀E,   B = μ₀H',
+      p>0.6?'a scale exists':'fields intertwined by ∗ alone']};
+  }
+});
+
+/* ============================================================
+   Renderer, orbiting, and the reading machinery
+   ============================================================ */
+const canvas=document.getElementById('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,1,0.1,120);
+camera.position.set(0,1.4,8.4);
+const root=new THREE.Group(); scene.add(root);
+
+let yaw=0.2, pitch=0.12, dist=8.4, dragging=false, lx=0, ly=0;
+const stage=document.getElementById('stage');
+stage.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;
+  stage.setPointerCapture(e.pointerId);});
+stage.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  yaw+=(e.clientX-lx)*0.006; pitch=clamp(pitch+(e.clientY-ly)*0.005,-1.2,1.2);
+  lx=e.clientX; ly=e.clientY;
+});
+stage.addEventListener('pointerup',e=>{dragging=false;});
+stage.addEventListener('wheel',e=>{e.preventDefault();
+  dist=clamp(dist*(1+Math.sign(e.deltaY)*0.09),3.2,22);},{passive:false});
+
+function resize(){
+  const w=stage.clientWidth,h=stage.clientHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/Math.max(h,1); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let idx=0, live=null, t0=performance.now()/1000, seen=new Set();
+
+const el={
+  kicker:document.getElementById('kicker'), title:document.getElementById('title'),
+  body:document.getElementById('body'), dial:document.getElementById('dial'),
+  dialLabel:document.getElementById('dialLabel'), dialOut:document.getElementById('dialOut'),
+  counter:document.getElementById('counter'), rail:document.getElementById('rail'),
+  readout:document.getElementById('readout'), prev:document.getElementById('prev'),
+  next:document.getElementById('next'), scroller:document.getElementById('scroller')
+};
+
+VIEWS.forEach((v,i)=>{
+  const b=document.createElement('i');
+  b.title=v.title; b.addEventListener('click',()=>go(i));
+  el.rail.appendChild(b);
+});
+
+function renderMath(container,list){
+  (list||[]).forEach(m=>{
+    const d=document.createElement('div'); d.className='tex';
+    const eq=document.createElement('div');
+    if(window.katex){
+      try{ katex.render(m.tex,eq,{displayMode:true,throwOnError:false}); }
+      catch(err){ eq.className='raw'; eq.textContent=m.tex; }
+    } else { eq.className='raw'; eq.textContent=m.tex; }
+    d.appendChild(eq);
+    if(m.note){const n=document.createElement('span');n.className='note';n.textContent=m.note;
+      d.appendChild(n);}
+    container.appendChild(d);
+  });
+}
+
+function go(i){
+  idx=clamp(i,0,VIEWS.length-1); seen.add(idx);
+  const v=VIEWS[idx];
+  el.kicker.innerHTML=v.kicker;
+  el.title.textContent=v.title;
+  el.body.innerHTML='';
+  v.paras.forEach((p,k)=>{
+    const el2=document.createElement('p'); el2.innerHTML=p; el.body.appendChild(el2);
+    if(k===0) renderMath(el.body,v.math);
+  });
+  el.dial.min=v.dial.min; el.dial.max=v.dial.max;
+  el.dial.step=v.dial.step; el.dial.value=v.dial.value;
+  el.dialLabel.textContent=v.dial.label;
+  el.counter.textContent=(idx+1)+' / '+VIEWS.length;
+  el.prev.disabled=idx===0; el.next.disabled=idx===VIEWS.length-1;
+  [...el.rail.children].forEach((c,k)=>{
+    c.className = k===idx?'on':(seen.has(k)?'seen':'');
+  });
+  if(live){ root.remove(live.group);
+    live.group.traverse(o=>{o.geometry&&o.geometry.dispose();
+      o.material&&(Array.isArray(o.material)?o.material.forEach(m=>m.dispose()):o.material.dispose());});
+  }
+  live=v.make(); root.add(live.group);
+  el.scroller.scrollTop=0;
+  onDial();
+}
+function onDial(){
+  const v=VIEWS[idx], p=parseFloat(el.dial.value);
+  el.dialOut.textContent=v.dial.fmt(p);
+  if(live&&live.readout){
+    const r=live.readout(p);
+    el.readout.innerHTML=r[0]+'<u>'+(r[1]||'')+'</u>';
+  }
+}
+el.dial.addEventListener('input',onDial);
+el.prev.addEventListener('click',()=>go(idx-1));
+el.next.addEventListener('click',()=>go(idx+1));
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')go(idx+1);
+  if(e.key==='ArrowLeft')go(idx-1);
+});
+
+function frame(){
+  requestAnimationFrame(frame);
+  const t=reduced?0:performance.now()/1000-t0;
+  if(live) live.update(t,parseFloat(el.dial.value));
+  root.rotation.y=yaw; root.rotation.x=pitch;
+  camera.position.set(0,1.2,dist);
+  camera.lookAt(0,0,0);
+  renderer.render(scene,camera);
+}
+if(document.readyState==='complete'){ go(0); }
+else { addEventListener('load',()=>go(0)); }
+frame();
+</script>
+</body>
+</html>
