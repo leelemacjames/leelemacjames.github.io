@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compression and Expansion — Description, Explanation, Closure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink-black:#0e0c09;
+    --ink-panel:#17130f;
+    --ink-line:#2c261e;
+    --cream:#efe6d3;
+    --cream-dim:#a89c85;
+    --gold:#c8a24a;
+    --gold-bright:#e3c073;
+    --phys:#c8a24a;
+    --bio:#8f9f78;
+    --serif:'Cormorant Garamond', Georgia, serif;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--ink-black);color:var(--cream);font-family:var(--sans);overflow:hidden;}
+  body{
+    background-image:
+      radial-gradient(ellipse at 12% -10%, rgba(200,162,74,.06), transparent 52%),
+      radial-gradient(ellipse at 100% 110%, rgba(143,159,120,.05), transparent 50%);
+  }
+
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:5vh 6vw;
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .45s ease, transform .45s ease;text-align:center;
+  }
+  .slide.active{opacity:1;visibility:visible;transform:translateY(0);}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:1.5rem;opacity:.85;
+  }
+  h1.hero{font-family:var(--serif);font-weight:500;font-size:clamp(2.3rem,5.6vw,4.6rem);line-height:1.06;}
+  h1.hero em,h2 em{color:var(--gold-bright);font-style:italic;}
+  h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.8rem,3.6vw,2.9rem);line-height:1.15;max-width:21em;}
+  .subtitle{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,1.6vw,1.4rem);color:var(--cream-dim);margin-top:1.2rem;max-width:40em;}
+  .body-text{font-weight:300;font-size:clamp(.95rem,1.22vw,1.14rem);line-height:1.75;color:var(--cream);max-width:44em;}
+  .body-text + .body-text{margin-top:.85rem;}
+  .lede{font-family:var(--serif);font-style:italic;font-size:clamp(1.2rem,2vw,1.7rem);color:var(--cream-dim);max-width:32em;line-height:1.5;}
+  .maxim{font-family:var(--serif);font-style:italic;color:var(--gold-bright);font-size:clamp(1.15rem,1.85vw,1.45rem);margin-top:1.4rem;max-width:34em;line-height:1.45;}
+
+  /* comparison card */
+  .ccard{width:100%;max-width:58em;cursor:pointer;}
+  .phen{
+    font-family:var(--serif);font-size:clamp(1.5rem,2.8vw,2.2rem);
+    color:var(--cream);margin-bottom:.4rem;
+  }
+  .phen-sub{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--cream-dim);margin-bottom:1.4rem;}
+
+  .panes{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;text-align:left;align-items:stretch;}
+  .pane{
+    background:var(--ink-panel);border:1px solid var(--ink-line);border-radius:3px;
+    padding:1.5rem 1.5rem 1.3rem;position:relative;display:flex;flex-direction:column;
+  }
+  .pane .tag{
+    font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;
+    padding:.25em .7em;border:1px solid currentColor;border-radius:2px;
+    display:inline-block;margin-bottom:1rem;align-self:flex-start;
+  }
+  .pane.p .tag{color:var(--phys);}
+  .pane.b .tag{color:var(--bio);}
+  .pane .eq{
+    font-family:var(--mono);font-size:clamp(.95rem,1.6vw,1.25rem);
+    color:var(--gold-bright);line-height:1.9;margin-bottom:.9rem;
+  }
+  .pane p{font-weight:300;font-size:.94rem;line-height:1.7;color:var(--cream);}
+  .pane p + p{margin-top:.6rem;}
+  .pane .ask{
+    margin-top:auto;padding-top:.9rem;font-family:var(--serif);font-style:italic;
+    font-size:1rem;color:var(--cream-dim);border-top:1px solid var(--ink-line);
+  }
+
+  .pane.b{opacity:0;transform:translateX(10px);transition:opacity .45s ease, transform .45s ease;}
+  .ccard.open .pane.b{opacity:1;transform:translateX(0);}
+  .hinge{
+    margin-top:1.2rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--cream-dim);opacity:0;transition:opacity .45s ease .1s;
+  }
+  .ccard.open .hinge{opacity:.85;}
+  .hinge b{color:var(--gold-bright);font-weight:500;}
+  .tapcue{
+    margin-top:1.1rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--cream-dim);opacity:.5;
+  }
+  .ccard.open .tapcue{visibility:hidden;}
+
+  /* master table */
+  .mtable{width:100%;max-width:48em;border-collapse:collapse;font-size:.92rem;margin-top:1rem;}
+  .mtable th{
+    text-align:left;font-family:var(--mono);font-weight:500;font-size:.64rem;
+    letter-spacing:.2em;text-transform:uppercase;padding:.6rem .6rem;
+    border-bottom:1px solid var(--ink-line);
+  }
+  .mtable th.p{color:var(--phys);} .mtable th.b{color:var(--bio);}
+  .mtable th:first-child{color:var(--cream-dim);}
+  .mtable td{padding:.62rem .6rem;border-bottom:1px solid var(--ink-line);text-align:left;font-weight:300;color:var(--cream);}
+  .mtable td:first-child{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dim);}
+
+  .eqstack{display:flex;flex-direction:column;gap:1.1rem;margin:1.4rem 0;}
+  .eqrow{display:grid;grid-template-columns:auto 1fr;gap:1.6rem;align-items:baseline;text-align:left;max-width:40em;}
+  .eqrow .e{font-family:var(--mono);font-size:clamp(1.05rem,2vw,1.6rem);color:var(--gold-bright);white-space:nowrap;}
+  .eqrow .g{font-weight:300;font-size:.95rem;color:var(--cream-dim);line-height:1.5;}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;max-width:50em;text-align:left;margin-top:1.2rem;}
+  .col h3{font-family:var(--serif);font-style:italic;font-weight:500;font-size:1.4rem;margin-bottom:.7rem;}
+  .col h3.p{color:var(--phys);} .col h3.b{color:var(--bio);}
+  .col ul{list-style:none;}
+  .col li{font-weight:300;font-size:.95rem;line-height:1.6;color:var(--cream);padding:.42rem 0 .42rem .9rem;position:relative;}
+  .col li::before{content:'·';position:absolute;left:0;color:var(--gold);}
+
+  .callout{
+    border-left:2px solid var(--gold);padding:.4rem 0 .4rem 1.4rem;text-align:left;max-width:38em;
+    font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,1.9vw,1.5rem);
+    color:var(--gold-bright);line-height:1.5;
+  }
+
+  .link-note{
+    margin-top:1.6rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;
+    color:var(--cream-dim);
+  }
+  .link-note a{color:var(--gold-bright);text-decoration:none;border-bottom:1px solid var(--ink-line);}
+  .link-note a:hover{border-bottom-color:var(--gold);}
+
+  .footer-stamp{
+    position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cream-dim);opacity:.55;
+  }
+  .progress-track{position:fixed;top:0;left:0;right:0;height:2px;background:var(--ink-line);z-index:20;}
+  .progress-fill{height:100%;background:var(--gold);width:0%;transition:width .4s ease;}
+  .counter{position:fixed;bottom:1.6rem;right:2rem;font-family:var(--mono);font-size:.76rem;color:var(--cream-dim);z-index:20;}
+  .kicker-tag{
+    position:fixed;top:1.4rem;left:2rem;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);opacity:.6;z-index:20;
+  }
+  .nav-btn{
+    position:fixed;top:0;height:100%;width:5.5%;background:transparent;border:none;cursor:pointer;
+    z-index:15;color:transparent;display:flex;align-items:center;font-family:var(--mono);font-size:1.4rem;
+  }
+  .nav-btn.prev{left:0;justify-content:flex-start;padding-left:.6rem;}
+  .nav-btn.next{right:0;justify-content:flex-end;padding-right:.6rem;}
+  .nav-btn:hover{color:rgba(200,162,74,.35);}
+
+  @media (max-width:760px){
+    .panes{grid-template-columns:1fr;gap:1rem;}
+    .pane.b{transform:translateY(8px);}
+    .two-col{grid-template-columns:1fr;gap:1.4rem;}
+    .mtable{font-size:.78rem;}
+    .eqrow{grid-template-columns:1fr;gap:.3rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="kicker-tag">Compression &amp; Expansion &middot; Two Explanatory Modes</div>
+<div class="counter" id="counter">01 / 18</div>
+<button class="nav-btn prev" id="prevBtn" aria-label="Previous">&#8592;</button>
+<button class="nav-btn next" id="nextBtn" aria-label="Next">&#8594;</button>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="eyebrow">Closure &middot; Invariance &middot; Contingency</div>
+    <h1 class="hero">COMPRESSION<br>AND <em>EXPANSION</em></h1>
+    <p class="subtitle">How physicists and biologists describe the same phenomena, and why only one of them can write an equation</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">The Question</div>
+    <h2>Why can physicists write equations, and biologists mostly <em>cannot</em>?</h2>
+    <p class="body-text" style="margin-top:1.6rem;">The standard answer invokes complexity: biological systems have too many variables. That is true and insufficient. The deeper reason is closure.</p>
+    <p class="maxim">Where a system's degrees of freedom can be isolated and its symmetries identified, description collapses into algebra. Where they cannot, explanation must be unfolded into process.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="eyebrow">Three Compressions</div>
+    <div class="eqstack">
+      <div class="eqrow"><div class="e">F = q v &times; B</div><div class="g">Three vectors, one relation, complete. The cross product encodes a three-way directional constraint.</div></div>
+      <div class="eqrow"><div class="e">a = GM / r²</div><div class="g">The mass cancels. Universality falls out of the cancellation and is later elevated to geometry.</div></div>
+      <div class="eqrow"><div class="e">&epsilon; = &minus; d&Phi;/dt</div><div class="g">A single sign enforces conservation of energy, and with it opposition and causation.</div></div>
+    </div>
+    <p class="body-text">Nothing is lost in these compressions. The mechanism is not omitted from the equation; it is implicit in the structure of the equation.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="eyebrow">The Thesis</div>
+    <div class="callout">Physics retains what must be true. Biology reconstructs how it came to be true.</div>
+    <p class="body-text" style="margin-top:1.8rem;">Physics is amenable to mathematisation not because physicists are cleverer, but because the systems they study are closed enough to admit algebraic structure. When variables can be isolated, interactions are few-to-few, and conservation laws constrain the space of possibilities, description compresses to equation.</p>
+    <p class="body-text">When variables proliferate, interactions are many-to-many, and context dominates, description must expand into narrative.</p>
+  </section>
+
+  <!-- 5: Lenz -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">A magnet slows as it falls through a copper tube.</div>
+      <div class="phen-sub">Example 01 &middot; Lenz's law and eddy currents</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">&epsilon; = &minus; d&Phi;<sub>B</sub>/dt</div>
+          <p>The minus sign does all the explanatory work. It encodes opposition, causation and energy conservation simultaneously. Without it, induced currents would reinforce the change in flux and produce energy from nothing.</p>
+          <p>Eddy currents are the distributed realisation of this relation in a conductor. Direction, causation, constraint and dissipation are all implicit.</p>
+          <div class="ask">What is invariant here?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>A changing magnetic environment induces circulating currents that act to stabilise the system against further change, dissipating energy as heat.</p>
+          <p>The minus sign becomes negative feedback, directly analogous to homeostasis or feedback inhibition in a metabolic pathway. The flux derivative becomes a perturbation triggering a distributed response.</p>
+          <div class="ask">What is the conductivity? What geometry lets loops form? What breaks first?</div>
+        </div>
+      </div>
+      <div class="hinge">Invariance &rarr; <b>stability under perturbation</b> &nbsp;·&nbsp; algebraic necessity &rarr; <b>thermodynamic cost</b></div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 6: mass defect -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">A bound nucleus weighs less than its parts.</div>
+      <div class="phen-sub">Example 02 &middot; Mass defect and binding energy</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">&Delta;m = Zm<sub>p</sub> + Nm<sub>n</sub> &minus; m<sub>nuc</sub><br>E<sub>b</sub> = &Delta;m c²</div>
+          <p>The missing mass is not missing; it is energy already released during formation. The strong interaction lowers the system's energy and the bound system sits in a potential well.</p>
+          <p>The equation is the mechanism, once written at the right level of abstraction.</p>
+          <div class="ask">What quantity is conserved?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>Separate nucleons interact through short-range attractive forces, rearrange into a more stable configuration, and release energy to the surroundings, leaving a lower-energy bound structure.</p>
+          <p>The scalar E<sub>b</sub> becomes a transition between states, and the equality becomes a question about pathways: gamma emission, kinetic recoil, intermediate configurations. The ground state becomes a position in a stability landscape, like a protein folding funnel.</p>
+          <div class="ask">What is the proton-to-neutron ratio? Which shells are closed?</div>
+        </div>
+      </div>
+      <div class="hinge">A number that looks static <b>encodes a historical process</b>: energy released during formation</div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 7: specific heat -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">Water absorbs a great deal of heat for very little rise in temperature.</div>
+      <div class="phen-sub">Example 03 &middot; Specific heat capacity</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">C<sub>V</sub> = (&part;U/&part;T)<sub>V</sub></div>
+          <p>Heat capacity measures the number of accessible degrees of freedom weighted by their coupling strengths. The hydrogen bonding network supplies an extensive reservoir of intermolecular modes.</p>
+          <p>Energy is absorbed into translation, rotation, and the excitation, bending and partial disruption of an extended fluctuating network. The high value follows from the count of coupled modes per unit mass.</p>
+          <div class="ask">How many degrees of freedom?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>Thermal inertia is a functional property with ecological consequences. Oceans buffer planetary temperature. Blood, lymph and cytoplasm act as thermal reservoirs resisting rapid fluctuation.</p>
+          <p>The hydrogen bond network becomes an adaptive infrastructure: a cooperative, dynamic lattice that absorbs perturbation and underwrites homeostasis from the cell to the planet.</p>
+          <div class="ask">What does this stability enable?</div>
+        </div>
+      </div>
+      <div class="hinge">Density of accessible modes &rarr; <b>what the property affords</b></div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 8: double slit -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">Light through two slits produces bright and dark fringes.</div>
+      <div class="phen-sub">Example 04 &middot; Double-slit interference</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">d sin&theta; = n&lambda;</div>
+          <p>Positions, spacings and relative intensities of every maximum and minimum are determined by superposition and the geometry of path difference. With finite slit width the envelope combines diffraction and interference in a single closed expression.</p>
+          <p>Geometry, superposition, and one wavelength.</p>
+          <div class="ask">What relation must hold?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>A wave meets a barrier with two openings, passes through both, and the contributions recombine. Where they arrive in phase the signal is strong; where out of phase it cancels. The fringe pattern is the record of that recombination.</p>
+          <p>The pattern is fragile and conditional. Change the coherence length, the slit width or the wavelength and it degrades. In the single-particle case it builds statistically and vanishes when which-path information is available.</p>
+          <div class="ask">Under what conditions does the pattern survive?</div>
+        </div>
+      </div>
+      <div class="hinge">A closed predictive encoding &rarr; <b>a regime-specific outcome</b> of source, barrier and detector</div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 9: free fall -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">A feather and a hammer fall together in a vacuum.</div>
+      <div class="phen-sub">Example 05 &middot; Free-fall equivalence</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">ma = GMm/r² &nbsp;&rArr;&nbsp; a = GM/r²</div>
+          <p>The mass cancels. That cancellation reflects the equivalence of inertial and gravitational mass, which Einstein elevated to a principle and made the foundation of general relativity.</p>
+          <p>Geometrically, free fall is not acceleration under a force but geodesic motion: all objects follow the same paths because gravity is the curvature of the arena rather than a force acting on mass.</p>
+          <div class="ask">What cancels, and what does the cancellation mean?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>What medium? What drag? What Reynolds number? The universality is real, and it is the universality of an idealised limit. In any actual context, air resistance, buoyancy, terminal velocity and morphology dominate.</p>
+          <p>Falling is an ecological event: a seed disperses, a predator dives, a fruit detaches. A samara autorotates, a peregrine tucks its wings, a spider pays out silk to catch the wind. Each is falling, and equivalence is the least interesting part.</p>
+          <div class="ask">What happens when the stripped-away complexity is restored?</div>
+        </div>
+      </div>
+      <div class="hinge">The invariant is the <b>starting point</b> for one discipline and the <b>idealised limit</b> for the other</div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 10: circuits -->
+  <section class="slide">
+    <div class="ccard">
+      <div class="phen">Bulbs in parallel burn brighter and flatten the battery faster.</div>
+      <div class="phen-sub">Example 06 &middot; Series and parallel circuits</div>
+      <div class="panes">
+        <div class="pane p">
+          <span class="tag">Compression</span>
+          <div class="eq">P<sub>series</sub> = &epsilon;²/NR<br>P<sub>parallel</sub> = N&epsilon;²/R</div>
+          <p>In series the total resistance is NR, the current falls, and each bulb receives &epsilon;²/N²R. In parallel each bulb sees the full voltage and dissipates &epsilon;²/R, so total power rises linearly with N.</p>
+          <p>Why parallel bulbs are brighter, why the battery drains faster, and by exactly how much, all sit inside Ohm's law and P = IV.</p>
+          <div class="ask">What does the topology do to the algebra?</div>
+        </div>
+        <div class="pane b">
+          <span class="tag">Expansion</span>
+          <p>A resource distribution problem. The battery is a finite store, the bulbs are consumers, and the wiring topology determines how the resource is partitioned.</p>
+          <p>Series is a single supply chain, like flux through a linear metabolic pathway. Parallel is independent lines from a shared reservoir, like capillary beds branching from an artery. Parallel access maximises per-unit output and accelerates depletion.</p>
+          <div class="ask">Who draws from what, and how fast does the reservoir empty?</div>
+        </div>
+      </div>
+      <div class="hinge">An equation &rarr; a <b>supply-and-demand architecture</b>: distribution sets the depletion rate</div>
+      <div class="tapcue">Tap to reveal the same phenomenon, expanded</div>
+    </div>
+  </section>
+
+  <!-- 11: the master table -->
+  <section class="slide">
+    <div class="eyebrow">The Underlying Distinction</div>
+    <table class="mtable">
+      <tr><th></th><th class="p">Physics</th><th class="b">Biology-style</th></tr>
+      <tr><td>Primitive</td><td>Relations: symmetries, conservation laws</td><td>Systems: components and interactions</td></tr>
+      <tr><td>Direction</td><td>Compress to invariants</td><td>Expand to mechanisms</td></tr>
+      <tr><td>Mechanism</td><td>Implicit in mathematical structure</td><td>Explicit, decomposed, narrated</td></tr>
+      <tr><td>Mathematisation</td><td>Natural: low-dimensional and closed</td><td>Difficult: high-dimensional and open</td></tr>
+      <tr><td>Goal</td><td>Minimal sufficient description</td><td>Traceable causation across components</td></tr>
+    </table>
+  </section>
+
+  <!-- 12: the hinge -->
+  <section class="slide">
+    <div class="eyebrow">Description and Explanation</div>
+    <h2>The distinction is not description versus mechanism. It is that in physics, at the fundamental level, the distinction <em>collapses</em>.</h2>
+    <p class="body-text" style="margin-top:1.6rem;">Under closure, a good description is already a mechanistic explanation, because the equation carries the mechanism inside its structure. In biology the two remain distinct layers, and a description that is not also an explanation is the normal case rather than a failure.</p>
+    <p class="maxim">Renaming a phenomenon is not explaining it. But writing the right relation sometimes is, and knowing which situation you are in is the skill.</p>
+  </section>
+
+  <!-- 13: why closure fails -->
+  <section class="slide">
+    <div class="eyebrow">Why Closure Fails in Biology</div>
+    <p class="body-text">Life on Earth is the product of Darwinian selection acting on accident. The organisms, pathways and structures a biologist studies were not derived from first principles; they were arrived at through a contingent, branching history of variation and differential survival.</p>
+    <p class="body-text">Their forms are not necessary but selected. The explanations therefore mirror the origin: expanded, conditional, narrative, context-dependent.</p>
+    <p class="maxim">The narrative character of biology is a faithful reflection of the contingency of its subject matter.</p>
+  </section>
+
+  <!-- 14: the two profiles -->
+  <section class="slide">
+    <div class="eyebrow">Two Profiles</div>
+    <div class="two-col">
+      <div class="col">
+        <h3 class="p">Physics</h3>
+        <ul>
+          <li>Minimal variables.</li>
+          <li>Exact relations, invariant under transformation.</li>
+          <li>Mechanism compressed into algebra.</li>
+          <li>Description is explanation.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 class="b">Biology</h3>
+        <ul>
+          <li>Many variables.</li>
+          <li>Interaction networks, context-dependent.</li>
+          <li>Mechanism expanded into narrative.</li>
+          <li>Description and explanation remain distinct layers.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="body-text" style="margin-top:1.5rem;">Neither mode is superior. They are adapted to different regimes of the same explanatory landscape.</p>
+  </section>
+
+  <!-- 15: where the boundary sits -->
+  <section class="slide">
+    <div class="eyebrow">The Axis Is Closure, Not Difficulty</div>
+    <p class="body-text">Ask of any system: can the variables be isolated? Are interactions few-to-few? Do conservation laws constrain what is possible? Is the behaviour independent of the system's history?</p>
+    <p class="body-text">Where the answers are yes, compression is available and the equation will carry the mechanism. Where they are no, expansion is not a stylistic retreat but the only faithful account, and demanding an equation would discard exactly the information that matters.</p>
+    <p class="maxim">Physics compresses to invariants. Biology expands to dependencies.</p>
+  </section>
+
+  <!-- 16: fields in between -->
+  <section class="slide">
+    <div class="eyebrow">Test the Claim</div>
+    <p class="body-text">The interesting cases sit on the boundary. Ask where each of these falls, and what closure it does or does not enjoy:</p>
+    <div class="two-col" style="max-width:44em;">
+      <div class="col">
+        <ul>
+          <li>Statistical mechanics of a gas.</li>
+          <li>Population genetics under selection.</li>
+          <li>Fluid turbulence.</li>
+          <li>Epidemiological spread.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <ul>
+          <li>Chemical kinetics.</li>
+          <li>Plate tectonics.</li>
+          <li>Allometric scaling laws.</li>
+          <li>Climate models.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="body-text" style="margin-top:1.4rem;">Several of these compress partially: an invariant governs the aggregate while the individual trajectory stays irreducibly narrative. Naming which layer is compressible is a better answer than assigning the whole field to one column.</p>
+  </section>
+
+  <!-- 17: diagnostic -->
+  <section class="slide">
+    <div class="eyebrow">The Diagnostic Exercise</div>
+    <h2>For each phenomenon, four descriptions. Two are genuine, two are <em>plausible impostors</em>.</h2>
+    <p class="body-text" style="margin-top:1.5rem;">One genuine account is the physicist's compressed invariant, the other the biologist's expanded mechanism. Both are physically correct and differ only in explanatory mode. The impostors read fluently and contain substantive errors. Tag each one, then check your reading.</p>
+    <p class="link-note">Companion quiz &middot; <a href="https://leelemacjames.github.io/compression_and_expansion_quiz.html">compression_and_expansion_quiz.html</a></p>
+    <p class="link-note" style="margin-top:.5rem;">Formal treatment &middot; <a href="https://leelemacjames.github.io/bioligistPhysics.pdf">Compression and Expansion (PDF)</a></p>
+  </section>
+
+  <!-- 18: closing -->
+  <section class="slide">
+    <div class="eyebrow">Conclusion</div>
+    <div class="callout">A cross product encodes a three-way interaction. A mass cancellation encodes geometric universality. A minus sign encodes conservation.</div>
+    <p class="body-text" style="margin-top:1.7rem;">Where the system is closed, that is the whole explanation. Where closure fails, the same phenomena re-described necessarily expand into process, narrative and conditionality, and the expansion is not a lesser account of a simple thing but an honest account of a complicated one.</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    document.getElementById('counter').textContent =
+      String(idx+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('progressFill').style.width = ((idx+1)/total*100) + '%';
+  }
+  function go(d){ idx = Math.max(0, Math.min(total-1, idx+d)); render(); }
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(-1));
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(1));
+
+  document.addEventListener('keydown', e=>{
+    const card = slides[idx].querySelector('.ccard');
+    if(e.key===' '){
+      if(card && !card.classList.contains('open')){ card.classList.add('open'); e.preventDefault(); return; }
+      go(1); e.preventDefault();
+    } else if(e.key==='ArrowRight'){ go(1); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'){ go(-1); }
+  });
+
+  slides.forEach(s=>{
+    s.addEventListener('click', e=>{
+      if(e.target.closest('a')) return;
+      const card = e.target.closest('.ccard');
+      if(card && !card.classList.contains('open')){ card.classList.add('open'); }
+      else go(1);
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
