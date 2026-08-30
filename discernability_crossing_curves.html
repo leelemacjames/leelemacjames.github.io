@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Would We Ever Know? — Discernability and the Crossing of Two Curves</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink-black:#0e0c09;
+    --ink-panel:#17130f;
+    --ink-line:#2c261e;
+    --cream:#efe6d3;
+    --cream-dim:#a89c85;
+    --gold:#c8a24a;
+    --gold-bright:#e3c073;
+    --india:#c98a4a;
+    --china:#7d95a8;
+    --warn:#a85c4a;
+    --serif:'Cormorant Garamond', Georgia, serif;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--ink-black);color:var(--cream);font-family:var(--sans);overflow:hidden;}
+  body{
+    background-image:
+      radial-gradient(ellipse at 15% -10%, rgba(200,162,74,0.06), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(125,149,168,0.05), transparent 50%);
+  }
+
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:6vh 8vw;
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease;
+    text-align:center;
+  }
+  .slide.active{opacity:1;visibility:visible;transform:translateY(0);}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:1.8rem;opacity:.85;
+  }
+  h1.hero{
+    font-family:var(--serif);font-weight:500;
+    font-size:clamp(2.4rem,5.8vw,4.8rem);line-height:1.05;
+  }
+  h1.hero em,h2 em{color:var(--gold-bright);font-style:italic;}
+  h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,4vw,3.1rem);line-height:1.14;max-width:20em;}
+  .subtitle{
+    font-family:var(--serif);font-style:italic;
+    font-size:clamp(1.05rem,1.7vw,1.45rem);color:var(--cream-dim);
+    margin-top:1.3rem;max-width:40em;
+  }
+  .body-text{
+    font-weight:300;font-size:clamp(.98rem,1.3vw,1.2rem);line-height:1.75;
+    color:var(--cream);max-width:42em;
+  }
+  .body-text + .body-text{margin-top:.9rem;}
+  .lede{
+    font-family:var(--serif);font-style:italic;
+    font-size:clamp(1.25rem,2vw,1.8rem);color:var(--cream-dim);
+    max-width:32em;line-height:1.5;
+  }
+  .maxim{
+    font-family:var(--serif);font-style:italic;color:var(--gold-bright);
+    font-size:clamp(1.15rem,1.9vw,1.5rem);margin-top:1.6rem;max-width:30em;
+  }
+
+  .bignum{
+    font-family:var(--mono);font-weight:500;
+    font-size:clamp(1.5rem,4.4vw,3.4rem);
+    color:var(--gold-bright);letter-spacing:.01em;
+    margin:1rem 0 .4rem;
+  }
+  .bignum .over{color:var(--warn);opacity:.75;}
+  .caption{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--cream-dim);
+  }
+
+  .chain{
+    display:flex;flex-direction:column;gap:.55rem;max-width:40em;
+    text-align:left;margin-top:1rem;
+  }
+  .chain .step{
+    display:grid;grid-template-columns:2.4rem 1fr;gap:1rem;align-items:start;
+    border-bottom:1px solid var(--ink-line);padding:.7rem 0;
+  }
+  .chain .step .n{font-family:var(--mono);font-size:.78rem;color:var(--gold);padding-top:.28rem;}
+  .chain .step .t{font-weight:300;font-size:1rem;line-height:1.6;}
+  .chain .step .t b{color:var(--gold-bright);font-weight:500;}
+  .chain .step .t span{display:block;color:var(--cream-dim);font-size:.9rem;margin-top:.2rem;}
+
+  .ledger{
+    width:100%;max-width:44em;border-collapse:collapse;margin-top:1.2rem;
+    font-family:var(--mono);font-size:.86rem;
+  }
+  .ledger th{
+    text-align:left;font-weight:500;font-size:.68rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--cream-dim);
+    border-bottom:1px solid var(--ink-line);padding:.6rem .5rem;
+  }
+  .ledger td{
+    padding:.6rem .5rem;border-bottom:1px solid var(--ink-line);
+    color:var(--cream);text-align:left;
+  }
+  .ledger td.num{text-align:right;color:var(--gold-bright);}
+  .ledger tr.total td{border-bottom:none;border-top:1px solid var(--gold);color:var(--gold-bright);font-weight:500;}
+  .ledger .ind{color:var(--india);}
+  .ledger .chn{color:var(--china);}
+
+  .formula{
+    font-family:var(--mono);font-size:clamp(.9rem,1.5vw,1.15rem);
+    color:var(--gold-bright);background:var(--ink-panel);
+    border:1px solid var(--ink-line);border-radius:3px;
+    padding:1.2rem 1.6rem;margin:1.4rem 0;line-height:1.9;
+  }
+  .formula .lbl{display:block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-dim);margin-top:.5rem;}
+
+  /* calculator */
+  .calc{
+    width:100%;max-width:44em;background:var(--ink-panel);
+    border:1px solid var(--ink-line);border-radius:3px;padding:1.8rem 2rem;
+  }
+  .calc .row{display:grid;grid-template-columns:1fr 10rem;gap:1.2rem;align-items:center;margin-bottom:1.1rem;}
+  .calc label{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cream-dim);text-align:left;}
+  .calc input[type=range]{width:100%;accent-color:var(--gold);}
+  .calc .val{font-family:var(--mono);color:var(--gold-bright);font-size:.95rem;text-align:right;}
+  .calc .out{
+    border-top:1px solid var(--ink-line);margin-top:1.2rem;padding-top:1.3rem;
+    font-family:var(--serif);font-size:clamp(1.2rem,2.4vw,1.8rem);color:var(--cream);
+  }
+  .calc .out b{color:var(--gold-bright);font-weight:500;}
+  .calc .outsub{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-dim);margin-top:.6rem;}
+
+  .two-col{
+    display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;
+    max-width:52em;text-align:left;margin-top:1.4rem;
+  }
+  .col h3{
+    font-family:var(--serif);font-style:italic;font-weight:500;
+    font-size:1.4rem;color:var(--gold-bright);margin-bottom:.7rem;
+  }
+  .col h3.alt{color:var(--china);}
+  .col ul{list-style:none;}
+  .col li{
+    font-weight:300;font-size:.95rem;line-height:1.6;color:var(--cream);
+    padding:.45rem 0 .45rem .95rem;position:relative;
+  }
+  .col li::before{content:'·';position:absolute;left:0;color:var(--gold);}
+  .col .verdict{
+    margin-top:.9rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--cream-dim);border-top:1px solid var(--ink-line);padding-top:.7rem;
+  }
+
+  .budget{
+    display:flex;flex-direction:column;gap:.9rem;max-width:40em;width:100%;margin-top:1.2rem;
+  }
+  .bar-row{text-align:left;}
+  .bar-row .bl{
+    display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--cream-dim);margin-bottom:.35rem;
+  }
+  .bar{height:6px;background:var(--ink-line);border-radius:3px;overflow:hidden;}
+  .bar i{display:block;height:100%;background:var(--gold);}
+  .bar i.wide{background:var(--warn);}
+
+  .quote-card{
+    max-width:40em;border-left:2px solid var(--gold);
+    padding:.4rem 0 .4rem 1.4rem;text-align:left;
+    font-family:var(--serif);font-style:italic;
+    font-size:clamp(1.15rem,1.9vw,1.5rem);color:var(--gold-bright);line-height:1.5;
+  }
+  .attrib{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cream-dim);margin-top:1rem;
+  }
+
+  .checklist{text-align:left;max-width:38em;counter-reset:qn;margin-top:1.2rem;}
+  .checklist div{
+    font-family:var(--serif);font-size:1.12rem;color:var(--cream);
+    padding:.5rem 0 .5rem 2.4rem;position:relative;border-bottom:1px solid var(--ink-line);
+  }
+  .checklist div::before{
+    counter-increment:qn;content:counter(qn);
+    position:absolute;left:0;top:.55rem;font-family:var(--mono);color:var(--gold);font-size:.82rem;
+  }
+
+  .disclosure{
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--cream-dim);opacity:.7;margin-top:1.4rem;max-width:38em;line-height:1.9;
+  }
+
+  .footer-stamp{
+    position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cream-dim);opacity:.55;
+  }
+
+  .progress-track{position:fixed;top:0;left:0;right:0;height:2px;background:var(--ink-line);z-index:20;}
+  .progress-fill{height:100%;background:var(--gold);width:0%;transition:width .4s ease;}
+  .counter{position:fixed;bottom:1.6rem;right:2rem;font-family:var(--mono);font-size:.78rem;color:var(--cream-dim);z-index:20;}
+  .kicker-tag{
+    position:fixed;top:1.4rem;left:2rem;font-family:var(--mono);font-size:.68rem;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);opacity:.6;z-index:20;
+  }
+  .nav-btn{
+    position:fixed;top:0;height:100%;width:7%;background:transparent;border:none;cursor:pointer;
+    z-index:15;color:transparent;display:flex;align-items:center;font-family:var(--mono);font-size:1.4rem;
+  }
+  .nav-btn.prev{left:0;justify-content:flex-start;padding-left:.6rem;}
+  .nav-btn.next{right:0;justify-content:flex-end;padding-right:.6rem;}
+  .nav-btn:hover{color:rgba(200,162,74,.35);}
+
+  @media (max-width:700px){
+    .two-col{grid-template-columns:1fr;gap:1.6rem;}
+    .calc .row{grid-template-columns:1fr;gap:.4rem;}
+    .calc .val{text-align:left;}
+    .ledger{font-size:.72rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="kicker-tag">Discernability &middot; What the Data Can Bear</div>
+<div class="counter" id="counter">01 / 20</div>
+<button class="nav-btn prev" id="prevBtn" aria-label="Previous">&#8592;</button>
+<button class="nav-btn next" id="nextBtn" aria-label="Next">&#8594;</button>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="eyebrow">Samples &middot; Rates &middot; Accumulated Error</div>
+    <h1 class="hero">HOW WOULD WE<br><em>EVER KNOW?</em></h1>
+    <p class="subtitle">On the day India became more populous than China, and on whether there are more hairs on Indian heads than on Chinese ones</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">The Claim As Reported</div>
+    <p class="body-text" style="margin-bottom:.6rem;">In April 2023 the United Nations Population Division announced that India's population would reach:</p>
+    <div class="bignum">1,425,775,<span class="over">850</span></div>
+    <div class="caption">Ten significant figures</div>
+    <p class="body-text" style="margin-top:1.8rem;">Nobody counted anybody that month. The last Indian census was taken in 2011; the last Chinese census in November 2020. The figure is the output of a model, quoted to the nearest fifty people.</p>
+    <p class="maxim">A number's precision is a claim about the method, not a courtesy of the arithmetic.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="eyebrow">What Was Actually Observed</div>
+    <h2>Two censuses, taken years apart, in different decades, under different administrations.</h2>
+    <p class="body-text" style="margin-top:1.6rem;">Everything reported for 2023 is what happens when you take a base count, attach rates of change measured on samples, and integrate forward. The further you are from the census, the more of the answer is model and the less of it is observation.</p>
+    <p class="maxim">The crossing date was never measured. It was extrapolated.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="eyebrow">The Chain of Inference</div>
+    <div class="chain">
+      <div class="step"><div class="n">01</div><div class="t"><b>Base population</b><span>A census, itself an estimate, with an undercount that must be modelled rather than seen.</span></div></div>
+      <div class="step"><div class="n">02</div><div class="t"><b>Fertility and mortality rates</b><span>From civil registration where it is complete and from sample surveys where it is not.</span></div></div>
+      <div class="step"><div class="n">03</div><div class="t"><b>Migration</b><span>The least well measured term, and the one least amenable to sampling.</span></div></div>
+      <div class="step"><div class="n">04</div><div class="t"><b>Interpolation to a daily rate</b><span>Annual or monthly aggregates smoothed into a continuous flow that nobody observes at that resolution.</span></div></div>
+      <div class="step"><div class="n">05</div><div class="t"><b>Cumulative integration</b><span>Twelve years of daily increments added to a base, with every error in the rate accumulating rather than cancelling.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="eyebrow">Turning Rates Into a Day</div>
+    <table class="ledger">
+      <tr><th>Quantity</th><th style="text-align:right">Order of magnitude</th></tr>
+      <tr><td class="ind">India: births per day</td><td class="num">~ 63,000</td></tr>
+      <tr><td class="ind">India: deaths per day</td><td class="num">~ 26,000</td></tr>
+      <tr><td class="ind">India: net change per day</td><td class="num">~ +37,000</td></tr>
+      <tr><td class="chn">China: net change per day (2022)</td><td class="num">~ &minus;2,300</td></tr>
+      <tr class="total"><td>Gap closing per day</td><td class="num">~ 39,000</td></tr>
+      <tr class="total"><td>Gap closing per year</td><td class="num">~ 14 million</td></tr>
+    </table>
+    <p class="disclosure">Figures rounded to illustrate the structure of the calculation. Treat every one as an estimate carrying its own uncertainty; the argument that follows does not depend on their exact values.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="eyebrow">The Governing Relation</div>
+    <div class="formula">
+      &delta;t &nbsp;=&nbsp; &delta;(N<sub>I</sub> &minus; N<sub>C</sub>) &nbsp;&divide;&nbsp; |d(N<sub>I</sub> &minus; N<sub>C</sub>)/dt|
+      <span class="lbl">Uncertainty in the crossing date equals uncertainty in the gap divided by the rate at which the gap closes</span>
+    </div>
+    <p class="body-text">A crossing date is not knowable to better precision than the uncertainty in the difference, divided by the speed of approach. If two populations of 1.4 billion are each known to within half a percent, the difference is uncertain by roughly ten million people, and ten million people is around nine months of closing.</p>
+    <p class="maxim">When two curves cross at a shallow angle, the date is the least well determined thing about them.</p>
+  </section>
+
+  <!-- 7: calculator -->
+  <section class="slide">
+    <div class="eyebrow">Try It &mdash; The Resolvability of a Crossing</div>
+    <div class="calc">
+      <div class="row">
+        <label for="relerr">Relative uncertainty in each population</label>
+        <span class="val" id="relerrOut">0.50 %</span>
+        <input type="range" id="relerr" min="5" max="400" value="50" step="5" style="grid-column:1 / -1;">
+      </div>
+      <div class="row">
+        <label for="closing">Gap closing rate, millions per year</label>
+        <span class="val" id="closingOut">14.0 M/yr</span>
+        <input type="range" id="closing" min="10" max="300" value="140" step="5" style="grid-column:1 / -1;">
+      </div>
+      <div class="out">
+        The crossing date is determined to no better than <b id="dtOut">&plusmn; 0.7 years</b>
+      </div>
+      <div class="outsub" id="dtSub">Uncertainty in the gap: &plusmn; 10.1 million people</div>
+    </div>
+    <p class="body-text" style="margin-top:1.4rem;">Push the uncertainty to two or three percent, which is not unreasonable for a population last enumerated more than a decade ago, and the crossing becomes a multi-year window rather than a month.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="eyebrow">And Indeed</div>
+    <div class="quote-card">
+      One published demographic analysis, working from India's own official series and arguing that the two countries' data quality must be adjusted differently before they are compared at all, places the crossover in 2026 rather than 2023.
+    </div>
+    <div class="attrib">Demography India, vol. 52 no. 1 (2023)</div>
+    <p class="body-text" style="margin-top:1.6rem;">The disagreement is roughly three years. That is not a dispute about arithmetic. It is a dispute about how much to adjust each census for undercount, and whether one country's figures have been taken more nearly at face value than the other's.</p>
+    <p class="maxim">A crossing date is an artefact of the correction model, and the correction model is a judgement.</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="eyebrow">What The Evidence Actually Warrants</div>
+    <div class="two-col">
+      <div class="col">
+        <h3>Well supported</h3>
+        <ul>
+          <li>The two populations are of the same order and differ by a few million at most.</li>
+          <li>India's is rising; China's has begun to fall.</li>
+          <li>Therefore a crossing occurs, and occurs once.</li>
+          <li>It falls somewhere in the first half of the 2020s.</li>
+        </ul>
+        <div class="verdict">Robust to the correction model</div>
+      </div>
+      <div class="col">
+        <h3 class="alt">Not supported</h3>
+        <ul>
+          <li>A specific month.</li>
+          <li>A figure quoted to the last fifty people.</li>
+          <li>The implication that something was counted.</li>
+          <li>Any statement of the form &ldquo;on this day it happened&rdquo;.</li>
+        </ul>
+        <div class="verdict">An artefact of quoting a model output verbatim</div>
+      </div>
+    </div>
+    <p class="maxim">The direction was discernible long before the date was, and the date may never be.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="eyebrow">A Harder Question, Deliberately Absurd</div>
+    <h2>Are there more hairs on Indian heads than on <em>Chinese heads</em>?</h2>
+    <p class="subtitle">Nobody has ever counted. There is no census of follicles. And yet the question has a determinate answer, and we can ask how close we could get to it.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <div class="eyebrow">Two Routes to an Answer</div>
+    <div class="two-col">
+      <div class="col">
+        <h3>Direct estimation</h3>
+        <ul>
+          <li>Sample scalps; count follicles in a measured area; scale by scalp area.</li>
+          <li>Trichological studies do this, on samples of dozens or hundreds.</li>
+          <li>Sampling frame is clinical, therefore not representative of a population.</li>
+          <li>Measurement is expensive and the sample will always be tiny.</li>
+        </ul>
+        <div class="verdict">Small n, direct construct, poor representativeness</div>
+      </div>
+      <div class="col">
+        <h3 class="alt">Factor decomposition</h3>
+        <ul>
+          <li>N&#772;<sub>hairs</sub> = population &times; mean hairs per head.</li>
+          <li>Mean hairs per head modelled from age structure, sex ratio, alopecia prevalence, follicular density, nutrition.</li>
+          <li>Each factor measured on a larger and better sample.</li>
+          <li>But the model linking them is itself an assumption.</li>
+        </ul>
+        <div class="verdict">Large n per factor, indirect construct, model risk</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="eyebrow">The Error Budget</div>
+    <div class="budget">
+      <div class="bar-row"><div class="bl"><span>Population figures</span><span>~ 0.5 &ndash; 3 %</span></div><div class="bar"><i style="width:6%"></i></div></div>
+      <div class="bar-row"><div class="bl"><span>Sex and age structure</span><span>~ 2 &ndash; 5 %</span></div><div class="bar"><i style="width:12%"></i></div></div>
+      <div class="bar-row"><div class="bl"><span>Prevalence of androgenetic alopecia by age band</span><span>~ 10 &ndash; 20 %</span></div><div class="bar"><i style="width:35%"></i></div></div>
+      <div class="bar-row"><div class="bl"><span>Mean follicular density and scalp area</span><span>~ 20 &ndash; 30 %</span></div><div class="bar"><i class="wide" style="width:60%"></i></div></div>
+      <div class="bar-row"><div class="bl"><span>Representativeness of the trichological sample</span><span>unquantified</span></div><div class="bar"><i class="wide" style="width:90%"></i></div></div>
+    </div>
+    <p class="body-text" style="margin-top:1.6rem;">The demographic term, which felt like the uncertain one in the population question, is here the best known quantity in the calculation by a factor of thirty.</p>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide">
+    <div class="eyebrow">The Counterintuitive Result</div>
+    <p class="body-text">The population gap between the two countries is around two tenths of one percent, and our uncertainty is comparable to it, so the sign is barely resolvable.</p>
+    <p class="body-text">The hair question is far worse measured in absolute terms, but the two countries differ markedly in median age, and older populations carry substantially more androgenetic alopecia. If that effect moves mean hairs per head by several percent, it dwarfs the population gap entirely, and the sign of the comparison is decided by a factor we can bound even though we cannot measure it well.</p>
+    <p class="maxim">A badly measured quantity with a large true difference can be more discernible than a well measured quantity with a tiny one.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide">
+    <div class="eyebrow">Discernability Is a Ratio</div>
+    <div class="formula">
+      D &nbsp;=&nbsp; |A &minus; B| &nbsp;&divide;&nbsp; &radic;(&sigma;<sub>A</sub><sup>2</sup> + &sigma;<sub>B</sub><sup>2</sup>)
+      <span class="lbl">Signal separation over combined uncertainty</span>
+    </div>
+    <p class="body-text">Whether a question is answerable does not depend on how precisely each side is known. It depends on how the separation compares with the uncertainty. Precision is only worth buying where the separation is small.</p>
+    <p class="maxim">Ask not how well we know each quantity, but how well we know the difference.</p>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide">
+    <div class="eyebrow">Direct Versus Factor-Based Methods</div>
+    <div class="two-col">
+      <div class="col">
+        <h3>Direct measurement inherits</h3>
+        <ul>
+          <li>Sampling error, which shrinks predictably with n.</li>
+          <li>Selection bias, which does not shrink at all.</li>
+          <li>A construct that matches the question exactly.</li>
+        </ul>
+        <div class="verdict">Fails through unrepresentativeness</div>
+      </div>
+      <div class="col">
+        <h3 class="alt">Factor decomposition inherits</h3>
+        <ul>
+          <li>Errors in every factor, which compound multiplicatively.</li>
+          <li>The structural assumption that the factors are the right ones and combine that way.</li>
+          <li>Access to much larger samples per factor.</li>
+        </ul>
+        <div class="verdict">Fails through model misspecification</div>
+      </div>
+    </div>
+    <p class="body-text" style="margin-top:1.4rem;">Neither is safer in principle. Agreement between them is worth more than either alone, because their failure modes are unrelated.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide">
+    <div class="eyebrow">Interpolation, Extrapolation, Induction</div>
+    <div class="chain">
+      <div class="step"><div class="n">&mdash;</div><div class="t"><b>Between two censuses</b><span>Interpolation. Constrained at both ends. Errors in the assumed path are bounded by the endpoints.</span></div></div>
+      <div class="step"><div class="n">&mdash;</div><div class="t"><b>After the last census</b><span>Extrapolation. Constrained at one end only. Errors accumulate without correction, and there is nothing downstream to catch them.</span></div></div>
+      <div class="step"><div class="n">&mdash;</div><div class="t"><b>Assuming rates persist</b><span>Induction. The claim that the mechanism which generated the past sample continues to generate the future. Not itself derivable from the sample.</span></div></div>
+    </div>
+    <p class="body-text" style="margin-top:1.5rem;">The India figure for 2023 was twelve years of one-sided extrapolation resting on an inductive assumption about fertility decline.</p>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide">
+    <div class="eyebrow">Why Precision Gets Overstated</div>
+    <p class="body-text">A model returns a number with as many digits as the arithmetic supplies. Rounding it to the honest resolution requires a deliberate act, and that act is where the uncertainty gets lost.</p>
+    <p class="body-text">The reporting chain compounds this. The originating body states that the date is approximate and subject to revision; the summary states the date; the headline states the day. Each step is defensible on its own and the sequence destroys the caveat.</p>
+    <p class="maxim">Uncertainty is not usually removed by anyone. It is simply not carried forward.</p>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide">
+    <div class="eyebrow">The Discernability Check</div>
+    <div class="checklist">
+      <div>What was counted, when, and by whom?</div>
+      <div>How much of this figure is observation and how much is model?</div>
+      <div>Over what interval has the model been integrated without correction?</div>
+      <div>Is the estimate inside or outside the observed range?</div>
+      <div>What is the separation, and what is the combined uncertainty?</div>
+      <div>Does the claimed precision exceed the resolution of the method?</div>
+      <div>Would an independent method, with unrelated failure modes, agree?</div>
+      <div>Which single assumption, if wrong, would move the answer most?</div>
+      <div>What would the honest rounding of this number look like?</div>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide">
+    <div class="eyebrow">Two Questions, One Structure</div>
+    <p class="body-text">The population question looks respectable and is nearly unanswerable at the resolution it is reported. The hair question looks frivolous and may be answerable in sign, because the quantity being compared is genuinely different between the two groups.</p>
+    <p class="lede" style="margin-top:1.5rem;">Seriousness of subject is not the same as strength of evidence, and the appearance of rigour is not the same as resolution.</p>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide">
+    <div class="eyebrow">What To Carry Away</div>
+    <h2>Every number about a population is an <em>integrated estimate</em>, and every crossing date is that estimate divided by a rate.</h2>
+    <p class="body-text" style="margin-top:1.6rem;">Ask what was observed, over what interval it has been carried forward, how large the difference is compared with the error on the difference, and whether the digits being quoted could survive a second, unrelated method being pointed at the same question.</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    document.getElementById('counter').textContent =
+      String(idx+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('progressFill').style.width = ((idx+1)/total*100) + '%';
+  }
+  function go(d){ idx = Math.max(0, Math.min(total-1, idx+d)); render(); }
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(-1));
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(1));
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '){ go(1); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'){ go(-1); }
+  });
+  slides.forEach(s=>{
+    s.addEventListener('click', e=>{
+      if(!e.target.closest('.calc')) go(1);
+    });
+  });
+
+  // crossing-date calculator
+  const POP = 1425;           // millions, both populations to within a rounding
+  const relerr  = document.getElementById('relerr');
+  const closing = document.getElementById('closing');
+
+  function calc(){
+    const pct  = relerr.value / 100;              // percent
+    const rate = closing.value / 10;              // millions per year
+    const sigmaEach = POP * pct / 100;            // millions
+    const sigmaGap  = Math.sqrt(2) * sigmaEach;   // independent errors, added in quadrature
+    const dt = sigmaGap / rate;                   // years
+
+    document.getElementById('relerrOut').textContent  = pct.toFixed(2) + ' %';
+    document.getElementById('closingOut').textContent = rate.toFixed(1) + ' M/yr';
+    document.getElementById('dtOut').textContent =
+      '\u00B1 ' + (dt < 1 ? (dt*12).toFixed(1) + ' months' : dt.toFixed(1) + ' years');
+    document.getElementById('dtSub').textContent =
+      'Uncertainty in the gap: \u00B1 ' + sigmaGap.toFixed(1) + ' million people';
+  }
+  relerr.addEventListener('input', calc);
+  closing.addEventListener('input', calc);
+  calc();
+
+  render();
+</script>
+
+</body>
+</html>
