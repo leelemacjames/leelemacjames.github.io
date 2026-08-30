@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science: Learning How to Look</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink-black: #0e0c09;
+    --ink-panel: #17130f;
+    --ink-line: #2c261e;
+    --cream: #efe6d3;
+    --cream-dim: #a89c85;
+    --gold: #c8a24a;
+    --gold-bright: #e3c073;
+    --verdict-no: #a85c4a;
+    --verdict-yes: #7c9070;
+    --verdict-mixed: #b8935a;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    height:100%;
+    background: var(--ink-black);
+    color: var(--cream);
+    font-family: var(--sans);
+    overflow:hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse at 20% -10%, rgba(200,162,74,0.06), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(200,162,74,0.04), transparent 50%);
+  }
+
+  .deck {
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide {
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding: 6vh 8vw;
+    opacity:0;
+    visibility:hidden;
+    transform: translateY(14px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    text-align:center;
+  }
+
+  .slide.active {
+    opacity:1;
+    visibility:visible;
+    transform: translateY(0);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity:0.85;
+  }
+
+  h1.hero {
+    font-family: var(--serif);
+    font-weight:500;
+    font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+    line-height:1.05;
+    letter-spacing: 0.01em;
+    color: var(--cream);
+  }
+
+  h1.hero em, h2 em { color: var(--gold-bright); font-style: italic; }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+    color: var(--cream-dim);
+    margin-top: 1.3rem;
+    max-width: 40em;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(2rem, 4.4vw, 3.4rem);
+    line-height: 1.12;
+    max-width: 20em;
+  }
+
+  .rule {
+    width: 3.4rem;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.6;
+    margin: 1.8rem 0;
+  }
+
+  .body-text {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: clamp(1rem, 1.35vw, 1.28rem);
+    line-height: 1.75;
+    color: var(--cream);
+    max-width: 42em;
+  }
+
+  .body-text + .body-text { margin-top: 1rem; }
+
+  .lede {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.3rem, 2.1vw, 1.9rem);
+    color: var(--cream-dim);
+    max-width: 30em;
+    line-height:1.5;
+  }
+
+  .furniture-list {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    color: var(--cream-dim);
+    max-width: 34em;
+    line-height: 1.6;
+    margin: 1.6rem 0 2.2rem;
+    font-style: italic;
+  }
+
+  ul.ontology {
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 0.7rem 1rem;
+    justify-content:center;
+    max-width: 46em;
+    margin-top: 1.6rem;
+  }
+  ul.ontology li {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid var(--ink-line);
+    padding: 0.55em 1.1em;
+    border-radius: 2px;
+    color: var(--gold-bright);
+    background: rgba(200,162,74,0.04);
+  }
+
+  .triplet {
+    display:flex;
+    flex-direction:column;
+    gap: 0.55rem;
+    margin: 1.6rem 0 2rem;
+    font-family: var(--serif);
+    font-size: clamp(1.15rem, 2vw, 1.55rem);
+    color: var(--cream);
+  }
+  .triplet b { color: var(--gold-bright); font-weight:500; }
+
+  .structural-examples {
+    display:flex;
+    gap: 2.4rem;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin: 1.8rem 0;
+    font-family: var(--sans);
+    font-weight:300;
+    color: var(--cream-dim);
+    font-size: 1.05rem;
+  }
+  .structural-examples span { display:block; }
+  .structural-examples .item {
+    border-top: 1px solid var(--ink-line);
+    padding-top: 0.8rem;
+    min-width: 9rem;
+  }
+
+  .pattern-line {
+    font-family: var(--mono);
+    color: var(--gold-bright);
+    font-size: clamp(1rem, 1.6vw, 1.3rem);
+    letter-spacing: 0.02em;
+    margin: 1rem 0 2rem;
+  }
+
+  .virtues-grid {
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 1.6rem 2.4rem;
+    max-width: 54em;
+    margin-top: 1.8rem;
+  }
+  .virtue {
+    text-align:left;
+  }
+  .virtue .name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--gold-bright);
+    margin-bottom: 0.35rem;
+  }
+  .virtue .desc {
+    font-family: var(--sans);
+    font-weight:300;
+    font-size: 0.92rem;
+    color: var(--cream-dim);
+    line-height:1.5;
+  }
+
+  .vps-grid {
+    display:flex;
+    flex-direction:column;
+    gap: 1.5rem;
+    max-width: 42em;
+    text-align:left;
+    margin-top: 1.2rem;
+  }
+  .vps-row {
+    display:grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1.2rem;
+    align-items:start;
+    border-bottom: 1px solid var(--ink-line);
+    padding-bottom: 1.1rem;
+  }
+  .vps-row .v {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--gold-bright);
+    font-size: 1.25rem;
+  }
+  .vps-row .p {
+    font-family: var(--sans);
+    font-weight:300;
+    font-size: 0.98rem;
+    color: var(--cream);
+    line-height:1.6;
+  }
+  .vps-row .p span { display:block; color: var(--cream-dim); margin-top:0.15rem;}
+
+  .expensive-stack {
+    display:flex;
+    flex-direction:column;
+    gap: 0.4rem;
+    margin: 1.4rem 0 2rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    color: var(--cream-dim);
+  }
+  .expensive-stack .strike { text-decoration: line-through; text-decoration-color: var(--verdict-no); opacity:0.55; }
+
+  /* Question / verdict card */
+  .qcard {
+    max-width: 46em;
+    width:100%;
+    border: 1px solid var(--ink-line);
+    background: var(--ink-panel);
+    border-radius: 3px;
+    padding: 3rem 3rem 2.4rem;
+    position:relative;
+    cursor:pointer;
+  }
+  .qnum {
+    position:absolute;
+    top: -1.1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink-black);
+    padding: 0 1rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+  }
+  .qscenario {
+    font-family: var(--sans);
+    font-weight:300;
+    font-size: 1.05rem;
+    line-height:1.7;
+    color: var(--cream);
+    text-align:left;
+  }
+  .qquote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--gold-bright);
+    margin: 1.1rem 0;
+    text-align:left;
+    border-left: 2px solid var(--gold);
+    padding-left: 1rem;
+  }
+  .qprompt {
+    margin-top: 1.6rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform:uppercase;
+    color: var(--cream-dim);
+    text-align:left;
+  }
+  .qprompt.hint { animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.45;} 50%{opacity:1;} }
+
+  .verdict-block {
+    margin-top: 1.6rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--ink-line);
+    text-align:left;
+    display:none;
+  }
+  .qcard.revealed .verdict-block { display:block; }
+  .qcard.revealed .qprompt.hint { display:none; }
+
+  .stamp {
+    display:inline-block;
+    font-family: var(--mono);
+    font-weight:600;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    text-transform:uppercase;
+    padding: 0.4em 0.9em;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    transform: rotate(-2deg);
+    margin-bottom: 1rem;
+  }
+  .stamp.no { color: var(--verdict-no); }
+  .stamp.yes { color: var(--verdict-yes); }
+  .stamp.mixed { color: var(--verdict-mixed); }
+
+  .verdict-text {
+    font-family: var(--sans);
+    font-weight:300;
+    font-size: 0.98rem;
+    line-height:1.7;
+    color: var(--cream);
+  }
+  .verdict-text ul { margin: 0.6rem 0 0.6rem 1.2rem; }
+  .verdict-text li { margin-bottom: 0.3rem; }
+  .maxim {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--gold-bright);
+    margin-top: 0.9rem;
+    font-size: 1.05rem;
+  }
+
+  .checklist {
+    text-align:left;
+    max-width: 38em;
+    counter-reset: qn;
+    margin-top: 1.4rem;
+  }
+  .checklist div {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    color: var(--cream);
+    padding: 0.5rem 0 0.5rem 2.4rem;
+    position:relative;
+    border-bottom: 1px solid var(--ink-line);
+  }
+  .checklist div::before {
+    counter-increment: qn;
+    content: counter(qn);
+    position:absolute;
+    left:0;
+    top:0.55rem;
+    font-family: var(--mono);
+    color: var(--gold);
+    font-size: 0.85rem;
+  }
+
+  .sentence-swap {
+    display:flex;
+    flex-direction:column;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  .sentence-swap .old {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--verdict-no);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    opacity: 0.7;
+  }
+  .sentence-swap .new {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.9rem;
+    color: var(--gold-bright);
+  }
+
+  .cheap-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap: 0.8rem;
+    justify-content:center;
+    max-width: 40em;
+    margin: 1.6rem 0;
+  }
+  .cheap-list span {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    color: var(--cream-dim);
+    border: 1px solid var(--ink-line);
+    padding: 0.5em 1em;
+    border-radius: 2px;
+  }
+  .scarce {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    color: var(--gold-bright);
+    margin-top: 1.4rem;
+    font-style: italic;
+  }
+
+  .closing-list {
+    text-align:left;
+    max-width: 34em;
+    margin: 1.6rem 0;
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    line-height: 1.9;
+    color: var(--cream);
+  }
+  .closing-list .dim { color: var(--cream-dim); }
+
+  .footer-stamp {
+    position:absolute;
+    bottom: 1.6rem;
+    left:0; right:0;
+    text-align:center;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    opacity: 0.55;
+  }
+
+  /* chrome */
+  .progress-track {
+    position:fixed;
+    top:0; left:0; right:0;
+    height:2px;
+    background: var(--ink-line);
+    z-index:20;
+  }
+  .progress-fill {
+    height:100%;
+    background: var(--gold);
+    width:0%;
+    transition: width 0.4s ease;
+  }
+
+  .counter {
+    position:fixed;
+    bottom: 1.6rem;
+    right: 2rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--cream-dim);
+    letter-spacing:0.08em;
+    z-index:20;
+  }
+
+  .nav-btn {
+    position:fixed;
+    top:0;
+    height:100%;
+    width: 8%;
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    z-index:15;
+    color: transparent;
+    display:flex;
+    align-items:center;
+    font-family: var(--mono);
+    font-size: 1.4rem;
+  }
+  .nav-btn.prev { left:0; justify-content:flex-start; padding-left:0.6rem; }
+  .nav-btn.next { right:0; justify-content:flex-end; padding-right:0.6rem; }
+  .nav-btn:hover { color: rgba(200,162,74,0.35); }
+
+  .kicker-tag {
+    position:fixed;
+    top: 1.4rem;
+    left: 2rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform:uppercase;
+    color: var(--cream-dim);
+    opacity:0.6;
+    z-index: 20;
+  }
+
+  @media (max-width: 640px) {
+    .virtues-grid { grid-template-columns: 1fr; }
+    .vps-row { grid-template-columns: 1fr; }
+    .structural-examples { flex-direction:column; gap:1rem; }
+    .qcard { padding: 2.2rem 1.4rem 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="kicker-tag">Discernment &middot; An Introduction</div>
+<div class="counter" id="counter">01 / 22</div>
+<button class="nav-btn prev" id="prevBtn" aria-label="Previous slide">&#8592;</button>
+<button class="nav-btn next" id="nextBtn" aria-label="Next slide">&#8594;</button>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="eyebrow">Objects &middot; Evidence &middot; Structure</div>
+    <h1 class="hero">SCIENCE:<br>LEARNING <em>HOW TO LOOK</em></h1>
+    <p class="subtitle">and the virtue of discernment</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">The Furniture of Science</div>
+    <div class="furniture-list">Forces. Fields. Atoms. Stars.<br>Waves. Cells. Climate. Energy.</div>
+    <p class="body-text">These are the furniture of a science course, and they matter. But learning the names of the furniture is not the same as learning how to look at the room.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="eyebrow">Ontology</div>
+    <h2>What kind of thing is <em>this</em>?</h2>
+    <p class="lede">Before we calculate, we quietly make decisions about what exists in our model.</p>
+    <ul class="ontology">
+      <li>Object</li><li>System</li><li>Property</li><li>Interaction</li>
+      <li>Process</li><li>Field</li><li>Boundary</li><li>Measurement</li><li>Model</li>
+    </ul>
+    <p class="body-text" style="margin-top:1.8rem;">Science begins by learning not to muddle these categories.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="eyebrow">The Object Is Not Its Description</div>
+    <div class="triplet">
+      <div>A ball <b>has</b> mass.</div>
+      <div>It <b>moves with</b> a velocity.</div>
+      <div>It may <b>interact through</b> a gravitational field.</div>
+      <div>It may <b>transfer</b> energy.</div>
+    </div>
+    <p class="body-text">A graph of its motion is not the motion. An equation describing it is not the object. A model is something we use to reason about the world.</p>
+    <p class="lede" style="margin-top:1.6rem;">Good science keeps the world, the measurement, and the model distinct.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="eyebrow">Structural Vision</div>
+    <p class="body-text">Science sometimes asks us to ignore what things are called and notice what they do.</p>
+    <div class="structural-examples">
+      <span class="item">A cooling cup of tea</span>
+      <span class="item">A discharging capacitor</span>
+      <span class="item">A radioactive sample</span>
+    </div>
+    <p class="pattern-line">rate of change &prop; amount remaining</p>
+    <p class="body-text">Different objects. Similar structure.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="eyebrow">The Scientific Virtues</div>
+    <p class="lede" style="margin-bottom:1.4rem;">Habits that travel beyond any particular topic.</p>
+    <div class="virtues-grid">
+      <div class="virtue"><div class="name">Discernment</div><div class="desc">Noticing distinctions that matter.</div></div>
+      <div class="virtue"><div class="name">Precision</div><div class="desc">Saying no more than the evidence permits.</div></div>
+      <div class="virtue"><div class="name">Curiosity</div><div class="desc">Asking what would distinguish competing explanations.</div></div>
+      <div class="virtue"><div class="name">Scepticism</div><div class="desc">Including towards our own preferred explanation.</div></div>
+      <div class="virtue"><div class="name">Proportionality</div><div class="desc">Matching confidence to evidence.</div></div>
+      <div class="virtue"><div class="name">Intellectual honesty</div><div class="desc">Allowing reality to correct us.</div></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="eyebrow">Virtue &rarr; Practice &rarr; Skill</div>
+    <div class="vps-grid">
+      <div class="vps-row"><div class="v">Discernment</div><div class="p">Distinguish observation from inference<span>Classify variables, systems and interactions</span></div></div>
+      <div class="vps-row"><div class="v">Scepticism</div><div class="p">Seek alternative explanations<span>Design controls and comparisons</span></div></div>
+      <div class="vps-row"><div class="v">Precision</div><div class="p">Quantify uncertainty<span>Choose justified significant figures</span></div></div>
+      <div class="vps-row"><div class="v">Intellectual honesty</div><div class="p">Look for contrary cases<span>Report anomalous data rather than quietly deleting it</span></div></div>
+    </div>
+    <p class="body-text" style="margin-top:1.6rem;">Skills are the visible techniques. The virtue is why we use them properly.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="eyebrow">Science Makes Belief Expensive</div>
+    <div class="expensive-stack">
+      <div class="strike">A claim is easy.</div>
+      <div class="strike">A plausible explanation is easy.</div>
+      <div class="strike">A striking example is easy.</div>
+    </div>
+    <p class="lede">What evidence would entitle us to believe this?<br>And then: how strongly?</p>
+  </section>
+
+  <!-- 9: Q01 -->
+  <section class="slide">
+    <div class="qcard" data-qid="01" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 01</div>
+      <p class="qscenario">A student measures the period of a pendulum once: <b>T = 1.42 s</b>. They report:</p>
+      <p class="qquote">&ldquo;The period of this pendulum is exactly 1.42 s.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Discernment</p>
+      <div class="verdict-block">
+        <div class="stamp no">No</div>
+        <div class="verdict-text">
+          <p>The measurement may be 1.42 s. The period itself has not thereby become exactly 1.42 s. Ask: how repeatable is the measurement, what is the timer resolution, what variation appears across trials, does 1.42 s represent more precision than the experiment supports?</p>
+          <p class="maxim">A measured number is evidence about a quantity, not the quantity itself.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10: Q02 -->
+  <section class="slide">
+    <div class="qcard" data-qid="02" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 02</div>
+      <p class="qscenario">A class investigates resistance between 20&deg;C and 60&deg;C. The graph is approximately linear. A student concludes:</p>
+      <p class="qquote">&ldquo;At 3000&deg;C the resistance will therefore be given by the same straight line.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Extrapolation</p>
+      <div class="verdict-block">
+        <div class="stamp mixed">Not without further justification</div>
+        <div class="verdict-text">
+          <p>The student has extrapolated far beyond the measured domain. A model that behaves well from 20&ndash;60&deg;C has earned some trust there. It has not automatically earned trust at 3000&deg;C, where material properties may change, the object may melt, or the assumed relationship may cease to apply.</p>
+          <p class="maxim">Models have domains.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11: Q03 -->
+  <section class="slide">
+    <div class="qcard" data-qid="03" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 03</div>
+      <p class="qscenario">Measurements give 20&deg;C&nbsp;&rarr;&nbsp;11.2&nbsp;&Omega;, 30&deg;C&nbsp;&rarr;&nbsp;12.0&nbsp;&Omega;, 40&deg;C&nbsp;&rarr;&nbsp;12.8&nbsp;&Omega;. A student estimates the resistance at 35&deg;C as about 12.4&nbsp;&Omega;.</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Interpolation</p>
+      <div class="verdict-block">
+        <div class="stamp yes">Reasonable, with qualification</div>
+        <div class="verdict-text">
+          <p>35&deg;C lies inside the measured range. This is interpolation, generally less hazardous than extrapolation because nearby observations constrain the estimate. But it still assumes the behaviour between measurements is sufficiently smooth.</p>
+          <p class="maxim">Interpolation is an inference too.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12: Q04 -->
+  <section class="slide">
+    <div class="qcard" data-qid="04" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 04</div>
+      <p class="qscenario">Twenty trials are performed. Eighteen measurements lie between 9.7 and 10.3. Two are 8.1 and 11.8. The student removes the two unusual values because:</p>
+      <p class="qquote">&ldquo;They spoil the graph.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Anomalies</p>
+      <div class="verdict-block">
+        <div class="stamp no">No</div>
+        <div class="verdict-text">
+          <p>An unusual result may arise from measurement error, an uncontrolled variable, equipment failure, or a genuine feature of the phenomenon. There may be a defensible reason to exclude a datum. &ldquo;It makes my conclusion weaker&rdquo; is not one.</p>
+          <p class="maxim">A good scientist asks why it differs before deciding what to do with it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13: Q05 -->
+  <section class="slide">
+    <div class="qcard" data-qid="05" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 05</div>
+      <p class="qscenario">A student believes plants grow faster with classical music. They search online and collect six experiments in which plants exposed to music grew more, and present these six as evidence that the hypothesis is correct.</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Cherry-picking</p>
+      <div class="verdict-block">
+        <div class="stamp no">No</div>
+        <div class="verdict-text">
+          <p>The question is not &ldquo;can I find evidence consistent with my claim&rdquo;, for almost any popular claim, perhaps you can. The question is what the relevant body of evidence shows. Searching selectively for confirming cases is cherry-picking.</p>
+          <p class="maxim">Science asks us to seek the evidence that could make our preferred claim fail.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14: anecdote interstitial -->
+  <section class="slide">
+    <div class="eyebrow">Anecdote &ne; Representative Evidence</div>
+    <p class="qquote" style="border:none; text-align:center; margin:0 auto 1.6rem; max-width:26em;">&ldquo;My grandfather smoked and lived to 96.&rdquo;</p>
+    <p class="body-text">This may be completely true. It is also weak evidence about the effect of smoking on mortality, because the scientific question concerns a population and a difference in risk. A memorable individual is not necessarily a representative sample.</p>
+    <p class="lede" style="margin-top:1.4rem;">Anecdotes can generate questions.<br>Representative evidence tests them.</p>
+  </section>
+
+  <!-- 15: Q06 -->
+  <section class="slide">
+    <div class="qcard" data-qid="06" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 06</div>
+      <p class="qscenario">A video shows one electric car catching fire. Someone concludes:</p>
+      <p class="qquote">&ldquo;Electric cars are more likely to catch fire than petrol cars.&rdquo;</p>
+      <p class="qprompt hint">What's missing? &middot; Click to reveal &middot; The denominator</p>
+      <div class="verdict-block">
+        <div class="stamp mixed">Incomplete</div>
+        <div class="verdict-text">
+          <p>We need comparison: how many fires occurred out of how many electric cars, and out of how many comparable petrol cars? Over what distance or time, under what conditions, with what reporting method? A numerator can frighten us. A rate allows comparison.</p>
+          <p class="maxim">Good science asks: compared with what?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16: Q07 -->
+  <section class="slide">
+    <div class="qcard" data-qid="07" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 07</div>
+      <p class="qscenario">Students who sleep longer obtain higher examination scores. A headline says:</p>
+      <p class="qquote">&ldquo;Extra sleep causes higher grades.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Association vs mechanism</p>
+      <div class="verdict-block">
+        <div class="stamp mixed">Not yet established</div>
+        <div class="verdict-text">
+          <p>The observation may be sound; the causal claim requires more. Perhaps sleep improves performance. Perhaps students with lower stress both sleep more and perform better. Perhaps age, workload, health, school, or socioeconomic factors contribute. The correlation is not useless, it is a clue.</p>
+          <p class="maxim">Science distinguishes finding a relationship from explaining it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17: Q08 -->
+  <section class="slide">
+    <div class="qcard" data-qid="08" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 08</div>
+      <p class="qscenario">A magnet attracts an iron nail. A student writes:</p>
+      <p class="qquote">&ldquo;The nail moves because the magnet attracts it.&rdquo;</p>
+      <p class="qprompt hint">Explanation or description? &middot; Click to reveal</p>
+      <div class="verdict-block">
+        <div class="stamp no">Redescription</div>
+        <div class="verdict-text">
+          <p>We have given the observed behaviour a name: attraction. A deeper physical account might introduce a magnetic field, the response of the material to that field, a field gradient, and the resulting net force.</p>
+          <p class="maxim">Repeating the observation with more technical vocabulary does not automatically explain it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18: Q09 -->
+  <section class="slide">
+    <div class="qcard" data-qid="09" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 09</div>
+      <p class="qscenario">Two graphs have the same mathematical shape. A student says:</p>
+      <p class="qquote">&ldquo;They must be the same physical phenomenon.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Structure vs ontology</p>
+      <div class="verdict-block">
+        <div class="stamp mixed">No &mdash; but note the analogy</div>
+        <div class="verdict-text">
+          <p>Different systems can instantiate the same mathematical relationship, one of science's great powers. But same equation does not mean same object. A spring and an electrical circuit may both oscillate; heat and particles may both diffuse. The structural analogy can illuminate. The ontological distinction still matters.</p>
+          <p class="maxim">Unify what can be unified. Distinguish what must be distinguished.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 19: Q10 -->
+  <section class="slide">
+    <div class="qcard" data-qid="10" onclick="reveal(this)">
+      <div class="qnum">Good Science? &middot; 10</div>
+      <p class="qscenario">A result agrees with the student's prediction. They write:</p>
+      <p class="qquote">&ldquo;This proves my hypothesis.&rdquo;</p>
+      <p class="qprompt hint">Decide, then click to reveal &middot; Warrant vs proof</p>
+      <div class="verdict-block">
+        <div class="stamp no">Usually, no</div>
+        <div class="verdict-text">
+          <ul>
+            <li>Is the result consistent with the hypothesis?</li>
+            <li>How precise was the test, and was there a control?</li>
+            <li>What competing hypotheses predict the same result?</li>
+            <li>Has the result been replicated?</li>
+          </ul>
+          <p class="maxim">Science usually deals in degrees of warrant, not ceremonial declarations of proof.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20: Discernment check -->
+  <section class="slide">
+    <div class="eyebrow">The Discernment Check</div>
+    <p class="lede" style="margin-bottom:0.6rem;">When somebody makes a scientific claim, ask:</p>
+    <div class="checklist">
+      <div>What exactly was observed?</div>
+      <div>What has been inferred from it?</div>
+      <div>What kind of thing is being discussed?</div>
+      <div>Compared with what?</div>
+      <div>How was the sample selected?</div>
+      <div>Is the claim inside or outside the measured range?</div>
+      <div>Could another explanation produce the same observation?</div>
+      <div>What evidence would count against the claim?</div>
+      <div>How much confidence does the evidence actually warrant?</div>
+    </div>
+  </section>
+
+  <!-- 21: The sentence -->
+  <section class="slide">
+    <div class="eyebrow">The Sentence That May Save You</div>
+    <div class="sentence-swap">
+      <div class="old">&ldquo;This proves that&hellip;&rdquo;</div>
+      <div class="new">&ldquo;This provides evidence that&hellip;&rdquo;</div>
+    </div>
+    <p class="body-text">Then force yourself to finish the sentence carefully. How much evidence? Under what conditions? Against which alternatives? Within what limits?</p>
+  </section>
+
+  <!-- 22: age of answers -->
+  <section class="slide">
+    <div class="eyebrow">Science in an Age of Answers</div>
+    <div class="cheap-list">
+      <span>Definitions are cheap</span>
+      <span>Graphs are cheap</span>
+      <span>Calculations are becoming cheap</span>
+      <span>Plausible explanations are becoming very cheap</span>
+    </div>
+    <p class="body-text">That shifts the intellectual burden.</p>
+    <p class="scarce">Can you tell what deserves to be believed?</p>
+  </section>
+
+  <!-- 23: closing -->
+  <section class="slide">
+    <div class="eyebrow">What This Course Is Really Practising</div>
+    <p class="body-text">Yes, you will learn equations, facts, and how to solve problems. But beneath all of this we are practising something more durable, to:</p>
+    <div class="closing-list">
+      <div>notice carefully;</div>
+      <div>categorise intelligently;</div>
+      <div>compare fairly;</div>
+      <div>infer cautiously;</div>
+      <div>seek structure across difference;</div>
+      <div>demand evidence proportional to a claim;</div>
+      <div class="dim">and change our minds when the world requires it.</div>
+    </div>
+    <p class="lede" style="margin-top:0.6rem;">That is the virtue of discernment.<br>And that is part of what it means to learn science.</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    document.getElementById('counter').textContent =
+      String(idx+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('progressFill').style.width = ((idx+1)/total*100) + '%';
+  }
+
+  function go(delta){
+    idx = Math.max(0, Math.min(total-1, idx+delta));
+    render();
+  }
+
+  function reveal(card){
+    card.classList.add('revealed');
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(-1));
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(1));
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight' || e.key === ' '){
+      const activeCard = slides[idx].querySelector('.qcard');
+      if(activeCard && !activeCard.classList.contains('revealed') && e.key === ' '){
+        reveal(activeCard);
+        e.preventDefault();
+        return;
+      }
+      go(1);
+      e.preventDefault();
+    } else if (e.key === 'ArrowLeft'){
+      go(-1);
+    }
+  });
+
+  // click on empty slide area (not the card) advances
+  slides.forEach(s=>{
+    s.addEventListener('click', (e)=>{
+      if(!e.target.closest('.qcard')) go(1);
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
