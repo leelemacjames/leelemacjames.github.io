@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fermi Questions — Estimation Under Ignorance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink-black:#0e0c09;
+    --ink-panel:#17130f;
+    --ink-line:#2c261e;
+    --cream:#efe6d3;
+    --cream-dim:#a89c85;
+    --gold:#c8a24a;
+    --gold-bright:#e3c073;
+    --probe:#8f9f78;
+    --anchor:#7d95a8;
+    --answer:#c98a4a;
+    --serif:'Cormorant Garamond', Georgia, serif;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--ink-black);color:var(--cream);font-family:var(--sans);overflow:hidden;}
+  body{
+    background-image:
+      radial-gradient(ellipse at 18% -10%, rgba(200,162,74,.06), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(143,159,120,.04), transparent 50%);
+  }
+
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:5vh 7vw;
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .45s ease, transform .45s ease;text-align:center;
+  }
+  .slide.active{opacity:1;visibility:visible;transform:translateY(0);}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:1.6rem;opacity:.85;
+  }
+  h1.hero{font-family:var(--serif);font-weight:500;font-size:clamp(2.4rem,6vw,5rem);line-height:1.05;}
+  h1.hero em,h2 em{color:var(--gold-bright);font-style:italic;}
+  h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.8rem,3.8vw,3rem);line-height:1.14;max-width:20em;}
+  .subtitle{
+    font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,1.7vw,1.45rem);
+    color:var(--cream-dim);margin-top:1.2rem;max-width:40em;
+  }
+  .body-text{font-weight:300;font-size:clamp(.96rem,1.25vw,1.15rem);line-height:1.75;color:var(--cream);max-width:42em;}
+  .body-text + .body-text{margin-top:.85rem;}
+  .lede{font-family:var(--serif);font-style:italic;font-size:clamp(1.2rem,2vw,1.7rem);color:var(--cream-dim);max-width:32em;line-height:1.5;}
+  .maxim{font-family:var(--serif);font-style:italic;color:var(--gold-bright);font-size:clamp(1.1rem,1.8vw,1.4rem);margin-top:1.4rem;max-width:32em;}
+
+  /* Fermi card */
+  .fcard{
+    width:100%;max-width:50em;background:var(--ink-panel);
+    border:1px solid var(--ink-line);border-radius:3px;
+    padding:2.6rem 2.6rem 2rem;position:relative;cursor:pointer;text-align:left;
+  }
+  .ftag{
+    position:absolute;top:-.95rem;left:50%;transform:translateX(-50%);
+    background:var(--ink-black);padding:0 1rem;font-family:var(--mono);
+    font-size:.7rem;letter-spacing:.3em;color:var(--gold);white-space:nowrap;
+  }
+  .fq{
+    font-family:var(--serif);font-size:clamp(1.4rem,2.6vw,2.1rem);
+    line-height:1.3;color:var(--cream);
+  }
+  .stage{display:none;margin-top:1.5rem;padding-top:1.3rem;border-top:1px dashed var(--ink-line);}
+  .fcard[data-stage="1"] .s1,
+  .fcard[data-stage="2"] .s1,.fcard[data-stage="2"] .s2,
+  .fcard[data-stage="3"] .s1,.fcard[data-stage="3"] .s2,.fcard[data-stage="3"] .s3{display:block;}
+
+  .slabel{
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;
+    margin-bottom:.7rem;display:inline-block;padding:.25em .7em;border:1px solid currentColor;border-radius:2px;
+  }
+  .s1 .slabel{color:var(--probe);}
+  .s2 .slabel{color:var(--anchor);}
+  .s3 .slabel{color:var(--answer);}
+
+  .probes{list-style:none;}
+  .probes li{
+    font-weight:300;font-size:.98rem;line-height:1.65;color:var(--cream);
+    padding:.3rem 0 .3rem 1.1rem;position:relative;
+  }
+  .probes li::before{content:'?';position:absolute;left:0;color:var(--probe);font-family:var(--mono);font-size:.85rem;}
+
+  .anchors{display:flex;flex-wrap:wrap;gap:.5rem .7rem;}
+  .anchors span{
+    font-family:var(--mono);font-size:.8rem;color:var(--anchor);
+    border:1px solid var(--ink-line);background:rgba(125,149,168,.05);
+    padding:.4em .8em;border-radius:2px;
+  }
+
+  .work{font-family:var(--mono);font-size:.86rem;line-height:2;color:var(--cream-dim);}
+  .work b{color:var(--gold-bright);font-weight:500;}
+  .result{
+    font-family:var(--mono);font-size:clamp(1.05rem,2vw,1.5rem);
+    color:var(--answer);margin-top:.7rem;letter-spacing:.02em;
+  }
+  .caveat{
+    font-weight:300;font-size:.9rem;color:var(--cream-dim);
+    margin-top:.9rem;line-height:1.6;font-style:italic;
+  }
+
+  .tapcue{
+    margin-top:1.4rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--cream-dim);opacity:.5;
+  }
+  .fcard[data-stage="3"] .tapcue{visibility:hidden;}
+  .pips{display:inline-flex;gap:.35rem;margin-left:.7rem;vertical-align:middle;}
+  .pips i{width:5px;height:5px;border-radius:50%;background:var(--ink-line);display:block;}
+  .fcard[data-stage="1"] .pips i:nth-child(1),
+  .fcard[data-stage="2"] .pips i:nth-child(-n+2),
+  .fcard[data-stage="3"] .pips i{background:var(--gold);}
+
+  /* anchor table */
+  .ptable{
+    width:100%;max-width:36em;border-collapse:collapse;
+    font-family:var(--mono);font-size:.86rem;margin-top:.8rem;
+  }
+  .ptable th{
+    text-align:left;font-weight:500;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cream-dim);border-bottom:1px solid var(--ink-line);padding:.55rem .5rem;
+  }
+  .ptable td{padding:.42rem .5rem;border-bottom:1px solid var(--ink-line);text-align:left;color:var(--cream);}
+  .ptable td.p{text-align:right;color:var(--gold-bright);}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2.2rem;max-width:50em;text-align:left;margin-top:1.2rem;}
+  .col h3{font-family:var(--serif);font-style:italic;font-weight:500;font-size:1.35rem;color:var(--gold-bright);margin-bottom:.6rem;}
+  .col h3.alt{color:var(--anchor);}
+  .col ul{list-style:none;}
+  .col li{font-weight:300;font-size:.94rem;line-height:1.6;color:var(--cream);padding:.4rem 0 .4rem .9rem;position:relative;}
+  .col li::before{content:'·';position:absolute;left:0;color:var(--gold);}
+
+  .formula{
+    font-family:var(--mono);font-size:clamp(.88rem,1.4vw,1.1rem);color:var(--gold-bright);
+    background:var(--ink-panel);border:1px solid var(--ink-line);border-radius:3px;
+    padding:1.1rem 1.5rem;margin:1.2rem 0;line-height:1.9;
+  }
+  .formula .lbl{display:block;font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-dim);margin-top:.4rem;}
+
+  .qlist{text-align:left;max-width:40em;margin-top:1rem;}
+  .qlist div{
+    font-family:var(--serif);font-size:1.12rem;color:var(--cream);
+    padding:.48rem 0;border-bottom:1px solid var(--ink-line);
+  }
+  .qlist div span{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-dim);margin-top:.25rem;}
+
+  .footer-stamp{
+    position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cream-dim);opacity:.55;
+  }
+  .progress-track{position:fixed;top:0;left:0;right:0;height:2px;background:var(--ink-line);z-index:20;}
+  .progress-fill{height:100%;background:var(--gold);width:0%;transition:width .4s ease;}
+  .counter{position:fixed;bottom:1.6rem;right:2rem;font-family:var(--mono);font-size:.76rem;color:var(--cream-dim);z-index:20;}
+  .kicker-tag{
+    position:fixed;top:1.4rem;left:2rem;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);opacity:.6;z-index:20;
+  }
+  .nav-btn{
+    position:fixed;top:0;height:100%;width:6.5%;background:transparent;border:none;cursor:pointer;
+    z-index:15;color:transparent;display:flex;align-items:center;font-family:var(--mono);font-size:1.4rem;
+  }
+  .nav-btn.prev{left:0;justify-content:flex-start;padding-left:.6rem;}
+  .nav-btn.next{right:0;justify-content:flex-end;padding-right:.6rem;}
+  .nav-btn:hover{color:rgba(200,162,74,.35);}
+
+  @media (max-width:700px){
+    .two-col{grid-template-columns:1fr;gap:1.4rem;}
+    .fcard{padding:2rem 1.3rem 1.6rem;}
+    .work{font-size:.76rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="kicker-tag">Fermi Questions &middot; Estimation Under Ignorance</div>
+<div class="counter" id="counter">01 / 22</div>
+<button class="nav-btn prev" id="prevBtn" aria-label="Previous">&#8592;</button>
+<button class="nav-btn next" id="nextBtn" aria-label="Next">&#8594;</button>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="eyebrow">Order of Magnitude &middot; Strategy &middot; Warrant</div>
+    <h1 class="hero">FERMI<br><em>QUESTIONS</em></h1>
+    <p class="subtitle">A fast, rough estimate of a quantity that is difficult or impossible to measure directly. There is no exact answer. The work is in the route.</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">How These Slides Work</div>
+    <p class="body-text">Each question appears alone. Commit to a number before you click anything, and write it down where you cannot quietly revise it.</p>
+    <div class="two-col" style="max-width:42em;margin-top:1.6rem;">
+      <div class="col">
+        <h3>First click</h3>
+        <ul><li>The questions to ask yourself.</li><li>How to break the quantity apart.</li></ul>
+      </div>
+      <div class="col">
+        <h3 class="alt">Second click</h3>
+        <ul><li>Anchor values you are allowed to assume.</li><li>Nothing you could not recall in an exam.</li></ul>
+      </div>
+    </div>
+    <p class="body-text" style="margin-top:1.4rem;">The third click gives one worked route and its answer. It is one route, not the route. If yours differs by a factor of three and the reasoning is sound, yours is equally good.</p>
+  </section>
+
+  <!-- 3: anchors -->
+  <section class="slide">
+    <div class="eyebrow">Anchors Worth Carrying</div>
+    <table class="ptable">
+      <tr><th>Quantity</th><th style="text-align:right">Order</th></tr>
+      <tr><td>Thickness of a human hair</td><td class="p">10<sup>&minus;4</sup> m</td></tr>
+      <tr><td>Grain of sand</td><td class="p">10<sup>&minus;3</sup> m</td></tr>
+      <tr><td>Marble &middot; ball &middot; big box</td><td class="p">10<sup>&minus;2</sup>&ndash;10<sup>0</sup> m</td></tr>
+      <tr><td>Bus &middot; football pitch</td><td class="p">10<sup>1</sup>&ndash;10<sup>2</sup> m</td></tr>
+      <tr><td>Across a town</td><td class="p">10<sup>4</sup> m</td></tr>
+      <tr><td>Earth radius</td><td class="p">6 &times; 10<sup>6</sup> m</td></tr>
+      <tr><td>Distance to the Moon &middot; to the Sun</td><td class="p">10<sup>8</sup> &middot; 10<sup>11</sup> m</td></tr>
+      <tr><td>Seconds in a year</td><td class="p">3 &times; 10<sup>7</sup> s</td></tr>
+      <tr><td>Atoms in a person</td><td class="p">10<sup>29</sup></td></tr>
+      <tr><td>Avogadro</td><td class="p">6 &times; 10<sup>23</sup> mol<sup>&minus;1</sup></td></tr>
+    </table>
+  </section>
+
+  <!-- 4: Q1 iPhones -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 01 &middot; Stacking</div>
+      <p class="fq">How many iPhones, stacked flat on top of one another, would reach the Moon?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>What is the relevant dimension of a phone, and is it the one you first thought of?</li>
+          <li>Which of the two numbers do you know better?</li>
+          <li>Does the answer depend on anything except a ratio of two lengths?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>phone thickness ≈ 10<sup>&minus;2</sup> m</span><span>Earth to Moon ≈ 10<sup>8</sup> m</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">N = distance ÷ thickness = <b>10<sup>8</sup> ÷ 10<sup>&minus;2</sup></b></div>
+        <div class="result">N ≈ 1 &times; 10<sup>10</sup> phones</div>
+        <p class="caveat">Notice that nothing about phones entered except one length. Most Fermi answers are a ratio wearing a costume.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 5: Q2 walk to New York -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 02 &middot; Travel Time</div>
+      <p class="fq">How long would it take to walk to New York from here, assuming you could?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>How could you get the distance without looking it up? What does a five-hour time difference tell you?</li>
+          <li>What is a walking pace in metres per second, and how would you check it?</li>
+          <li>Are you walking continuously, or is there a sleeping term? Which assumption did you make silently?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>Earth circumference ≈ 4 &times; 10<sup>7</sup> m</span><span>5/24 of the way round</span><span>walking ≈ 1.5 m s<sup>&minus;1</sup></span><span>1 month ≈ 2.6 &times; 10<sup>6</sup> s</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          d ≈ (5/24) &times; 4 &times; 10<sup>7</sup> ≈ <b>8 &times; 10<sup>6</sup> m</b><br>
+          t = d ÷ v ≈ 8 &times; 10<sup>6</sup> ÷ 1.5 ≈ <b>5 &times; 10<sup>6</sup> s</b>
+        </div>
+        <div class="result">t ≈ 2 months of continuous walking</div>
+        <p class="caveat">Walking eight hours a day rather than twenty-four triples it. The estimate is only as good as the assumption you did not notice making.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 6: Q3 mass of humanity -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 03 &middot; Aggregate Mass</div>
+      <p class="fq">What is the total mass of the human population of the Earth?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Is the mean mass of a human the same as the mean mass of an adult?</li>
+          <li>Roughly what fraction of the world is under fifteen?</li>
+          <li>Would this answer float or sink a large ship? Ask what you can compare it against.</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>population ≈ 8 &times; 10<sup>9</sup></span><span>mean mass ≈ 50 kg</span><span>large tanker ≈ 3 &times; 10<sup>8</sup> kg</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">M = N &times; m̄ = <b>8 &times; 10<sup>9</sup> &times; 50</b></div>
+        <div class="result">M ≈ 4 &times; 10<sup>11</sup> kg</div>
+        <p class="caveat">Around a thousand of the largest ships ever built. Humanity is, by mass, a rounding error on the biosphere.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 7: Q4 molecules -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 04 &middot; Counting the Invisible</div>
+      <p class="fq">How many molecules of water are there in a glass holding half a litre?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Which bridge takes you from a volume to a number of particles?</li>
+          <li>What is the mass of half a litre of water, and why is that number so convenient?</li>
+          <li>What is the molar mass of water, and can you get it from the periodic table in your head?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>density of water = 1 g cm<sup>&minus;3</sup></span><span>M(H₂O) = 18 g mol<sup>&minus;1</sup></span><span>N<sub>A</sub> = 6 &times; 10<sup>23</sup></span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          m = 500 g → n = 500 ÷ 18 ≈ <b>28 mol</b><br>
+          N = n N<sub>A</sub> = 28 &times; 6 &times; 10<sup>23</sup>
+        </div>
+        <div class="result">N ≈ 2 &times; 10<sup>25</sup> molecules</div>
+        <p class="caveat">More molecules in the glass than there are glasses of water in every ocean. Worth checking that claim yourself.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 8: Q5 drive to nearest star -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 05 &middot; Deep Time</div>
+      <p class="fq">How long would it take to drive to the nearest star in a family car?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>How far is a light year in metres, and can you build it from c and the seconds in a year?</li>
+          <li>What is seventy miles per hour in SI units, to one significant figure?</li>
+          <li>Is the answer better expressed in seconds, years, or in comparison with something historical?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>c = 3 &times; 10<sup>8</sup> m s<sup>&minus;1</sup></span><span>1 yr ≈ 3 &times; 10<sup>7</sup> s</span><span>Proxima ≈ 4 ly</span><span>70 mph ≈ 30 m s<sup>&minus;1</sup></span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          1 ly = 3 &times; 10<sup>8</sup> &times; 3 &times; 10<sup>7</sup> ≈ <b>10<sup>16</sup> m</b> → d ≈ 4 &times; 10<sup>16</sup> m<br>
+          t = 4 &times; 10<sup>16</sup> ÷ 30 ≈ <b>1 &times; 10<sup>15</sup> s</b>
+        </div>
+        <div class="result">t ≈ 4 &times; 10<sup>7</sup> years</div>
+        <p class="caveat">Longer than the entire history of the primates. The number is useless as a travel plan and excellent as a sense of scale.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 9: Q6 tennis balls -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 06 &middot; Packing</div>
+      <p class="fq">How many tennis balls could you fit inside Centre Court at Wimbledon?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>What shape are you approximating the stadium as, and does the roof count?</li>
+          <li>Should a ball be treated as a sphere or as the cube that contains it? What error does each choice introduce?</li>
+          <li>Do spheres fill space completely? By roughly what fraction are you over-counting?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>stadium ≈ 100 &times; 100 &times; 10 m</span><span>ball diameter ≈ 7 cm</span><span>close packing fills ≈ 74 %</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          V<sub>court</sub> ≈ 10<sup>2</sup> &times; 10<sup>2</sup> &times; 10 = <b>10<sup>5</sup> m³</b><br>
+          treat each ball as a 10 cm cube → V<sub>ball</sub> = <b>10<sup>&minus;3</sup> m³</b>
+        </div>
+        <div class="result">N ≈ 1 &times; 10<sup>8</sup> balls</div>
+        <p class="caveat">Using real dimensions, 110 × 119 × 19 m, and a 6.6 cm ball gives 8.7 × 10<sup>8</sup>. Nine times larger, and still the same order of magnitude once you round. That gap is the lesson.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 10: interlude on error -->
+  <section class="slide">
+    <div class="eyebrow">Why This Works At All</div>
+    <p class="body-text">A Fermi estimate multiplies half a dozen guesses, each of which might be wrong by a factor of two or three. It has no right to land anywhere near the answer, and yet it usually does.</p>
+    <div class="formula">
+      log N &nbsp;=&nbsp; log a &nbsp;+&nbsp; log b &nbsp;+&nbsp; log c &nbsp;+&nbsp; &hellip;
+      <span class="lbl">Errors add in logarithms, so they add in quadrature rather than accumulating</span>
+    </div>
+    <p class="body-text">If each factor is independently wrong by up to a factor of three, and you use six of them, the total error grows as the square root of six rather than as three to the sixth power. Over-estimates and under-estimates cancel. This only holds while the guesses are independent, which is why the dangerous error is the systematic one you make in every term at once.</p>
+  </section>
+
+  <!-- 11: Q7 spaghetti -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 07 &middot; School Scale</div>
+      <p class="fq">How many metres of spaghetti would be needed if every child in the school had spaghetti bolognese for lunch?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>How many strands are in a portion? Could you count a small handful and scale?</li>
+          <li>Is dry length the same as cooked length?</li>
+          <li>Which is easier, mass per portion and mass per metre, or counting strands directly?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>school ≈ 700 pupils</span><span>portion ≈ 100 g dry</span><span>strand ≈ 0.25 m, ≈ 0.5 g</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          strands per portion = 100 ÷ 0.5 = <b>200</b><br>
+          length per portion = 200 &times; 0.25 = <b>50 m</b><br>
+          total = 700 &times; 50
+        </div>
+        <div class="result">L ≈ 4 &times; 10<sup>4</sup> m &nbsp;≈&nbsp; 35 km</div>
+        <p class="caveat">Roughly the distance across London twice. This one is genuinely checkable: weigh a strand, and see how badly the anchor was wrong.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 12: Q8 Wales -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 08 &middot; Density</div>
+      <p class="fq">If everyone in the world moved to Wales, how crowded would it be?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Crowded compared with what? Pick a comparison before you calculate, or the number will mean nothing.</li>
+          <li>Are you asking about area per person, or about whether they would physically fit?</li>
+          <li>How large is Wales, and how would you estimate it from a map you half remember?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>Wales ≈ 2 &times; 10<sup>4</sup> km²</span><span>population ≈ 8 &times; 10<sup>9</sup></span><span>crowded concert ≈ 4 people m<sup>&minus;2</sup></span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          A = 2 &times; 10<sup>4</sup> km² = <b>2 &times; 10<sup>10</sup> m²</b><br>
+          area each = 2 &times; 10<sup>10</sup> ÷ 8 &times; 10<sup>9</sup>
+        </div>
+        <div class="result">≈ 2.5 m² per person</div>
+        <p class="caveat">Everyone fits, standing comfortably, with room to turn around. The whole species occupies an area smaller than a small country. Now ask why that fact does not settle any argument about resources.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 13: Q9 pen -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 09 &middot; Thin Films</div>
+      <p class="fq">What total distance will a single ballpoint pen write before it runs out?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>What is conserved here? Which quantity is fixed at the start and used up steadily?</li>
+          <li>What are the dimensions of the ink column inside the tube?</li>
+          <li>How wide is a line, and how thick is the deposited film? Which of those two do you know worse?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>ink column ≈ 10 cm &times; 2 mm diameter</span><span>line width ≈ 0.5 mm</span><span>film thickness ≈ 1 μm</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          V<sub>ink</sub> ≈ π(10<sup>&minus;3</sup>)² &times; 0.1 ≈ <b>3 &times; 10<sup>&minus;7</sup> m³</b><br>
+          cross-section of the written line ≈ 5 &times; 10<sup>&minus;4</sup> &times; 10<sup>&minus;6</sup> = <b>5 &times; 10<sup>&minus;10</sup> m²</b><br>
+          L = V ÷ A
+        </div>
+        <div class="result">L ≈ 600 m</div>
+        <p class="caveat">Manufacturers quote figures in the same range. The film thickness was the shakiest anchor and it sits in the denominator, so it dominates the error.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 14: Q10 barbers, top down vs bottom up -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 10 &middot; Two Directions</div>
+      <p class="fq">How many hairdressers and barber shops are there in the United Kingdom?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Top down: how much haircutting does the country demand, and how much can one shop supply?</li>
+          <li>Bottom up: how many can you name within a mile, and how many such areas are there?</li>
+          <li>The two routes share almost no assumptions. What does it mean if they agree?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>UK ≈ 6.7 &times; 10<sup>7</sup></span><span>≈ 6 haircuts per person per year</span><span>≈ 8 cuts per chair per day</span><span>≈ 3 chairs per shop</span><span>≈ 300 open days</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          demand = 6.7 &times; 10<sup>7</sup> &times; 6 ≈ <b>4 &times; 10<sup>8</sup> cuts / yr</b><br>
+          supply per shop = 8 &times; 3 &times; 300 ≈ <b>7 &times; 10<sup>3</sup> cuts / yr</b>
+        </div>
+        <div class="result">N ≈ 6 &times; 10<sup>4</sup> shops</div>
+        <p class="caveat">Bottom up: perhaps three shops in a neighbourhood of ten thousand people, giving about twenty thousand. The two disagree by a factor of three, which is agreement by Fermi standards, and the gap itself is informative about idle capacity.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 15: top down vs bottom up -->
+  <section class="slide">
+    <div class="eyebrow">Top Down and Bottom Up</div>
+    <div class="two-col">
+      <div class="col">
+        <h3>Top down</h3>
+        <ul>
+          <li>Start with a large aggregate you know reasonably well.</li>
+          <li>Divide it by a rate, a share, or a capacity.</li>
+          <li>Fails when the aggregate hides variation you have averaged away.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 class="alt">Bottom up</h3>
+        <ul>
+          <li>Start with one unit you can genuinely observe.</li>
+          <li>Multiply up through a hierarchy of containment.</li>
+          <li>Fails when your one unit is unrepresentative, and you never find out.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="maxim">Doing both is not twice the work. It is the only check you have.</p>
+  </section>
+
+  <!-- 16: Q11 hairs on a head -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 11 &middot; Sampling a Surface</div>
+      <p class="fq">How many hairs are there on your head? And at what number would you call someone bald?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Could you count hairs in one square centimetre and scale up? What is the ecological version of that technique?</li>
+          <li>What is the area of a scalp, and what simple solid are you approximating a head as?</li>
+          <li>The second question is not a measurement question at all. What kind of question is it?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>head ≈ sphere of radius 9 cm</span><span>scalp ≈ half that surface</span><span>density ≈ 200 hairs cm<sup>&minus;2</sup></span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          A<sub>sphere</sub> = 4πr² ≈ 4π(9)² ≈ <b>1000 cm²</b> → scalp ≈ <b>500 cm²</b><br>
+          N = 500 &times; 200
+        </div>
+        <div class="result">N ≈ 1 &times; 10<sup>5</sup> hairs</div>
+        <p class="caveat">The baldness question has no numerical answer, because "bald" is a vague predicate rather than a measured quantity. Asking students where the boundary sits, and watching them fail to agree, is the point.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 17: Q12 atoms from the dead -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 12 &middot; Mixing</div>
+      <p class="fq">How many of the atoms in your body once belonged to a person who has died?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>What reservoir have those atoms been mixed back into, and is it the whole Earth or something much smaller?</li>
+          <li>How many people have ever lived, and how does that compare with the number now alive?</li>
+          <li>What assumption about mixing are you making, and is it remotely defensible over a few thousand years?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>you ≈ 10<sup>29</sup> atoms</span><span>≈ 10<sup>11</sup> humans have ever lived</span><span>biosphere-accessible reservoir, not the whole 10<sup>50</sup> atoms of Earth</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          all humans ever ≈ 10<sup>11</sup> &times; 10<sup>29</sup> = <b>10<sup>40</sup> atoms</b><br>
+          if the mixing reservoir is the biosphere and near-surface water, of order <b>10<sup>44</sup></b> atoms<br>
+          fraction of your atoms once in a dead human ≈ 10<sup>40</sup> ÷ 10<sup>44</sup>
+        </div>
+        <div class="result">≈ 10<sup>&minus;4</sup>, so roughly 10<sup>25</sup> of your atoms</div>
+        <p class="caveat">The answer swings by many orders of magnitude depending on the reservoir you choose, and choosing the reservoir is the whole physics. Compare with taking the whole Earth, 10<sup>50</sup> atoms, and watch the answer collapse.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 18: Q13 thunderstorm -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 13 &middot; Energy Conversion</div>
+      <p class="fq">How much heat is generated by rain striking the ground in Trafalgar Square during a typical thunderstorm?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Where does the energy come from, and what happens to it when a drop lands?</li>
+          <li>Do you need the speed of the drops, or does the height they fell from suffice?</li>
+          <li>How much rain falls in a storm, expressed as a depth over an area?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>square ≈ 100 &times; 100 m</span><span>rainfall ≈ 20 mm</span><span>cloud base ≈ 1000 m</span><span>g = 10 m s<sup>&minus;2</sup></span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          V = 10<sup>4</sup> m² &times; 0.02 m = <b>200 m³</b> → m = <b>2 &times; 10<sup>5</sup> kg</b><br>
+          E = mgh = 2 &times; 10<sup>5</sup> &times; 10 &times; 10<sup>3</sup>
+        </div>
+        <div class="result">E ≈ 2 &times; 10<sup>9</sup> J</div>
+        <p class="caveat">Most of that is lost to air resistance long before impact, so this is an upper bound on the gravitational budget rather than the heat delivered at the ground. Saying which one you have computed is worth more than the number.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 19: Q14 counting to a million -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 14 &middot; Non-Constant Rates</div>
+      <p class="fq">How long would it take to count aloud to one million?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>Does one number take the same time to say as another? Say "seven" and then "seven hundred and forty-three thousand, two hundred and eighteen".</li>
+          <li>What fraction of the numbers below a million have six digits?</li>
+          <li>Are you counting continuously, or sleeping? State the convention before you compute.</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>a six-digit number ≈ 3 s to say</span><span>90 % of them have six digits</span><span>1 day = 8.6 &times; 10<sup>4</sup> s</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          t ≈ 10<sup>6</sup> &times; 3 s ≈ <b>3 &times; 10<sup>6</sup> s</b><br>
+          at 8 hours a day: 3 &times; 10<sup>6</sup> ÷ (3 &times; 10<sup>4</sup>)
+        </div>
+        <div class="result">≈ 35 days non-stop, or about 3 months at 8 hours a day</div>
+        <p class="caveat">The naive version, one number per second, is wrong by a factor of three because the mean cost per item is not the cost of a typical early item. That failure mode recurs everywhere in estimation.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 20: Q15 grass -->
+  <section class="slide">
+    <div class="fcard" data-stage="0">
+      <div class="ftag">Fermi 15 &middot; Quadrat Sampling</div>
+      <p class="fq">How many blades of grass are there on a football pitch?</p>
+      <div class="stage s1">
+        <span class="slabel">Ask yourself</span>
+        <ul class="probes">
+          <li>What is the smallest area you could realistically count, and how would you place it?</li>
+          <li>Where on the pitch would you place your quadrats, and why does that choice matter more than the counting?</li>
+          <li>How many square metres is a pitch, to one significant figure?</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="slabel">Anchors</span>
+        <div class="anchors"><span>pitch ≈ 100 &times; 70 m</span><span>≈ 10 blades cm<sup>&minus;2</sup></span><span>1 m² = 10<sup>4</sup> cm²</span></div>
+      </div>
+      <div class="stage s3">
+        <span class="slabel">One route</span>
+        <div class="work">
+          A ≈ <b>7 &times; 10<sup>3</sup> m²</b> = 7 &times; 10<sup>7</sup> cm²<br>
+          N = 7 &times; 10<sup>7</sup> &times; 10
+        </div>
+        <div class="result">N ≈ 7 &times; 10<sup>8</sup> blades</div>
+        <p class="caveat">This is the only question here you could actually verify, by counting a quadrat and scaling. It is also the one where the sampling design, rather than the arithmetic, determines whether the answer is any good.</p>
+      </div>
+      <div class="tapcue">Commit to a number, then tap to reveal <span class="pips"><i></i><i></i><i></i></span></div>
+    </div>
+  </section>
+
+  <!-- 21: your turn -->
+  <section class="slide">
+    <div class="eyebrow">Your Turn, Without Hints</div>
+    <div class="qlist">
+      <div>How many Mars bars, end to end, would reach from London to Birmingham?<span>Length ratio</span></div>
+      <div>How many litres of water does the school use in a week?<span>Top down and bottom up should be attempted separately</span></div>
+      <div>How many pieces of popcorn would fill this room?<span>Packing fraction</span></div>
+      <div>A person runs to the top of the Eiffel Tower. How many ice cubes could that energy melt?<span>Two energy budgets, one conversion, and a question about efficiency</span></div>
+      <div>How many piano tuners are there in this city?<span>The original</span></div>
+    </div>
+    <p class="body-text" style="margin-top:1.4rem;">For each one, write the decomposition before any number. If the route is right, the arithmetic is the easy part.</p>
+  </section>
+
+  <!-- 22: closing -->
+  <section class="slide">
+    <div class="eyebrow">Thinking Like a Scientist</div>
+    <h2>The point is never the number. It is whether you can <em>build a route</em> to one.</h2>
+    <p class="body-text" style="margin-top:1.5rem;">Make links between the world of ideas and the world of observations. Use a model, know that it is a model, and say which of your assumptions the answer is most sensitive to. Then say how confident you are, and why.</p>
+    <p class="maxim">An estimate you can defend is worth more than a figure you cannot explain.</p>
+    <div class="footer-stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    document.getElementById('counter').textContent =
+      String(idx+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('progressFill').style.width = ((idx+1)/total*100) + '%';
+  }
+  function go(d){ idx = Math.max(0, Math.min(total-1, idx+d)); render(); }
+
+  // staged reveal: clicking a card advances one hint level; only when fully
+  // revealed does a further click move to the next slide
+  function bump(card){
+    const s = parseInt(card.dataset.stage, 10);
+    if(s < 3){ card.dataset.stage = s + 1; return true; }
+    return false;
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(-1));
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(1));
+
+  document.addEventListener('keydown', e=>{
+    const card = slides[idx].querySelector('.fcard');
+    if(e.key===' '){
+      if(card && bump(card)){ e.preventDefault(); return; }
+      go(1); e.preventDefault();
+    } else if(e.key==='ArrowRight'){ go(1); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'){ go(-1); }
+  });
+
+  slides.forEach(s=>{
+    s.addEventListener('click', e=>{
+      const card = e.target.closest('.fcard');
+      if(card){ if(!bump(card)) go(1); }
+      else go(1);
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
