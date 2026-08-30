@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Particle, One Brick — Energy Scales, Momentum and the Relativistic Regime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  :root {
+    --bg:        #100F0D;
+    --panel:     #191713;
+    --panel-alt: #1F1C17;
+    --rule:      #302B23;
+    --body:      #DDD7CC;
+    --muted:     #99907F;
+    --gold:      #C9A227;
+    --gold-lit:  #E7C765;
+    --cosmic:    #7FA8BE;
+    --measure:   34rem;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--body);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.72;
+    letter-spacing: 0.005em;
+  }
+
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 0 1.6rem 5rem;
+  }
+
+  p, ul, ol { max-width: var(--measure); }
+
+  /* ---------- masthead ---------- */
+
+  header.masthead {
+    border-bottom: 1px solid var(--rule);
+    padding: 4.5rem 0 2.6rem;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 1.6rem;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(2.6rem, 7vw, 4.4rem);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.1rem;
+    color: #F1ECE1;
+  }
+
+  h1 em { font-style: italic; color: var(--gold-lit); }
+
+  .standfirst {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 40rem;
+    margin: 0;
+  }
+
+  /* ---------- stage headings ---------- */
+
+  .stage {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.4rem;
+    margin: 4rem 0 1.8rem;
+  }
+
+  .stage .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  .stage h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3.6vw, 2.3rem);
+    line-height: 1.15;
+    margin: 0;
+    color: #EFE9DD;
+  }
+
+  h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gold-lit);
+    margin: 2.6rem 0 0.8rem;
+  }
+
+  a { color: var(--gold-lit); }
+
+  /* ---------- calculation pair ---------- */
+
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1.4rem;
+    margin: 2rem 0 2.4rem;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 1.6rem 1.6rem 1.4rem;
+  }
+
+  .card.cosmic { border-top: 2px solid var(--cosmic); }
+  .card.earth  { border-top: 2px solid var(--gold); }
+
+  .card .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+
+  .card .given {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.9;
+    color: var(--body);
+    margin: 0 0 1rem;
+  }
+
+  .card .given span { color: var(--muted); }
+
+  .card .result {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.9rem;
+    line-height: 1;
+    margin: 0.4rem 0 0;
+  }
+
+  .card.cosmic .result { color: var(--cosmic); }
+  .card.earth  .result { color: var(--gold-lit); }
+
+  .card .result small {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-top: 0.5rem;
+  }
+
+  /* ---------- predict box ---------- */
+
+  .predict {
+    border-left: 2px solid var(--gold);
+    background: var(--panel-alt);
+    padding: 1.3rem 1.5rem;
+    margin: 2.6rem 0;
+    max-width: var(--measure);
+  }
+
+  .predict p { margin: 0; }
+  .predict p + p { margin-top: 0.7rem; }
+
+  .predict .who {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 0.7rem;
+  }
+
+  /* ---------- tables ---------- */
+
+  .tablewrap { overflow-x: auto; margin: 2rem 0 2.4rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 34rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.72rem 1rem 0.72rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+    border-bottom: 1px solid var(--gold);
+  }
+
+  tbody th {
+    font-weight: 400;
+    color: var(--body);
+    width: 40%;
+  }
+
+  td.num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.86rem;
+  }
+
+  td.cos { color: var(--cosmic); }
+  td.ear { color: var(--gold-lit); }
+
+  /* ---------- ladder ---------- */
+
+  figure {
+    margin: 3rem 0;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 1.6rem 1.2rem 1.2rem;
+  }
+
+  figure svg { width: 100%; height: auto; display: block; }
+
+  figcaption {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    max-width: 44rem;
+  }
+
+  .lad-axis  { stroke: var(--rule); stroke-width: 1; }
+  .lad-tick  { stroke: var(--rule); stroke-width: 1; }
+  .lad-dec   { fill: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .lad-stem-e{ stroke: var(--gold); stroke-width: 1; opacity: 0.55; }
+  .lad-stem-c{ stroke: var(--cosmic); stroke-width: 1; opacity: 0.55; }
+  .lad-lab   { font-family: 'IBM Plex Sans', sans-serif; font-size: 12.5px; fill: var(--body); font-weight: 300; }
+  .lad-val   { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .lad-val-e { fill: var(--gold); }
+  .lad-val-c { fill: var(--cosmic); }
+  .lad-key   { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; fill: var(--muted); }
+
+  /* ---------- equation block ---------- */
+
+  .eqn {
+    background: var(--panel-alt);
+    border: 1px solid var(--rule);
+    padding: 1rem 1.3rem;
+    margin: 1.8rem 0;
+    overflow-x: auto;
+    color: var(--body);
+  }
+
+  /* ---------- pull ---------- */
+
+  .pull {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 3vw, 1.95rem);
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--gold-lit);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.8rem 0;
+    margin: 3rem 0;
+    max-width: 40rem;
+  }
+
+  /* ---------- conclusion ---------- */
+
+  .verdict {
+    border: 1px solid var(--gold);
+    background: linear-gradient(180deg, rgba(201,162,39,0.07), rgba(201,162,39,0.01));
+    padding: 1.8rem 1.8rem 1.5rem;
+    margin: 2.4rem 0;
+  }
+
+  .verdict p { max-width: none; }
+  .verdict p:first-of-type { margin-top: 0; }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  /* ---------- footer ---------- */
+
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 5rem;
+    padding-top: 1.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  footer .stamp { color: var(--gold); }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .card .result { font-size: 2.3rem; }
+    .stage { flex-direction: column; gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Energy Scales · Relativistic Kinematics · Paper 1 Extension</p>
+  <h1>One particle,<br>one <em>brick</em></h1>
+  <p class="standfirst">A newspaper reached for the most ordinary object it could think of, and in doing so it got the arithmetic very nearly right; what the comparison quietly hides is everything interesting about how a single proton can hold the energy of a falling brick.</p>
+</header>
+
+<p>In May 2021 the Telescope Array in Utah recorded a cosmic ray whose energy was later reported as \(2.4 \times 10^{20}\,\mathrm{eV}\); the collaboration named it Amaterasu, after the sun goddess, and it stands as the second most energetic particle ever detected, behind the Oh-My-God particle of 1991. When the result was published, a newspaper offered its readers the standard translation, which is that the particle carried about as much energy as a brick dropped from waist height. The claim is worth taking seriously, because it is testable in two lines of arithmetic, and because testing it opens onto the whole architecture of relativistic energy.</p>
+
+<div class="stage">
+  <span class="tag">Stage 01</span>
+  <h2>Calculate</h2>
+</div>
+
+<p>Two quantities, two conversions, no physics beyond the definition of the electronvolt and the gravitational potential energy of a body near the Earth's surface.</p>
+
+<div class="pair">
+  <div class="card cosmic">
+    <p class="label">The cosmic ray</p>
+    <p class="given">
+      <span>E =</span> 2.4 × 10<sup>20</sup> eV<br>
+      <span>1 eV =</span> 1.60 × 10<sup>−19</sup> J<br>
+      <span>E =</span> 2.4 × 10<sup>20</sup> × 1.60 × 10<sup>−19</sup>
+    </p>
+    <p class="result">38 J<small>Amaterasu, lab frame</small></p>
+  </div>
+  <div class="card earth">
+    <p class="label">The brick</p>
+    <p class="given">
+      <span>m =</span> 2.8 kg<br>
+      <span>h =</span> 1.1 m<br>
+      <span>E<sub>p</sub> = mgh =</span> 2.8 × 9.81 × 1.1
+    </p>
+    <p class="result">30 J<small>Waist height, released</small></p>
+  </div>
+</div>
+
+<p>Thirty-eight joules against thirty joules; the ratio is 1.3, the two numbers agree to within a factor well inside anything the phrase "equivalent to" can be asked to carry, and on the evidence of energy alone the newspaper was correct. A single subatomic particle, arriving from somewhere beyond the galaxy, delivered the energy of a housebrick landing on your foot.</p>
+
+<div class="predict">
+  <span class="who">Before reading on</span>
+  <p>Both objects carry the same energy. Write down, before you calculate anything, whether you expect them to carry the same <em>momentum</em>, and if not, which one carries more and by roughly how much.</p>
+  <p>Commit to an order of magnitude. The answer is one of the most instructive numbers in the whole of relativistic mechanics, and it is worth being wrong about first.</p>
+</div>
+
+<div class="stage">
+  <span class="tag">Stage 02</span>
+  <h2>Compare</h2>
+</div>
+
+<h3>The momentum does not follow</h3>
+
+<p>The brick is slow and heavy, so its momentum is Newtonian; it reaches the floor at \(v=\sqrt{2gh}=4.6\ \mathrm{m\,s^{-1}}\), giving \(p=mv=13\ \mathrm{kg\,m\,s^{-1}}\). The cosmic ray is a proton moving so close to \(c\) that its rest energy has become a rounding error, so its momentum is very nearly \(p=E/c\), which is \(38.4/(3.00\times10^{8})=1.3\times10^{-7}\ \mathrm{kg\,m\,s^{-1}}\).</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th scope="col">Quantity</th><th scope="col">Amaterasu proton</th><th scope="col">Falling brick</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">Kinetic energy</th><td class="num cos">38 J</td><td class="num ear">30 J</td></tr>
+    <tr><th scope="row">Momentum</th><td class="num cos">1.3 × 10<sup>−7</sup> kg m s<sup>−1</sup></td><td class="num ear">13 kg m s<sup>−1</sup></td></tr>
+    <tr><th scope="row">Mass</th><td class="num cos">1.7 × 10<sup>−27</sup> kg</td><td class="num ear">2.8 kg</td></tr>
+    <tr><th scope="row">Speed</th><td class="num cos">0.999 999 999 999 999 999 999 999 c</td><td class="num ear">4.6 m s<sup>−1</sup></td></tr>
+    <tr><th scope="row">Lorentz factor γ</th><td class="num cos">2.6 × 10<sup>11</sup></td><td class="num ear">1.000 000 000 000 000 1</td></tr>
+    <tr><th scope="row">Energy density</th><td class="num cos">~10<sup>46</sup> J m<sup>−3</sup></td><td class="num ear">~10<sup>4</sup> J m<sup>−3</sup></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The brick carries a hundred million times more momentum while carrying less energy, and that single line is the whole of the relativistic regime in miniature. The reason sits in the energy-momentum relation, which holds for everything and reduces to two very different-looking limits depending on where a body sits relative to its own rest energy:</p>
+
+<div class="eqn">\[E^{2}=(pc)^{2}+(mc^{2})^{2}\]</div>
+
+<p>For the brick, \(pc \ll mc^{2}\), the square root expands to \(E \approx mc^{2}+p^{2}/2m\), and the familiar Newtonian kinetic energy falls out as a small correction on top of an enormous, untouchable rest energy; the brick's 30 J of motion sits on top of \(2.5\times10^{17}\,\mathrm{J}\) of rest energy that never participates in anything. For the proton, \(pc \gg mc^{2}\), the rest term is negligible, and the relation collapses to \(E \approx pc\). Momentum grows linearly with energy in the ultrarelativistic limit and quadratically in the Newtonian one, so equal energies buy wildly unequal momenta, and dividing by \(c\) rather than by a small speed is what costs the proton its eight orders of magnitude.</p>
+
+<p class="pull">Energy is what the two objects share; momentum is where the cosmos and the kitchen part company.</p>
+
+<h3>What the Lorentz factor is doing</h3>
+
+<p>The proton's rest energy is \(0.938\ \mathrm{GeV}\), so \(\gamma = E/mc^{2} = 2.4\times10^{20}/9.38\times10^{8} = 2.6\times10^{11}\), and the shortfall from light speed is \(1-\beta \approx 1/2\gamma^{2} \approx 8\times10^{-24}\). Numbers on that scale stop meaning anything as speeds, so it is more honest to read them as ratios of clocks and rulers. In the proton's own frame the Milky Way is contracted from a hundred thousand light years to about four light-days, and the crossing takes something like twelve seconds of proper time; the particle that struck Utah's atmosphere in 2021 had, by its own reckoning, only just set out.</p>
+
+<h3>Against the LHC</h3>
+
+<p>The obvious comparison for a laboratory is the largest machine we have built for the purpose. Each LHC beam proton in Run 3 carries \(6.8\ \mathrm{TeV}\), which is \(1.1\ \mathrm{\mu J}\), about the energy of a flying mosquito; Amaterasu carried \(3.5\times10^{7}\) times more. Put that way the comparison looks humiliating for CERN, and it is the version that usually appears in headlines, but it is measured in the wrong frame and it is therefore close to meaningless.</p>
+
+<p>What determines what a collision can actually make is the invariant \(\sqrt{s}\), the total energy available in the centre-of-mass frame, because that is the energy free to become new mass rather than being locked up in the bulk motion of the debris. For two beams of energy \(E\) meeting head-on, essentially all of it is available and \(\sqrt{s}=2E\); for a fast particle striking something at rest, most of the energy is spent carrying the wreckage forwards, and</p>
+
+<div class="eqn">\[\sqrt{s}=\sqrt{2Emc^{2}}\]</div>
+
+<p>which grows only as the square root of the beam energy. Amaterasu hitting a nitrogen nucleon in the upper atmosphere therefore delivers \(\sqrt{2\times2.4\times10^{20}\times9.38\times10^{8}} = 6.7\times10^{14}\ \mathrm{eV}\), which is \(670\ \mathrm{TeV}\). The LHC's head-on collisions reach \(13.6\ \mathrm{TeV}\). The gap in the lab frame was a factor of \(3.5\times10^{7}\); the gap that matters is a factor of about fifty.</p>
+
+<figure>
+<svg viewBox="0 0 900 320" role="img" aria-label="Logarithmic ladder of particle energies from a visible photon at 2 electronvolts to Amaterasu at 2.4 times ten to the twentieth electronvolts, with laboratory scales marked above the axis and cosmic scales below.">
+  <line class="lad-axis" x1="50" y1="200" x2="860" y2="200"/>
+
+  <g class="lad-tick">
+    <line x1="50"  y1="200" x2="50"  y2="207"/>
+    <line x1="166" y1="200" x2="166" y2="207"/>
+    <line x1="281" y1="200" x2="281" y2="207"/>
+    <line x1="397" y1="200" x2="397" y2="207"/>
+    <line x1="513" y1="200" x2="513" y2="207"/>
+    <line x1="629" y1="200" x2="629" y2="207"/>
+    <line x1="744" y1="200" x2="744" y2="207"/>
+    <line x1="860" y1="200" x2="860" y2="207"/>
+  </g>
+  <g class="lad-dec" text-anchor="middle">
+    <text x="50"  y="222">10⁰</text>
+    <text x="166" y="222">10³</text>
+    <text x="281" y="222">10⁶</text>
+    <text x="397" y="222">10⁹</text>
+    <text x="513" y="222">10¹²</text>
+    <text x="629" y="222">10¹⁵</text>
+    <text x="744" y="222">10¹⁸</text>
+    <text x="860" y="222">10²¹</text>
+  </g>
+  <text class="lad-key" x="50" y="248">ENERGY / eV</text>
+
+  <!-- laboratory scales, above the axis -->
+  <g>
+    <line class="lad-stem-e" x1="62"  y1="200" x2="62"  y2="178"/>
+    <text class="lad-lab" x="62" y="172">Visible photon</text>
+    <text class="lad-val lad-val-e" x="62" y="158">2 eV</text>
+
+    <line class="lad-stem-e" x1="94"  y1="200" x2="94"  y2="134"/>
+    <text class="lad-lab" x="94" y="128">Ionising hydrogen</text>
+    <text class="lad-val lad-val-e" x="94" y="114">13.6 eV</text>
+
+    <line class="lad-stem-e" x1="234" y1="200" x2="234" y2="178"/>
+    <text class="lad-lab" x="234" y="172">Dental X-ray photon</text>
+    <text class="lad-val lad-val-e" x="234" y="158">6 × 10⁴ eV</text>
+
+    <line class="lad-stem-e" x1="396" y1="200" x2="396" y2="134"/>
+    <text class="lad-lab" x="396" y="128">Proton rest energy</text>
+    <text class="lad-val lad-val-e" x="396" y="114">9.4 × 10⁸ eV</text>
+
+    <line class="lad-stem-e" x1="551" y1="200" x2="551" y2="90" stroke-opacity="0.9"/>
+    <circle cx="551" cy="200" r="3.2" fill="#C9A227"/>
+    <text class="lad-lab" x="551" y="84">LHC head-on collision</text>
+    <text class="lad-val lad-val-e" x="551" y="70">1.36 × 10¹³ eV  (13.6 TeV)</text>
+  </g>
+
+  <!-- cosmic scales, below the axis -->
+  <g>
+    <line class="lad-stem-c" x1="622" y1="200" x2="622" y2="232"/>
+    <circle cx="622" cy="200" r="3.2" fill="#7FA8BE"/>
+    <text class="lad-lab" x="622" y="246">Amaterasu, centre of mass</text>
+    <text class="lad-val lad-val-c" x="622" y="260">6.7 × 10¹⁴ eV  (670 TeV)</text>
+
+    <line class="lad-stem-c" x1="810" y1="200" x2="810" y2="276"/>
+    <text class="lad-lab" x="800" y="281" text-anchor="end">GZK attenuation sets in</text>
+    <text class="lad-val lad-val-c" x="800" y="295" text-anchor="end">5 × 10¹⁹ eV</text>
+
+    <line class="lad-stem-c" x1="836" y1="200" x2="836" y2="308"/>
+    <circle cx="836" cy="200" r="3.2" fill="#7FA8BE"/>
+    <text class="lad-lab" x="826" y="313" text-anchor="end">Amaterasu, lab frame · 2.4 × 10²⁰ eV</text>
+  </g>
+</svg>
+<figcaption>Twenty-one decades of energy on a logarithmic axis. Laboratory and accelerator scales sit above the line in gold; the cosmic ray sits below it in blue, marked twice, once for the energy it carries through the atmosphere and once for the energy actually available when it hits something. The distance between those two blue marks is the entire content of the fixed-target penalty, and it is wider than the distance from a dental X-ray to the LHC.</figcaption>
+</figure>
+
+<p>The same relation explains why we build colliders at all, and the argument is more forceful read backwards. To reach the LHC's modest \(13.6\ \mathrm{TeV}\) of centre-of-mass energy by firing protons at a stationary target, the beam would need an energy of \(s/2mc^{2} \approx 10^{17}\ \mathrm{eV}\), roughly fourteen thousand times what the LHC's magnets deliver; the ring would have to be the size of a small country. Two counter-rotating beams get the same physics for a factor of \(10^{4}\) less energy, and the accountancy of \(\sqrt{s}\) is the reason the machine has the shape it does.</p>
+
+<p>There is also a compensating direction to the comparison, which is worth putting in front of students who conclude that cosmic rays make accelerators pointless. Each LHC beam holds around \(3\times10^{14}\) protons and stores a few hundred megajoules, enough to melt half a tonne of copper, and it delivers that flux on demand, at a known energy, into a detector with hundreds of millions of instrumented channels. Amaterasu-class events arrive at a rate of roughly one per square kilometre per century, from an unknown direction, and are observed only through the shower of secondaries they leave in the atmosphere. Nature has the higher energy; the laboratory has the statistics, the control and the trigger.</p>
+
+<h3>The density problem</h3>
+
+<p>The energy comparison and the momentum comparison both understate the strangeness, because the thing that makes a \(10^{20}\ \mathrm{eV}\) particle exotic is not the total energy so much as its concentration. Thirty joules distributed through a brick is about \(10^{4}\ \mathrm{J\,m^{-3}}\), which is unremarkable; thirty-eight joules confined within a proton's volume of some \(2\times10^{-45}\ \mathrm{m^{3}}\) is of order \(10^{46}\ \mathrm{J\,m^{-3}}\), forty-two orders of magnitude denser. No process we can arrange on Earth localises that much energy in that small a region, and the honest version of the newspaper's sentence would say that the particle carries the energy of a falling brick packed into a volume a thousand million million times smaller than an atom.</p>
+
+<div class="stage">
+  <span class="tag">Stage 03</span>
+  <h2>Conclude</h2>
+</div>
+
+<div class="verdict">
+  <p>The newspaper was correct on energy and silent on everything else. Thirty-eight joules against thirty joules is agreement to within a factor of 1.3, which is the same order of magnitude, and as a statement about energy the comparison stands.</p>
+  <p>It conceals three things. The momentum differs by a factor of \(10^{8}\), because \(E=pc\) and \(E=p^{2}/2m\) are different functions and the two objects live in different limits. The energy available for physics, once the particle interacts, is \(670\ \mathrm{TeV}\) rather than \(2.4\times10^{20}\ \mathrm{eV}\), because a fixed-target collision squanders most of the lab-frame energy on the forward motion of its own debris. And the concentration is unlike anything terrestrial, since the brick's energy is spread through a litre of clay and the proton's is not spread at all.</p>
+  <p>A good comparison brings a strange number within reach; a better one shows you exactly where the reach fails, and the brick is a good comparison precisely because it fails so instructively.</p>
+</div>
+
+<h3>The coda that has no answer yet</h3>
+
+<p>There is a reason Amaterasu was reported in <em>Science</em> rather than filed as another entry in a catalogue. Above about \(5\times10^{19}\ \mathrm{eV}\), protons travelling through the cosmic microwave background see those photons blueshifted into the gamma range and begin to lose energy to pion production, the Greisen–Zatsepin–Kuzmin effect, which limits the distance such a particle can travel to something like fifty megaparsecs. Amaterasu is a factor of five above that threshold, so its source should lie within a few hundred million light years, and yet its arrival direction points back towards the Local Void, a region conspicuously short of the violent objects thought capable of accelerating anything to these energies. Either the source is something we have not identified, or the particle is a heavier nucleus than a proton and the back-tracking through galactic magnetic fields is wrong, or the propagation physics needs revisiting. The arithmetic that opened this piece takes two lines; the question the arithmetic leads to is open.</p>
+
+<footer>
+  <div>Amaterasu detected by the Telescope Array, Utah, 27 May 2021; reported November 2023. Proton rest energy 0.938 GeV; LHC Run 3 beam energy 6.8 TeV per beam.</div>
+  <div class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+</footer>
+
+</div>
+</body>
+</html>
