@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>If Every Ruler Disappeared — reading walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#131215;
+  --panel:#1a181c;
+  --panel-2:#201d22;
+  --rule:#312d33;
+  --rule-soft:#252228;
+  --text:#ece7dd;
+  --muted:#8f8880;
+  --gold:#c8a45c;
+  --gold-dim:#8f7440;
+  --sage:#8fae7f;
+  --rust:#c0705f;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--ink);color:var(--text)}
+body{font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--gold)}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:264px minmax(0,1fr);min-height:100vh}
+.rail{border-right:1px solid var(--rule);background:var(--panel);padding:1.75rem 0 3rem}
+.stage{padding:2.25rem 2.5rem 4rem;max-width:820px}
+
+/* ---------- rail ---------- */
+.rail h1{font-family:var(--serif);font-weight:500;font-style:italic;font-size:1.5rem;
+  line-height:1.15;margin:0 1.4rem .35rem;letter-spacing:.01em}
+.rail .sub{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin:0 1.4rem 1.5rem;line-height:1.5}
+.ledger{list-style:none;margin:0;padding:0}
+.ledger li{position:relative}
+.ledger button{
+  width:100%;text-align:left;background:none;border:0;color:var(--muted);
+  font-family:var(--sans);font-size:.82rem;line-height:1.35;
+  padding:.5rem 1.4rem .5rem 2.35rem;cursor:pointer;display:block}
+.ledger button:disabled{cursor:default;opacity:.45}
+.ledger button:hover:not(:disabled){color:var(--text);background:var(--panel-2)}
+.ledger .mark{position:absolute;left:1.4rem;top:.62rem;font-family:var(--mono);font-size:.66rem;color:var(--rule)}
+.ledger li.done .mark{color:var(--sage)}
+.ledger li.done button{color:#b9b2a8}
+.ledger li.here button{color:var(--gold);border-left:2px solid var(--gold);padding-left:2.25rem}
+.ledger li.here .mark{color:var(--gold)}
+.rail .tools{margin:1.75rem 1.4rem 0;padding-top:1.25rem;border-top:1px solid var(--rule)}
+.rail label{display:block;font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-bottom:.35rem}
+.rail input{width:100%;background:var(--ink);border:1px solid var(--rule);color:var(--text);
+  font-family:var(--sans);font-size:.82rem;padding:.45rem .55rem;border-radius:2px}
+
+/* ---------- stage ---------- */
+.where{font-family:var(--mono);font-size:.7rem;color:var(--gold-dim);margin-bottom:.5rem}
+.stage h2{font-family:var(--serif);font-weight:500;font-size:2.1rem;line-height:1.1;margin:0 0 .4rem}
+.read{font-family:var(--serif);font-style:italic;font-size:1.15rem;color:var(--muted);margin:0 0 2.25rem}
+
+.block{border-left:1px solid var(--rule);padding:0 0 0 1.5rem;margin:0 0 2.5rem}
+.block.settled{border-left-color:var(--sage)}
+.kind{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-bottom:.5rem}
+.ask{font-family:var(--serif);font-size:1.35rem;line-height:1.4;margin:0 0 .9rem}
+textarea{width:100%;min-height:112px;resize:vertical;background:var(--panel);
+  border:1px solid var(--rule);border-radius:2px;color:var(--text);
+  font-family:var(--sans);font-size:.95rem;line-height:1.6;padding:.75rem .85rem}
+textarea:focus,input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.meter{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-top:.4rem}
+
+button.act{font-family:var(--sans);font-size:.82rem;font-weight:500;
+  background:none;border:1px solid var(--gold-dim);color:var(--gold);
+  padding:.45rem .9rem;border-radius:2px;cursor:pointer;margin-top:.75rem}
+button.act:hover:not(:disabled){background:var(--gold);color:var(--ink)}
+button.act:disabled{border-color:var(--rule);color:var(--muted);cursor:not-allowed}
+button.act.plain{border-color:var(--rule);color:var(--muted)}
+button.act.plain:hover{background:var(--rule);color:var(--text)}
+
+.model{margin-top:1rem;padding:1rem 1.15rem;background:var(--panel-2);
+  border:1px solid var(--rule-soft);border-radius:2px;
+  font-family:var(--serif);font-size:1.08rem;line-height:1.55}
+.model .lbl{font-family:var(--mono);font-size:.66rem;color:var(--gold-dim);
+  display:block;margin-bottom:.5rem}
+.score{margin-top:.85rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:baseline}
+.score .q{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-right:.25rem}
+.score button{font-family:var(--sans);font-size:.78rem;background:none;
+  border:1px solid var(--rule);color:var(--muted);padding:.3rem .7rem;
+  border-radius:2px;cursor:pointer}
+.score button:hover{color:var(--text);border-color:var(--muted)}
+.score button.on{border-color:var(--gold);color:var(--gold)}
+
+/* ---------- gate ---------- */
+.gate{border:1px solid var(--rule);border-left:2px solid var(--gold);
+  background:var(--panel);padding:1.5rem 1.6rem;margin:3rem 0 0;border-radius:2px}
+.gate.shut{opacity:.4;border-left-color:var(--rule)}
+.gate h3{font-family:var(--serif);font-weight:500;font-size:1.3rem;margin:0 0 .9rem;line-height:1.35}
+.opts{list-style:none;margin:0;padding:0}
+.opts li{margin-bottom:.4rem}
+.opts label{display:flex;gap:.6rem;align-items:flex-start;cursor:pointer;
+  font-size:.95rem;line-height:1.5;padding:.35rem .5rem;border-radius:2px}
+.opts label:hover{background:var(--panel-2)}
+.opts input{margin-top:.35rem;accent-color:var(--gold)}
+.verdict{margin-top:1rem;font-size:.92rem;line-height:1.55}
+.verdict.no{color:var(--rust)}
+.verdict.yes{color:var(--sage)}
+.tries{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-top:.6rem}
+
+.foot{margin-top:4rem;padding-top:1.25rem;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:.66rem;color:var(--muted);line-height:1.7}
+.hidden{display:none}
+
+.wrapup p{font-family:var(--serif);font-size:1.1rem;line-height:1.55;color:var(--muted)}
+.wrapup ol{font-family:var(--serif);font-size:1.1rem;line-height:1.6;padding-left:1.2rem}
+.wrapup ol li{margin-bottom:.6rem}
+
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .rail{border-right:0;border-bottom:1px solid var(--rule);padding-bottom:1.5rem}
+  .stage{padding:1.75rem 1.25rem 3rem}
+  .stage h2{font-size:1.7rem}
+  .ask{font-size:1.2rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .model,.gate:not(.shut){animation:rise .28s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="rail">
+    <h1>If Every Ruler Disappeared</h1>
+    <p class="sub">A reading walkthrough.<br>Keep the essay open beside you.</p>
+    <ul class="ledger" id="ledger"></ul>
+    <div class="tools">
+      <label for="who">Your name</label>
+      <input id="who" type="text" autocomplete="off" placeholder="for the export header">
+      <button class="act plain" id="btnExport" style="width:100%">Download my answers</button>
+      <button class="act plain" id="btnReset" style="width:100%">Start again</button>
+    </div>
+  </nav>
+
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+/* =====================================================================
+   Content. One entry per section of the essay.
+   ref     : where the student must look in the PDF
+   predict : optional hypothesis-before-reading prompt (ungated)
+   prompts : Cornell cue questions, each with a model answer
+   check   : the retrieval gate. Must be answered correctly to move on.
+   ===================================================================== */
+const UNITS = [
+{
+  id:"open", nav:"Opening", ref:"Opening",
+  title:"The claim on the first page",
+  read:"Read the three paragraphs before the contents list.",
+  predict:"Before you read: if every metre rule on Earth vanished overnight, could the metre be rebuilt? Say yes or no, and say what you would need.",
+  prompts:[
+    {q:"The essay says the SI gives features of nature exact numerical values and then treats those values as instructions. Put that into your own words, as if explaining it to someone in the year below.",
+     a:"A number is stipulated for a constant of nature, for instance the speed of light. Any laboratory can then work backwards through the physical law in which that constant appears and produce the unit for itself. The definition is a recipe rather than an object, so nothing has to be shipped from Paris and nothing can be dropped."},
+    {q:"The opening says the SI has borrowed the central idea of natural units while keeping something else. Name the borrowed idea and name what was kept.",
+     a:"Borrowed: anchoring the units on fixed constants of nature rather than on artefacts. Kept: the inherited magnitudes, so that a metre is still about the length of a stride and a second is still about the length of a heartbeat, sizes that suit human beings and laboratories."}
+  ],
+  check:{
+    q:"Which unit is tied to which constant?",
+    options:["The kilogram is tied to the Planck constant, h",
+             "The kilogram is tied to the caesium-133 frequency",
+             "The kilogram is tied to the Avogadro constant",
+             "The kilogram is tied to the elementary charge"],
+    answer:0,
+    again:"Look again at the second paragraph of the Opening, which lists the pairings one after another."}
+},
+{
+  id:"s1", nav:"1 · Measurement as ratio", ref:"Section 1",
+  title:"Every measurement ends as a dimensionless number",
+  read:"Read section 1, including the four-row table.",
+  prompts:[
+    {q:"L = 1.73 m looks like a fact about a desk. Explain what ratio the experiment has actually established, and why the result is a pure number.",
+     a:"The experiment establishes L ÷ (1 m) = 1.73. Both sides of the comparison are lengths, so the dimensions cancel and what survives is a pure number. Measuring means comparing a quantity against a chosen reference of the same kind and reporting how many of the reference fit."},
+    {q:"The same desk is 1.73 m and 5.68 ft. Using Q = {Q}[Q], say which symbols changed, which did not, and what that tells you about how much of a measurement comes from nature.",
+     a:"The numerical value {Q} and the unit [Q] both changed, and they changed together so that their product stayed the same. The physical quantity Q did not change, and neither did the desk. The number in a measurement is therefore partly a report about the world and partly a report about the convention we chose."}
+  ],
+  check:{
+    q:"Which one of these is independent of the unit system?",
+    options:["The numerical value 1.73",
+             "The dimension of the quantity",
+             "The unit chosen for the comparison",
+             "The number of significant figures quoted"],
+    answer:1,
+    again:"The table in section 1 answers this directly. Two of its four rows are marked No."}
+},
+{
+  id:"s2", nav:"2 · Why constants appear", ref:"Section 2",
+  title:"Why constants enter physical laws",
+  read:"Read section 2, from Galileo's ratio to the closing paragraph on reproducibility.",
+  prompts:[
+    {q:"Galileo's comparison h₁/h₂ = (t₁/t₂)² needs no constant at all. Explain what you cannot do if you restrict yourself to statements of that kind.",
+     a:"The comparison is local. It relates one fall to another fall carried out under the same conditions, so it can say that doubling the time quadruples the height. It cannot predict an absolute height from an absolute time, and it cannot be transported to another laboratory or another century, because nothing in it fixes a scale."},
+    {q:"Write down the dimensions of g and of G, and explain why the essay treats one of them as a property of a situation.",
+     a:"[g] = L T⁻², [G] = L³ M⁻¹ T⁻². The value of g depends on where you stand: about 9.81 m s⁻² at the Earth's surface, something else on the Moon, so it characterises a particular gravitational situation. G is offered as universal, although the essay notes later that its status is still debated."}
+  ],
+  check:{
+    q:"The essay says the numerical value 6.67430 × 10⁻¹¹ belongs to G in what sense?",
+    options:["Universally, so any civilisation would arrive at it",
+             "Only since the 2019 revision of the SI",
+             "In SI units, since another coherent system assigns another number",
+             "By definition, since G is one of the exact defining constants"],
+    answer:2,
+    again:"Re-read the sentence immediately after the dimensions of G are given."}
+},
+{
+  id:"s3", nav:"3 · Jobs done by constants", ref:"Section 3",
+  title:"The different jobs done by constants",
+  read:"Read section 3 and both of its tables.",
+  prompts:[
+    {q:"Choose either c or h. Name at least three of the five roles in the first table that your chosen constant plays, and say what it is doing in each.",
+     a:"For c: conversion, turning a time interval into a light-travel distance; conceptual bridge, joining space and time; scale or boundary, since v/c says when relativity is needed; unit definition, since fixing c defines the metre. For h: conversion of frequency into energy, boundary marker through S/ħ, and the anchor of the kilogram."},
+    {q:"The essay says class D overlaps the other three. Explain the overlap, and say what it reveals about how the seven defining constants were chosen.",
+     a:"The seven contain genuinely universal constants such as c and h, a property of one particular atom in the caesium frequency, ordinary conversion constants in k_B and N_A, and a quantity built on human vision in K_cd. They were chosen because they are stable and can be realised in practice, so the set answers to engineering rather than to a single philosophical category."}
+  ],
+  check:{
+    q:"In the Lévy-Leblond classification as the essay tabulates it, the caesium transition frequency is given as an example of which class?",
+    options:["Class A, characteristic of one particular system",
+             "Class B, characteristic of a family of phenomena",
+             "Class C, universal across physical phenomena",
+             "Class D only, since it defines a unit"],
+    answer:0,
+    again:"The second table in section 3 gives one example per class. Read down the example column."}
+},
+{
+  id:"s4", nav:"4 · Tests of scale", ref:"Section 4",
+  title:"Constants create dimensionless tests of scale",
+  read:"Read section 4 and its table of four ratios. Have a calculator to hand.",
+  prompts:[
+    {q:"A car travels at 30 m s⁻¹. Work out v/c, then say what that number licenses you to ignore and why.",
+     a:"v/c = 30 ÷ (3.00 × 10⁸) ≈ 1 × 10⁻⁷. Relativistic corrections typically enter at order (v/c)², around 10⁻¹⁴, which is far below anything a speedometer or a stopwatch could resolve, so Newtonian mechanics is not merely convenient here, it is indistinguishable from the exact treatment."},
+    {q:"Explain what GM/(Rc²) compares, and say roughly what it equals at the surface of the Earth. (M = 5.97 × 10²⁴ kg, R = 6.37 × 10⁶ m.)",
+     a:"It compares the gravitational potential energy scale of a body with its rest energy, so it measures how strongly spacetime is curved. For the Earth: (6.674 × 10⁻¹¹ × 5.97 × 10²⁴) ÷ (6.37 × 10⁶ × 9.00 × 10¹⁶) ≈ 7 × 10⁻¹⁰, which is why Newtonian gravity is entirely adequate at the surface."}
+  ],
+  check:{
+    q:"A system has action S with S/ħ ≫ 1. What does that tell you?",
+    options:["Quantum effects dominate the behaviour",
+             "The system is moving relativistically",
+             "Classical behaviour emerges",
+             "Thermal energies exceed the rest energy"],
+    answer:2,
+    again:"The second row of the table in section 4 states both directions of this ratio."}
+},
+{
+  id:"s5", nav:"5 · Two species of number", ref:"Section 5",
+  title:"Two species of number",
+  read:"Read section 5 and its table of six constants.",
+  prompts:[
+    {q:"α ≈ 1/137, μ ≈ 1836 and α_G ≈ 5.9 × 10⁻³⁹ share a property that c, h and G lack. Name it, and say why it matters for a message sent to another civilisation.",
+     a:"All three are dimensionless, so their values do not depend on anyone's choice of ruler or clock. A civilisation measuring in entirely different units would still obtain 137.036 and 1836.15, assuming the same physics holds where they are. These numbers can therefore be communicated without first agreeing on any units, whereas the numerical value of c cannot."},
+    {q:"Someone announces that the speed of light has changed. Explain why the claim is ambiguous as it stands, and state a claim that would not be ambiguous.",
+     a:"The numerical value of c depends on the metre and the second, so a reported change could mean the units drifted rather than the physics. Since 2019 it cannot change at all, because it is fixed by definition. A measured change in a dimensionless ratio such as α would be unambiguous, since no redefinition of units could produce it."}
+  ],
+  check:{
+    q:"α_G = G m_p²/(ħc) ≈ 5.9 × 10⁻³⁹ expresses what?",
+    options:["The value of G converted into atomic units",
+             "The strength of gravity between two protons, as a pure number",
+             "The ratio of the proton mass to the electron mass",
+             "The gravitational energy of a proton in joules"],
+    answer:1,
+    again:"Look at the final row of the table in section 5, in the column headed Main role."}
+},
+{
+  id:"s6", nav:"6 · Objects to constants", ref:"Section 6",
+  title:"How the SI replaced objects with constants",
+  read:"Read section 6, including the six-row table of the metre's history.",
+  predict:"Before you look at the table: between 1798 and today, by how many orders of magnitude do you think the relative uncertainty of the metre improved? Commit to a number.",
+  prompts:[
+    {q:"Trace the four stages named in the arrow diagram, giving the actual reference used and the relative uncertainty at each stage.",
+     a:"Planet: the Earth's meridian in 1798, 10⁻⁴. Metal bar: the platinum prototype, 10⁻⁵ in 1799 and 10⁻⁷ by 1889. Atomic wavelength: krypton-86 in 1960, 10⁻⁸. Fundamental constant: the speed of light from 1983, 10⁻¹⁰. Six orders of magnitude in all."},
+    {q:"State precisely what happened to Le Grand K in 2019: what it was before, and what it became.",
+     a:"Before, it was the definition of the kilogram, so its mass was exactly 1 kg by stipulation and any drift in the metal was undetectable in principle. After the value of h was fixed, it became an ordinary object whose mass has to be measured against the new definition, carrying an uncertainty of around 10 parts per billion, and it may now be found to be slightly heavier or lighter than a kilogram."}
+  ],
+  check:{
+    q:"The 1983 redefinition changed the metre's relative uncertainty from which value to which?",
+    options:["From 10⁻⁷ to 10⁻⁸","From 10⁻⁸ to 10⁻¹⁰","From 10⁻⁵ to 10⁻⁷","From 10⁻¹⁰ to 10⁻¹²"],
+    answer:1,
+    again:"Compare the 1960 and 1983 rows of the table in section 6."}
+},
+{
+  id:"s7", nav:"7 · The seven constants", ref:"Section 7",
+  title:"The seven defining constants of the SI",
+  read:"Read section 7, its table and the numbered dependency list.",
+  prompts:[
+    {q:"Write out the chain that gets you from the caesium frequency to the kilogram, naming at each step which units must already exist.",
+     a:"Δν_Cs fixes the second, since it is a frequency and needs no other unit. c is a speed, so with the second in hand it fixes the metre. h has units of kg m² s⁻¹, so with the metre and the second already fixed, stipulating its value fixes the kilogram. The chain is strictly ordered: each link needs the ones before it."},
+    {q:"The essay is careful about the word exact. Say what it means here, and say where the uncertainty went instead.",
+     a:"Exact means the numerical value has been stipulated as part of the definition, so no experiment can revise it. It does not mean anyone has measured infinitely many digits. The uncertainty moved to the practical realisation of the unit, for instance to how well a Kibble balance performs, and to those quantities that are no longer fixed, such as ε₀, μ₀ and the mass of the old prototype."}
+  ],
+  check:{
+    q:"h is fixed at 6.62607015 × 10⁻³⁴ in units of J s. Which combination of base units is that?",
+    options:["kg m s⁻¹","kg m² s⁻²","kg m² s⁻¹","kg m³ s⁻²"],
+    answer:2,
+    again:"The essay writes h in base units explicitly, in the displayed equation near the end of section 7."}
+},
+{
+  id:"s8", nav:"8 · Where uncertainty went", ref:"Section 8",
+  title:"Uncertainty was moved rather than abolished",
+  read:"Read section 8 and its ten-row table.",
+  predict:"Before you read the table: name one quantity you think used to be exact and stopped being exact in 2019.",
+  prompts:[
+    {q:"Name three quantities that became exact in the revised SI, and three that stopped being exact.",
+     a:"Became exact: h, e, k_B and N_A, each of which had a measured uncertainty before. Stopped being exact: the mass of the International Prototype Kilogram, the vacuum permeability μ₀ and the vacuum permittivity ε₀, along with the triple-point temperature of water and the molar mass of carbon-12."},
+    {q:"Explain the phrase 'the direction of inference reversed', using the kilogram and h as your example.",
+     a:"Before 2019 the prototype's mass was fixed at exactly 1 kg and experiments measured h against it, so uncertainty flowed from the artefact into the constant. Now h is stipulated and the prototype's mass is inferred from measurement, so uncertainty flows from the constant into the artefact. The same experiments are performed; what changed is which end of them is held fixed."}
+  ],
+  check:{
+    q:"What happened to the triple-point temperature of water?",
+    options:["It was exact by definition and is now measured, at about 370 ppb",
+             "It was measured and is now exact by definition",
+             "It was exact before and after the revision",
+             "It was removed from the SI altogether"],
+    answer:0,
+    again:"Find the row for the water triple point in the table in section 8, and read both numerical columns."}
+},
+{
+  id:"s9", nav:"9 · Dimensions restored", ref:"Section 9",
+  title:"Putting dimensions back around a dimensionless constant",
+  read:"Read section 9 as far as the first boxed equation, then stop and answer the prediction below before reading on.",
+  predict:"You know that α = e²/(2ε₀hc), and you know that e, h and c are now exact. Predict which quantity in that equation can be solved for, and predict whether the result will be exact.",
+  prompts:[
+    {q:"Rearrange α = e²/(2ε₀hc) to give ε₀, then obtain μ₀, showing the step that uses μ₀ε₀c² = 1.",
+     a:"From α = e²/(2ε₀hc), multiply both sides by 2ε₀hc and divide by α to get ε₀ = e²/(2αhc). Then μ₀ = 1/(ε₀c²) = 2αhc/(e²c²) = 2αh/(e²c). Both now inherit their uncertainty from α, since e, h and c contribute none."},
+    {q:"The essay says a pure number cannot create dimensions by itself. Using R∞ = α²m_e c/(2h), identify which factor supplies the physics and which supplies the dimensions.",
+     a:"α² is dimensionless and supplies the electromagnetic strength, which is the physical content. The group m_e c/h carries dimensions of M × L T⁻¹ ÷ (M L² T⁻¹) = L⁻¹, an inverse length, which supplies the dimensional scaffold. The product is therefore a spectroscopic scale quoted in m⁻¹."}
+  ],
+  check:{
+    q:"In the revised SI, what is the status of ε₀?",
+    options:["Exact, since it is one of the defining constants",
+             "Exact, since it follows from exact values of e, h and c",
+             "Measured, with an uncertainty inherited from α",
+             "Dimensionless, like α itself"],
+    answer:2,
+    again:"Read the paragraph beginning 'Two consequences follow' in section 9, and the μ₀ row of the table in section 8."}
+},
+{
+  id:"s10", nav:"10 · Why SI suits learning", ref:"Section 10",
+  title:"Why SI units are especially apt for learning and experiment",
+  read:"Read section 10 and all five of its subsections.",
+  prompts:[
+    {q:"A student writes E = mc. Show with dimensions how the error is caught before any numbers are substituted.",
+     a:"Energy has dimensions M L² T⁻². The product mc has dimensions M × L T⁻¹ = M L T⁻¹. The two do not match, so the equation cannot be right whatever the numbers are. Writing mc² instead gives M (L T⁻¹)² = M L² T⁻², which balances."},
+    {q:"The essay warns that k_BT is an energy scale and is not automatically the internal energy of a system. Explain the difference, with an example.",
+     a:"k_BT is the characteristic thermal energy associated with one degree of freedom, so it tells you the size of typical thermal fluctuations. The internal energy depends on how many particles and how many degrees of freedom there are; for a monatomic ideal gas it is (3/2)Nk_BT, which for a mole is Avogadro's number times larger than the scale k_BT itself."}
+  ],
+  check:{
+    q:"According to section 10, fixing h defines the kilogram without prescribing what?",
+    options:["A particular apparatus for realising it",
+             "A particular value for the Avogadro constant",
+             "A particular temperature for the measurement",
+             "A particular laboratory to hold the standard"],
+    answer:0,
+    again:"Read the final subsection, on definitions being separated from realisations."}
+},
+{
+  id:"s11", nav:"11 · The case for natural units", ref:"Section 11",
+  title:"The case for natural units",
+  read:"Read section 11, its table of three equations, and the bulleted advantages.",
+  prompts:[
+    {q:"Setting c = ħ = 1 does not make every quantity dimensionless. Write the relations that hold between [M], [L], [T] and [E], and explain what has actually happened to the dimensions.",
+     a:"[M] = [E] and [L] = [T] = [E]⁻¹. Dimensions that SI holds apart become different powers of a single shared scale, usually an energy. A length can then be quoted as an inverse energy while still being a length; the conversion factors are understood rather than written on every line."},
+    {q:"A particle physicist writes m_e = 0.511 MeV. Restore the SI reading in full, and convert it to kilograms.",
+     a:"The statement means m_e c² = 0.511 MeV, so the mass is 0.511 MeV/c². Converting: 0.511 × 10⁶ × 1.602 × 10⁻¹⁹ = 8.19 × 10⁻¹⁴ J, divided by c² = 9.00 × 10¹⁶ gives about 9.11 × 10⁻³¹ kg, which is the familiar electron mass."}
+  ],
+  check:{
+    q:"Setting c = 1 amounts to which of these?",
+    options:["Declaring that light travels instantaneously",
+             "Choosing as the distance unit whatever light travels in one unit of time",
+             "Removing relativity from the description",
+             "Making every quantity in the theory dimensionless"],
+    answer:1,
+    again:"Read the paragraph immediately after the table of three equations in section 11."}
+},
+{
+  id:"s12", nav:"12 · Plural in practice", ref:"Section 12",
+  title:"Natural units are universal in aim, yet plural in practice",
+  read:"Read section 12 and the table of three natural-unit systems.",
+  prompts:[
+    {q:"Why would Planck units be a poor choice for atomic physics, and which system is used instead?",
+     a:"The Planck length is about 1.6 × 10⁻³⁵ m, so an atom would be roughly 10²⁵ Planck lengths across, and every quantity of interest would carry an absurd exponent. G plays no part in atomic structure, so anchoring on it adds nothing. Atomic or Bohr units, built on e, m_e and h, keep the quantities that matter near 1."},
+    {q:"In what sense does the essay call the universality of natural units subtle?",
+     a:"The constants used to build the units may well be universal, but the choice of which constants to anchor on, and which residual energy unit to report in, remains conventional and depends on the problem. What natural units offer is a universal style of description; the particular ruler is still chosen by the physicist."}
+  ],
+  check:{
+    q:"The Planck mass is about 2.18 × 10⁻⁸ kg. Compared with a proton at 1.67 × 10⁻²⁷ kg, it is larger by roughly what factor?",
+    options:["10⁹","10¹⁹","10³⁵","10³⁸"],
+    answer:1,
+    again:"Divide the two masses. The Planck mass is in the table in section 12; the exponent arithmetic is −8 − (−27)."}
+},
+{
+  id:"s13", nav:"13 · The human constant", ref:"Section 13",
+  title:"The most human constant in a supposedly natural system",
+  read:"Read section 13, ending at the boxed statement.",
+  prompts:[
+    {q:"What part of the candela's definition could an alien physicist reproduce, and what part could they not?",
+     a:"They could produce radiation at 540 × 10¹² Hz and measure its radiant power in watts, since both are ordinary physics. What they could not independently arrive at is the factor of 683 lumens per watt, which encodes the spectral sensitivity of the human eye. A creature most responsive to infrared would build a different luminosity scale entirely."},
+    {q:"Why is the caesium count exactly 9 192 631 770, and what does that number tell you about the second?",
+     a:"The count was chosen so that the new second matched the inherited astronomical second as closely as measurement allowed. Nothing about caesium makes that integer special; it is a record of the length of a second we already had. The second is therefore anchored on universal physics and sized by human history."}
+  ],
+  check:{
+    q:"The essay describes the caesium transition as which of these?",
+    options:["A universal constant of the same standing as c",
+             "A property of one particular atom, chosen for reproducibility",
+             "A dimensionless ratio",
+             "A conversion factor between frequency and energy"],
+    answer:1,
+    again:"Read the second paragraph of section 13, on the qualified status of the caesium transition."}
+},
+{
+  id:"s14", nav:"14 · The verdict", ref:"Section 14",
+  title:"A balanced verdict",
+  read:"Read section 14 and its table of five questions.",
+  prompts:[
+    {q:"State the case for teaching SI before natural units, in two sentences of your own.",
+     a:"SI keeps the physical categories visible, so a student can see that mass and energy are different kinds of thing joined by a constant, and dimensional analysis remains available as a way of catching errors. Its magnitudes also suit laboratory work, so quantities stay near manageable powers of ten instead of running to 10³⁵."},
+    {q:"The essay ends by saying that E = mc² displays the bridge and E = m displays the unity achieved by crossing it. Say what information is present in the first and absent in the second, and when that loss would matter.",
+     a:"The factor c² carries the conversion between the mass scale and the energy scale, and it marks that the two were once regarded as different kinds of quantity. In E = m that information is absorbed into the units and no longer written. The loss matters when a numerical answer in SI is required, when an equation is being checked dimensionally, and when a student is meeting the relationship for the first time and needs to see that a bridge is being crossed at all."}
+  ],
+  check:{
+    q:"According to the verdict table, what must a reader of natural units do in order to check an equation dimensionally?",
+    options:["Convert everything to Planck units first",
+             "Restore the constants that were suppressed",
+             "Rely on the dimensionless ratios alone",
+             "Nothing; dimensional checking is unnecessary there"],
+    answer:1,
+    again:"Read the second row of the table in section 14, in the right-hand column."}
+}
+];
+
+/* ===================== state ===================== */
+const KEY = "rulerWalkthrough.v1";
+const MIN_CHARS = 60;
+
+const store = {
+  read(){ try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e){ return null; } },
+  write(v){ try { localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){ /* preview sandbox */ } },
+  clear(){ try { localStorage.removeItem(KEY); } catch(e){} }
+};
+
+function blankState(){
+  const d = {};
+  UNITS.forEach(u => {
+    d[u.id] = { predict:"", answers:u.prompts.map(()=>""), revealed:u.prompts.map(()=>false),
+                scores:u.prompts.map(()=>null), tries:0, passed:false };
+  });
+  return { name:"", at:0, summary:"", data:d };
+}
+
+let S = store.read() || blankState();
+// guard against an older saved shape
+UNITS.forEach(u => { if(!S.data || !S.data[u.id]) S = blankState(); });
+if(typeof S.summary !== "string") S.summary = "";
+
+const save = () => store.write(S);
+const unit = i => UNITS[i];
+const rec  = i => S.data[UNITS[i].id];
+
+function furthest(){
+  let i = 0;
+  while(i < UNITS.length && rec(i).passed) i++;
+  return Math.min(i, UNITS.length);   // === UNITS.length means the wrap-up is open
+}
+function promptSettled(i, k){
+  const r = rec(i);
+  return r.answers[k].trim().length >= MIN_CHARS && r.revealed[k] && r.scores[k] !== null;
+}
+function allSettled(i){
+  return unit(i).prompts.every((_, k) => promptSettled(i, k));
+}
+
+/* ===================== rail ===================== */
+const ledger = document.getElementById("ledger");
+
+function drawLedger(){
+  const reach = furthest();
+  ledger.innerHTML = "";
+  UNITS.forEach((u, i) => {
+    const li = document.createElement("li");
+    if(rec(i).passed) li.classList.add("done");
+    if(i === S.at) li.classList.add("here");
+    const mark = document.createElement("span");
+    mark.className = "mark";
+    mark.textContent = rec(i).passed ? "\u25CF" : (i <= reach ? "\u25CB" : "\u2014");
+    const b = document.createElement("button");
+    b.textContent = u.nav;
+    b.disabled = i > reach;
+    b.onclick = () => { S.at = i; save(); render(); };
+    li.append(mark, b);
+    ledger.appendChild(li);
+  });
+
+  const li = document.createElement("li");
+  if(S.at === UNITS.length) li.classList.add("here");
+  const mark = document.createElement("span");
+  mark.className = "mark";
+  mark.textContent = reach === UNITS.length ? "\u25CB" : "\u2014";
+  const b = document.createElement("button");
+  b.textContent = "Summary";
+  b.disabled = reach < UNITS.length;
+  b.onclick = () => { S.at = UNITS.length; save(); render(); };
+  li.append(mark, b);
+  ledger.appendChild(li);
+}
+
+const who = document.getElementById("who");
+who.value = S.name;
+who.oninput = () => { S.name = who.value; save(); };
+
+/* ===================== stage ===================== */
+const stage = document.getElementById("stage");
+
+function makeTextarea(value, placeholder, onInput){
+  const t = document.createElement("textarea");
+  t.value = value; t.placeholder = placeholder;
+  t.addEventListener("input", () => onInput(t.value));
+  return t;
+}
+
+function render(){
+  drawLedger();
+  stage.innerHTML = "";
+  window.scrollTo(0, 0);
+  if(S.at >= UNITS.length){ renderWrapUp(); } else { renderUnit(S.at); }
+  const f = document.createElement("div");
+  f.className = "foot";
+  f.textContent = "Constructed by Silicon \u00B7 Anthropic Claude \u2014 Architect Carbon \u00B7 LeeMcCullochJames";
+  stage.appendChild(f);
+}
+
+function renderUnit(i){
+  const u = unit(i), r = rec(i);
+
+  const where = document.createElement("p");
+  where.className = "where";
+  where.textContent = u.ref + "  \u2014  " + (i + 1) + " of " + UNITS.length;
+  const h2 = document.createElement("h2"); h2.textContent = u.title;
+  const read = document.createElement("p"); read.className = "read"; read.textContent = u.read;
+  stage.append(where, h2, read);
+
+  if(u.predict){
+    const b = document.createElement("section"); b.className = "block";
+    const k = document.createElement("p"); k.className = "kind"; k.textContent = "Hypothesis first";
+    const q = document.createElement("p"); q.className = "ask"; q.textContent = u.predict;
+    const t = makeTextarea(r.predict, "No marks attach to this. Commit to something you can be wrong about.",
+      v => { r.predict = v; save(); });
+    t.style.minHeight = "72px";
+    b.append(k, q, t); stage.appendChild(b);
+  }
+
+  u.prompts.forEach((p, k) => stage.appendChild(promptBlock(i, k, p)));
+
+  stage.appendChild(gateBlock(i));
+}
+
+function promptBlock(i, k, p){
+  const r = rec(i);
+  const b = document.createElement("section");
+  b.className = "block" + (promptSettled(i, k) ? " settled" : "");
+
+  const kind = document.createElement("p");
+  kind.className = "kind";
+  kind.textContent = "Cue " + (k + 1);
+  const q = document.createElement("p"); q.className = "ask"; q.textContent = p.q;
+
+  const ta = makeTextarea(r.answers[k], "Answer in your own words before you reveal anything.", v => {
+    r.answers[k] = v; save();
+    meter.textContent = counterText(v);
+    reveal.disabled = v.trim().length < MIN_CHARS || r.revealed[k];
+  });
+  const meter = document.createElement("p");
+  meter.className = "meter";
+  meter.textContent = counterText(r.answers[k]);
+
+  const reveal = document.createElement("button");
+  reveal.className = "act";
+  reveal.textContent = "Reveal a model answer";
+  reveal.disabled = r.answers[k].trim().length < MIN_CHARS || r.revealed[k];
+  const holder = document.createElement("div");
+
+  reveal.onclick = () => {
+    r.revealed[k] = true; save();
+    reveal.disabled = true;
+    holder.appendChild(modelBlock(i, k, p, b));
+  };
+
+  b.append(kind, q, ta, meter, reveal, holder);
+  if(r.revealed[k]) holder.appendChild(modelBlock(i, k, p, b));
+  return b;
+}
+
+function counterText(v){
+  const n = v.trim().length;
+  return n >= MIN_CHARS ? n + " characters" : n + " / " + MIN_CHARS + " characters before the model answer unlocks";
+}
+
+function modelBlock(i, k, p, blockEl){
+  const r = rec(i);
+  const wrap = document.createElement("div");
+
+  const m = document.createElement("div"); m.className = "model";
+  const lbl = document.createElement("span"); lbl.className = "lbl";
+  lbl.textContent = "One way of answering";
+  const txt = document.createElement("div"); txt.textContent = p.a;
+  m.append(lbl, txt);
+
+  const sc = document.createElement("div"); sc.className = "score";
+  const q = document.createElement("span"); q.className = "q";
+  q.textContent = "How did yours compare?";
+  sc.appendChild(q);
+  [["got","I had that"],["part","Partly there"],["missed","I missed it"]].forEach(([val, label]) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    if(r.scores[k] === val) btn.classList.add("on");
+    btn.onclick = () => {
+      r.scores[k] = val; save();
+      Array.from(sc.querySelectorAll("button")).forEach(x => x.classList.remove("on"));
+      btn.classList.add("on");
+      blockEl.classList.toggle("settled", promptSettled(i, k));
+      refreshGate(i);
+    };
+    sc.appendChild(btn);
+  });
+
+  wrap.append(m, sc);
+  return wrap;
+}
+
+/* ---------- the gate ---------- */
+let gateEl = null;
+
+function gateBlock(i){
+  const u = unit(i), r = rec(i);
+  const g = document.createElement("section");
+  g.className = "gate";
+  gateEl = g;
+  paintGate(g, i);
+  return g;
+}
+
+function refreshGate(i){
+  if(gateEl) paintGate(gateEl, i);
+}
+
+function paintGate(g, i){
+  const u = unit(i), r = rec(i);
+  const open = allSettled(i);
+  g.innerHTML = "";
+  g.classList.toggle("shut", !open);
+
+  const kind = document.createElement("p");
+  kind.className = "kind";
+  kind.textContent = "Checkpoint";
+  g.appendChild(kind);
+
+  if(!open){
+    const p = document.createElement("p");
+    p.style.color = "var(--muted)";
+    p.textContent = "Answer every cue above, reveal the model answer and mark yourself. The checkpoint opens after that.";
+    g.appendChild(p);
+    return;
+  }
+
+  const h3 = document.createElement("h3"); h3.textContent = u.check.q;
+  g.appendChild(h3);
+
+  const ol = document.createElement("ul"); ol.className = "opts";
+  const name = "chk_" + u.id;
+  u.check.options.forEach((opt, idx) => {
+    const li = document.createElement("li");
+    const lab = document.createElement("label");
+    const inp = document.createElement("input");
+    inp.type = "radio"; inp.name = name; inp.value = idx;
+    if(r.passed && idx === u.check.answer) inp.checked = true;
+    inp.disabled = r.passed;
+    const sp = document.createElement("span"); sp.textContent = opt;
+    lab.append(inp, sp); li.appendChild(lab); ol.appendChild(li);
+  });
+  g.appendChild(ol);
+
+  const verdict = document.createElement("p");
+  verdict.className = "verdict";
+
+  if(r.passed){
+    verdict.classList.add("yes");
+    verdict.textContent = "Correct. This section is closed.";
+    g.appendChild(verdict);
+    const next = document.createElement("button");
+    next.className = "act";
+    next.textContent = i + 1 < UNITS.length ? "Go to " + unit(i + 1).nav : "Go to the summary";
+    next.onclick = () => { S.at = i + 1; save(); render(); };
+    g.appendChild(next);
+    if(r.tries > 1){
+      const t = document.createElement("p"); t.className = "tries";
+      t.textContent = "Attempts: " + r.tries;
+      g.appendChild(t);
+    }
+    return;
+  }
+
+  const submit = document.createElement("button");
+  submit.className = "act";
+  submit.textContent = "Check my answer";
+  submit.onclick = () => {
+    const picked = g.querySelector("input[name='" + name + "']:checked");
+    if(!picked){
+      verdict.className = "verdict no";
+      verdict.textContent = "Choose one of the four first.";
+      return;
+    }
+    r.tries += 1;
+    if(Number(picked.value) === u.check.answer){
+      r.passed = true; save();
+      paintGate(g, i); drawLedger();
+    } else {
+      save();
+      verdict.className = "verdict no";
+      verdict.textContent = "Not that one. " + u.check.again;
+      tries.textContent = "Attempts so far: " + r.tries;
+    }
+  };
+  const tries = document.createElement("p");
+  tries.className = "tries";
+  tries.textContent = r.tries ? "Attempts so far: " + r.tries : "";
+
+  g.append(submit, verdict, tries);
+}
+
+/* ---------- wrap-up ---------- */
+function renderWrapUp(){
+  const where = document.createElement("p");
+  where.className = "where"; where.textContent = "All fourteen sections closed";
+  const h2 = document.createElement("h2"); h2.textContent = "The summary line";
+  const read = document.createElement("p"); read.className = "read";
+  read.textContent = "The last part of a Cornell page, and the part most often skipped.";
+  stage.append(where, h2, read);
+
+  const b = document.createElement("section"); b.className = "block";
+  const q = document.createElement("p"); q.className = "ask";
+  q.textContent = "In no more than 120 words, and without looking back at the essay, say what the revised SI actually did and why the essay calls it a hybrid.";
+  const ta = makeTextarea(S.summary, "Your own words. This is the part your teacher will read first.",
+    v => { S.summary = v; save(); });
+  ta.style.minHeight = "160px";
+  b.append(q, ta);
+  stage.appendChild(b);
+
+  const w = document.createElement("section"); w.className = "wrapup";
+  const p = document.createElement("p");
+  p.textContent = "If you want to go further, the essay leaves six questions at the end. Two of them repay a written answer more than the rest:";
+  const ol = document.createElement("ol");
+  [
+    "The candela is defined partly through human visual response. Is that a flaw in a universal system, or evidence that a practical measurement system must serve its users?",
+    "Is a system based on c, \u0127 and G more natural for describing an atom than one based on e, m\u2091 and h? State your criterion before you answer."
+  ].forEach(t => { const li = document.createElement("li"); li.textContent = t; ol.appendChild(li); });
+  w.append(p, ol);
+  stage.appendChild(w);
+
+  const btn = document.createElement("button");
+  btn.className = "act";
+  btn.textContent = "Download my answers";
+  btn.onclick = exportAll;
+  stage.appendChild(btn);
+}
+
+/* ===================== export ===================== */
+function exportAll(){
+  const stamp = new Date().toISOString().slice(0, 10);
+  const L = [];
+  L.push("# If Every Ruler Disappeared \u2014 reading walkthrough");
+  L.push("");
+  L.push("Name: " + (S.name || "(not given)"));
+  L.push("Date: " + stamp);
+  const done = UNITS.filter((_, i) => rec(i).passed).length;
+  L.push("Sections closed: " + done + " of " + UNITS.length);
+  L.push("");
+
+  UNITS.forEach((u, i) => {
+    const r = rec(i);
+    L.push("---");
+    L.push("");
+    L.push("## " + u.ref + " \u2014 " + u.title);
+    L.push("");
+    if(u.predict){
+      L.push("**Prediction.** " + u.predict);
+      L.push("");
+      L.push(r.predict.trim() || "(left blank)");
+      L.push("");
+    }
+    u.prompts.forEach((p, k) => {
+      L.push("**Cue " + (k + 1) + ".** " + p.q);
+      L.push("");
+      L.push(r.answers[k].trim() || "(left blank)");
+      L.push("");
+      const sc = { got:"I had that", part:"Partly there", missed:"I missed it" }[r.scores[k]] || "not marked";
+      L.push("_Self-assessment: " + sc + "_");
+      L.push("");
+    });
+    L.push("_Checkpoint: " + (r.passed ? "passed" : "not passed") +
+           ", attempts " + r.tries + "._");
+    L.push("");
+  });
+
+  L.push("---");
+  L.push("");
+  L.push("## Summary");
+  L.push("");
+  L.push(S.summary.trim() || "(left blank)");
+  L.push("");
+  L.push("Constructed by Silicon \u00B7 Anthropic Claude \u2014 Architect Carbon \u00B7 LeeMcCullochJames");
+
+  const blob = new Blob([L.join("\n")], { type:"text/markdown;charset=utf-8" });
+  const a = document.createElement("a");
+  const slug = (S.name || "student").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ruler-walkthrough-" + slug + "-" + stamp + ".md";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+document.getElementById("btnExport").onclick = exportAll;
+document.getElementById("btnReset").onclick = () => {
+  if(confirm("This clears every answer and closes every section again. Continue?")){
+    store.clear(); S = blankState(); who.value = ""; render();
+  }
+};
+
+render();
+</script>
+</body>
+</html>
