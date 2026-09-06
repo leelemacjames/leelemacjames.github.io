@@ -147,6 +147,19 @@ button.begin{
 }
 button.begin:hover{background:#EFC463}
 
+/* ---------- topic filter ---------- */
+#topicChecks{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px}
+@media (max-width:420px){#topicChecks{grid-template-columns:1fr}}
+.topicOpt{
+  display:flex;align-items:center;gap:9px;background:#0F1319;border:1px solid var(--rule);
+  border-radius:3px;padding:9px 11px;cursor:pointer;transition:border-color .15s;
+}
+.topicOpt:hover{border-color:var(--gold)}
+.topicOpt input{accent-color:var(--gold);width:15px;height:15px;flex:0 0 auto;cursor:pointer}
+.topicOpt span.tn{font-family:var(--sans);font-size:13px;color:var(--parchment);flex:1}
+.topicOpt span.tc{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.topicOpt.unchecked{opacity:.5}
+
 #quizArea.hide{display:none}
 
 /* ---------- goal streak bar ---------- */
@@ -245,14 +258,19 @@ button.begin:hover{background:#EFC463}
     <div class="field">
       <label for="goalInput">Target streak (correct answers in a row)</label>
       <select id="goalInput">
-        <option value="4">4</option>
-        <option value="6" selected>6</option>
-        <option value="8">8</option>
-        <option value="10">10</option>
-        <option value="12">12</option>
-        <option value="14">14</option>
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
       </select>
       <div class="hint">Streaks are offered in multiples of five.</div>
+    </div>
+    <div class="field">
+      <label>Topics to include</label>
+      <div id="topicChecks"></div>
+      <div class="hint">Untick any you'd like to skip — at least one must stay selected.</div>
     </div>
     <button class="begin" id="beginBtn">Begin</button>
   </div>
@@ -3009,6 +3027,33 @@ const BANK = [
    explain:'The torque of a couple depends only on the size of the forces and the perpendicular distance between their lines of action — not on where that pair sits relative to any particular pivot point. Since both forces moved together by the same amount, the separation between them, and so the torque, is completely unchanged: still M.'},
 ];
 
+/* ============================================================
+   topic categories — six broad groups the learner can filter by.
+   Every question's fine-grained topic (e.g. "Forces · Newton's
+   second law") is mapped to one of these via its prefix, the text
+   before " · ". Add new prefixes here if you extend the BANK with
+   a genuinely new subject area.
+   ============================================================ */
+const CATEGORIES = ['Measurement','Mechanics','Thermodynamics','Waves',
+  'Circular motion & fields','Atomic & Nuclear'];
+
+const CATEGORY_MAP = {
+  'Sample':'Measurement', 'Measurement':'Measurement', 'Units':'Measurement',
+  'Vectors':'Mechanics', 'Kinematics':'Mechanics', 'Dynamics':'Mechanics',
+  'Forces':'Mechanics', 'Energy':'Mechanics',
+  'Circular Motion':'Circular motion & fields', 'Gravitation':'Circular motion & fields',
+  'Electricity':'Circular motion & fields',
+  'Thermodynamics':'Thermodynamics', 'Matter':'Thermodynamics',
+  'Waves':'Waves',
+  'Atomic Physics':'Atomic & Nuclear', 'Atomic structure':'Atomic & Nuclear',
+  'Radioactivity':'Atomic & Nuclear'
+};
+
+function categoryOf(topic){
+  const prefix = topic.split(' · ')[0];
+  return CATEGORY_MAP[prefix] || 'Mechanics';
+}
+
 const STREAK_TO_LEVEL_UP = 2;   // consecutive correct answers needed to climb a tier
 const MAX_TIER = 3;
 const MIN_TIER = 1;
@@ -3028,6 +3073,7 @@ const tierStats = {1:{correct:0,total:0}, 2:{correct:0,total:0}, 3:{correct:0,to
 // certificate / session tracking
 let playerName = '';
 let streakGoal = 10;
+let selectedCategories = CATEGORIES.slice(); // which broad topics to draw from
 let certStreak = 0;        // consecutive correct answers toward the certificate goal
 let streakResets = 0;      // number of times a positive cert streak was broken ("losses")
 let errorStreak = 0;       // current run of consecutive wrong answers
@@ -3055,6 +3101,7 @@ const el = {
   startErr: document.getElementById('startErr'),
   nameInput: document.getElementById('nameInput'),
   goalInput: document.getElementById('goalInput'),
+  topicChecks: document.getElementById('topicChecks'),
   beginBtn: document.getElementById('beginBtn'),
   quizArea: document.getElementById('quizArea'),
   goalNum: document.getElementById('goalNum'),
@@ -3072,7 +3119,9 @@ const el = {
   certRestartBtn: document.getElementById('certRestartBtn')
 };
 
-function poolFor(t){ return BANK.filter(q => q.tier === t); }
+function poolFor(t){
+  return BANK.filter(q => q.tier === t && selectedCategories.includes(categoryOf(q.topic)));
+}
 
 function pickQuestion(t){
   let pool = poolFor(t);
@@ -3224,6 +3273,7 @@ function resetToStart(){
   tier = 1; streak = 0; score = 0; answered = 0;
   certStreak = 0; streakResets = 0; errorStreak = 0; longestErrorStreak = 0;
   certificateEarned = false; playerName = ''; sessionStart = null;
+  selectedCategories = CATEGORIES.slice();
   Object.keys(errorTopics).forEach(k => delete errorTopics[k]);
   [1,2,3].forEach(t=>{ seenByTier[t].clear(); tierStats[t]={correct:0,total:0}; });
   el.endScreen.classList.remove('show');
@@ -3234,8 +3284,26 @@ function resetToStart(){
   el.nameInput.value = '';
   el.goalInput.value = '10';
   el.startErr.textContent = '';
+  renderTopicChecks();
   el.startScreen.classList.remove('hide');
 }
+
+function renderTopicChecks(){
+  const counts = {};
+  CATEGORIES.forEach(c => counts[c] = 0);
+  BANK.forEach(q => { const c = categoryOf(q.topic); if(counts[c] !== undefined) counts[c]++; });
+  el.topicChecks.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const label = document.createElement('label');
+    label.className = 'topicOpt';
+    label.innerHTML = '<input type="checkbox" checked value="'+cat+'">'+
+      '<span class="tn">'+cat+'</span><span class="tc">'+counts[cat]+'</span>';
+    const cb = label.querySelector('input');
+    cb.addEventListener('change', ()=> label.classList.toggle('unchecked', !cb.checked));
+    el.topicChecks.appendChild(label);
+  });
+}
+renderTopicChecks();
 
 el.beginBtn.addEventListener('click', ()=>{
   const name = el.nameInput.value.trim();
@@ -3244,6 +3312,12 @@ el.beginBtn.addEventListener('click', ()=>{
     el.nameInput.focus();
     return;
   }
+  const checked = [...el.topicChecks.querySelectorAll('input:checked')].map(cb => cb.value);
+  if(checked.length === 0){
+    el.startErr.textContent = 'Please select at least one topic.';
+    return;
+  }
+  selectedCategories = checked;
   playerName = name;
   streakGoal = parseInt(el.goalInput.value, 10);
   sessionStart = new Date();
