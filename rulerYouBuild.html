@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ruler You Build — a companion to The Matter That Never Made a Ruler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#101215;
+  --ink-2:#171A1F;
+  --panel:#1D2127;
+  --cream:#F7F2EC;
+  --cream-dim:#C9C2B9;
+  --muted:#8A9099;
+  --claret:#70161D;
+  --claret-lit:#B3323B;
+  --verdigris:#5E9B96;
+  --rule:#2C3139;
+  --measure:34rem;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  margin:0;background:var(--ink);color:var(--cream);
+  font-family:'Spectral',Georgia,'Times New Roman',serif;
+  font-weight:300;font-size:1.0625rem;line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--measure);margin:0 auto;padding:0 1.25rem}
+.wide{max-width:52rem;margin:0 auto;padding:0 1.25rem}
+p{margin:0 0 1.1rem}
+a{color:var(--verdigris);text-decoration:none;border-bottom:1px solid rgba(94,155,150,.35)}
+a:hover{border-bottom-color:var(--verdigris)}
+:focus-visible{outline:2px solid var(--verdigris);outline-offset:3px}
+
+/* ---------- masthead ---------- */
+header.mast{border-bottom:1px solid var(--rule);padding:4.5rem 0 2.5rem;margin-bottom:3rem}
+.kicker{font-size:.9rem;color:var(--muted);font-style:italic;margin:0 0 1.4rem}
+h1{
+  font-weight:300;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.06;
+  margin:0 0 1rem;letter-spacing:-.015em;
+}
+h1 .rule-word{color:var(--claret-lit)}
+.standfirst{font-size:1.15rem;color:var(--cream-dim);margin:0 0 1.6rem}
+.ledger{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);margin-top:2.2rem;
+}
+.ledger div{background:var(--ink-2);padding:.85rem 1rem}
+.ledger .dim{font-family:'IBM Plex Mono',monospace;font-size:1.35rem;color:var(--claret-lit);display:block;line-height:1}
+.ledger .gloss{font-size:.85rem;color:var(--muted);display:block;margin-top:.35rem}
+
+/* ---------- sections ---------- */
+section{padding:2.6rem 0 1rem;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+h2{
+  font-weight:400;font-size:1.75rem;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em;
+}
+h2 .num{
+  font-family:'IBM Plex Mono',monospace;font-size:.95rem;color:var(--claret-lit);
+  display:inline-block;min-width:2.1rem;vertical-align:.32rem;
+}
+.subhead{color:var(--muted);font-style:italic;margin:0 0 1.6rem 2.1rem;font-size:.98rem}
+h3{font-weight:600;font-size:1.05rem;margin:1.8rem 0 .5rem}
+
+/* ---------- formulae ---------- */
+.eq{
+  font-family:'IBM Plex Mono',monospace;font-size:.98rem;color:var(--cream);
+  background:var(--ink-2);border-left:2px solid var(--claret);
+  padding:.75rem 1rem;margin:1.2rem 0;overflow-x:auto;
+}
+.frac{display:inline-block;vertical-align:middle;text-align:center;font-size:.82em;line-height:1.1;margin:0 .12em}
+.frac span{display:block;padding:0 .2em}
+.frac .den{border-top:1px solid currentColor}
+code{font-family:'IBM Plex Mono',monospace;font-size:.92em;color:var(--verdigris)}
+
+/* ---------- panels ---------- */
+.panel{
+  background:var(--panel);border:1px solid var(--rule);
+  padding:1.4rem 1.4rem 1.5rem;margin:1.8rem 0;
+}
+.panel h4{margin:0 0 .9rem;font-weight:600;font-size:1rem}
+.hint{font-size:.9rem;color:var(--muted);margin:.6rem 0 0}
+
+/* constant chips */
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.2rem 0 1rem}
+.chip{
+  font-family:'IBM Plex Mono',monospace;font-size:.9rem;
+  background:var(--ink-2);color:var(--cream-dim);
+  border:1px solid var(--rule);padding:.45rem .7rem;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--claret);border-color:var(--claret-lit);color:#fff}
+.chip .dimtag{display:block;font-size:.7rem;opacity:.65;margin-top:.2rem}
+
+.targets{display:flex;flex-wrap:wrap;gap:.5rem;margin:.2rem 0 1.2rem}
+.targ{
+  font-size:.9rem;background:transparent;color:var(--cream-dim);
+  border:1px solid var(--rule);padding:.4rem .8rem;cursor:pointer;font-family:inherit;
+}
+.targ[aria-pressed="true"]{border-color:var(--verdigris);color:var(--verdigris)}
+
+/* matrix */
+.matrix{display:flex;align-items:stretch;gap:.6rem;font-family:'IBM Plex Mono',monospace;font-size:.9rem;margin:1rem 0}
+.matrix .bracket{width:.5rem;border:1px solid var(--muted);border-right:none}
+.matrix .bracket.r{border:1px solid var(--muted);border-left:none}
+.matrix table{border-collapse:collapse}
+.matrix td,.matrix th{padding:.22rem .55rem;text-align:right;font-weight:400}
+.matrix th{color:var(--muted);font-size:.78rem;text-align:center}
+.matrix td.rowlab{color:var(--muted);text-align:left;padding-right:.9rem}
+
+/* readout */
+.readout{border-top:1px solid var(--rule);margin-top:1.2rem;padding-top:1.1rem}
+.verdict{font-size:1.02rem;margin:0 0 .8rem}
+.formula{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--cream);margin:.4rem 0 .9rem;word-break:break-word}
+.formula sup{font-size:.7em}
+.value{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;color:var(--verdigris);line-height:1.2}
+.value .unit{font-size:.7em;color:var(--cream-dim)}
+.scalecmp{font-size:.9rem;color:var(--muted);margin-top:.35rem;min-height:1.4em}
+.fail{color:var(--claret-lit)}
+
+/* slider */
+.sliderbox{margin-top:1.3rem;padding-top:1.1rem;border-top:1px dashed var(--rule);display:none}
+.sliderbox.on{display:block}
+.sliderbox label{display:block;font-size:.9rem;color:var(--cream-dim);margin-bottom:.6rem}
+input[type=range]{width:100%;accent-color:var(--claret-lit)}
+.ticks{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);margin-top:.2rem}
+
+/* gate */
+.gate{border:1px solid var(--rule);border-left:2px solid var(--verdigris);padding:1.2rem 1.3rem;margin:2rem 0}
+.gate .q{font-size:1.02rem;margin:0 0 .9rem}
+.gate textarea{
+  width:100%;min-height:5.5rem;background:var(--ink);color:var(--cream);
+  border:1px solid var(--rule);padding:.7rem;font-family:inherit;font-size:.98rem;
+  font-weight:300;line-height:1.55;resize:vertical;
+}
+.gate textarea:focus{border-color:var(--muted)}
+.gaterow{display:flex;align-items:center;gap:.9rem;margin-top:.7rem;flex-wrap:wrap}
+button.reveal{
+  font-family:inherit;font-size:.92rem;background:var(--claret);color:#fff;
+  border:1px solid var(--claret-lit);padding:.5rem 1rem;cursor:pointer;
+}
+button.reveal[disabled]{background:transparent;color:var(--muted);border-color:var(--rule);cursor:not-allowed}
+.counter{font-size:.82rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.answer{display:none;margin-top:1.1rem;padding-top:1rem;border-top:1px solid var(--rule);color:var(--cream-dim)}
+.answer.on{display:block}
+.answer p:last-child{margin-bottom:0}
+
+/* table */
+table.tbl{width:100%;border-collapse:collapse;margin:1.4rem 0;font-size:.95rem}
+table.tbl th{text-align:left;font-weight:600;font-size:.85rem;color:var(--muted);border-bottom:1px solid var(--rule);padding:.5rem .6rem .5rem 0}
+table.tbl td{border-bottom:1px solid var(--rule);padding:.6rem .6rem .6rem 0;vertical-align:top;color:var(--cream-dim)}
+table.tbl td:first-child{color:var(--cream)}
+
+blockquote{margin:1.6rem 0;padding-left:1.1rem;border-left:2px solid var(--claret);color:var(--cream-dim);font-style:italic}
+
+footer{border-top:1px solid var(--rule);margin-top:4rem;padding:2rem 0 3.5rem;color:var(--muted);font-size:.85rem}
+footer .stamp{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);margin-top:1rem}
+@media(max-width:620px){
+  .ledger{grid-template-columns:1fr}
+  h2 .num{display:block;min-width:0}
+  .subhead{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<div class="wide">
+<header class="mast">
+  <p class="kicker">A student companion to <em>The Matter That Never Made a Ruler</em></p>
+  <h1>The <span class="rule-word">ruler</span> you build,<br>and the one you drop</h1>
+  <p class="standfirst">Three constants will make you a length, a mass and a time. This walkthrough asks you
+  to build those standards yourself, then to find out what a fourth constant does to them, and finally
+  to ask which kinds of matter have ever been made to agree.</p>
+
+  <div class="ledger">
+    <div><span class="dim">M</span><span class="gloss">mass: how much resists acceleration, and how much responds to gravity</span></div>
+    <div><span class="dim">L</span><span class="gloss">length: what a ruler compares, whether the ruler is metal or atomic</span></div>
+    <div><span class="dim">T</span><span class="gloss">time: what a clock compares, whether the clock is a pendulum or a transition</span></div>
+  </div>
+</header>
+</div>
+
+<div class="wrap">
+
+<!-- ============ 1 ============ -->
+<section>
+  <h2><span class="num">1</span>Constants are exchange rates</h2>
+  <p class="subhead">What the square brackets keep, and what they throw away</p>
+
+  <p>Writing <code>[v] = LT<sup>-1</sup></code> throws away the numerical unit and keeps the kind of
+  quantity, so metres per second and miles per hour become the same dimensional object. A dimensionally
+  homogeneous equation therefore survives the replacement of metres by feet, which is a severe constraint
+  on what an equation may say, though it says nothing about which ingredients nature actually uses.</p>
+
+  <p>Read each constant as a rate of exchange rather than as a number to look up. The speed of light
+  buys a length with a time; Planck's constant buys an energy with a frequency; the gravitational
+  constant tells a mass how strongly it takes part in the gravitational relation.</p>
+
+  <div class="eq">[&#295;] = M L<sup>2</sup> T<sup>-1</sup> &nbsp;&nbsp; [c] = L T<sup>-1</sup>
+  &nbsp;&nbsp; [G] = M<sup>-1</sup> L<sup>3</sup> T<sup>-2</sup> &nbsp;&nbsp; [H] = T<sup>-1</sup>
+  &nbsp;&nbsp; [&Lambda;] = L<sup>-2</sup></div>
+
+  <h3>Worked example: the pendulum</h3>
+  <p>Assume the period depends only on the length and on the local gravitational acceleration, so that
+  <code>T = &kappa; &#8467;<sup>a</sup> g<sup>b</sup></code>. Matching powers of L and T gives
+  <code>a = 1/2</code> and <code>b = -1/2</code>, hence <code>T = &kappa;&radic;(&#8467;/g)</code>.
+  The units have recovered the shape of the law and left <code>&kappa; = 2&pi;</code> for geometry to supply.</p>
+
+  <div class="gate" data-gate>
+    <p class="q">The pendulum result looks like a derivation. Say precisely which two things it assumed
+    before any algebra took place, and which thing it could never have produced.</p>
+    <textarea placeholder="Write your answer before revealing the model answer."></textarea>
+    <div class="gaterow">
+      <button class="reveal" disabled>Show the model answer</button>
+      <span class="counter">0 / 40 characters</span>
+    </div>
+    <div class="answer">
+      <p>It assumed, first, that the period depends on <em>&#8467;</em> and <em>g</em> alone, excluding
+      amplitude and mass, and second, that the dependence is a product of powers rather than any other
+      function of the ingredients. Physics chose the ingredients and dimensional analysis policed their
+      combination.</p>
+      <p>It could never produce the dimensionless factor <em>2&pi;</em>, because dimensionless numbers
+      are invisible to a method that only tracks M, L and T. The same blindness will matter a great deal
+      in section 3.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <h2><span class="num">2</span>Build a standard</h2>
+  <p class="subhead">Three constants, three dimensions, one solution</p>
+
+  <p>Select three constants and a target below. The solver writes down the dimensional matrix, solves
+  for the exponents, and evaluates the result. Start with &#295;, c and G, and ask for a length.</p>
+
+  <div class="panel">
+    <h4>Buckingham solver</h4>
+    <p class="hint" style="margin-top:-.5rem;margin-bottom:.9rem">Choose your ingredients.</p>
+    <div class="chips" id="chips"></div>
+    <p class="hint" style="margin:0 0 .5rem">Choose what to build.</p>
+    <div class="targets" id="targets"></div>
+
+    <div id="matrixbox"></div>
+
+    <div class="readout" id="readout"></div>
+
+    <div class="sliderbox" id="sliderbox">
+      <label for="sfree">Free exponent <em>s</em> on the dimensionless remainder. Every value gives an
+      equally valid answer to the dimensional question.</label>
+      <input type="range" id="sfree" min="-1" max="1" step="0.02" value="0">
+      <div class="ticks"><span>s = -1</span><span>s = 0</span><span>s = +1</span></div>
+    </div>
+  </div>
+
+  <p>With &#295;, c and G the answer is forced. Each of relativity, quantum theory and gravitation has
+  contributed one independent dimensional direction, and together they span the space, so exactly one
+  monomial length exists. That uniqueness is a fact about the ingredient list rather than a discovery
+  about nature, and it does not establish that the Planck length is a smallest length.</p>
+
+  <div class="gate" data-gate>
+    <p class="q">Ask the solver for a mass from &#295;, c and G, then from c, G and H. Both answers are
+    unique. Why does uniqueness here carry no physical authority?</p>
+    <textarea placeholder="Write your answer before revealing the model answer."></textarea>
+    <div class="gaterow">
+      <button class="reveal" disabled>Show the model answer</button>
+      <span class="counter">0 / 40 characters</span>
+    </div>
+    <div class="answer">
+      <p>Uniqueness follows from the count. Three ingredients spanning three independent dimensions leave
+      no freedom, so the exponents are determined by linear algebra alone. Change the ingredient list and
+      the unique answer changes with it, which shows that the authority belongs to the list rather than
+      to the world.</p>
+      <p>The two masses you built differ by roughly sixty orders of magnitude, and nothing in the algebra
+      prefers either one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+  <h2><span class="num">3</span>The fourth constant</h2>
+  <p class="subhead">Where the menu becomes a continuum</p>
+
+  <p>Now select all four of &#295;, c, G and H, and ask for a length. The matrix still has rank three,
+  because the ingredients still span only M, L and T, so one combination of them escapes the dimensions
+  altogether. Drag the slider that appears and watch a dimensionally impeccable length travel from far
+  below a proton to far beyond the observable universe.</p>
+
+  <div class="eq">&Xi; = <span class="frac"><span>&#295; G H<sup>2</sup></span><span class="den">c<sup>5</sup></span></span>
+  = (t<sub>P</sub> / t<sub>H</sub>)<sup>2</sup> &nbsp; &asymp; &nbsp; 10<sup>-122</sup> &nbsp; today</div>
+
+  <p>Since &Xi; carries no dimensions, multiplying any answer by &Xi;<sup>s</sup> leaves its dimensions
+  untouched for every real <em>s</em>. Choosing three constants out of four does not avoid this; it
+  silently sets one exponent to zero and presents the result as though it were the only option. A table
+  of four such triples is a set of convenient representatives drawn from a continuum.</p>
+
+  <p>This is the same blindness that hid <em>2&pi;</em> in section 1, arriving now at a scale where it
+  hides a factor of 10<sup>122</sup>.</p>
+
+  <div class="gate" data-gate>
+    <p class="q">A colleague notices that &#295;, G and H give a length of about sixty metres and calls
+    it suggestive. Using the slider, say what is wrong with the observation, and what would have to be
+    added to make any such number mean something.</p>
+    <textarea placeholder="Write your answer before revealing the model answer."></textarea>
+    <div class="gaterow">
+      <button class="reveal" disabled>Show the model answer</button>
+      <span class="counter">0 / 40 characters</span>
+    </div>
+    <div class="answer">
+      <p>Nothing distinguishes that length from the same length multiplied by any power of &Xi;, so the
+      continuum contains a dimensionally admissible length near any value you care to name, including
+      one that resembles a scale you already find interesting. A resemblance drawn from a continuum is
+      not evidence.</p>
+      <p>What would have to be added is a mechanism: a dynamical reason for the exponent to take the
+      value it takes. Weinberg's combination <code>(&#295;<sup>2</sup>H/Gc)<sup>1/3</sup></code> lands
+      near a hadronic mass scale and is famous for exactly this reason, and it remains a coincidence
+      until something selects it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <h2><span class="num">4</span>Three senses of the word constant</h2>
+  <p class="subhead">Which invariance have you actually established?</p>
+
+  <p>&Xi; is invariant when you change the sizes of the kilogram, the metre and the second, because it
+  has no dimensions for those changes to act on. That is a genuine result, and it is much weaker than
+  the word <em>constant</em> usually suggests.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Sense</th><th>What is being changed</th><th>Does &Xi; survive?</th></tr></thead>
+    <tbody>
+      <tr><td>Unit invariance</td><td>metres to feet, seconds to years</td><td>Yes, by construction, since the dimensions cancel</td></tr>
+      <tr><td>Constancy in time</td><td>the epoch at which you evaluate it</td><td>No: H changes with cosmic time, so &Xi; does too</td></tr>
+      <tr><td>Frame invariance</td><td>a conformal redefinition of the fields</td><td>No: H is not invariant under a dynamical field redefinition</td></tr>
+    </tbody>
+  </table>
+
+  <p>The third row is the one that catches most readers. In Wetterich's description of redshift, the
+  observation is a dimensionless ratio of wavelengths, and one frame assigns the change to an expanding
+  scale factor while another assigns it to growing particle masses and therefore shrinking atomic rulers.
+  Since the Bohr radius goes as <code>&#295;/(&alpha; m<sub>e</sub> c)</code>, a heavier electron is a
+  shorter ruler.</p>
+
+  <div class="eq">H&#771; = <span class="frac"><span>1</span><span class="den">&Omega;</span></span>
+  ( H + &Omega;&#775;/&Omega; )</div>
+
+  <p>What survives such a redefinition is a ratio of physical things: a proton mass measured against a
+  Planck mass, which is the dimensionless gravitational strength</p>
+
+  <div class="eq">&alpha;<sub>G</sub> = <span class="frac"><span>G m<sub>p</sub><sup>2</sup></span><span class="den">&#295; c</span></span>
+  = ( m<sub>p</sub> / m<sub>P</sub> )<sup>2</sup></div>
+
+  <p>Note carefully that being invariant under the change of frame and being unchanging in time are two
+  separate claims. &alpha;<sub>G</sub> can be the first without being the second, and in a variable-gravity
+  cosmology that is precisely the point of it.</p>
+
+  <div class="gate" data-gate>
+    <p class="q">Someone claims to have measured a variation in the speed of light. Explain why that
+    claim needs restating before it can be tested, and what it would have to be restated as.</p>
+    <textarea placeholder="Write your answer before revealing the model answer."></textarea>
+    <div class="gaterow">
+      <button class="reveal" disabled>Show the model answer</button>
+      <span class="counter">0 / 40 characters</span>
+    </div>
+    <div class="answer">
+      <p>The metre is defined through c, so a change in the numerical value of c can be absorbed by a
+      redefinition of the standards, which makes the bare claim a statement about bookkeeping rather than
+      about the world. Any dimensioned constant is exposed to the same objection.</p>
+      <p>To be testable the claim must be restated as a variation in an operationally defined
+      dimensionless quantity, such as the fine-structure constant &alpha;, the mass ratio
+      m<sub>e</sub>/m<sub>p</sub>, or &alpha;<sub>G</sub>. No choice of metres, feet, seconds or years
+      can absorb a change in those.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+  <h2><span class="num">5</span>Now drop the ruler</h2>
+  <p class="subhead">From a dimensionless ratio to a torsion balance</p>
+
+  <p>Suppose a scalar field changes masses or couplings. A body then carries a scalar charge that depends
+  on how its mass is assembled, and the mass of a composite body is assembled from nucleon masses,
+  electromagnetic contributions and nuclear binding energy in proportions that differ from material to
+  material. If the field couples to those contributions differently, two differently constituted bodies
+  will not fall alike.</p>
+
+  <div class="eq">&eta;<sub>AB</sub> = <span class="frac"><span>2 ( a<sub>A</sub> - a<sub>B</sub> )</span><span class="den">a<sub>A</sub> + a<sub>B</sub></span></span></div>
+
+  <p>Universal coupling remains a perfectly respectable special case, so a varying dimensionless coupling
+  does not by itself require composition-dependent fall. Non-universal coupling, however, makes the
+  experiment unavoidable, which is why comparing titanium with platinum is a test of the dimensionless
+  ledger rather than a test of heavy against light.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Comparison</th><th>What differs</th><th>What is being tested</th></tr></thead>
+    <tbody>
+      <tr><td>Be against Ti or Cu</td><td>chemical and nuclear composition</td><td>ordinary laboratory matter</td></tr>
+      <tr><td>Ti against Pt in orbit</td><td>composition, with a long clean fall</td><td>the same, at parts in 10<sup>15</sup></td></tr>
+      <tr><td>one isotope against another</td><td>nuclear composition at fixed chemistry</td><td>where in the ledger the response sits</td></tr>
+      <tr><td>Earth against Moon</td><td>gravitational self-energy</td><td>the approach to the strong principle</td></tr>
+    </tbody>
+  </table>
+
+  <p>The final MICROSCOPE analysis compared titanium and platinum test masses in orbit and found
+  <code>&eta;(Ti,Pt) = [-1.5 &plusmn; 2.3 (stat) &plusmn; 1.5 (syst)] &times; 10<sup>-15</sup></code>,
+  consistent with universal free fall. Two elaborate assemblies of quarks, electrons, fields and binding
+  energies were placed in orbit, and to a few parts in a thousand million million, spacetime declined to
+  notice the difference between them.</p>
+
+  <h3>The question the walkthrough has been building towards</h3>
+  <p>Every standard you built in section 2 was made of matter from a single familiar sector, and every
+  free-fall comparison in the table above draws its test bodies from that same sector. The cosmic scale
+  H, which you fed into the solver without hesitation, was inferred from a gravitating inventory that is
+  substantially larger.</p>
+
+  <blockquote>We have tested with great precision whether familiar rulers fall together. We have not
+  thereby tested every gravitating thing that helped us define the cosmic ruler.</blockquote>
+
+  <p>That question has been partly asked, through torsion balances aimed at the Galactic dark-matter
+  distribution, through lunar laser ranging, and through large-scale tracers of dark-matter motion. Those
+  are indirect and model-dependent tests rather than drops of an isolated sample, which leaves the
+  sharpened version of the question open: how closely has any proposed dark sector been required to share
+  the free fall of the matter that made our rulers?</p>
+
+  <div class="gate" data-gate>
+    <p class="q">Write the closing argument in five sentences of your own, moving from the dimensional
+    remainder to the untested sector without skipping a step.</p>
+    <textarea placeholder="Write your answer before revealing the model answer."></textarea>
+    <div class="gaterow">
+      <button class="reveal" disabled>Show the model answer</button>
+      <span class="counter">0 / 40 characters</span>
+    </div>
+    <div class="answer">
+      <p>Adding H to &#295;, c and G leaves a dimensionless remainder, which both dissolves the apparent
+      menu of natural scales and exposes the cosmic hierarchy as information dimensions cannot supply.
+      Because a dimensionless quantity built from H is still not frame-invariant, the operational content
+      has to be carried by ratios of physical masses, of which &alpha;<sub>G</sub> is the relevant one.
+      A field that changes &alpha;<sub>G</sub> must couple to the constituents of matter, and unless it
+      couples to all of them identically, differently constituted bodies fall differently. Eötvös
+      experiments therefore test whether material constructions realise that dimensionless ratio in the
+      same way, and for laboratory matter they have found agreement to extraordinary precision. The
+      matter that supplied the cosmic scale has not supplied a test body, so the audit is incomplete
+      exactly where the inventory is largest.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Companion to <em>The Matter That Never Made a Ruler: from dimensional remainders to dark-sector
+  free fall</em>. Sources include Uzan on fundamental constants, Wetterich on a universe without
+  expansion, and the final MICROSCOPE result of Touboul and collaborators.</p>
+  <p class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</p>
+</footer>
+
+</div>
+
+<script>
+/* ---------- exact rational arithmetic ---------- */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function F(n,d){
+  d=(d===undefined)?1:d;
+  if(d===0) throw new Error('zero denominator');
+  if(d<0){n=-n;d=-d;}
+  const g=gcd(n,d);
+  return {n:n/g,d:d/g};
+}
+const add=(x,y)=>F(x.n*y.d+y.n*x.d, x.d*y.d);
+const sub=(x,y)=>F(x.n*y.d-y.n*x.d, x.d*y.d);
+const mul=(x,y)=>F(x.n*y.n, x.d*y.d);
+const div=(x,y)=>F(x.n*y.d, x.d*y.n);
+const isZero=x=>x.n===0;
+const toNum=x=>x.n/x.d;
+function fracText(x){
+  if(x.d===1) return String(x.n);
+  return x.n+'/'+x.d;
+}
+
+/* ---------- the ingredient list ---------- */
+const CONSTANTS=[
+  {key:'hbar', label:'\u210F', dim:[1,2,-1], val:1.054571817e-34, name:'reduced Planck constant'},
+  {key:'c',    label:'c',      dim:[0,1,-1], val:2.99792458e8,    name:'speed of light'},
+  {key:'G',    label:'G',      dim:[-1,3,-2],val:6.67430e-11,     name:'gravitational constant'},
+  {key:'H',    label:'H',      dim:[0,0,-1], val:2.1927e-18,      name:'Hubble parameter, present value'},
+  {key:'Lam',  label:'\u039B', dim:[0,-2,0], val:1.1056e-52,      name:'cosmological constant'},
+  {key:'mp',   label:'m\u209A',dim:[1,0,0],  val:1.67262192e-27,  name:'proton mass'}
+];
+const TARGETS=[
+  {key:'L', label:'a length',    vec:[0,1,0], unit:'m'},
+  {key:'M', label:'a mass',      vec:[1,0,0], unit:'kg'},
+  {key:'T', label:'a time',      vec:[0,0,1], unit:'s'},
+  {key:'0', label:'a pure number',vec:[0,0,0],unit:''}
+];
+const DIMNAMES=['M','L','T'];
+
+let selected=['hbar','c','G'];
+let target='L';
+
+/* ---------- linear algebra over the rationals ---------- */
+function solve(cols, tvec){
+  // augmented matrix, 3 rows x (n+1)
+  const n=cols.length;
+  let A=[];
+  for(let r=0;r<3;r++){
+    const row=[];
+    for(let j=0;j<n;j++) row.push(F(cols[j].dim[r]));
+    row.push(F(tvec[r]));
+    A.push(row);
+  }
+  // RREF
+  let pivots=[], r=0;
+  for(let cIdx=0;cIdx<n && r<3;cIdx++){
+    let p=-1;
+    for(let i=r;i<3;i++) if(!isZero(A[i][cIdx])){p=i;break;}
+    if(p<0) continue;
+    [A[r],A[p]]=[A[p],A[r]];
+    const pv=A[r][cIdx];
+    for(let j=0;j<=n;j++) A[r][j]=div(A[r][j],pv);
+    for(let i=0;i<3;i++){
+      if(i!==r && !isZero(A[i][cIdx])){
+        const f=A[i][cIdx];
+        for(let j=0;j<=n;j++) A[i][j]=sub(A[i][j], mul(f,A[r][j]));
+      }
+    }
+    pivots.push(cIdx); r++;
+  }
+  // consistency
+  for(let i=r;i<3;i++) if(!isZero(A[i][n])) return {ok:false, rank:r};
+  // particular solution: free variables zero
+  const part=new Array(n).fill(F(0));
+  pivots.forEach((c,i)=>{part[c]=A[i][n];});
+  // null-space basis
+  const free=[];
+  for(let j=0;j<n;j++) if(!pivots.includes(j)) free.push(j);
+  const nulls=free.map(fv=>{
+    const v=new Array(n).fill(F(0));
+    v[fv]=F(1);
+    pivots.forEach((c,i)=>{ v[c]=F(-A[i][fv].n, A[i][fv].d); });
+    // clear denominators so the generator is a genuine integer monomial
+    let lcm=1;
+    v.forEach(x=>{ lcm = lcm*x.d/gcd(lcm,x.d); });
+    return v.map(x=>F(x.n*(lcm/x.d),1));
+  });
+  return {ok:true, rank:r, part, nulls, rref:A, pivots};
+}
+
+/* ---------- rendering ---------- */
+function cols(){ return selected.map(k=>CONSTANTS.find(c=>c.key===k)); }
+
+function renderChips(){
+  const box=document.getElementById('chips');
+  box.innerHTML='';
+  CONSTANTS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='chip';
+    b.type='button';
+    b.setAttribute('aria-pressed', selected.includes(c.key));
+    b.title=c.name;
+    b.innerHTML=c.label+'<span class="dimtag">'+dimText(c.dim)+'</span>';
+    b.onclick=()=>{
+      if(selected.includes(c.key)) selected=selected.filter(k=>k!==c.key);
+      else selected=selected.concat([c.key]);
+      selected.sort((a,b)=>CONSTANTS.findIndex(x=>x.key===a)-CONSTANTS.findIndex(x=>x.key===b));
+      renderAll();
+    };
+    box.appendChild(b);
+  });
+}
+function dimText(d){
+  let s='';
+  d.forEach((p,i)=>{ if(p!==0) s+=DIMNAMES[i]+(p===1?'':'^'+p)+' '; });
+  return s.trim()||'dimensionless';
+}
+function renderTargets(){
+  const box=document.getElementById('targets');
+  box.innerHTML='';
+  TARGETS.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='targ'; b.type='button';
+    b.textContent=t.label;
+    b.setAttribute('aria-pressed', target===t.key);
+    b.onclick=()=>{target=t.key;renderAll();};
+    box.appendChild(b);
+  });
+}
+function renderMatrix(){
+  const cs=cols();
+  const box=document.getElementById('matrixbox');
+  if(cs.length===0){box.innerHTML='';return;}
+  let html='<div class="matrix"><div class="bracket"></div><table><tr><th></th>';
+  cs.forEach(c=>html+='<th>'+c.label+'</th>');
+  html+='</tr>';
+  for(let r=0;r<3;r++){
+    html+='<tr><td class="rowlab">'+DIMNAMES[r]+'</td>';
+    cs.forEach(c=>html+='<td>'+c.dim[r]+'</td>');
+    html+='</tr>';
+  }
+  html+='</table><div class="bracket r"></div></div>';
+  box.innerHTML=html;
+}
+
+function formulaHTML(exps){
+  const cs=cols();
+  const parts=[];
+  exps.forEach((e,i)=>{
+    if(isZero(e)) return;
+    parts.push(cs[i].label + (e.d===1&&e.n===1 ? '' : '<sup>'+fracText(e)+'</sup>'));
+  });
+  return parts.length? parts.join(' ') : '1';
+}
+function evaluate(exps){
+  const cs=cols();
+  let logv=0;
+  exps.forEach((e,i)=>{ logv += toNum(e)*Math.log10(cs[i].val); });
+  return logv; // log10 of value
+}
+function sci(log10v){
+  const e=Math.floor(log10v);
+  const m=Math.pow(10, log10v-e);
+  return m.toFixed(3)+' \u00D7 10<sup>'+e+'</sup>';
+}
+const LANDMARKS=[
+  {log:-35, name:'the Planck length'},
+  {log:-15, name:'a proton'},
+  {log:-10, name:'an atom'},
+  {log:-9,  name:'a small molecule'},
+  {log:-6,  name:'a bacterium'},
+  {log:-3,  name:'a millimetre'},
+  {log:0,   name:'a metre'},
+  {log:2,   name:'a city block'},
+  {log:7,   name:'the Earth'},
+  {log:11,  name:'the Earth to the Sun'},
+  {log:21,  name:'the Galaxy'},
+  {log:26,  name:'the Hubble radius'}
+];
+function landmark(log10v){
+  let best=null, bd=Infinity;
+  LANDMARKS.forEach(l=>{const d=Math.abs(l.log-log10v); if(d<bd){bd=d;best=l;}});
+  if(bd>2.2) return '';
+  return 'roughly the scale of ' + best.name;
+}
+
+let current=null;
+function renderReadout(){
+  const out=document.getElementById('readout');
+  const sbox=document.getElementById('sliderbox');
+  const cs=cols();
+  const t=TARGETS.find(x=>x.key===target);
+
+  if(cs.length===0){
+    out.innerHTML='<p class="verdict fail">No ingredients selected. Choose at least one constant.</p>';
+    sbox.classList.remove('on'); current=null; return;
+  }
+  const res=solve(cs, t.vec);
+  if(!res.ok){
+    out.innerHTML='<p class="verdict fail">These ingredients cannot make '+t.label+
+      '. The dimensions do not reach it, whatever exponents you choose.</p>';
+    sbox.classList.remove('on'); current=null; return;
+  }
+  const free=cs.length-res.rank;
+  let verdict;
+  if(free===0){
+    verdict='Rank '+res.rank+' from '+cs.length+' ingredients, so no freedom remains. '+
+            'Exactly one combination gives '+t.label+'.';
+  }else{
+    verdict='Rank '+res.rank+' from '+cs.length+' ingredients, so '+free+
+            ' dimensionless combination'+(free>1?'s':'')+' escape'+(free>1?'':'s')+
+            ' the dimensions. Every answer below is equally valid.';
+  }
+  current={res, cs, t, free};
+  out.innerHTML='<p class="verdict">'+verdict+'</p>'+
+    '<div class="formula" id="fml"></div>'+
+    '<div class="value" id="val"></div>'+
+    '<div class="scalecmp" id="cmp"></div>'+
+    (free>0? '<p class="hint" id="nullnote"></p>':'');
+  if(free>0){
+    sbox.classList.add('on');
+    const list=res.nulls.map(v=>formulaHTML(v)+' &asymp; '+sci(evaluate(v))).join(' &nbsp;and&nbsp; ');
+    document.getElementById('nullnote').innerHTML =
+      (free>1?'The escaping combinations are ':'The escaping combination is ')+list+
+      '. Multiplying by any power of '+(free>1?'either one':'it')+
+      ' changes nothing dimensionally'+(free>1?'; the slider drives the first.':'.');
+  } else {
+    sbox.classList.remove('on');
+    document.getElementById('sfree').value=0;
+  }
+  updateValue();
+}
+function updateValue(){
+  if(!current) return;
+  const s=parseFloat(document.getElementById('sfree').value)||0;
+  const {res,t,free}=current;
+  let exps=res.part.slice();
+  if(free>0){
+    // shift by s times the first null vector, using floating exponents for display
+    exps=exps.map((e,i)=>{
+      const shifted=toNum(e)+s*toNum(res.nulls[0][i]);
+      return approxFrac(shifted);
+    });
+  }
+  document.getElementById('fml').innerHTML=formulaHTML(exps);
+  const lg=evaluate(exps);
+  const unit=t.unit? ' <span class="unit">'+t.unit+'</span>':'';
+  document.getElementById('val').innerHTML = (t.key==='0' && Math.abs(lg)<1e-9)
+    ? '1' : sci(lg)+unit;
+  document.getElementById('cmp').textContent = (t.key==='L')? landmark(lg):'';
+}
+function approxFrac(x){
+  // nearest fraction with denominator up to 60, adequate for display
+  let bestN=Math.round(x), bestD=1, bestErr=Math.abs(x-Math.round(x));
+  for(let d=2;d<=60;d++){
+    const n=Math.round(x*d), err=Math.abs(x-n/d);
+    if(err<bestErr-1e-12){bestErr=err;bestN=n;bestD=d;}
+  }
+  return F(bestN,bestD);
+}
+function renderAll(){renderChips();renderTargets();renderMatrix();renderReadout();}
+document.getElementById('sfree').addEventListener('input',updateValue);
+renderAll();
+
+/* ---------- answer gates ---------- */
+document.querySelectorAll('[data-gate]').forEach(g=>{
+  const ta=g.querySelector('textarea'),
+        btn=g.querySelector('button.reveal'),
+        cnt=g.querySelector('.counter'),
+        ans=g.querySelector('.answer');
+  const MIN=40;
+  ta.addEventListener('input',()=>{
+    const n=ta.value.trim().length;
+    cnt.textContent=Math.min(n,MIN)+' / '+MIN+' characters';
+    btn.disabled = n<MIN;
+  });
+  btn.addEventListener('click',()=>{
+    ans.classList.add('on');
+    btn.disabled=true;
+    btn.textContent='Model answer shown';
+    cnt.textContent='compare, then revise your own';
+  });
+});
+</script>
+</body>
+</html>
