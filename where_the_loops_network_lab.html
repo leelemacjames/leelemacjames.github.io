@@ -1,0 +1,1599 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive Year 9 network laboratory exploring trees, loops, hubs and resilience.">
+  <title>Where the Loops Come From | Network Lab</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fbfcfa;
+      --page: #eef3f2;
+      --ink: #17282a;
+      --muted: #5d696b;
+      --teal: #0d6d73;
+      --teal-dark: #084e53;
+      --teal-pale: #e4f1f0;
+      --gold: #db951e;
+      --gold-pale: #fff4d9;
+      --red: #bd443c;
+      --red-pale: #fbe8e5;
+      --line: #b8c7c6;
+      --soft-line: #d8e1df;
+      --white: #ffffff;
+      --shadow: 0 14px 36px rgba(24, 52, 54, 0.09);
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        linear-gradient(rgba(13, 109, 115, 0.025) 1px, transparent 1px),
+        var(--page);
+      background-size: 100% 32px;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    button {
+      min-height: 44px;
+      border: 1px solid var(--teal);
+      border-radius: 4px;
+      background: var(--white);
+      color: var(--teal-dark);
+      cursor: pointer;
+      font-weight: 750;
+      transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+    }
+
+    button:hover:not(:disabled) { background: var(--teal-pale); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { cursor: not-allowed; opacity: 0.45; }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    [tabindex="0"]:focus-visible {
+      outline: 3px solid #f4bd52;
+      outline-offset: 3px;
+    }
+
+    .masthead {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .masthead-inner,
+    main {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .masthead-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      padding: 22px 0 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: var(--teal);
+      font-size: 0.82rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      font-weight: 650;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+    }
+
+    .deck {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: 1.05rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      padding-bottom: 3px;
+    }
+
+    .header-actions button { padding: 8px 14px; }
+
+    .button-primary {
+      background: var(--teal);
+      color: var(--white);
+    }
+
+    .button-primary:hover:not(:disabled) { background: var(--teal-dark); }
+
+    .button-quiet {
+      border-color: var(--line);
+      color: var(--muted);
+    }
+
+    main { padding: 20px 0 52px; }
+
+    .pupil-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 24px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .pupil-line label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pupil-line input {
+      width: 180px;
+      border: 0;
+      border-bottom: 1px solid var(--muted);
+      background: transparent;
+      color: var(--ink);
+      padding: 3px 2px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 14px;
+      border-bottom: 2px solid var(--teal);
+    }
+
+    .tab {
+      min-height: 46px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 4px 4px 0 0;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--teal);
+      color: var(--white);
+    }
+
+    .tab-panel[hidden] { display: none; }
+
+    .task-strip {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 11px 14px;
+      border-left: 4px solid var(--gold);
+      background: var(--gold-pale);
+    }
+
+    .task-number {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #1d2b2c;
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    .task-strip strong { display: block; }
+    .task-strip p { margin: 1px 0 0; color: #4d5555; }
+
+    .phase-pill {
+      border: 1px solid #c48a21;
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: #72500e;
+      font-size: 0.82rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .lab-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(285px, 0.75fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .surface,
+    .card {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .surface { padding: 14px; }
+
+    .surface-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+
+    .surface-head h2,
+    .card h2,
+    .card h3 {
+      margin: 0;
+      color: var(--teal-dark);
+      line-height: 1.2;
+    }
+
+    .surface-head h2,
+    .card h2 {
+      font-family: var(--serif);
+      font-size: 1.45rem;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 13px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    .legend-line {
+      width: 26px;
+      height: 0;
+      border-top: 4px solid var(--ink);
+    }
+
+    .legend-line.insurance { border-color: var(--gold); }
+    .legend-line.failed { border-color: var(--red); border-top-style: dashed; }
+    .legend-line.backup { border-color: var(--teal); }
+
+    .canvas-wrap {
+      position: relative;
+      border: 1px solid var(--soft-line);
+      background:
+        linear-gradient(rgba(13, 109, 115, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 109, 115, 0.045) 1px, transparent 1px),
+        #ffffff;
+      background-size: 28px 28px;
+      overflow: hidden;
+    }
+
+    svg.network {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 430px;
+      touch-action: manipulation;
+    }
+
+    .edge {
+      stroke: var(--ink);
+      stroke-linecap: round;
+      stroke-width: 7;
+    }
+
+    .edge.insurance { stroke: var(--gold); }
+    .edge.backup { stroke: var(--teal); stroke-width: 6; }
+    .edge.failed { stroke: var(--red); stroke-dasharray: 13 9; opacity: 0.62; }
+    .edge.removed-edge { stroke: var(--red); stroke-dasharray: 8 8; opacity: 0.3; }
+
+    .edge-hit {
+      stroke: transparent;
+      stroke-width: 28;
+      cursor: pointer;
+    }
+
+    .failure-mark {
+      stroke: var(--red);
+      stroke-linecap: round;
+      stroke-width: 5;
+      pointer-events: none;
+    }
+
+    .node-hit { fill: transparent; cursor: pointer; }
+
+    .node-dot {
+      fill: var(--white);
+      stroke: var(--teal);
+      stroke-width: 4;
+      transition: fill 100ms ease, stroke 100ms ease;
+    }
+
+    .node-group:hover .node-dot { fill: var(--teal-pale); }
+    .node-dot.source { fill: var(--teal); stroke: var(--teal-dark); }
+    .node-dot.selected { fill: var(--gold-pale); stroke: var(--gold); stroke-width: 7; }
+    .node-dot.inactive { fill: #edf0ee; stroke: #b9c1bf; stroke-width: 3; }
+    .node-dot.hub { fill: var(--gold-pale); stroke: var(--gold); stroke-width: 7; }
+    .node-dot.removed { fill: var(--red-pale); stroke: var(--red); stroke-width: 5; }
+
+    .node-label {
+      fill: var(--ink);
+      font-family: var(--sans);
+      font-size: 17px;
+      font-weight: 850;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .node-label.source { fill: var(--white); }
+    .node-label.inactive { fill: #899190; }
+
+    .time-guide {
+      stroke: #d6e0de;
+      stroke-dasharray: 4 8;
+      stroke-width: 2;
+    }
+
+    .time-label {
+      fill: #738181;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card { padding: 15px; }
+    .card p { margin: 7px 0 0; }
+    .card ul { margin: 8px 0 0; padding-left: 20px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .controls button { padding: 8px 10px; }
+
+    .controls button[aria-pressed="true"] {
+      background: var(--teal);
+      color: var(--white);
+    }
+
+    .controls .wide { grid-column: 1 / -1; }
+
+    .mode-help {
+      min-height: 3.4em;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 11px;
+    }
+
+    .stat {
+      min-height: 72px;
+      border-top: 3px solid var(--teal);
+      background: var(--teal-pale);
+      padding: 9px 10px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 2px;
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      line-height: 1.1;
+    }
+
+    .verdict {
+      margin-top: 10px;
+      border-left: 4px solid var(--teal);
+      background: #f1f7f6;
+      padding: 10px 11px;
+      font-weight: 720;
+    }
+
+    .verdict.warning { border-color: var(--gold); background: var(--gold-pale); }
+    .verdict.failure { border-color: var(--red); background: var(--red-pale); }
+
+    fieldset {
+      margin: 11px 0 0;
+      padding: 0;
+      border: 0;
+    }
+
+    fieldset legend {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .rule-options { display: grid; gap: 7px; }
+
+    .rule-option {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 9px;
+      align-items: start;
+      border: 1px solid var(--soft-line);
+      background: var(--white);
+      padding: 9px;
+      cursor: pointer;
+    }
+
+    .rule-option:has(input:checked) {
+      border-color: var(--teal);
+      background: var(--teal-pale);
+    }
+
+    .rule-option input { margin-top: 4px; accent-color: var(--teal); }
+    .rule-option strong { display: block; }
+    .rule-option small { display: block; color: var(--muted); line-height: 1.35; }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .topology-card {
+      border-top: 5px solid var(--teal);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .topology-card h3 { margin: 0; font-size: 1rem; }
+    .topology-card p { margin: 5px 0 0; color: var(--muted); }
+
+    .mini-network {
+      display: block;
+      width: 100%;
+      height: 90px;
+      margin: 8px 0;
+    }
+
+    .mini-network line,
+    .mini-network polyline,
+    .mini-network polygon {
+      fill: none;
+      stroke: var(--teal);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 4;
+    }
+
+    .mini-network circle { fill: var(--white); stroke: var(--teal); stroke-width: 3; }
+    .mini-network circle.hub-dot { fill: var(--gold-pale); stroke: var(--gold); stroke-width: 5; }
+
+    .compare-table-wrap {
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      overflow-x: auto;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 13px; border-bottom: 1px solid var(--soft-line); text-align: left; }
+    th { background: var(--teal); color: var(--white); font-size: 0.86rem; letter-spacing: 0.035em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+
+    .reflection {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .reflection label {
+      display: grid;
+      gap: 7px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      padding: 13px;
+      font-weight: 750;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: var(--white);
+      color: var(--ink);
+      padding: 9px;
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    details.teacher-note {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    details.teacher-note summary {
+      cursor: pointer;
+      padding: 13px 15px;
+      color: var(--teal-dark);
+      font-weight: 850;
+    }
+
+    .teacher-body {
+      border-top: 1px solid var(--soft-line);
+      padding: 14px 16px;
+    }
+
+    .formula {
+      display: inline-block;
+      margin: 5px 0;
+      border: 1px solid var(--teal);
+      background: var(--teal-pale);
+      padding: 7px 11px;
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .mobile-note { display: none; }
+
+    @media (max-width: 920px) {
+      .masthead-inner { grid-template-columns: 1fr; align-items: start; }
+      .header-actions { padding: 0; }
+      .lab-layout { grid-template-columns: 1fr; }
+      .side-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .comparison-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      svg.network { min-height: 360px; }
+    }
+
+    @media (max-width: 640px) {
+      .masthead-inner, main { width: min(100% - 20px, 1480px); }
+      .masthead-inner { padding-top: 16px; }
+      .header-actions { width: 100%; }
+      .header-actions button { flex: 1; }
+      .tabs { overflow-x: auto; }
+      .tab { flex: 0 0 auto; padding-inline: 13px; }
+      .task-strip { grid-template-columns: auto 1fr; }
+      .phase-pill { grid-column: 1 / -1; justify-self: start; }
+      .side-stack, .comparison-grid, .reflection { grid-template-columns: 1fr; }
+      .surface { padding: 9px; }
+      svg.network { min-height: 315px; }
+      .mobile-note { display: block; margin: 0 0 8px; color: var(--muted); font-size: 0.82rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+
+    @page { size: A4 landscape; margin: 10mm; }
+
+    @media print {
+      body { background: white; color: black; font-size: 10pt; }
+      .masthead { border: 0; }
+      .masthead-inner, main { width: 100%; }
+      .masthead-inner { padding: 0 0 7mm; }
+      h1 { font-size: 28pt; }
+      .header-actions, .tabs, .controls, .mode-help, .mobile-note, .screen-only { display: none !important; }
+      .tab-panel[hidden], .tab-panel { display: block !important; }
+      .tab-panel { break-after: page; }
+      .tab-panel:last-of-type { break-after: auto; }
+      .surface, .card, .topology-card, .compare-table-wrap { box-shadow: none; }
+      .lab-layout { grid-template-columns: 1.55fr 0.75fr; gap: 6mm; }
+      .side-stack { display: grid; grid-template-columns: 1fr; }
+      svg.network { min-height: 0; max-height: 132mm; }
+      .task-strip { margin-bottom: 4mm; }
+      .comparison-grid { grid-template-columns: repeat(4, 1fr); }
+      textarea { min-height: 34mm; }
+      details.teacher-note { display: none; }
+      .pupil-line { margin-bottom: 4mm; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div>
+        <p class="eyebrow">Year 9 science · interactive network lab</p>
+        <h1>Where the Loops Come From</h1>
+        <p class="deck">Build a network, change the rule, and see what survives.</p>
+      </div>
+      <div class="header-actions">
+        <button class="button-primary" id="print-button" type="button">Print this attempt</button>
+        <button class="button-quiet" id="reset-all-button" type="button">Reset everything</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="pupil-line">
+      <label>Name <input type="text" aria-label="Pupil name"></label>
+      <label>Class <input type="text" aria-label="Class"></label>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Network lab sections">
+      <button class="tab" id="tab-routes" type="button" role="tab" aria-selected="true" aria-controls="panel-routes" data-tab="routes">1. Routes &amp; loops</button>
+      <button class="tab" id="tab-social" type="button" role="tab" aria-selected="false" aria-controls="panel-social" data-tab="social">2. Social hubs</button>
+      <button class="tab" id="tab-compare" type="button" role="tab" aria-selected="false" aria-controls="panel-compare" data-tab="compare">3. Compare</button>
+    </nav>
+
+    <section class="tab-panel" id="panel-routes" role="tabpanel" aria-labelledby="tab-routes">
+      <div class="task-strip">
+        <span class="task-number">1</span>
+        <div>
+          <strong id="route-phase-title">Build it cheaply</strong>
+          <p id="route-phase-copy">Join all 12 locations using the fewest neighbouring links you can.</p>
+        </div>
+        <span class="phase-pill" id="route-phase-pill">BUILD MODE</span>
+      </div>
+
+      <div class="lab-layout">
+        <article class="surface" aria-labelledby="route-canvas-title">
+          <div class="surface-head">
+            <h2 id="route-canvas-title">The same dots, different rules</h2>
+            <div class="legend" aria-label="Line key">
+              <span><i class="legend-line"></i> first design</span>
+              <span><i class="legend-line insurance"></i> insurance</span>
+              <span><i class="legend-line failed"></i> broken</span>
+            </div>
+          </div>
+          <p class="mobile-note">Tap one dot and then a neighbouring dot.</p>
+          <div class="canvas-wrap">
+            <svg class="network" id="route-svg" viewBox="0 0 520 390" role="group" aria-label="Twelve-dot route network drawing surface" aria-describedby="route-keyboard-help">
+              <g id="route-edge-layer"></g>
+              <g id="route-node-layer"></g>
+            </svg>
+          </div>
+          <p class="sr-only" id="route-keyboard-help">Choose a dot with Enter or Space, then choose a neighbouring dot to join them. In break mode, focus a link and press Enter or Space.</p>
+        </article>
+
+        <aside class="side-stack">
+          <section class="card">
+            <h3>Your tools</h3>
+            <div class="controls">
+              <button type="button" id="route-build" aria-pressed="true">Build links</button>
+              <button type="button" id="route-insure" aria-pressed="false">Add insurance</button>
+              <button type="button" id="route-test" aria-pressed="false">Test a break</button>
+              <button type="button" id="route-undo">Undo link</button>
+              <button class="wide button-quiet" type="button" id="route-reset">Clear route network</button>
+            </div>
+            <p class="mode-help" id="route-help">Select two neighbouring dots. Each line costs one link.</p>
+          </section>
+
+          <section class="card" aria-labelledby="route-measures-title">
+            <h3 id="route-measures-title">What your drawing contains</h3>
+            <div class="stat-grid">
+              <div class="stat"><span>Links built</span><strong id="route-links">0</strong></div>
+              <div class="stat"><span>Independent loops</span><strong id="route-loops">0</strong></div>
+              <div class="stat"><span>Separate groups</span><strong id="route-groups">12</strong></div>
+              <div class="stat"><span>Largest degree</span><strong id="route-degree">0</strong></div>
+            </div>
+            <div class="verdict warning" id="route-verdict" aria-live="polite">Start by joining two neighbouring dots.</div>
+          </section>
+
+          <section class="card screen-only">
+            <h3>Challenge</h3>
+            <ul>
+              <li>Can you connect every dot with exactly 11 links?</li>
+              <li>Then add two gold links as insurance.</li>
+              <li>Ask a partner to break your worst possible link.</li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-social" role="tabpanel" aria-labelledby="tab-social" hidden>
+      <div class="task-strip">
+        <span class="task-number">2</span>
+        <div>
+          <strong>Grow a social network one user at a time</strong>
+          <p>Change the joining rule and watch where the connections collect.</p>
+        </div>
+        <span class="phase-pill">HUB TEST</span>
+      </div>
+
+      <div class="lab-layout">
+        <article class="surface" aria-labelledby="social-canvas-title">
+          <div class="surface-head">
+            <h2 id="social-canvas-title">Who becomes influential?</h2>
+            <div class="legend" aria-label="Social network key">
+              <span><i class="legend-line"></i> joining link</span>
+              <span><i class="legend-line backup"></i> backup link</span>
+              <span><i class="legend-line failed"></i> removed hub</span>
+            </div>
+          </div>
+          <p class="mobile-note">The pale dots are users who have not joined yet.</p>
+          <div class="canvas-wrap">
+            <svg class="network" id="social-svg" viewBox="0 0 560 390" role="group" aria-label="Time-ordered social network">
+              <g aria-hidden="true">
+                <line class="time-guide" x1="112" y1="45" x2="112" y2="355"></line>
+                <line class="time-guide" x1="282" y1="45" x2="282" y2="355"></line>
+                <line class="time-guide" x1="452" y1="45" x2="452" y2="355"></line>
+                <text class="time-label" x="38" y="28">EARLIER</text>
+                <text class="time-label" x="472" y="28">LATER</text>
+              </g>
+              <g id="social-edge-layer"></g>
+              <g id="social-node-layer"></g>
+            </svg>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <section class="card">
+            <h3>Choose the joining rule</h3>
+            <fieldset>
+              <legend>Each new user makes one connection</legend>
+              <div class="rule-options">
+                <label class="rule-option">
+                  <input type="radio" name="social-rule" value="random">
+                  <span><strong>Random</strong><small>Join any earlier user. Popularity does not matter.</small></span>
+                </label>
+                <label class="rule-option">
+                  <input type="radio" name="social-rule" value="popular" checked>
+                  <span><strong>Popularity</strong><small>Choose two earlier users and join the one with more links.</small></span>
+                </label>
+                <label class="rule-option">
+                  <input type="radio" name="social-rule" value="boost">
+                  <span><strong>Platform boost</strong><small>After User 8 arrives, the platform often recommends that account.</small></span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="controls">
+              <button type="button" id="social-add">Add next user</button>
+              <button type="button" id="social-grow">Grow to 15</button>
+              <button type="button" id="social-backup" aria-pressed="false">Add backup links</button>
+              <button type="button" id="social-remove">Remove largest hub</button>
+              <button class="wide button-quiet" type="button" id="social-reset">Reset social network</button>
+            </div>
+            <p class="mode-help" id="social-help">The popularity rule favours users who already have several links.</p>
+          </section>
+
+          <section class="card" aria-labelledby="social-measures-title">
+            <h3 id="social-measures-title">What has emerged?</h3>
+            <div class="stat-grid">
+              <div class="stat"><span>Users present</span><strong id="social-users">2</strong></div>
+              <div class="stat"><span>Working links</span><strong id="social-links">1</strong></div>
+              <div class="stat"><span>Independent loops</span><strong id="social-loops">0</strong></div>
+              <div class="stat"><span>Largest hub</span><strong id="social-hub">U1 · 1</strong></div>
+              <div class="stat"><span>Separate groups</span><strong id="social-groups">1</strong></div>
+              <div class="stat"><span>Backup links</span><strong id="social-backups">0 / 3</strong></div>
+            </div>
+            <div class="verdict" id="social-verdict" aria-live="polite">A hub can grow even while the network remains a tree.</div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+      <div class="task-strip">
+        <span class="task-number">3</span>
+        <div>
+          <strong>Separate the two ideas</strong>
+          <p>A loop describes another route. A hub describes where many links meet.</p>
+        </div>
+        <span class="phase-pill">EXPLAIN</span>
+      </div>
+
+      <div class="comparison-grid" aria-label="Four network comparisons">
+        <article class="topology-card">
+          <h3>Tree, no strong hub</h3>
+          <svg class="mini-network" viewBox="0 0 160 90" aria-hidden="true">
+            <polyline points="80,78 80,52 45,28"></polyline>
+            <line x1="80" y1="52" x2="115" y2="28"></line>
+            <line x1="45" y1="28" x2="22" y2="10"></line>
+            <line x1="45" y1="28" x2="62" y2="8"></line>
+            <line x1="115" y1="28" x2="100" y2="8"></line>
+            <line x1="115" y1="28" x2="140" y2="12"></line>
+            <circle cx="80" cy="78" r="6"></circle><circle cx="80" cy="52" r="6"></circle>
+            <circle cx="45" cy="28" r="6"></circle><circle cx="115" cy="28" r="6"></circle>
+          </svg>
+          <p>Cheap to build. A broken link can cut off a whole branch.</p>
+        </article>
+
+        <article class="topology-card">
+          <h3>Hub, but no loop</h3>
+          <svg class="mini-network" viewBox="0 0 160 90" aria-hidden="true">
+            <line x1="80" y1="45" x2="20" y2="14"></line><line x1="80" y1="45" x2="80" y2="8"></line>
+            <line x1="80" y1="45" x2="140" y2="14"></line><line x1="80" y1="45" x2="20" y2="76"></line>
+            <line x1="80" y1="45" x2="80" y2="82"></line><line x1="80" y1="45" x2="140" y2="76"></line>
+            <circle class="hub-dot" cx="80" cy="45" r="10"></circle>
+            <circle cx="20" cy="14" r="6"></circle><circle cx="80" cy="8" r="6"></circle><circle cx="140" cy="14" r="6"></circle>
+            <circle cx="20" cy="76" r="6"></circle><circle cx="80" cy="82" r="6"></circle><circle cx="140" cy="76" r="6"></circle>
+          </svg>
+          <p>Information can spread quickly, but everything depends on one point.</p>
+        </article>
+
+        <article class="topology-card">
+          <h3>Loop, but no hub</h3>
+          <svg class="mini-network" viewBox="0 0 160 90" aria-hidden="true">
+            <polygon points="80,8 135,30 122,75 38,75 25,30"></polygon>
+            <circle cx="80" cy="8" r="6"></circle><circle cx="135" cy="30" r="6"></circle>
+            <circle cx="122" cy="75" r="6"></circle><circle cx="38" cy="75" r="6"></circle><circle cx="25" cy="30" r="6"></circle>
+          </svg>
+          <p>Every point has a spare route, although none dominates the network.</p>
+        </article>
+
+        <article class="topology-card">
+          <h3>Hub and loops</h3>
+          <svg class="mini-network" viewBox="0 0 160 90" aria-hidden="true">
+            <polygon points="80,8 137,35 115,80 45,80 23,35"></polygon>
+            <line x1="80" y1="45" x2="80" y2="8"></line><line x1="80" y1="45" x2="137" y2="35"></line>
+            <line x1="80" y1="45" x2="115" y2="80"></line><line x1="80" y1="45" x2="45" y2="80"></line>
+            <line x1="80" y1="45" x2="23" y2="35"></line>
+            <circle class="hub-dot" cx="80" cy="45" r="10"></circle>
+            <circle cx="80" cy="8" r="6"></circle><circle cx="137" cy="35" r="6"></circle>
+            <circle cx="115" cy="80" r="6"></circle><circle cx="45" cy="80" r="6"></circle><circle cx="23" cy="35" r="6"></circle>
+          </svg>
+          <p>Connections are concentrated, but alternative routes still exist.</p>
+        </article>
+      </div>
+
+      <div class="compare-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>What it measures</th><th>Possible advantage</th><th>Possible weakness</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Few links</td><td>Construction cost</td><td>Cheap and simple</td><td>Little spare capacity</td></tr>
+            <tr><td>Loop</td><td>Alternative routes</td><td>Survives some broken links</td><td>Costs more to build</td></tr>
+            <tr><td>Hub</td><td>Concentration of links</td><td>Can spread or collect quickly</td><td>One important failure point</td></tr>
+            <tr><td>Platform boost</td><td>Effect of the joining rule</td><td>A new user can become visible quickly</td><td>Popularity may reflect the rule, not quality</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <section class="reflection" aria-label="Reflection questions">
+        <label>1. How did two insurance links change your first network?
+          <textarea aria-label="Answer to question one"></textarea>
+        </label>
+        <label>2. Can a network have a hub but no loop? Explain using your social model.
+          <textarea aria-label="Answer to question two"></textarea>
+        </label>
+        <label>3. Which matters more after a link fails: a hub or a loop? Why?
+          <textarea aria-label="Answer to question three"></textarea>
+        </label>
+        <label>4. Under the boost rule, did User 8 create the pattern, or did the rule create the influencer?
+          <textarea aria-label="Answer to question four"></textarea>
+        </label>
+      </section>
+
+      <details class="teacher-note">
+        <summary>Teacher reveal and mathematical extension</summary>
+        <div class="teacher-body">
+          <p>For any network with <i>V</i> dots, <i>E</i> links and <i>C</i> separate connected groups, the number of independent loops is:</p>
+          <p class="formula">independent loops = E − V + C</p>
+          <p>When the network is connected, (C=1). Twelve dots and eleven links therefore give no independent loops; twelve links give one.</p>
+          <p>The social model adds exactly one link with every new user, so it remains a tree even when one user becomes a large hub. Preferential attachment mainly favours users who are already established. The platform-boost rule is included to show how a late arrival can become a hub through extra visibility.</p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <div class="sr-only" id="global-announcer" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const announcer = document.getElementById("global-announcer");
+
+      function announce(message) {
+        announcer.textContent = "";
+        window.setTimeout(() => { announcer.textContent = message; }, 20);
+      }
+
+      function svgElement(name, attributes = {}, text = "") {
+        const element = document.createElementNS(SVG_NS, name);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+        if (text) element.textContent = text;
+        return element;
+      }
+
+      function edgeKey(a, b) {
+        return a < b ? `${a}-${b}` : `${b}-${a}`;
+      }
+
+      function analyseGraph(nodeIds, edges, options = {}) {
+        const failedKey = options.failedKey ?? null;
+        const removedId = options.removedId ?? null;
+        const activeNodes = nodeIds.filter((id) => id !== removedId);
+        const parent = new Map(activeNodes.map((id) => [id, id]));
+        const size = new Map(activeNodes.map((id) => [id, 1]));
+        const degrees = new Map(activeNodes.map((id) => [id, 0]));
+
+        function find(id) {
+          let root = id;
+          while (parent.get(root) !== root) root = parent.get(root);
+          while (parent.get(id) !== id) {
+            const next = parent.get(id);
+            parent.set(id, root);
+            id = next;
+          }
+          return root;
+        }
+
+        function union(a, b) {
+          let rootA = find(a);
+          let rootB = find(b);
+          if (rootA === rootB) return;
+          if (size.get(rootA) < size.get(rootB)) [rootA, rootB] = [rootB, rootA];
+          parent.set(rootB, rootA);
+          size.set(rootA, size.get(rootA) + size.get(rootB));
+        }
+
+        const workingEdges = edges.filter((edge) => {
+          const key = edgeKey(edge.a, edge.b);
+          return key !== failedKey && edge.a !== removedId && edge.b !== removedId && parent.has(edge.a) && parent.has(edge.b);
+        });
+
+        workingEdges.forEach((edge) => {
+          union(edge.a, edge.b);
+          degrees.set(edge.a, degrees.get(edge.a) + 1);
+          degrees.set(edge.b, degrees.get(edge.b) + 1);
+        });
+
+        const componentSizes = new Map();
+        activeNodes.forEach((id) => {
+          const root = find(id);
+          componentSizes.set(root, (componentSizes.get(root) || 0) + 1);
+        });
+
+        const components = componentSizes.size;
+        const loops = Math.max(0, workingEdges.length - activeNodes.length + components);
+        let hubId = activeNodes[0] ?? null;
+        activeNodes.forEach((id) => {
+          if (hubId === null || degrees.get(id) > degrees.get(hubId) || (degrees.get(id) === degrees.get(hubId) && id < hubId)) hubId = id;
+        });
+
+        return {
+          activeNodes,
+          workingEdges,
+          components,
+          loops,
+          degrees,
+          hubId,
+          hubDegree: hubId === null ? 0 : degrees.get(hubId),
+          largestGroup: componentSizes.size ? Math.max(...componentSizes.values()) : 0
+        };
+      }
+
+      // Tabs
+      const tabs = [...document.querySelectorAll("[role='tab']")];
+      const panels = [...document.querySelectorAll("[role='tabpanel']")];
+
+      function openTab(name, moveFocus = false) {
+        tabs.forEach((tab) => {
+          const selected = tab.dataset.tab === name;
+          tab.setAttribute("aria-selected", String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+          if (selected && moveFocus) tab.focus();
+        });
+        panels.forEach((panel) => { panel.hidden = panel.id !== `panel-${name}`; });
+      }
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => openTab(tab.dataset.tab));
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          let nextIndex = index;
+          if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+          if (event.key === "Home") nextIndex = 0;
+          if (event.key === "End") nextIndex = tabs.length - 1;
+          openTab(tabs[nextIndex].dataset.tab, true);
+        });
+      });
+
+      // Route network
+      const routeSvg = document.getElementById("route-svg");
+      const routeEdgeLayer = document.getElementById("route-edge-layer");
+      const routeNodeLayer = document.getElementById("route-node-layer");
+      const routeLabels = ["S", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
+      const routeNodes = Array.from({ length: 12 }, (_, id) => ({
+        id,
+        row: Math.floor(id / 4),
+        col: id % 4,
+        x: 70 + (id % 4) * 126,
+        y: 76 + Math.floor(id / 4) * 119,
+        label: routeLabels[id]
+      }));
+
+      let routeEdges = [];
+      let routeMode = "build";
+      let routeSelected = null;
+      let routeFailedKey = null;
+      let routeMessage = "Start by joining two neighbouring dots.";
+
+      const routeModeCopy = {
+        build: {
+          title: "Build it cheaply",
+          copy: "Join all 12 locations using the fewest neighbouring links you can.",
+          pill: "BUILD MODE",
+          help: "Select two neighbouring dots. Each line costs one link."
+        },
+        insurance: {
+          title: "Pay for two spare routes",
+          copy: "Add up to two gold links where they will protect the most locations.",
+          pill: "INSURANCE MODE",
+          help: "New links are gold. Try to protect large branches, not only one dot."
+        },
+        test: {
+          title: "Test one broken link",
+          copy: "Select the link whose loss would do the most damage. Select it again to restore it.",
+          pill: "BREAK MODE",
+          help: "Select any line to break it. The red dashed line no longer carries a route."
+        }
+      };
+
+      function areRouteNeighbours(a, b) {
+        const first = routeNodes[a];
+        const second = routeNodes[b];
+        return Math.abs(first.row - second.row) + Math.abs(first.col - second.col) === 1;
+      }
+
+      function setRouteMessage(message) {
+        routeMessage = message;
+        announce(message);
+      }
+
+      function setRouteMode(mode) {
+        routeMode = mode;
+        routeSelected = null;
+        const copy = routeModeCopy[mode];
+        document.getElementById("route-phase-title").textContent = copy.title;
+        document.getElementById("route-phase-copy").textContent = copy.copy;
+        document.getElementById("route-phase-pill").textContent = copy.pill;
+        document.getElementById("route-help").textContent = copy.help;
+        document.getElementById("route-build").setAttribute("aria-pressed", String(mode === "build"));
+        document.getElementById("route-insure").setAttribute("aria-pressed", String(mode === "insurance"));
+        document.getElementById("route-test").setAttribute("aria-pressed", String(mode === "test"));
+        renderRoute();
+      }
+
+      function chooseRouteNode(id) {
+        if (routeMode === "test") {
+          setRouteMessage("In break mode, choose a link rather than a dot.");
+          updateRouteStats();
+          return;
+        }
+        if (routeSelected === null) {
+          routeSelected = id;
+          setRouteMessage(`${routeNodes[id].label} selected. Now choose a neighbouring dot.`);
+          renderRoute();
+          return;
+        }
+        if (routeSelected === id) {
+          routeSelected = null;
+          setRouteMessage("Selection cancelled.");
+          renderRoute();
+          return;
+        }
+        const a = routeSelected;
+        const b = id;
+        routeSelected = null;
+        if (!areRouteNeighbours(a, b)) {
+          setRouteMessage("Those dots are not neighbours. Use one horizontal or vertical step.");
+          renderRoute();
+          return;
+        }
+        const key = edgeKey(a, b);
+        if (routeEdges.some((edge) => edgeKey(edge.a, edge.b) === key)) {
+          setRouteMessage("That link already exists.");
+          renderRoute();
+          return;
+        }
+        if (routeMode === "insurance" && routeEdges.filter((edge) => edge.type === "insurance").length >= 2) {
+          setRouteMessage("You have used both insurance links. Test a break or undo one.");
+          renderRoute();
+          return;
+        }
+        routeEdges.push({ a, b, type: routeMode === "insurance" ? "insurance" : "base" });
+        const kind = routeMode === "insurance" ? "Insurance link" : "Link";
+        setRouteMessage(`${kind} added between ${routeNodes[a].label} and ${routeNodes[b].label}.`);
+        renderRoute();
+      }
+
+      function toggleRouteFailure(key) {
+        if (routeMode !== "test") return;
+        routeFailedKey = routeFailedKey === key ? null : key;
+        setRouteMessage(routeFailedKey ? "One link is now broken. Check how many groups remain." : "The broken link has been restored.");
+        renderRoute();
+      }
+
+      function renderRoute() {
+        routeEdgeLayer.replaceChildren();
+        routeNodeLayer.replaceChildren();
+
+        routeEdges.forEach((edge) => {
+          const first = routeNodes[edge.a];
+          const second = routeNodes[edge.b];
+          const key = edgeKey(edge.a, edge.b);
+          const failed = key === routeFailedKey;
+          const group = svgElement("g", {
+            class: "edge-group",
+            role: "button",
+            tabindex: routeMode === "test" ? 0 : -1,
+            "aria-label": `${failed ? "Restore" : "Break"} link ${first.label} to ${second.label}`
+          });
+          const lineClass = `edge ${edge.type === "insurance" ? "insurance" : ""} ${failed ? "failed" : ""}`.trim();
+          group.appendChild(svgElement("line", { class: lineClass, x1: first.x, y1: first.y, x2: second.x, y2: second.y }));
+          group.appendChild(svgElement("line", { class: "edge-hit", x1: first.x, y1: first.y, x2: second.x, y2: second.y }));
+          if (failed) {
+            const midX = (first.x + second.x) / 2;
+            const midY = (first.y + second.y) / 2;
+            group.appendChild(svgElement("line", { class: "failure-mark", x1: midX - 9, y1: midY - 9, x2: midX + 9, y2: midY + 9 }));
+            group.appendChild(svgElement("line", { class: "failure-mark", x1: midX + 9, y1: midY - 9, x2: midX - 9, y2: midY + 9 }));
+          }
+          group.addEventListener("click", () => toggleRouteFailure(key));
+          group.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleRouteFailure(key);
+            }
+          });
+          routeEdgeLayer.appendChild(group);
+        });
+
+        routeNodes.forEach((node) => {
+          const selected = node.id === routeSelected;
+          const group = svgElement("g", {
+            class: "node-group",
+            role: "button",
+            tabindex: 0,
+            "aria-label": `${node.id === 0 ? "Source" : "Location"} ${node.label}${selected ? ", selected" : ""}`,
+            "aria-pressed": String(selected),
+            transform: `translate(${node.x} ${node.y})`
+          });
+          group.appendChild(svgElement("circle", { class: "node-hit", r: 30 }));
+          const dotClass = `node-dot ${node.id === 0 ? "source" : ""} ${selected ? "selected" : ""}`.trim();
+          group.appendChild(svgElement("circle", { class: dotClass, r: 17 }));
+          group.appendChild(svgElement("text", { class: `node-label ${node.id === 0 ? "source" : ""}`.trim(), y: 1 }, node.label));
+          group.addEventListener("click", () => chooseRouteNode(node.id));
+          group.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              chooseRouteNode(node.id);
+            }
+          });
+          routeNodeLayer.appendChild(group);
+        });
+
+        updateRouteStats();
+      }
+
+      function updateRouteStats() {
+        const analysis = analyseGraph(routeNodes.map((node) => node.id), routeEdges, { failedKey: routeFailedKey });
+        document.getElementById("route-links").textContent = routeEdges.length;
+        document.getElementById("route-loops").textContent = analysis.loops;
+        document.getElementById("route-groups").textContent = analysis.components;
+        document.getElementById("route-degree").textContent = analysis.hubDegree;
+
+        const verdict = document.getElementById("route-verdict");
+        verdict.className = "verdict";
+        if (routeFailedKey && analysis.components > 1) {
+          verdict.textContent = `Failure test: the network has split into ${analysis.components} groups. The largest contains ${analysis.largestGroup} dots.`;
+          verdict.classList.add("failure");
+        } else if (routeFailedKey && analysis.components === 1) {
+          verdict.textContent = "Failure test: every location is still connected. A loop supplied another route.";
+        } else if (analysis.components === 1 && analysis.loops === 0) {
+          verdict.textContent = routeEdges.length === 11 ? "Connected with 11 links: you have made a minimum tree." : "Connected with no independent loops: this is a tree.";
+        } else if (analysis.components === 1) {
+          verdict.textContent = `Connected with ${analysis.loops} independent ${analysis.loops === 1 ? "loop" : "loops"}: you have paid for spare routes.`;
+        } else {
+          verdict.textContent = routeMessage || `The drawing still has ${analysis.components} separate groups.`;
+          verdict.classList.add("warning");
+        }
+      }
+
+      document.getElementById("route-build").addEventListener("click", () => setRouteMode("build"));
+      document.getElementById("route-insure").addEventListener("click", () => setRouteMode("insurance"));
+      document.getElementById("route-test").addEventListener("click", () => setRouteMode("test"));
+      document.getElementById("route-undo").addEventListener("click", () => {
+        const removed = routeEdges.pop();
+        if (!removed) {
+          setRouteMessage("There is no link to undo.");
+        } else {
+          if (routeFailedKey === edgeKey(removed.a, removed.b)) routeFailedKey = null;
+          setRouteMessage("The most recent link was removed.");
+        }
+        renderRoute();
+      });
+      document.getElementById("route-reset").addEventListener("click", resetRoute);
+
+      function resetRoute() {
+        routeEdges = [];
+        routeSelected = null;
+        routeFailedKey = null;
+        routeMessage = "Start by joining two neighbouring dots.";
+        setRouteMode("build");
+        announce("Route network cleared.");
+      }
+
+      // Social network
+      const socialSvg = document.getElementById("social-svg");
+      const socialEdgeLayer = document.getElementById("social-edge-layer");
+      const socialNodeLayer = document.getElementById("social-node-layer");
+      const socialPositions = [
+        [62, 112], [62, 278],
+        [150, 62], [150, 195], [150, 328],
+        [245, 62], [245, 195], [245, 328],
+        [340, 62], [340, 195], [340, 328],
+        [435, 62], [435, 195], [435, 328],
+        [520, 195]
+      ];
+      const socialNodes = socialPositions.map(([x, y], id) => ({ id, x, y }));
+      let socialCount = 2;
+      let socialEdges = [{ a: 0, b: 1, type: "growth" }];
+      let socialRule = "popular";
+      let socialMode = "grow";
+      let socialSelected = null;
+      let removedHub = null;
+      let socialGrowing = false;
+      let socialMessage = "A hub can grow even while the network remains a tree.";
+
+      function randomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function currentSocialAnalysis(ignoreRemoved = false) {
+        const ids = Array.from({ length: socialCount }, (_, id) => id);
+        return analyseGraph(ids, socialEdges, { removedId: ignoreRemoved ? null : removedHub });
+      }
+
+      function choosePopularTarget(existing) {
+        if (existing.length === 1) return { target: existing[0], candidates: [existing[0]] };
+        const first = randomItem(existing);
+        let second = randomItem(existing);
+        while (second === first) second = randomItem(existing);
+        const analysis = currentSocialAnalysis(true);
+        const firstDegree = analysis.degrees.get(first) || 0;
+        const secondDegree = analysis.degrees.get(second) || 0;
+        let target;
+        if (firstDegree === secondDegree) target = Math.random() < 0.5 ? first : second;
+        else target = firstDegree > secondDegree ? first : second;
+        return { target, candidates: [first, second] };
+      }
+
+      function setSocialMessage(message) {
+        socialMessage = message;
+        announce(message);
+      }
+
+      function addSocialUser(quiet = false) {
+        if (socialGrowing && !quiet) return;
+        if (removedHub !== null) {
+          setSocialMessage("Restore the removed hub before adding more users.");
+          updateSocialStats();
+          return false;
+        }
+        if (socialCount >= socialNodes.length) {
+          setSocialMessage("All 15 users have joined.");
+          updateSocialStats();
+          return false;
+        }
+
+        const newId = socialCount;
+        const existing = Array.from({ length: newId }, (_, id) => id);
+        let choice;
+        let reason;
+        if (socialRule === "random") {
+          choice = { target: randomItem(existing), candidates: [] };
+          reason = "chosen at random";
+        } else if (socialRule === "boost" && newId >= 8 && Math.random() < 0.75) {
+          choice = { target: 7, candidates: [7] };
+          reason = "recommended by the platform";
+        } else {
+          choice = choosePopularTarget(existing);
+          reason = socialRule === "boost" ? "chosen by popularity when no boost occurred" : "the more connected of two candidates";
+        }
+        socialEdges.push({ a: choice.target, b: newId, type: "growth" });
+        socialCount += 1;
+        socialSelected = null;
+        setSocialMessage(`User ${newId + 1} joined User ${choice.target + 1}: ${reason}.`);
+        renderSocial();
+        return true;
+      }
+
+      function setSocialMode(mode) {
+        socialMode = mode;
+        socialSelected = null;
+        const backup = mode === "backup";
+        document.getElementById("social-backup").setAttribute("aria-pressed", String(backup));
+        document.getElementById("social-help").textContent = backup
+          ? "Select two active users to add a teal backup link. You may add three."
+          : socialRule === "boost"
+            ? "After User 8 arrives, later users have a 75% chance of receiving that recommendation."
+            : socialRule === "random"
+              ? "Every earlier user has the same chance of receiving the next link."
+              : "The popularity rule favours users who already have several links.";
+        renderSocial();
+      }
+
+      function chooseSocialNode(id) {
+        if (id >= socialCount || id === removedHub) return;
+        if (socialMode !== "backup") {
+          const analysis = currentSocialAnalysis();
+          setSocialMessage(`User ${id + 1} currently has ${analysis.degrees.get(id) || 0} working links.`);
+          updateSocialStats();
+          return;
+        }
+        const backupCount = socialEdges.filter((edge) => edge.type === "backup").length;
+        if (backupCount >= 3) {
+          setSocialMessage("You have used all three backup links. Test the hub now.");
+          updateSocialStats();
+          return;
+        }
+        if (socialSelected === null) {
+          socialSelected = id;
+          setSocialMessage(`User ${id + 1} selected. Choose another active user.`);
+          renderSocial();
+          return;
+        }
+        if (socialSelected === id) {
+          socialSelected = null;
+          setSocialMessage("Selection cancelled.");
+          renderSocial();
+          return;
+        }
+        const a = socialSelected;
+        const b = id;
+        socialSelected = null;
+        if (socialEdges.some((edge) => edgeKey(edge.a, edge.b) === edgeKey(a, b))) {
+          setSocialMessage("Those users already share a link.");
+          renderSocial();
+          return;
+        }
+        socialEdges.push({ a, b, type: "backup" });
+        setSocialMessage(`Backup link added between User ${a + 1} and User ${b + 1}.`);
+        renderSocial();
+      }
+
+      function renderSocial() {
+        socialEdgeLayer.replaceChildren();
+        socialNodeLayer.replaceChildren();
+        const analysis = currentSocialAnalysis();
+
+        socialEdges.forEach((edge) => {
+          if (edge.a >= socialCount || edge.b >= socialCount) return;
+          const first = socialNodes[edge.a];
+          const second = socialNodes[edge.b];
+          const touchesRemoved = edge.a === removedHub || edge.b === removedHub;
+          const lineClass = `edge ${edge.type === "backup" ? "backup" : ""} ${touchesRemoved ? "removed-edge" : ""}`.trim();
+          socialEdgeLayer.appendChild(svgElement("line", { class: lineClass, x1: first.x, y1: first.y, x2: second.x, y2: second.y }));
+        });
+
+        socialNodes.forEach((node) => {
+          const active = node.id < socialCount;
+          const removed = node.id === removedHub;
+          const hub = active && !removed && node.id === analysis.hubId && analysis.hubDegree > 1;
+          const selected = active && !removed && node.id === socialSelected;
+          const group = svgElement("g", {
+            class: "node-group",
+            role: active && !removed ? "button" : "img",
+            tabindex: active && !removed ? 0 : -1,
+            "aria-label": !active ? `Future User ${node.id + 1}` : removed ? `User ${node.id + 1}, removed hub` : `User ${node.id + 1}, ${analysis.degrees.get(node.id) || 0} working links${hub ? ", current hub" : ""}`,
+            transform: `translate(${node.x} ${node.y})`
+          });
+          group.appendChild(svgElement("circle", { class: "node-hit", r: 27 }));
+          const dotClasses = ["node-dot"];
+          if (!active) dotClasses.push("inactive");
+          if (hub) dotClasses.push("hub");
+          if (removed) dotClasses.push("removed");
+          if (selected) dotClasses.push("selected");
+          group.appendChild(svgElement("circle", { class: dotClasses.join(" "), r: 16 }));
+          group.appendChild(svgElement("text", { class: `node-label ${!active ? "inactive" : ""}`.trim(), y: 1 }, String(node.id + 1)));
+          if (removed) {
+            group.appendChild(svgElement("line", { class: "failure-mark", x1: -10, y1: -10, x2: 10, y2: 10 }));
+            group.appendChild(svgElement("line", { class: "failure-mark", x1: 10, y1: -10, x2: -10, y2: 10 }));
+          }
+          if (active && !removed) {
+            group.addEventListener("click", () => chooseSocialNode(node.id));
+            group.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                chooseSocialNode(node.id);
+              }
+            });
+          }
+          socialNodeLayer.appendChild(group);
+        });
+
+        updateSocialStats();
+      }
+
+      function updateSocialStats() {
+        const analysis = currentSocialAnalysis();
+        const backupCount = socialEdges.filter((edge) => edge.type === "backup").length;
+        document.getElementById("social-users").textContent = removedHub === null ? socialCount : socialCount - 1;
+        document.getElementById("social-links").textContent = analysis.workingEdges.length;
+        document.getElementById("social-loops").textContent = analysis.loops;
+        document.getElementById("social-groups").textContent = analysis.components;
+        document.getElementById("social-backups").textContent = `${backupCount} / 3`;
+        document.getElementById("social-hub").textContent = removedHub === null
+          ? `U${analysis.hubId + 1} · ${analysis.hubDegree}`
+          : `U${removedHub + 1} removed`;
+
+        const verdict = document.getElementById("social-verdict");
+        verdict.className = "verdict";
+        if (removedHub !== null && analysis.components > 1) {
+          verdict.textContent = `Removing the hub split the remaining users into ${analysis.components} groups.`;
+          verdict.classList.add("failure");
+        } else if (removedHub !== null) {
+          verdict.textContent = "The backup links kept the remaining users together after the hub was removed.";
+        } else if (analysis.loops > 0) {
+          verdict.textContent = `The network has a hub and ${analysis.loops} independent ${analysis.loops === 1 ? "loop" : "loops"}. These are different features.`;
+        } else if (analysis.hubDegree >= 4) {
+          verdict.textContent = "A strong hub has emerged, but the network still has no loops.";
+        } else {
+          verdict.textContent = socialMessage;
+        }
+      }
+
+      function resetSocial() {
+        socialCount = 2;
+        socialEdges = [{ a: 0, b: 1, type: "growth" }];
+        socialSelected = null;
+        removedHub = null;
+        socialGrowing = false;
+        socialMessage = "A hub can grow even while the network remains a tree.";
+        document.getElementById("social-remove").textContent = "Remove largest hub";
+        setSocialMode("grow");
+        setSocialControlsDisabled(false);
+        announce("Social network reset.");
+      }
+
+      function setSocialControlsDisabled(disabled) {
+        ["social-add", "social-grow", "social-backup", "social-remove", "social-reset"].forEach((id) => {
+          document.getElementById(id).disabled = disabled;
+        });
+        document.querySelectorAll("input[name='social-rule']").forEach((input) => { input.disabled = disabled; });
+      }
+
+      document.querySelectorAll("input[name='social-rule']").forEach((input) => {
+        input.addEventListener("change", () => {
+          socialRule = input.value;
+          const names = { random: "Random", popular: "Popularity", boost: "Platform boost" };
+          setSocialMessage(`${names[socialRule]} rule selected. Reset if you want a clean comparison.`);
+          setSocialMode("grow");
+        });
+      });
+
+      document.getElementById("social-add").addEventListener("click", () => addSocialUser());
+      document.getElementById("social-grow").addEventListener("click", () => {
+        if (removedHub !== null || socialCount >= socialNodes.length || socialGrowing) {
+          addSocialUser();
+          return;
+        }
+        socialGrowing = true;
+        setSocialControlsDisabled(true);
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const step = () => {
+          if (socialCount >= socialNodes.length) {
+            socialGrowing = false;
+            setSocialControlsDisabled(false);
+            setSocialMessage("All 15 users have joined. Circle the hub, then test its removal.");
+            renderSocial();
+            return;
+          }
+          addSocialUser(true);
+          window.setTimeout(step, reducedMotion ? 0 : 135);
+        };
+        step();
+      });
+
+      document.getElementById("social-backup").addEventListener("click", () => {
+        setSocialMode(socialMode === "backup" ? "grow" : "backup");
+      });
+
+      document.getElementById("social-remove").addEventListener("click", () => {
+        if (socialGrowing) return;
+        if (removedHub !== null) {
+          const restored = removedHub;
+          removedHub = null;
+          document.getElementById("social-remove").textContent = "Remove largest hub";
+          setSocialMessage(`User ${restored + 1} has been restored.`);
+          renderSocial();
+          return;
+        }
+        if (socialCount < 3) {
+          setSocialMessage("Add more users before testing a hub.");
+          updateSocialStats();
+          return;
+        }
+        const analysis = currentSocialAnalysis();
+        removedHub = analysis.hubId;
+        socialSelected = null;
+        document.getElementById("social-remove").textContent = "Restore removed hub";
+        setSocialMessage(`User ${removedHub + 1}, the largest hub, has been removed.`);
+        renderSocial();
+      });
+
+      document.getElementById("social-reset").addEventListener("click", resetSocial);
+
+      // Page actions
+      document.getElementById("print-button").addEventListener("click", () => window.print());
+      document.getElementById("reset-all-button").addEventListener("click", () => {
+        resetRoute();
+        resetSocial();
+        document.querySelectorAll("textarea, .pupil-line input").forEach((field) => { field.value = ""; });
+        openTab("routes");
+        announce("All drawings and written answers have been reset.");
+      });
+
+      renderRoute();
+      renderSocial();
+    })();
+  </script>
+</body>
+</html>
