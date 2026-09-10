@@ -100,6 +100,7 @@
   <button data-go="1">2 · Rivers</button>
   <button data-go="2">3 · Shortest vs safest</button>
   <button data-go="3">4 · Slime mould</button>
+  <button data-go="4">5 · Design studio</button>
 </nav>
 
 <!-- ================= 1. DLA ================= -->
@@ -181,6 +182,39 @@
   </div>
   <div class="notice"><strong>What to notice</strong>
     Run it on the first setting and the loop counter falls to zero: with one fixed delivery, everything spare gets thrown away. Switch to the second setting and loops survive, even though the mould is following exactly the same rule. Nothing about the creature changed. Only the uncertainty did.</div>
+</section>
+
+<!-- ================= 5. DESIGN STUDIO ================= -->
+<section id="s4">
+  <h2>Design studio: draw it, then let it be tested</h2>
+  <p class="lede">Same six problems as the paper worksheet. Click a dot to place a stop, click two stops to join them. Then score the design, break links at random, and see whether your choices hold up.</p>
+  <div class="stage">
+    <canvas id="std" width="900" height="470"></canvas>
+    <div class="controls">
+      <button id="stdGridSq" class="active">Square grid</button>
+      <button id="stdGridTri">Triangular grid</button>
+      <span style="opacity:.4">|</span>
+      <button id="stdToolStop" class="active">Place stop</button>
+      <button id="stdToolLink">Draw link</button>
+      <button id="stdUndo">Undo</button>
+      <button id="stdClear">Clear</button>
+    </div>
+    <div class="controls">
+      <button id="stdTest">Break one link at random</button>
+      <button id="stdTestAll">Test every link</button>
+      <button id="stdDemand">Run 200 random deliveries</button>
+      <label class="sw">Bridge cost <input type="range" id="stdBridge" min="1" max="8" value="1"><span id="stdBridgeV">1×</span></label>
+      <label class="sw"><input type="checkbox" id="stdRiver"> put a river across the middle</label>
+    </div>
+    <div class="readout">
+      stops: <b id="stdStops">0</b> &nbsp;·&nbsp; links: <b id="stdLinks">0</b> &nbsp;·&nbsp;
+      total length: <b id="stdLen">0</b> units &nbsp;·&nbsp; loops: <b id="stdLoops">0</b><br>
+      links whose loss cuts a stop off: <b id="stdBridges">—</b> &nbsp;·&nbsp;
+      average delivery: <b id="stdAvg">—</b> units &nbsp;·&nbsp; verdict: <b id="stdVerdict">draw something</b>
+    </div>
+  </div>
+  <div class="notice"><strong>What to notice</strong>
+    Every spare link you add makes the total length go up and the count of dangerous links go down. There is no setting where both improve at once. Turn the bridge cost up and watch a design that was obviously right become obviously wrong without you changing a single line of it.</div>
 </section>
 </main>
 
@@ -605,6 +639,179 @@ const C={ink:'#e8e4dc',dim:'#8d8880',amber:'#d8a24a',teal:'#4ea3a0',red:'#c4614f
     document.getElementById('phyMode0').classList.remove('active'); init();
   };
   init();
+})();
+
+/* =========================================================
+   5. DESIGN STUDIO
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('std'), ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  let tri=false, tool='stop', dots=[], stops=[], links=[], sel=null, broken=new Set();
+  const SP=52, OX=40, OY=40;
+
+  const el=id=>document.getElementById(id);
+
+  function makeDots(){
+    dots=[];
+    const cols=Math.floor((W-2*OX)/SP), rows=Math.floor((H-2*OY)/(tri?SP*0.866:SP));
+    for(let r=0;r<=rows;r++)for(let c=0;c<=cols;c++){
+      const ox = tri ? (r%2)*SP/2 : 0;
+      dots.push({x:OX+c*SP+ox, y:OY+r*(tri?SP*0.866:SP)});
+    }
+  }
+  function nearestDot(x,y){
+    let best=null,bd=1e9;
+    dots.forEach((d,i)=>{const dd=Math.hypot(d.x-x,d.y-y); if(dd<bd){bd=dd;best=i;}});
+    return bd<SP*0.45?best:null;
+  }
+  function riverY(){ return H/2; }
+  function crossesRiver(a,b){
+    if(!el('stdRiver').checked) return false;
+    const ry=riverY();
+    return (dots[a].y-ry)*(dots[b].y-ry) < 0;
+  }
+  function lenOf(k){
+    const L=links[k];
+    const raw=Math.hypot(dots[L.a].x-dots[L.b].x, dots[L.a].y-dots[L.b].y)/SP;
+    return crossesRiver(L.a,L.b) ? raw*(+el('stdBridge').value) : raw;
+  }
+  function liveLinks(){ return links.map((_,k)=>k).filter(k=>!broken.has(k)); }
+
+  function graph(skip){
+    const adj=new Map();
+    liveLinks().forEach(k=>{
+      if(k===skip)return;
+      const {a,b}=links[k];
+      if(!adj.has(a))adj.set(a,[]); if(!adj.has(b))adj.set(b,[]);
+      adj.get(a).push([b,lenOf(k)]); adj.get(b).push([a,lenOf(k)]);
+    });
+    return adj;
+  }
+  function allStopsConnected(skip){
+    if(stops.length<2)return true;
+    const adj=graph(skip);
+    const seen=new Set([stops[0]]); const st=[stops[0]];
+    while(st.length){ const v=st.pop(); for(const [w] of (adj.get(v)||[])) if(!seen.has(w)){seen.add(w);st.push(w);} }
+    return stops.every(s=>seen.has(s));
+  }
+  function dijkstra(src){
+    const adj=graph(-1), dist=new Map([[src,0]]), done=new Set();
+    while(true){
+      let u=null,bu=1e9;
+      for(const [k,v] of dist) if(!done.has(k)&&v<bu){bu=v;u=k;}
+      if(u===null)break; done.add(u);
+      for(const [w,l] of (adj.get(u)||[])){
+        const nd=bu+l; if(!dist.has(w)||nd<dist.get(w)) dist.set(w,nd);
+      }
+    }
+    return dist;
+  }
+  function stats(){
+    const live=liveLinks();
+    const len=live.reduce((s,k)=>s+lenOf(k),0);
+    const nodes=new Set(); live.forEach(k=>{nodes.add(links[k].a);nodes.add(links[k].b);});
+    // components
+    const idx=[...nodes], pos=new Map(idx.map((v,i)=>[v,i])), par=idx.map((_,i)=>i);
+    const find=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a];}return a;};
+    let comps=idx.length;
+    live.forEach(k=>{const a=find(pos.get(links[k].a)),b=find(pos.get(links[k].b)); if(a!==b){par[a]=b;comps--;}});
+    const loops=Math.max(0, live.length-(idx.length-comps));
+    return {len, loops, n:live.length};
+  }
+  function draw(){
+    ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+    if(el('stdRiver').checked){
+      ctx.strokeStyle='rgba(78,163,160,.35)'; ctx.lineWidth=10;
+      ctx.beginPath(); ctx.moveTo(0,riverY()-8);
+      ctx.bezierCurveTo(W*0.3,riverY()+18,W*0.7,riverY()-22,W,riverY()+6); ctx.stroke();
+    }
+    dots.forEach(d=>{ ctx.beginPath(); ctx.arc(d.x,d.y,1.7,0,7); ctx.fillStyle='#3b3f45'; ctx.fill(); });
+    links.forEach((L,k)=>{
+      ctx.beginPath(); ctx.moveTo(dots[L.a].x,dots[L.a].y); ctx.lineTo(dots[L.b].x,dots[L.b].y);
+      if(broken.has(k)){ ctx.strokeStyle=C.red; ctx.setLineDash([4,6]); ctx.lineWidth=1.4; }
+      else if(crossesRiver(L.a,L.b)){ ctx.strokeStyle='rgba(78,163,160,.95)'; ctx.setLineDash([]); ctx.lineWidth=3.4; }
+      else { ctx.strokeStyle='rgba(216,162,74,.9)'; ctx.setLineDash([]); ctx.lineWidth=2.2; }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+    stops.forEach(i=>{
+      ctx.beginPath(); ctx.arc(dots[i].x,dots[i].y,6,0,7);
+      ctx.fillStyle=C.ink; ctx.fill();
+    });
+    if(sel!==null){
+      ctx.beginPath(); ctx.arc(dots[sel].x,dots[sel].y,10,0,7);
+      ctx.strokeStyle=C.teal; ctx.lineWidth=1.5; ctx.stroke();
+    }
+    const s=stats();
+    el('stdStops').textContent=stops.length;
+    el('stdLinks').textContent=s.n;
+    el('stdLen').textContent=s.len.toFixed(1);
+    el('stdLoops').textContent=s.loops;
+  }
+  cv.onclick=e=>{
+    const r=cv.getBoundingClientRect();
+    const i=nearestDot((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height);
+    if(i===null)return;
+    if(tool==='stop'){
+      const at=stops.indexOf(i);
+      if(at>=0) stops.splice(at,1); else stops.push(i);
+    } else {
+      if(sel===null){ sel=i; }
+      else if(sel===i){ sel=null; }
+      else {
+        const dup=links.findIndex(L=>(L.a===sel&&L.b===i)||(L.a===i&&L.b===sel));
+        if(dup>=0) links.splice(dup,1); else links.push({a:sel,b:i});
+        sel=null;
+      }
+    }
+    el('stdVerdict').textContent='not tested yet'; el('stdVerdict').style.color=C.dim;
+    el('stdBridges').textContent='—'; el('stdAvg').textContent='—';
+    draw();
+  };
+  el('stdGridSq').onclick=()=>{tri=false;el('stdGridSq').classList.add('active');el('stdGridTri').classList.remove('active');reset();};
+  el('stdGridTri').onclick=()=>{tri=true;el('stdGridTri').classList.add('active');el('stdGridSq').classList.remove('active');reset();};
+  el('stdToolStop').onclick=()=>{tool='stop';sel=null;el('stdToolStop').classList.add('active');el('stdToolLink').classList.remove('active');draw();};
+  el('stdToolLink').onclick=()=>{tool='link';el('stdToolLink').classList.add('active');el('stdToolStop').classList.remove('active');draw();};
+  el('stdUndo').onclick=()=>{ links.pop(); broken.clear(); draw(); };
+  el('stdClear').onclick=()=>{ links=[]; stops=[]; broken.clear(); sel=null; draw(); };
+  el('stdRiver').onchange=draw;
+  el('stdBridge').oninput=()=>{ el('stdBridgeV').textContent=el('stdBridge').value+'×'; draw(); };
+  el('stdTest').onclick=()=>{
+    const live=liveLinks(); if(!live.length)return;
+    const k=live[(Math.random()*live.length)|0];
+    broken.add(k);
+    const ok=allStopsConnected(-1);
+    el('stdVerdict').textContent= ok ? 'link gone, everyone still reachable' : 'a stop is now cut off';
+    el('stdVerdict').style.color= ok ? C.teal : C.red;
+    draw();
+  };
+  el('stdTestAll').onclick=()=>{
+    broken.clear();
+    if(stops.length<2){ el('stdVerdict').textContent='place at least two stops'; draw(); return; }
+    let bad=0;
+    links.forEach((_,k)=>{ if(!allStopsConnected(k)) bad++; });
+    el('stdBridges').textContent=bad+' of '+links.length;
+    el('stdVerdict').textContent = bad===0 ? 'survives any single break' : bad+' single break'+(bad>1?'s would':' would')+' strand someone';
+    el('stdVerdict').style.color = bad===0 ? C.teal : C.amber;
+    draw();
+  };
+  el('stdDemand').onclick=()=>{
+    if(stops.length<2){ el('stdVerdict').textContent='place at least two stops'; return; }
+    let tot=0, fails=0;
+    const cache=new Map();
+    for(let t=0;t<200;t++){
+      const a=stops[(Math.random()*stops.length)|0];
+      let b; do{ b=stops[(Math.random()*stops.length)|0]; }while(b===a);
+      if(!cache.has(a)) cache.set(a,dijkstra(a));
+      const d=cache.get(a).get(b);
+      if(d===undefined) fails++; else tot+=d;
+    }
+    el('stdAvg').textContent=(fails===200)?'no route':(tot/(200-fails)).toFixed(1);
+    el('stdVerdict').textContent = fails ? Math.round(fails/2)+'% of deliveries had no route' : 'every delivery got through';
+    el('stdVerdict').style.color = fails ? C.red : C.teal;
+  };
+  function reset(){ links=[]; stops=[]; broken.clear(); sel=null; makeDots(); draw(); }
+  reset();
 })();
 </script>
 </body>
