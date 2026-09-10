@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where the Loops Come From — interactive</title>
+<style>
+  :root{
+    --bg:#0e0f11;
+    --panel:#15171a;
+    --ink:#e8e4dc;
+    --dim:#8d8880;
+    --rule:#2a2d31;
+    --amber:#d8a24a;
+    --teal:#4ea3a0;
+    --red:#c4614f;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+    line-height:1.55;
+  }
+  header{
+    padding:28px 20px 18px;border-bottom:1px solid var(--rule);
+    max-width:1000px;margin:0 auto;
+  }
+  .kicker{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dim);margin-bottom:10px;
+  }
+  h1{font-size:32px;margin:0 0 4px;font-weight:normal;letter-spacing:.01em}
+  .sub{color:var(--dim);font-style:italic;font-size:15px}
+  main{max-width:1000px;margin:0 auto;padding:0 20px 40px}
+  nav{
+    display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 24px;
+    border-bottom:1px solid var(--rule);padding-bottom:14px;
+  }
+  nav button{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;
+    letter-spacing:.08em;text-transform:uppercase;
+    background:transparent;color:var(--dim);border:1px solid var(--rule);
+    padding:8px 12px;cursor:pointer;border-radius:2px;
+  }
+  nav button:hover{color:var(--ink);border-color:var(--dim)}
+  nav button.on{color:var(--bg);background:var(--amber);border-color:var(--amber)}
+  section{display:none}
+  section.on{display:block}
+  h2{font-size:22px;font-weight:normal;margin:0 0 6px}
+  .lede{color:var(--dim);margin:0 0 16px;font-size:15px}
+  .stage{
+    background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+    padding:14px;
+  }
+  canvas{display:block;width:100%;height:auto;background:#0b0c0e;border-radius:2px;cursor:crosshair}
+  .controls{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px;
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--dim);
+  }
+  .controls button{
+    font-family:inherit;font-size:12px;background:#1e2126;color:var(--ink);
+    border:1px solid var(--rule);padding:7px 11px;border-radius:2px;cursor:pointer;
+  }
+  .controls button:hover{border-color:var(--amber);color:var(--amber)}
+  .controls button.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+  label.sw{display:flex;align-items:center;gap:6px;cursor:pointer}
+  input[type=range]{width:130px;accent-color:var(--amber)}
+  .readout{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;
+    color:var(--dim);margin-top:10px;border-top:1px solid var(--rule);padding-top:10px;
+  }
+  .readout b{color:var(--ink);font-weight:normal}
+  .notice{
+    margin-top:16px;padding:12px 14px;border-left:2px solid var(--teal);
+    background:rgba(78,163,160,.06);font-size:14px;
+  }
+  .notice strong{color:var(--teal);font-weight:normal;
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:4px}
+  footer{
+    max-width:1000px;margin:0 auto;padding:16px 20px 40px;
+    border-top:1px solid var(--rule);
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;
+    letter-spacing:.06em;color:#5d5a55;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">MYP Science · Networks · Flow · Uncertainty</div>
+  <h1>Where the Loops Come From</h1>
+  <div class="sub">Four things you can grow yourself, and one rule underneath all of them</div>
+</header>
+
+<main>
+<nav>
+  <button data-go="0" class="on">1 · Frost</button>
+  <button data-go="1">2 · Rivers</button>
+  <button data-go="2">3 · Shortest vs safest</button>
+  <button data-go="3">4 · Slime mould</button>
+</nav>
+
+<!-- ================= 1. DLA ================= -->
+<section class="on" id="s0">
+  <h2>Frost: branching that carries nothing</h2>
+  <p class="lede">Particles wander at random until they touch what is already there, and stick. Nothing plans this. Watch where the growth happens.</p>
+  <div class="stage">
+    <canvas id="dla" width="900" height="460"></canvas>
+    <div class="controls">
+      <button id="dlaRun">Grow</button>
+      <button id="dlaReset">Clear</button>
+      <label class="sw">Speed <input type="range" id="dlaSpeed" min="1" max="60" value="25"></label>
+      <label class="sw"><input type="checkbox" id="dlaSeedLine"> start from a flat edge</label>
+    </div>
+    <div class="readout">particles stuck: <b id="dlaN">0</b> &nbsp;·&nbsp; rings closed by accident: <b id="dlaLoops">0</b></div>
+  </div>
+  <div class="notice"><strong>What to notice</strong>
+    A tip that sticks out slightly gets hit first, so it grows faster and shades the hollows behind it. The arms never join back up. But ask yourself: what would even travel along one of these branches? Nothing does. That is why frost is the odd one out in this whole set.</div>
+</section>
+
+<!-- ================= 2. RIVERS ================= -->
+<section id="s1">
+  <h2>Rivers: water only goes one way</h2>
+  <p class="lede">Rain falls on a random landscape. Every drop moves to whichever neighbouring square is lowest. Thicker lines carry more water.</p>
+  <div class="stage">
+    <canvas id="riv" width="900" height="460"></canvas>
+    <div class="controls">
+      <button id="rivNew">New landscape</button>
+      <label class="sw">Roughness <input type="range" id="rivRough" min="1" max="10" value="5"></label>
+      <label class="sw">Show only rivers above <input type="range" id="rivThresh" min="1" max="60" value="12"></label>
+      <label class="sw"><input type="checkbox" id="rivRelief" checked> show the land</label>
+    </div>
+    <div class="readout">streams drawn: <b id="rivN">0</b> &nbsp;·&nbsp; loops found: <b id="rivLoops">0</b> &nbsp;·&nbsp; outlets to the sea: <b id="rivOut">0</b></div>
+  </div>
+  <div class="notice"><strong>What to notice</strong>
+    The loop counter never moves off zero, and it cannot. Every square sends its water to exactly one lower square, and you can never get back to where you started by only going downhill. The tree is forced by the rule, not chosen.</div>
+</section>
+
+<!-- ================= 3. MST vs redundancy ================= -->
+<section id="s2">
+  <h2>Shortest, or safest?</h2>
+  <p class="lede">Click the map to add towns. The shortest possible network joining them is always a tree. Then start cutting links and see what that costs you.</p>
+  <div class="stage">
+    <canvas id="mst" width="900" height="440"></canvas>
+    <div class="controls">
+      <button id="mstMode0" class="active">Shortest network</button>
+      <button id="mstMode1">Add one spare link</button>
+      <button id="mstMode2">Add three spare links</button>
+      <button id="mstCut">Cut a random link</button>
+      <button id="mstClear">Clear towns</button>
+    </div>
+    <div class="readout">
+      towns: <b id="mstN">0</b> &nbsp;·&nbsp; total length: <b id="mstLen">0</b> &nbsp;·&nbsp;
+      loops: <b id="mstLoops">0</b> &nbsp;·&nbsp;
+      after cutting: <b id="mstCutState">nothing cut yet</b>
+    </div>
+  </div>
+  <div class="notice"><strong>What to notice</strong>
+    Spare links always make the network longer, so they always cost more. The only thing you get back is what happens when a link breaks. If nothing ever breaks and nothing ever changes, you have wasted the money. That is the whole trade-off.</div>
+</section>
+
+<!-- ================= 4. PHYSARUM ================= -->
+<section id="s3">
+  <h2>Slime mould: the same rule, twice</h2>
+  <p class="lede">Every tube starts equal. Flow is sent between two food points, and any tube carrying a lot gets thicker while quiet tubes wither. The only thing you change is whether the deliveries stay the same or move around.</p>
+  <div class="stage">
+    <canvas id="phy" width="900" height="440"></canvas>
+    <div class="controls">
+      <button id="phyMode0" class="active">Same delivery every time</button>
+      <button id="phyMode1">Deliveries move around</button>
+      <button id="phyRun">Run</button>
+      <button id="phyReset">Start over</button>
+      <label class="sw"><input type="checkbox" id="phyBreak"> break a random tube as it runs</label>
+    </div>
+    <div class="readout">
+      steps: <b id="phyStep">0</b> &nbsp;·&nbsp; surviving tubes: <b id="phyEdges">0</b> &nbsp;·&nbsp;
+      loops surviving: <b id="phyLoops">0</b> &nbsp;·&nbsp; total tube length: <b id="phyLen">0</b>
+    </div>
+  </div>
+  <div class="notice"><strong>What to notice</strong>
+    Run it on the first setting and the loop counter falls to zero: with one fixed delivery, everything spare gets thrown away. Switch to the second setting and loops survive, even though the mould is following exactly the same rule. Nothing about the creature changed. Only the uncertainty did.</div>
+</section>
+</main>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll('nav button')];
+const secs=[...document.querySelectorAll('section')];
+tabs.forEach(b=>b.onclick=()=>{
+  tabs.forEach(x=>x.classList.remove('on'));
+  secs.forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  secs[+b.dataset.go].classList.add('on');
+});
+
+const C={ink:'#e8e4dc',dim:'#8d8880',amber:'#d8a24a',teal:'#4ea3a0',red:'#c4614f',bg:'#0b0c0e'};
+
+/* =========================================================
+   1. DLA
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('dla'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height, S=3;             // cell size
+  const gw=Math.floor(W/S), gh=Math.floor(H/S);
+  let grid, count, running=false, raf=null, par, loops;
+  const nEl=document.getElementById('dlaN');
+  const speed=document.getElementById('dlaSpeed');
+  const seedLine=document.getElementById('dlaSeedLine');
+
+  function reset(){
+    grid=new Uint8Array(gw*gh); count=0; loops=0;
+    par=new Int32Array(gw*gh).fill(-1);
+    document.getElementById('dlaLoops').textContent=0;
+    ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+    if(seedLine.checked){
+      for(let x=0;x<gw;x++){ const i=x+(gh-1)*gw; grid[i]=1; par[i]=i; if(x>0) par[find(i-1)]=find(i); }
+      ctx.fillStyle=C.dim; ctx.fillRect(0,H-S,W,S);
+    }else{
+      const cx=gw>>1, cy=gh>>1; grid[cx+cy*gw]=1; par[cx+cy*gw]=cx+cy*gw;
+      ctx.fillStyle=C.amber; ctx.fillRect(cx*S,cy*S,S,S);
+    }
+    nEl.textContent=0;
+  }
+  function find(a){ while(par[a]!==a){ par[a]=par[par[a]]; a=par[a]; } return a; }
+  function joinIn(x,y){
+    const i=x+y*gw; par[i]=i;
+    const ns=[];
+    if(x>0&&grid[i-1])ns.push(i-1);
+    if(x<gw-1&&grid[i+1])ns.push(i+1);
+    if(y>0&&grid[i-gw])ns.push(i-gw);
+    if(y<gh-1&&grid[i+gw])ns.push(i+gw);
+    for(const j of ns){
+      const a=find(i), b=find(j);
+      if(a===b) loops++; else par[a]=b;
+    }
+  }
+  function occupiedNeighbour(x,y){
+    return (x>0&&grid[x-1+y*gw])||(x<gw-1&&grid[x+1+y*gw])||
+           (y>0&&grid[x+(y-1)*gw])||(y<gh-1&&grid[x+(y+1)*gw]);
+  }
+  function dropOne(){
+    let x,y;
+    if(seedLine.checked){ x=(Math.random()*gw)|0; y=0; }
+    else{
+      const a=Math.random()*Math.PI*2, r=Math.min(gw,gh)*0.47;
+      x=Math.round(gw/2+Math.cos(a)*r); y=Math.round(gh/2+Math.sin(a)*r);
+    }
+    for(let step=0; step<6000; step++){
+      if(occupiedNeighbour(x,y)){
+        grid[x+y*gw]=1; joinIn(x,y); count++;
+        const t=Math.min(1,count/2200);
+        ctx.fillStyle=`rgb(${216-40*t},${162-30*t},${74+60*t})`;
+        ctx.fillRect(x*S,y*S,S,S);
+        return true;
+      }
+      const d=(Math.random()*4)|0;
+      if(d===0)x++; else if(d===1)x--; else if(d===2)y++; else y--;
+      if(x<0)x=0; if(x>=gw)x=gw-1;
+      if(y<0){ if(seedLine.checked) y=0; else y=0; }
+      if(y>=gh)y=gh-1;
+    }
+    return false;
+  }
+  function loop(){
+    if(!running)return;
+    const n=+speed.value;
+    for(let i=0;i<n;i++) dropOne();
+    nEl.textContent=count;
+    document.getElementById('dlaLoops').textContent=loops;
+    raf=requestAnimationFrame(loop);
+  }
+  document.getElementById('dlaRun').onclick=function(){
+    running=!running; this.textContent=running?'Pause':'Grow';
+    this.classList.toggle('active',running);
+    if(running) loop(); else cancelAnimationFrame(raf);
+  };
+  document.getElementById('dlaReset').onclick=reset;
+  seedLine.onchange=reset;
+  reset();
+})();
+
+/* =========================================================
+   2. RIVERS  (steepest-descent drainage)
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('riv'), ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,S=6;
+  const gw=Math.floor(W/S), gh=Math.floor(H/S);
+  let h,down,acc;
+  const nEl=document.getElementById('rivN'), outEl=document.getElementById('rivOut');
+  const rough=document.getElementById('rivRough'), thr=document.getElementById('rivThresh');
+  const relief=document.getElementById('rivRelief');
+
+  function smoothNoise(oct){
+    const f=new Float32Array(gw*gh);
+    let amp=1, sc=0.02*oct;
+    for(let o=0;o<4;o++){
+      const ph1=Math.random()*99, ph2=Math.random()*99, ph3=Math.random()*99;
+      for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){
+        f[x+y*gw]+=amp*(Math.sin(x*sc+ph1)*Math.cos(y*sc*0.9+ph2)+0.6*Math.sin((x+y)*sc*1.7+ph3));
+      }
+      amp*=0.5; sc*=2.1;
+    }
+    return f;
+  }
+  function build(){
+    h=smoothNoise(+rough.value);
+    // tilt: make the bottom edge the sea
+    for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){
+      h[x+y*gw]+= (gh-y)*0.55 + Math.random()*0.05;
+    }
+    down=new Int32Array(gw*gh).fill(-1);
+    for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){
+      const i=x+y*gw;
+      if(y===gh-1){ down[i]=-1; continue; }   // sea
+      let best=-1,bv=h[i];
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        if(!dx&&!dy)continue;
+        const nx=x+dx, ny=y+dy;
+        if(nx<0||ny<0||nx>=gw||ny>=gh)continue;
+        const j=nx+ny*gw;
+        if(h[j]<bv){bv=h[j];best=j;}
+      }
+      down[i]=best;
+    }
+    // accumulate: every cell sends one unit of rain downhill
+    acc=new Float32Array(gw*gh).fill(1);
+    const order=[...Array(gw*gh).keys()].sort((a,b)=>h[b]-h[a]);
+    for(const i of order){ const d=down[i]; if(d>=0) acc[d]+=acc[i]; }
+    draw();
+  }
+  function draw(){
+    ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+    if(relief.checked){
+      let lo=Infinity,hi=-Infinity;
+      for(const v of h){ if(v<lo)lo=v; if(v>hi)hi=v; }
+      for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){
+        const t=(h[x+y*gw]-lo)/(hi-lo);
+        const g=Math.round(14+t*30);
+        ctx.fillStyle=`rgb(${g},${g+1},${g+3})`;
+        ctx.fillRect(x*S,y*S,S,S);
+      }
+    }
+    const t=+thr.value; let n=0, outlets=0;
+    ctx.lineCap='round';
+    for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){
+      const i=x+y*gw, d=down[i];
+      if(acc[i]<t)continue;
+      n++;
+      const w=Math.min(5,0.5+Math.log(acc[i])*0.55);
+      ctx.strokeStyle=`rgba(78,163,160,${Math.min(1,0.35+acc[i]/400)})`;
+      ctx.lineWidth=w;
+      ctx.beginPath(); ctx.moveTo(x*S+S/2,y*S+S/2);
+      if(d>=0){ ctx.lineTo((d%gw)*S+S/2, Math.floor(d/gw)*S+S/2); }
+      else { ctx.lineTo(x*S+S/2, H); outlets++; }
+      ctx.stroke();
+    }
+    ctx.fillStyle='rgba(78,163,160,.18)'; ctx.fillRect(0,H-S,W,S);
+    nEl.textContent=n; outEl.textContent=outlets;
+    document.getElementById('rivLoops').textContent='0';
+  }
+  document.getElementById('rivNew').onclick=build;
+  rough.onchange=build;
+  thr.oninput=draw; relief.onchange=draw;
+  build();
+})();
+
+/* =========================================================
+   3. MST vs redundancy
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('mst'), ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  let pts=[], extra=0, edges=[], cut=null;
+  const nEl=document.getElementById('mstN'), lenEl=document.getElementById('mstLen'),
+        loopEl=document.getElementById('mstLoops'), cutEl=document.getElementById('mstCutState');
+
+  function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+  function build(){
+    edges=[]; cut=null; cutEl.textContent='nothing cut yet';
+    const n=pts.length; if(n<2){draw();return;}
+    // Prim
+    const inTree=new Array(n).fill(false); inTree[0]=true;
+    const chosen=[];
+    for(let k=1;k<n;k++){
+      let bi=-1,bj=-1,bd=Infinity;
+      for(let i=0;i<n;i++) if(inTree[i])
+        for(let j=0;j<n;j++) if(!inTree[j]){
+          const dd=d(pts[i],pts[j]); if(dd<bd){bd=dd;bi=i;bj=j;}
+        }
+      inTree[bj]=true; chosen.push({a:bi,b:bj,len:bd,spare:false});
+    }
+    edges=chosen;
+    // spare links: cheapest non-tree pairs
+    if(extra>0){
+      const have=new Set(edges.map(e=>e.a+'-'+e.b));
+      const cand=[];
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        if(have.has(i+'-'+j)||have.has(j+'-'+i))continue;
+        cand.push({a:i,b:j,len:d(pts[i],pts[j]),spare:true});
+      }
+      cand.sort((p,q)=>p.len-q.len);
+      edges=edges.concat(cand.slice(0,extra));
+    }
+    draw();
+  }
+  function connectedWithout(skip){
+    const n=pts.length; if(n<2)return true;
+    const adj=Array.from({length:n},()=>[]);
+    edges.forEach((e,i)=>{ if(i===skip)return; adj[e.a].push(e.b); adj[e.b].push(e.a); });
+    const seen=new Array(n).fill(false); const st=[0]; seen[0]=true; let c=1;
+    while(st.length){ const v=st.pop(); for(const w of adj[v]) if(!seen[w]){seen[w]=true;c++;st.push(w);} }
+    return c===n;
+  }
+  function draw(){
+    ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+    let total=0;
+    edges.forEach((e,i)=>{
+      const isCut = (cut===i);
+      if(!isCut) total+=e.len;
+      ctx.beginPath();
+      ctx.moveTo(pts[e.a].x,pts[e.a].y); ctx.lineTo(pts[e.b].x,pts[e.b].y);
+      if(isCut){ ctx.strokeStyle=C.red; ctx.setLineDash([4,6]); ctx.lineWidth=1.5; }
+      else if(e.spare){ ctx.strokeStyle='rgba(78,163,160,.85)'; ctx.setLineDash([]); ctx.lineWidth=1.6; }
+      else { ctx.strokeStyle='rgba(216,162,74,.9)'; ctx.setLineDash([]); ctx.lineWidth=2.2; }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+    pts.forEach(p=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,5,0,7); ctx.fillStyle=C.ink; ctx.fill();
+    });
+    if(pts.length<2){
+      ctx.fillStyle=C.dim; ctx.font='15px Georgia';
+      ctx.fillText('click to place towns',20,30);
+    }
+    nEl.textContent=pts.length;
+    lenEl.textContent=Math.round(total);
+    loopEl.textContent=Math.max(0, edges.length-(pts.length-1));
+  }
+  cv.onclick=e=>{
+    const r=cv.getBoundingClientRect();
+    pts.push({x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height});
+    build();
+  };
+  function setMode(k){
+    extra=k;
+    [0,1,2].forEach(i=>document.getElementById('mstMode'+i).classList.toggle('active',i===k?true:false));
+    build();
+  }
+  document.getElementById('mstMode0').onclick=()=>setMode(0);
+  document.getElementById('mstMode1').onclick=()=>setMode(1);
+  document.getElementById('mstMode2').onclick=()=>setMode(2);
+  document.getElementById('mstCut').onclick=()=>{
+    if(!edges.length)return;
+    cut=(Math.random()*edges.length)|0;
+    const ok=connectedWithout(cut);
+    cutEl.textContent = ok ? 'still all joined up' : 'a town is now cut off';
+    cutEl.style.color = ok ? C.teal : C.red;
+    draw();
+  };
+  document.getElementById('mstClear').onclick=()=>{pts=[];extra=0;setMode(0);};
+  // seed a few towns
+  [[180,120],[380,90],[600,150],[740,260],[520,330],[300,300],[130,260]]
+    .forEach(([x,y])=>pts.push({x,y}));
+  build();
+})();
+
+/* =========================================================
+   4. PHYSARUM (Tero-style adaptation)
+   ========================================================= */
+(function(){
+  const cv=document.getElementById('phy'), ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const stepEl=document.getElementById('phyStep'), edgeEl=document.getElementById('phyEdges'),
+        loopEl=document.getElementById('phyLoops'), lenEl=document.getElementById('phyLen');
+  const breakBox=document.getElementById('phyBreak');
+  let nodes=[],E=[],D=[],L=[],step=0,mode=0,running=false,raf=null,src=0,snk=0,dead=new Set();
+
+  function init(){
+    nodes=[]; E=[]; D=[]; L=[]; step=0; dead=new Set();
+    // food points on a rough grid with jitter
+    const cols=6, rows=4;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      nodes.push({
+        x: 90 + c*(W-180)/(cols-1) + (Math.random()-.5)*46,
+        y: 70 + r*(H-160)/(rows-1) + (Math.random()-.5)*46
+      });
+    }
+    // connect near neighbours
+    const n=nodes.length;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dd=Math.hypot(nodes[i].x-nodes[j].x,nodes[i].y-nodes[j].y);
+      if(dd< (W/cols)*1.35){ E.push([i,j]); L.push(dd); D.push(1); }
+    }
+    src=0; snk=n-1;
+    stepEl.textContent=0;
+    draw();
+  }
+  function solve(s,t){
+    // Kirchhoff: conductance c = D/L ; inject 1 at s, remove at t, ground t
+    const n=nodes.length;
+    const A=Array.from({length:n},()=>new Float64Array(n));
+    const b=new Float64Array(n);
+    E.forEach(([i,j],k)=>{
+      if(dead.has(k))return;
+      const c=D[k]/L[k];
+      A[i][i]+=c; A[j][j]+=c; A[i][j]-=c; A[j][i]-=c;
+    });
+    b[s]=1; b[t]=-1;
+    // ground node t
+    for(let j=0;j<n;j++)A[t][j]=0;
+    A[t][t]=1; b[t]=0;
+    // gaussian elimination
+    const M=A.map((row,i)=>{const r=new Float64Array(n+1); r.set(row); r[n]=b[i]; return r;});
+    for(let col=0;col<n;col++){
+      let piv=col;
+      for(let r=col;r<n;r++) if(Math.abs(M[r][col])>Math.abs(M[piv][col])) piv=r;
+      if(Math.abs(M[piv][col])<1e-12) continue;
+      [M[col],M[piv]]=[M[piv],M[col]];
+      const pv=M[col][col];
+      for(let c2=col;c2<=n;c2++) M[col][c2]/=pv;
+      for(let r=0;r<n;r++){
+        if(r===col)continue;
+        const f=M[r][col]; if(!f)continue;
+        for(let c2=col;c2<=n;c2++) M[r][c2]-=f*M[col][c2];
+      }
+    }
+    const p=new Float64Array(n);
+    for(let i=0;i<n;i++)p[i]=M[i][n];
+    return p;
+  }
+  function tick(){
+    const n=nodes.length;
+    if(mode===0){ src=0; snk=n-1; }
+    else { src=(Math.random()*n)|0; do{ snk=(Math.random()*n)|0; }while(snk===src); }
+    const p=solve(src,snk);
+    E.forEach(([i,j],k)=>{
+      if(dead.has(k)){ D[k]=0; return; }
+      const q=Math.abs(D[k]/L[k]*(p[i]-p[j]));
+      D[k] += 0.25*( Math.pow(q,1.15) - D[k] );   // thicken with flux, wither without
+      if(D[k]<1e-4) D[k]=1e-4;
+    });
+    if(breakBox.checked && step%40===39){
+      const live=E.map((_,k)=>k).filter(k=>!dead.has(k)&&D[k]>0.12);
+      if(live.length) dead.add(live[(Math.random()*live.length)|0]);
+    }
+    step++;
+    draw();
+  }
+  function stats(){
+    const live=[]; E.forEach((e,k)=>{ if(!dead.has(k)&&D[k]>0.08) live.push(k); });
+    // count components among nodes touched by live edges
+    const used=new Set(); live.forEach(k=>{used.add(E[k][0]);used.add(E[k][1]);});
+    const idx=[...used]; const pos=new Map(idx.map((v,i)=>[v,i]));
+    const par=idx.map((_,i)=>i);
+    const find=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a];}return a;};
+    let comps=idx.length;
+    live.forEach(k=>{
+      const a=find(pos.get(E[k][0])), b=find(pos.get(E[k][1]));
+      if(a!==b){par[a]=b;comps--;}
+    });
+    const loops = live.length - (idx.length - comps);
+    const total = live.reduce((s,k)=>s+L[k],0);
+    return {live:live.length, loops:Math.max(0,loops), total:Math.round(total)};
+  }
+  function draw(){
+    ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+    E.forEach(([i,j],k)=>{
+      if(dead.has(k)){
+        ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y);
+        ctx.strokeStyle='rgba(196,97,79,.35)'; ctx.setLineDash([3,5]); ctx.lineWidth=1; ctx.stroke();
+        ctx.setLineDash([]); return;
+      }
+      const w=0.6+D[k]*8;
+      if(D[k]<0.03)return;
+      ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y);
+      ctx.strokeStyle=`rgba(216,162,74,${Math.min(1,0.18+D[k])})`;
+      ctx.lineWidth=w; ctx.lineCap='round'; ctx.stroke();
+    });
+    nodes.forEach((p,i)=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,i===src||i===snk?7:4,0,7);
+      ctx.fillStyle = (i===src)?C.teal : (i===snk)?C.red : C.ink;
+      ctx.fill();
+    });
+    const s=stats();
+    stepEl.textContent=step; edgeEl.textContent=s.live;
+    loopEl.textContent=s.loops; lenEl.textContent=s.total;
+  }
+  function loop(){ if(!running)return; for(let i=0;i<2;i++) tick(); raf=requestAnimationFrame(loop); }
+  document.getElementById('phyRun').onclick=function(){
+    running=!running; this.textContent=running?'Pause':'Run';
+    this.classList.toggle('active',running);
+    if(running)loop(); else cancelAnimationFrame(raf);
+  };
+  document.getElementById('phyReset').onclick=()=>{ init(); };
+  document.getElementById('phyMode0').onclick=()=>{
+    mode=0; document.getElementById('phyMode0').classList.add('active');
+    document.getElementById('phyMode1').classList.remove('active'); init();
+  };
+  document.getElementById('phyMode1').onclick=()=>{
+    mode=1; document.getElementById('phyMode1').classList.add('active');
+    document.getElementById('phyMode0').classList.remove('active'); init();
+  };
+  init();
+})();
+</script>
+</body>
+</html>
