@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dials, Not Curtains — Interactive Companion</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b0d;
+    --panel:#141417;
+    --panel2:#191a1e;
+    --line:#2a2b30;
+    --gold:#c9a24a;
+    --gold-dim:#8a7440;
+    --text:#e8e6e1;
+    --text-dim:#9a988f;
+    --accent2:#7fb0c9;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    overflow:hidden;
+  }
+  .frame{
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    height:100vh;
+    width:100vw;
+  }
+  header{
+    padding:14px 22px 10px 22px;
+    border-bottom:1px solid var(--line);
+  }
+  header h1{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    font-size:1.7rem;
+    margin:0 0 2px 0;
+    letter-spacing:0.02em;
+    color:var(--text);
+  }
+  header .sub{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color:var(--text-dim);
+    font-size:1rem;
+  }
+  nav{
+    display:flex; gap:6px; margin-top:10px;
+  }
+  nav button{
+    background:var(--panel2);
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.82rem;
+    letter-spacing:0.03em;
+    padding:7px 14px;
+    cursor:pointer;
+    border-radius:3px;
+    transition:all .15s ease;
+  }
+  nav button:hover{ color:var(--text); border-color:var(--gold-dim); }
+  nav button.active{
+    color:var(--gold);
+    border-color:var(--gold-dim);
+    background:#1c1a14;
+  }
+  main{
+    display:grid;
+    grid-template-columns:210px 260px 1fr;
+    gap:0;
+    overflow:hidden;
+  }
+  .col{
+    border-right:1px solid var(--line);
+    padding:18px;
+    overflow-y:auto;
+  }
+  .col:last-child{ border-right:none; }
+  .colTitle{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--gold-dim);
+    margin-bottom:12px;
+  }
+  .ratioLabel{
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.25rem;
+    color:var(--text);
+    margin-bottom:4px;
+  }
+  .ratioLabel .val{ color:var(--gold); font-weight:600; }
+  .regimeTag{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    padding:2px 8px;
+    border-radius:2px;
+    margin-top:6px;
+    margin-bottom:16px;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+  }
+  input[type=range]{
+    width:100%;
+    accent-color:var(--gold);
+    height:26px;
+    cursor:pointer;
+  }
+  .fieldNote{
+    font-size:0.78rem;
+    line-height:1.5;
+    color:var(--text-dim);
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+  .fieldNote b{ color:var(--text); font-weight:500; }
+  .caseText{
+    font-size:0.85rem;
+    line-height:1.65;
+    color:var(--text-dim);
+  }
+  .caseText p{ margin:0 0 12px 0; }
+  .caseText .predict{
+    color:var(--accent2);
+    border-left:2px solid var(--accent2);
+    padding-left:10px;
+    margin:14px 0;
+  }
+  .caseText .rival{
+    color:#c98a4a;
+    border-left:2px solid #c98a4a;
+    padding-left:10px;
+    margin:14px 0;
+  }
+  canvas{ display:block; }
+  .plotWrap{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:18px 22px;
+  }
+  .plotTitle{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color:var(--text-dim);
+    font-size:0.95rem;
+    margin-bottom:8px;
+  }
+  footer{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    color:var(--text-dim);
+    padding:7px;
+    border-top:1px solid var(--line);
+    letter-spacing:0.03em;
+  }
+  footer em{ color:var(--gold-dim); font-style:normal; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <h1>Dials, Not Curtains</h1>
+    <div class="sub">four regime-dependent idealisations, each with a ratio you can turn</div>
+    <nav id="tabs">
+      <button data-case="spring" class="active">Spring</button>
+      <button data-case="thermo">Thermometer</button>
+      <button data-case="field">Bristles in oil</button>
+      <button data-case="float">Floating sphere</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="col" id="controlsCol">
+      <div class="colTitle">the dial</div>
+      <div id="controlsBody"></div>
+    </div>
+    <div class="col" id="textCol">
+      <div class="colTitle">what to watch for</div>
+      <div class="caseText" id="caseTextBody"></div>
+    </div>
+    <div class="plotWrap">
+      <div class="plotTitle" id="plotTitle"></div>
+      <canvas id="plot" width="900" height="560"></canvas>
+    </div>
+  </main>
+
+  <footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames <em>· companion to “Dials, Not Curtains”</em></footer>
+</div>
+
+<script>
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+const controlsBody = document.getElementById('controlsBody');
+const caseTextBody = document.getElementById('caseTextBody');
+const plotTitle = document.getElementById('plotTitle');
+
+const COL = {
+  grid:'#25262b', axis:'#5a5b62', text:'#e8e6e1', textDim:'#9a988f',
+  gold:'#c9a24a', accent2:'#7fb0c9', warn:'#c98a4a'
+};
+
+function resizeCanvas(){
+  const wrap = canvas.parentElement;
+  const w = wrap.clientWidth - 44;
+  const h = wrap.clientHeight - 40;
+  canvas.width = w * devicePixelRatio;
+  canvas.height = h * devicePixelRatio;
+  canvas.style.width = w+'px';
+  canvas.style.height = h+'px';
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+
+function clear(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+// generic axes drawer. area in CSS px.
+function drawAxes(x0,y0,w,h,xmax,ymax,xlabel,ylabel,yTickLabel){
+  ctx.strokeStyle = COL.axis;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-h);
+  ctx.moveTo(x0,y0); ctx.lineTo(x0+w,y0);
+  ctx.stroke();
+
+  ctx.strokeStyle = COL.grid;
+  ctx.fillStyle = COL.textDim;
+  ctx.font = '11px IBM Plex Mono';
+  ctx.textAlign='center';
+  for(let i=0;i<=5;i++){
+    const gx = x0 + w*i/5;
+    ctx.beginPath(); ctx.moveTo(gx,y0); ctx.lineTo(gx,y0-h); ctx.stroke();
+    ctx.fillText((xmax*i/5).toFixed(xmax<3?2:0), gx, y0+16);
+  }
+  ctx.textAlign='right';
+  for(let i=0;i<=4;i++){
+    const gy = y0 - h*i/4;
+    ctx.beginPath(); ctx.moveTo(x0,gy); ctx.lineTo(x0+w,gy); ctx.stroke();
+    ctx.fillText((ymax*i/4).toFixed(ymax<3?2:1), x0-8, gy+4);
+  }
+  ctx.fillStyle = COL.text;
+  ctx.textAlign='center';
+  ctx.font='12px IBM Plex Sans';
+  ctx.fillText(xlabel, x0+w/2, y0+40);
+  ctx.save();
+  ctx.translate(x0-46, y0-h/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText(ylabel,0,0);
+  ctx.restore();
+}
+
+function plotLine(pts,x0,y0,w,h,xmax,ymax,color,dash){
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash(dash||[]);
+  ctx.beginPath();
+  pts.forEach(([x,y],i)=>{
+    const px = x0 + (x/xmax)*w;
+    const py = y0 - (y/ymax)*h;
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function legend(x0,y0,items){
+  ctx.font='12px IBM Plex Sans';
+  let y = y0;
+  items.forEach(it=>{
+    ctx.strokeStyle = it.color;
+    ctx.setLineDash(it.dash||[]);
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+24,y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = COL.text;
+    ctx.textAlign='left';
+    ctx.fillText(it.label, x0+32, y+4);
+    y += 20;
+  });
+}
+
+/* ---------- state ---------- */
+let currentCase = 'spring';
+let params = { spring:0.5, thermo:0.5, field:0.5, floatv:0.5 };
+
+/* ---------- SPRING ---------- */
+function springControls(){
+  controlsBody.innerHTML = `
+    <div class="ratioLabel">r = W / W<sub>s</sub> = <span class="val" id="springVal"></span></div>
+    <div class="regimeTag" id="springTag"></div>
+    <input type="range" id="springSlider" min="0" max="100" value="30">
+  `;
+  const slider = document.getElementById('springSlider');
+  slider.addEventListener('input', ()=>{ params.spring = +slider.value/100; drawCurrent(); });
+  drawCurrent();
+}
+function springRatio(){
+  // map 0..1 to r in [0.05, 10] log scale
+  const t = params.spring;
+  return Math.pow(10, -1.3 + t*2.3);
+}
+function updateSpringLabel(){
+  const r = springRatio();
+  document.getElementById('springVal').textContent = r.toFixed(2);
+  const tag = document.getElementById('springTag');
+  if(r<0.4){ tag.textContent='self-weight dominated — graded spacing'; }
+  else if(r>3){ tag.textContent='load dominated — near-uniform spacing'; }
+  else { tag.textContent='transitional regime'; }
+}
+function springText(){
+  caseTextBody.innerHTML = `
+    <p>The spring carries its own weight <b style="color:var(--text)">and</b> the load at every cross-section. Coil spacing is proportional to local tension.</p>
+    <p class="predict">Predicted top/bottom tension ratio: <b>1 + 1/r</b>. This is the specific, checkable claim, not just “more even at higher load.”</p>
+    <p class="rival">A wrong rival worth testing against: fractional variation falling as 1/√r instead of 1/r. Both predict “more even at higher r” but give different curves — only measuring across several loads, not just one, tells them apart.</p>
+    <p>Turn the dial from low r (spring barely loaded) to high r (heavily loaded) and watch the tension line flatten.</p>
+  `;
+}
+function drawSpring(){
+  resizeCanvas();
+  clear();
+  updateSpringLabel();
+  springText();
+  plotTitle.textContent = 'Tension profile T(x)/Wₛ = r + (1 − x/L₀)';
+  const r = springRatio();
+  const x0=70,y0=460,w=canvas.width/devicePixelRatio-110,h=380;
+  const ymax = 11;
+  drawAxes(x0,y0,w,h,1,ymax,'position from support, x/L₀','tension T(x) / Wₛ');
+  const pts=[]; for(let i=0;i<=40;i++){ const x=i/40; pts.push([x, r+(1-x)]); }
+  plotLine(pts,x0,y0,w,h,1,ymax,COL.gold);
+  const refPts=[]; for(let i=0;i<=40;i++){ const x=i/40; refPts.push([x, 5+(1-x)]); }
+  plotLine(refPts,x0,y0,w,h,1,ymax,COL.textDim,[4,4]);
+  legend(x0+w-230,y0-h+20,[
+    {color:COL.gold,label:'current r'},
+    {color:COL.textDim,dash:[4,4],label:'reference, r = 5'}
+  ]);
+}
+
+/* ---------- THERMOMETER ---------- */
+function thermoControls(){
+  controlsBody.innerHTML = `
+    <div class="ratioLabel">bulb radius a = <span class="val" id="thermoVal"></span> (relative)</div>
+    <div class="regimeTag" id="thermoTag"></div>
+    <input type="range" id="thermoSlider" min="0" max="100" value="30">
+  `;
+  const slider = document.getElementById('thermoSlider');
+  slider.addEventListener('input', ()=>{ params.thermo = +slider.value/100; drawCurrent(); });
+  drawCurrent();
+}
+function thermoA(){
+  const t = params.thermo;
+  return 1 + t*9; // relative radius 1..10
+}
+function updateThermoLabel(){
+  const a = thermoA();
+  document.getElementById('thermoVal').textContent = a.toFixed(1)+'×';
+  const tag = document.getElementById('thermoTag');
+  const tau = a*a*2;
+  tag.textContent = 'τ ∝ a² ≈ '+tau.toFixed(0)+' s (predicted)';
+}
+function thermoText(){
+  caseTextBody.innerHTML = `
+    <p>Equilibration time scales with the <b style="color:var(--text)">square</b> of bulb radius: τ ∼ a²/α.</p>
+    <p class="predict">Double the radius and the lag should roughly quadruple, not double. That is the specific claim.</p>
+    <p class="rival">Rival worth ruling out: τ ∝ a (surface-area-ish reasoning) or τ ∝ a³ (volume reasoning). Both are wrong. Only plotting τ against a on log axes across several bulb sizes and checking the gradient is 2 distinguishes them.</p>
+    <p>Build it: a 250 ml round-bottom flask with a bunged capillary as a homemade oversized bulb settles over tens of seconds to minutes, slow enough to watch by eye.</p>
+  `;
+}
+function drawThermo(){
+  resizeCanvas();
+  clear();
+  updateThermoLabel();
+  thermoText();
+  plotTitle.textContent = 'Temperature approach: T(t) = T_b − (T_b − T_i)·e^(−t/τ)';
+  const a = thermoA();
+  const tau = a*a*2;
+  const x0=70,y0=460,w=canvas.width/devicePixelRatio-110,h=380;
+  const tmax = Math.max(90, tau*3.2);
+  drawAxes(x0,y0,w,h,tmax,1.1,'time, t (s)',' temperature (relative to bath)');
+  const pts=[]; for(let i=0;i<=200;i++){ const x=i/200*tmax; pts.push([x, 1-Math.exp(-x/tau)]); }
+  plotLine(pts,x0,y0,w,h,tmax,1.1,COL.gold);
+  const refPts=[]; for(let i=0;i<=200;i++){ const x=i/200*tmax; refPts.push([x, 1-Math.exp(-x/6)]); }
+  plotLine(refPts,x0,y0,w,h,tmax,1.1,COL.textDim,[4,4]);
+  ctx.setLineDash([1,4]); ctx.strokeStyle=COL.axis;
+  ctx.beginPath(); ctx.moveTo(x0,y0-h/1.1); ctx.lineTo(x0+w,y0-h/1.1); ctx.stroke();
+  ctx.setLineDash([]);
+  legend(x0+w-230,y0-h+20,[
+    {color:COL.gold,label:'current bulb'},
+    {color:COL.textDim,dash:[4,4],label:'small reference bulb'}
+  ]);
+}
+
+/* ---------- FIELD / BRISTLES ---------- */
+function fieldControls(){
+  controlsBody.innerHTML = `
+    <div class="ratioLabel">viscosity ζ = <span class="val" id="fieldVal"></span></div>
+    <div class="regimeTag" id="fieldTag"></div>
+    <input type="range" id="fieldSlider" min="0" max="100" value="20">
+  `;
+  const slider = document.getElementById('fieldSlider');
+  slider.addEventListener('input', ()=>{ params.field = +slider.value/100; drawCurrent(); });
+  drawCurrent();
+}
+function fieldZeta(){ return 0.05 + params.field*1.4; } // damping ratio 0.05..1.45
+function updateFieldLabel(){
+  const z = fieldZeta();
+  document.getElementById('fieldVal').textContent = z.toFixed(2);
+  const tag = document.getElementById('fieldTag');
+  tag.textContent = z<1 ? 'underdamped — bristles overshoot' : 'overdamped — smooth alignment, no overshoot';
+}
+function fieldText(){
+  caseTextBody.innerHTML = `
+    <p>Equilibrium alignment is fixed by the field alone. Only the <b style="color:var(--text)">approach</b> to it depends on viscosity, via a damping ratio ζ.</p>
+    <p class="predict">Predicted transition: for ζ &lt; 1, visible overshoot and oscillation; for ζ ≥ 1, smooth monotonic approach, no overshoot.</p>
+    <p class="rival">Rival worth ruling out: “more viscous just always looks slower,” with no sharp transition. Finding the actual critical oil at which overshoot disappears is what makes this hard to vary.</p>
+    <p>Drag the dial from thin oil to thick oil and watch the oscillation vanish at ζ = 1.</p>
+  `;
+}
+function drawField(){
+  resizeCanvas();
+  clear();
+  updateFieldLabel();
+  fieldText();
+  plotTitle.textContent = 'Alignment angle θ(t) — damped rotation toward the field';
+  const zeta = fieldZeta();
+  const x0=70,y0=460,w=canvas.width/devicePixelRatio-110,h=380;
+  const tmax=10, ymax=1.7;
+  drawAxes(x0,y0,w,h,tmax,ymax,'time, t','alignment angle θ(t) / θ_f');
+  const wn = 3;
+  const pts=[];
+  for(let i=0;i<=300;i++){
+    const t = i/300*tmax;
+    let y;
+    if(zeta<1){
+      const wd = wn*Math.sqrt(1-zeta*zeta);
+      y = 1 - Math.exp(-zeta*wn*t)*(Math.cos(wd*t)+ (zeta*wn/wd)*Math.sin(wd*t));
+    } else {
+      // overdamped approx
+      const tauEff = 1/(zeta*wn*0.6);
+      y = 1 - Math.exp(-t/tauEff);
+    }
+    pts.push([t,y]);
+  }
+  plotLine(pts,x0,y0,w,h,tmax,ymax,COL.accent2);
+  ctx.setLineDash([1,4]); ctx.strokeStyle=COL.axis;
+  ctx.beginPath(); ctx.moveTo(x0,y0-h/ymax); ctx.lineTo(x0+w,y0-h/ymax); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=COL.textDim; ctx.font='11px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillText('θ_f', x0+w+4, y0-h/ymax+4);
+}
+
+/* ---------- FLOAT ---------- */
+function floatControls(){
+  controlsBody.innerHTML = `
+    <div class="ratioLabel">viscosity ζ = <span class="val" id="floatVal"></span></div>
+    <div class="regimeTag" id="floatTag"></div>
+    <input type="range" id="floatSlider" min="0" max="100" value="15">
+  `;
+  const slider = document.getElementById('floatSlider');
+  slider.addEventListener('input', ()=>{ params.floatv = +slider.value/100; drawCurrent(); });
+  drawCurrent();
+}
+function floatZeta(){ return 0.05 + params.floatv*1.4; }
+function updateFloatLabel(){
+  const z = floatZeta();
+  document.getElementById('floatVal').textContent = z.toFixed(2);
+  const tag = document.getElementById('floatTag');
+  tag.textContent = z<1 ? 'underdamped — sphere bobs (like water)' : 'overdamped — sphere sinks smoothly (like glycerol)';
+}
+function floatText(){
+  caseTextBody.innerHTML = `
+    <p>Equilibrium depth is fixed by Archimedes' principle alone. The approach to it is a damped oscillator in ζ.</p>
+    <p class="predict">Same asymptote in every case. Only the damping regime, and the number of visible oscillations, should change with viscosity.</p>
+    <p class="rival">Paired with the bristle case: predict the regime and the rough oscillation count <b style="color:var(--text)">before</b> running the demo, using the same ζ &lt; 1 / ζ ≥ 1 criterion, then check it against the trace.</p>
+    <p>Water gives an underdamped bob; glycerol or golden syrup gives an overdamped, smooth sink to the same final depth.</p>
+  `;
+}
+function drawFloat(){
+  resizeCanvas();
+  clear();
+  updateFloatLabel();
+  floatText();
+  plotTitle.textContent = 'Depth below surface d(t) — damped approach to equilibrium';
+  const zeta = floatZeta();
+  const x0=70,y0=460,w=canvas.width/devicePixelRatio-110,h=380;
+  const tmax=10, ymax=1.7;
+  drawAxes(x0,y0,w,h,tmax,ymax,'time, t','depth below surface, d(t)');
+  const wn = 2.6;
+  const pts=[];
+  for(let i=0;i<=300;i++){
+    const t = i/300*tmax;
+    let y;
+    if(zeta<1){
+      const wd = wn*Math.sqrt(1-zeta*zeta);
+      y = 1 - Math.exp(-zeta*wn*t)*(Math.cos(wd*t)+ (zeta*wn/wd)*Math.sin(wd*t));
+    } else {
+      const tauEff = 1/(zeta*wn*0.6);
+      y = 1 - Math.exp(-t/tauEff);
+    }
+    pts.push([t,y]);
+  }
+  plotLine(pts,x0,y0,w,h,tmax,ymax,COL.warn);
+  ctx.setLineDash([1,4]); ctx.strokeStyle=COL.axis;
+  ctx.beginPath(); ctx.moveTo(x0,y0-h/ymax); ctx.lineTo(x0+w,y0-h/ymax); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=COL.textDim; ctx.font='11px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillText('equilibrium depth', x0+w-140, y0-h/ymax-6);
+}
+
+/* ---------- routing ---------- */
+function drawCurrent(){
+  if(currentCase==='spring') drawSpring();
+  else if(currentCase==='thermo') drawThermo();
+  else if(currentCase==='field') drawField();
+  else if(currentCase==='floatv' || currentCase==='float') drawFloat();
+}
+function setCase(c){
+  currentCase = c;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.case===c));
+  if(c==='spring') springControls();
+  else if(c==='thermo') thermoControls();
+  else if(c==='field') fieldControls();
+  else if(c==='float') floatControls();
+}
+document.querySelectorAll('#tabs button').forEach(b=>{
+  b.addEventListener('click', ()=>setCase(b.dataset.case));
+});
+window.addEventListener('resize', drawCurrent);
+
+setCase('spring');
+</script>
+</body>
+</html>
