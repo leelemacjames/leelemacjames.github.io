@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sandwich in the Middle: energy, exergy and the size of the economy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0efeb; --surface:#e4e2dc; --ink:#1d1f24; --muted:#5b5850;
+  --gold:#8a691d; --steel:#3b6688; --rule:#c8c4ba;
+  --serif:"Cormorant Garamond", Garamond, "Times New Roman", serif;
+  --sans:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181d; --surface:#1e222a; --ink:#ece5d4; --muted:#9d978a;
+    --gold:#cfa94f; --steel:#84a8c8; --rule:#30353e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181d; --surface:#1e222a; --ink:#ece5d4; --muted:#9d978a;
+  --gold:#cfa94f; --steel:#84a8c8; --rule:#30353e;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px); background:var(--bg)}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased}
+main{max-width:44rem; margin:0 auto; padding:3rem 1.25rem 2rem}
+h1{font-family:var(--serif); font-weight:600; font-size:clamp(2.3rem,7vw,3.6rem);
+  line-height:1.02; margin:0 0 1rem; letter-spacing:-0.01em}
+h1 small{display:block; font-weight:500; font-style:italic; font-size:0.5em;
+  color:var(--gold); margin-top:0.6rem; letter-spacing:0}
+h2{font-family:var(--serif); font-weight:600; font-size:clamp(1.6rem,4.6vw,2.1rem);
+  line-height:1.15; margin:3.5rem 0 0.8rem; padding-top:1.6rem; border-top:1px solid var(--rule)}
+p{margin:0 0 1.05rem}
+.lede{font-family:var(--serif); font-size:1.35rem; line-height:1.5}
+.hero{margin:2rem -0.25rem 0}
+.hero svg{width:100%; height:auto; display:block}
+.eq{font-family:var(--serif); font-style:italic; font-size:1.45rem; text-align:center;
+  margin:1.4rem 0; line-height:1.4; overflow-x:auto}
+.eq .up{font-style:normal}
+.predict{font-style:italic; color:var(--muted); border-left:2px solid var(--gold);
+  padding-left:0.9rem; margin:1.4rem 0}
+.fig{background:var(--surface); padding:1.2rem 1.2rem 1.1rem; margin:1.2rem 0 1.8rem;
+  border-top:2px solid var(--gold)}
+.row{display:grid; grid-template-columns:9.5rem 1fr 4.6rem; gap:0.7rem; align-items:center; margin:0.45rem 0}
+.row label{font-size:0.92rem; color:var(--muted)}
+.row output{font-variant-numeric:tabular-nums; text-align:right; font-weight:500}
+input[type=range]{width:100%; accent-color:var(--gold)}
+.track{height:14px; background:var(--bg); margin:0.9rem 0 0.4rem; position:relative; overflow:hidden}
+.fill{height:100%; background:var(--gold); width:0; transition:width .25s ease}
+.fill.steel{background:var(--steel)}
+.stack{display:flex; height:22px; background:var(--bg); margin:0.8rem 0 0.4rem}
+.stack div{height:100%; transition:width .25s ease}
+.readout{font-size:0.98rem; margin:0.7rem 0 0; font-variant-numeric:tabular-nums}
+.readout strong{color:var(--gold); font-weight:600}
+.calc{font-family:var(--serif); font-style:italic; font-size:1.2rem; margin:0.3rem 0 0}
+.presets{display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.8rem}
+button{font-family:var(--sans); font-size:0.9rem; color:var(--ink); background:transparent;
+  border:1px solid var(--rule); padding:0.4rem 0.8rem; cursor:pointer; border-radius:2px}
+button:hover{border-color:var(--gold)}
+button.primary{border-color:var(--gold); color:var(--gold); font-weight:600}
+button:focus-visible, input:focus-visible, summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+.plots{display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.9rem}
+.plots figure{margin:0}
+.plots svg{width:100%; height:auto; display:block; background:var(--bg)}
+.plots figcaption{font-size:0.85rem; color:var(--muted); margin-top:0.35rem}
+.plots figcaption b{color:var(--ink); font-variant-numeric:tabular-nums}
+.key{font-size:0.85rem; color:var(--muted); display:flex; gap:1.2rem; flex-wrap:wrap}
+.key span::before{content:""; display:inline-block; width:0.8rem; height:0.8rem; margin-right:0.35rem; vertical-align:-0.1rem}
+.key .k-fossil::before{background:var(--gold)}
+.key .k-renew::before{background:var(--steel)}
+details{border-top:1px solid var(--rule); padding:0.8rem 0}
+details:last-of-type{border-bottom:1px solid var(--rule)}
+summary{cursor:pointer; font-weight:500}
+details p{margin:0.6rem 0 0; color:var(--muted)}
+.close{font-family:var(--serif); font-size:1.3rem; line-height:1.5; margin-top:2.5rem}
+footer{max-width:44rem; margin:3rem auto 0; padding:1.5rem 1.25rem 2.5rem; border-top:1px solid var(--rule);
+  font-family:var(--serif); font-style:italic; font-size:1.05rem; color:var(--muted); text-align:center}
+footer .stamp{color:var(--gold)}
+sub,sup{font-size:0.65em}
+@media (max-width:560px){
+  body{font-size:16px}
+  .row{grid-template-columns:1fr 4.2rem}
+  .row label{grid-column:1 / -1; margin-bottom:-0.4rem}
+  .plots{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){ .fill,.stack div{transition:none} }
+</style>
+</head>
+<body>
+<main>
+
+<h1>The Sandwich in the Middle<small>Energy, exergy and the size of the economy</small></h1>
+
+<p class="lede">A power station, a supermarket and a hospital all run on the same trick: they take energy in a concentrated form, use it to do work, and hand it back to the world spread thin and warm. What follows traces that trick from a single steam turbine to the whole world economy, using fractions, percentages, standard form and a scatter graph.</p>
+
+<div class="hero" role="img" aria-label="Three stepped blocks: a tall block of fossil reserves, a middle block for society held above the background environment, and a low block of waste heat and carbon dioxide returned to the environment.">
+<svg viewBox="0 0 600 285" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <line x1="0" y1="240" x2="600" y2="240" stroke="var(--muted)" stroke-dasharray="4 5"/>
+  <rect x="20" y="28" width="150" height="212" fill="var(--gold)" fill-opacity="0.16" stroke="var(--gold)" stroke-width="1.5"/>
+  <text x="95" y="112" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="25" font-weight="600" fill="var(--ink)">Fossil</text>
+  <text x="95" y="138" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="25" font-weight="600" fill="var(--ink)">reserves</text>
+  <text x="95" y="168" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">stored sunlight</text>
+  <rect x="192" y="128" width="218" height="112" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+  <text x="301" y="180" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="25" font-weight="600" fill="var(--ink)">Society</text>
+  <text x="301" y="205" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">held above the background</text>
+  <rect x="432" y="194" width="150" height="46" fill="var(--steel)" fill-opacity="0.18" stroke="var(--steel)" stroke-width="1.5"/>
+  <text x="507" y="224" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="23" font-weight="600" fill="var(--ink)">Waste</text>
+  <path d="M170,58 C215,62 235,85 240,122" fill="none" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <text x="215" y="56" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--gold)">exergy in</text>
+  <path d="M410,150 C455,152 480,168 490,188" fill="none" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <text x="430" y="140" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--steel)">entropy out</text>
+  <text x="301" y="268" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">background environment</text>
+  <text x="507" y="268" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">heat and CO₂</text>
+</svg>
+</div>
+
+<h2>Energy is never used up, so what is?</h2>
+
+<p>The first law of thermodynamics says that energy is conserved, which raises an awkward question about why anyone pays for it. A litre of petrol and the warm exhaust it becomes contain the same number of joules, yet only the petrol will drive a car up a hill. What you really buy is the ability of energy to do work, and physicists call that ability <em>exergy</em>. Exergy depends on how different something is from its surroundings: steam at 550 °C in a room at 20 °C is full of it, while the same energy smeared through the room as a faint warmth has almost none, because nothing is left to flow downhill.</p>
+
+<p>For heat, the largest share that can ever become work depends only on two temperatures, both measured in kelvin (add 273 to a Celsius temperature):</p>
+
+<p class="eq">maximum fraction <span class="up">=</span> 1 <span class="up">−</span> T<sub>env</sub> / T<sub>hot</sub></p>
+
+<p>Power-station steam at 550 °C is 823 K, and surroundings at 20 °C are 293 K, so the largest possible fraction is 1 − 293/823 ≈ 0.64. Real stations manage about 0.38, because friction, leaks and heat flowing across large temperature gaps destroy some of the exergy that was available, and each of those losses creates entropy that can never be reversed.</p>
+
+<p class="predict">Predict first: which is the better source of work, a bath at 40 °C or a candle flame at 1400 °C? Does your answer change on a hot day?</p>
+
+<div class="fig">
+  <div class="row"><label for="th">Hot source</label><input id="th" type="range" min="25" max="1500" step="5" value="550"><output id="thv" for="th"></output></div>
+  <div class="row"><label for="te">Surroundings</label><input id="te" type="range" min="-20" max="45" step="1" value="20"><output id="tev" for="te"></output></div>
+  <div class="track"><div class="fill" id="bar1"></div></div>
+  <p class="calc" id="calc1"></p>
+  <p class="readout" id="out1" aria-live="polite"></p>
+  <div class="presets">
+    <button type="button" data-t="40">Bath, 40 °C</button>
+    <button type="button" data-t="100">Kettle, 100 °C</button>
+    <button type="button" data-t="550">Power-station steam, 550 °C</button>
+    <button type="button" data-t="1400">Candle flame, 1400 °C</button>
+  </div>
+</div>
+
+<h2>Squeezed between a source and a sink</h2>
+
+<p>Life on Earth runs on sunlight, which arrives at about 170 000 TW and leaves again as infrared radiation once plants and animals have taken their share. Fossil fuels are sunlight that plants captured over millions of years and that geology then concentrated into coal, oil and gas, and burning them has let human society run far above the energy each creature could gather for itself. The picture at the top shows the result: a society lifted above its surroundings, fed from a shrinking store of concentrated exergy on one side and dumping its waste into the environment on the other.</p>
+
+<p>The waste comes in two kinds, and the heat is smaller than you might guess. Humanity uses energy at about 1.9 × 10<sup>13</sup> W, and spreading that over the Earth's surface area of 5.1 × 10<sup>14</sup> m² gives</p>
+
+<p class="eq">1.9 × 10<sup>13</sup> ÷ 5.1 × 10<sup>14</sup> ≈ 3.7 × 10<sup>−2</sup> W/m²</p>
+
+<p>The extra carbon dioxide in the atmosphere traps about 2.2 W/m², roughly sixty times as much, so the gas in the exhaust warms the planet far more than the heat itself does. Heat still matters over long periods because energy use keeps growing. At a steady growth of <em>g</em>% a year, a quantity doubles about every 70/<em>g</em> years, which is known as the rule of 70. Growing from 0.037 to 1 W/m² means multiplying by about 27, which lies between four doublings (×16) and five (×32).</p>
+
+<p class="predict">Predict first: if energy use grows by 2% a year, will waste heat alone reach 1 W/m² within your grandchildren's lifetimes?</p>
+
+<div class="fig">
+  <div class="row"><label for="g">Growth per year</label><input id="g" type="range" min="0.5" max="4" step="0.1" value="2.3"><output id="gv" for="g"></output></div>
+  <p class="readout" id="out2" aria-live="polite"></p>
+</div>
+
+<p>Only energy released from a store adds this extra heat. Solar panels and wind turbines divert energy the Earth was already receiving and would have radiated anyway, so they add almost none, whereas fossil fuels, nuclear fission and any future fusion reactor release new heat with every joule they supply.</p>
+
+<h2>Tracking a ratio with percentages</h2>
+
+<p>The energy a country needs for each pound of output is its <em>energy intensity</em>, found by dividing energy use by GDP. When both parts of a ratio are changing, a handy rule lets you work with growth rates alone: the percentage change of a ratio is approximately the percentage change of the top minus the percentage change of the bottom. If energy use grows by 2% while GDP grows by 3%, energy intensity falls by about 1%. The exact answer comes from multiplying the growth factors,</p>
+
+<p class="eq">1.02 ÷ 1.03 ≈ 0.9903, a fall of 0.97%</p>
+
+<p>and the rule works because, for small growth rates, the product of two small percentages is tiny enough to ignore.</p>
+
+<p class="predict">Predict first: the rule gets worse as growth rates get larger. Can you find settings where it is wrong by more than half a percentage point?</p>
+
+<div class="fig">
+  <div class="row"><label for="gy">GDP growth</label><input id="gy" type="range" min="0" max="10" step="0.5" value="3"><output id="gyv" for="gy"></output></div>
+  <div class="row"><label for="ge">Energy growth</label><input id="ge" type="range" min="-4" max="10" step="0.5" value="2"><output id="gev" for="ge"></output></div>
+  <p class="readout" id="out3" aria-live="polite"></p>
+</div>
+
+<h2>How tightly are energy and GDP linked?</h2>
+
+<p>Plotting world GDP against world energy use for each year from 1971 to 2017 gives a correlation coefficient of 0.997, which looks almost perfect. The coefficient <em>r</em> runs from −1 to 1 and measures how nearly the points lie on a straight line. The difficulty is that any two quantities that both grow steadily over time will correlate strongly, whether or not they are connected. The test below builds two series with no connection at all, one growing at about 3% a year and the other at about 2%, each with its own random wobbles, and measures <em>r</em> for them.</p>
+
+<p class="predict">Predict first: what value of r will two unconnected growing series give?</p>
+
+<div class="fig">
+  <button type="button" class="primary" id="gen">Build two unrelated series</button>
+  <div class="plots">
+    <figure><svg id="sc1" viewBox="0 0 300 220" role="img" aria-label="Scatter plot of the two series' values"></svg>
+      <figcaption>Values, year by year: r = <b id="r1"></b></figcaption></figure>
+    <figure><svg id="sc2" viewBox="0 0 300 220" role="img" aria-label="Scatter plot of the two series' yearly percentage changes"></svg>
+      <figcaption>Yearly percentage changes: r = <b id="r2"></b></figcaption></figure>
+  </div>
+  <p class="readout" id="out4" aria-live="polite"></p>
+</div>
+
+<p>A fairer test compares the yearly changes, since removing the shared upward trend leaves only the ups and downs, and unrelated wobbles rarely line up by accident. For the real world data the yearly changes still give <em>r</em> = 0.83, and the two series crash together in the oil shocks of the 1970s and the financial crisis of 2008, which is far better evidence of a genuine link than the 0.997. Correlation still carries no direction, though: energy lets factories run, which raises output, and a recession closes factories, which cuts energy use, and both effects push <em>r</em> upward.</p>
+
+<p>Since about 1990, world GDP has grown roughly one percentage point a year faster than world energy use, so by the percentage rule world energy intensity has fallen by about 1% a year. Part of that fall comes from machines turning a larger share of exergy into useful work, and part comes from the way energy is counted.</p>
+
+<h2>Counting joules</h2>
+
+<p>Energy statistics count fossil fuel by the heat it contains. A power station burning 100 units of coal delivers about 38 units of electricity, yet all 100 units appear in the figures. Wind and solar are counted by the electricity they produce, so 38 units of wind electricity count as 38. Replacing coal with wind therefore lowers measured energy use even when every home receives exactly the same electricity, and the economy appears to need less energy as its energy mix changes.</p>
+
+<p class="predict">Predict first: if half of a country's electricity switches from coal to wind, by what percentage does its measured energy use fall?</p>
+
+<div class="fig">
+  <div class="row"><label for="s">Share from wind and solar</label><input id="s" type="range" min="0" max="100" step="5" value="0"><output id="sv" for="s"></output></div>
+  <div class="stack" aria-hidden="true"><div id="bf" style="background:var(--gold)"></div><div id="br" style="background:var(--steel)"></div></div>
+  <div class="key"><span class="k-fossil">counted from coal</span><span class="k-renew">counted from wind and solar</span></div>
+  <p class="readout" id="out5" aria-live="polite"></p>
+</div>
+
+<h2>Questions</h2>
+
+<details><summary>A hot spring at 70 °C sits in surroundings at 10 °C. What is the largest fraction of its heat that could become work?</summary>
+<p>70 °C is 343 K and 10 °C is 283 K, so the fraction is 1 − 283/343 ≈ 0.175, which means at most 17.5 J of work from every 100 J of heat. Low-temperature sources hold little exergy even when they hold a great deal of energy.</p></details>
+
+<details><summary>Energy use grows by 2% a year for 105 years. Roughly how many times larger does it become?</summary>
+<p>By the rule of 70 it doubles every 35 years, so 105 years is three doublings, a factor of 2 × 2 × 2 = 8. The exact value, 1.02<sup>105</sup>, is about 8.0.</p></details>
+
+<details><summary>GDP grows by 4% and energy use by 1.5% in the same year. By how much does energy intensity change?</summary>
+<p>The rule gives 1.5 − 4 = −2.5%. The exact value is 1.015 ÷ 1.04 − 1 ≈ −2.4%, so intensity falls by about 2.4%.</p></details>
+
+<details><summary>Why is a correlation of 0.83 between yearly changes more convincing than a correlation of 0.997 between the values themselves?</summary>
+<p>Any two steadily growing series give a correlation close to 1, as the unrelated series show. Yearly changes remove the shared trend, so a high correlation between them means the two quantities rise and fall together from year to year.</p></details>
+
+<details><summary>Half of a country's coal electricity is replaced by wind. By what percentage does measured energy use fall, if the country receives the same electricity?</summary>
+<p>For 100 units of electricity, all coal counts as 100 ÷ 0.38 ≈ 263 units. Half and half counts as 50 ÷ 0.38 + 50 ≈ 182 units. The fall is 81 ÷ 263 ≈ 31%, although nobody uses any less electricity.</p></details>
+
+<p class="close">The economy's dependence on useful work is as physical as a machine's need for fuel. What remains open is whether that work can come from sources that leave the sink undamaged, and whether it can keep growing for long before its waste heat catches up.</p>
+
+</main>
+
+<footer><span class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</span></footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (x, d) => x.toFixed(d).replace('-', '−');
+
+/* Exergy fraction */
+function updExergy(){
+  const th = +$('th').value, te = +$('te').value;
+  const Th = th + 273, Te = te + 273;
+  const f = Th > Te ? 1 - Te / Th : 0;
+  $('thv').textContent = th + ' °C';
+  $('tev').textContent = fmt(te, 0) + ' °C';
+  $('bar1').style.width = (f * 100) + '%';
+  $('calc1').textContent = Th > Te ? `1 − ${Te} / ${Th} = ${f.toFixed(3)}` : 'The source is no hotter than its surroundings.';
+  $('out1').innerHTML = Th > Te
+    ? `Of every 100 J of heat at ${th} °C, at most <strong>${(f*100).toFixed(1)} J</strong> can become work when the surroundings are at ${fmt(te,0)} °C.`
+    : `No work can be extracted, because heat will not flow from the source into its surroundings.`;
+}
+['th','te'].forEach(id => $(id).addEventListener('input', updExergy));
+document.querySelectorAll('.presets button').forEach(b =>
+  b.addEventListener('click', () => { $('th').value = b.dataset.t; updExergy(); }));
+
+/* Waste heat growth */
+const now = 1.9e13 / 5.1e14;
+function updGrowth(){
+  const g = +$('g').value;
+  $('gv').textContent = g.toFixed(1) + '%';
+  const doublings = Math.log2(1 / now);
+  const rule = doublings * 70 / g;
+  const exact = Math.log(1 / now) / Math.log(1 + g / 100);
+  $('out2').innerHTML = `Doubling time by the rule of 70: ${(70/g).toFixed(0)} years. Reaching 1 W/m² needs ${doublings.toFixed(2)} doublings, so about <strong>${rule.toFixed(0)} years</strong> by the rule and ${exact.toFixed(0)} years exactly.`;
+}
+$('g').addEventListener('input', updGrowth);
+
+/* Ratio rule */
+function updRatio(){
+  const gy = +$('gy').value, ge = +$('ge').value;
+  $('gyv').textContent = gy.toFixed(1) + '%';
+  $('gev').textContent = fmt(ge, 1) + '%';
+  const approx = ge - gy;
+  const exact = ((1 + ge/100) / (1 + gy/100) - 1) * 100;
+  const err = Math.abs(approx - exact);
+  $('out3').innerHTML = `Rule: ${fmt(ge,1)} − ${gy.toFixed(1)} = <strong>${fmt(approx,2)}%</strong>. Exact: ${(1+ge/100).toFixed(3)} ÷ ${(1+gy/100).toFixed(3)} − 1 = <strong>${fmt(exact,2)}%</strong>. The rule is out by ${err.toFixed(2)} percentage points.`;
+}
+['gy','ge'].forEach(id => $(id).addEventListener('input', updRatio));
+
+/* Correlation trap */
+function randn(){ let u = 0, v = 0; while(!u) u = Math.random(); while(!v) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function series(n, drift, sd){ const s = [100]; for(let i = 1; i < n; i++) s.push(s[i-1] * (1 + drift + sd * randn())); return s; }
+function changes(s){ return s.slice(1).map((v, i) => (v / s[i] - 1) * 100); }
+function pearson(a, b){
+  const n = a.length, ma = a.reduce((p,c)=>p+c,0)/n, mb = b.reduce((p,c)=>p+c,0)/n;
+  let sab = 0, saa = 0, sbb = 0;
+  for(let i = 0; i < n; i++){ const da = a[i]-ma, db = b[i]-mb; sab += da*db; saa += da*da; sbb += db*db; }
+  return sab / Math.sqrt(saa * sbb);
+}
+function scatter(svg, xs, ys, xl, yl){
+  const W = 300, H = 220, m = {l:34, r:10, t:10, b:30};
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const sx = x => m.l + (x - x0) / (x1 - x0 || 1) * (W - m.l - m.r);
+  const sy = y => H - m.b - (y - y0) / (y1 - y0 || 1) * (H - m.t - m.b);
+  let h = `<line x1="${m.l}" y1="${H-m.b}" x2="${W-m.r}" y2="${H-m.b}" stroke="var(--rule)"/>`;
+  h += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${H-m.b}" stroke="var(--rule)"/>`;
+  xs.forEach((x, i) => { h += `<circle cx="${sx(x).toFixed(1)}" cy="${sy(ys[i]).toFixed(1)}" r="3" fill="var(--gold)" fill-opacity="0.85"/>`; });
+  h += `<text x="${(m.l + W - m.r)/2}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">${xl}</text>`;
+  h += `<text x="12" y="${(m.t + H - m.b)/2}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif" transform="rotate(-90 12 ${(m.t + H - m.b)/2})">${yl}</text>`;
+  svg.innerHTML = h;
+}
+function generate(){
+  const n = 47;
+  const gdp = series(n, 0.03, 0.015), en = series(n, 0.02, 0.015);
+  const cg = changes(gdp), ce = changes(en);
+  const r1 = pearson(en, gdp), r2 = pearson(ce, cg);
+  scatter($('sc1'), en, gdp, 'series B (like energy)', 'series A (like GDP)');
+  scatter($('sc2'), ce, cg, 'change in B, %', 'change in A, %');
+  $('r1').textContent = fmt(r1, 3);
+  $('r2').textContent = fmt(r2, 3);
+  let hiL = 0, hiC = 0; const trials = 300;
+  for(let t = 0; t < trials; t++){
+    const a = series(n, 0.03, 0.015), b = series(n, 0.02, 0.015);
+    if(pearson(a, b) > 0.9) hiL++;
+    if(pearson(changes(a), changes(b)) > 0.5) hiC++;
+  }
+  $('out4').innerHTML = `Across ${trials} more pairs of unrelated series, the values gave r above 0.9 in <strong>${Math.round(hiL/trials*100)}%</strong> of cases, while the yearly changes gave r above 0.5 in <strong>${Math.round(hiC/trials*100)}%</strong>.`;
+}
+$('gen').addEventListener('click', generate);
+
+/* Counting joules */
+function updCount(){
+  const s = +$('s').value;
+  const fossil = (100 - s) / 0.38, renew = s, total = fossil + renew, base = 100 / 0.38;
+  $('sv').textContent = s + '%';
+  $('bf').style.width = (fossil / base * 100) + '%';
+  $('br').style.width = (renew / base * 100) + '%';
+  $('out5').innerHTML = `For the same 100 units of electricity, measured energy use is <strong>${total.toFixed(0)} units</strong>, which is ${((1 - total/base)*100).toFixed(0)}% below the all-coal figure of ${base.toFixed(0)}.`;
+}
+$('s').addEventListener('input', updCount);
+
+updExergy(); updGrowth(); updRatio(); generate(); updCount();
+</script>
+</body>
+</html>
