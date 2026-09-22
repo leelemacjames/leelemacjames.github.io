@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Pellet Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0f12;
+  --ink-2:#14171c;
+  --ink-3:#1b1f26;
+  --line:#2a2f38;
+  --line-2:#3a414d;
+  --paper:#e8e4dc;
+  --paper-dim:#a8a49c;
+  --paper-faint:#6f6d68;
+  --gold:#c9a227;
+  --gold-dim:#8f7420;
+  --rust:#b5653a;
+  --sage:#7f9b78;
+  --slate:#6d86a3;
+  --plum:#96708f;
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--ink);color:var(--paper);
+  font-family:var(--sans);font-weight:300;font-size:16px;line-height:1.55;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 64px}
+
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,7vw,46px);line-height:1.05;margin:0 0 8px;letter-spacing:.01em}
+.standfirst{font-family:var(--serif);font-size:clamp(16px,4vw,19px);font-style:italic;color:var(--paper-dim);margin:0;max-width:62ch}
+
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap;margin:18px 0 0;border-bottom:1px solid var(--line)}
+nav.tabs button{
+  appearance:none;background:transparent;border:0;border-bottom:2px solid transparent;
+  color:var(--paper-dim);font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;padding:10px 12px;cursor:pointer;
+}
+nav.tabs button:hover{color:var(--paper)}
+nav.tabs button[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+
+.panel{display:none;padding-top:18px}
+.panel.active{display:block}
+
+h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px}
+h3{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);margin:22px 0 8px;font-weight:500}
+p.note{color:var(--paper-dim);font-size:14.5px;margin:0 0 14px;max-width:70ch}
+
+.card{background:var(--ink-2);border:1px solid var(--line);border-radius:3px;padding:14px}
+.grid{display:grid;gap:14px}
+@media(min-width:860px){.grid.two{grid-template-columns:1fr 1fr}.grid.side{grid-template-columns:2fr 1fr}}
+
+/* graph */
+.stage{position:relative;background:var(--ink-2);border:1px solid var(--line);border-radius:3px;overflow:hidden;touch-action:none}
+svg#graph{display:block;width:100%;height:clamp(340px,58vh,560px)}
+.node-circ{cursor:pointer;stroke:var(--ink);stroke-width:1.5}
+.node-circ.sel{stroke:var(--gold);stroke-width:2.5}
+.node-lab{font-family:var(--sans);font-size:10px;fill:var(--paper-dim);pointer-events:none;paint-order:stroke;stroke:var(--ink);stroke-width:3px;stroke-linejoin:round}
+.node-lab.big{fill:var(--paper);font-size:11.5px;font-weight:500}
+.edge{stroke-width:1.2;opacity:.55}
+.edge.hl{opacity:1;stroke-width:2.4}
+.stage-hud{position:absolute;left:10px;top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--paper-faint);pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--paper-dim)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.swatch{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+/* controls */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.chip{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:5px 9px;border-radius:2px;
+  border:1px solid var(--line-2);background:var(--ink-3);color:var(--paper-dim);cursor:pointer;user-select:none;
+}
+.chip[data-on="1"]{color:var(--ink);font-weight:500}
+.chip.dead{opacity:.35;text-decoration:line-through}
+
+label.fld{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-faint);margin:0 0 4px}
+input,select,textarea{
+  width:100%;background:var(--ink-3);color:var(--paper);border:1px solid var(--line-2);border-radius:2px;
+  padding:9px 10px;font-family:var(--sans);font-size:15px;
+}
+textarea{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-height:150px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold-dim)}
+.row{display:grid;gap:8px;grid-template-columns:1fr;margin-bottom:10px}
+@media(min-width:700px){.row.triple{grid-template-columns:1fr 1fr 1fr}}
+button.act{
+  appearance:none;border:1px solid var(--gold-dim);background:transparent;color:var(--gold);
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  padding:9px 14px;border-radius:2px;cursor:pointer;
+}
+button.act:hover{background:var(--gold);color:var(--ink)}
+button.act.quiet{border-color:var(--line-2);color:var(--paper-dim)}
+button.act.quiet:hover{background:var(--line-2);color:var(--paper)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-faint);text-align:left;font-weight:500;border-bottom:1px solid var(--line);padding:7px 8px}
+td{padding:7px 8px;border-bottom:1px solid var(--ink-3);vertical-align:top}
+td.num{font-family:var(--mono);font-size:13px;color:var(--gold);text-align:right;white-space:nowrap}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:var(--ink-3)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.bar{height:5px;background:var(--gold-dim);border-radius:2px;display:block}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:2px 6px;border-radius:2px;background:var(--ink-3);border:1px solid var(--line-2);color:var(--paper-dim);margin:0 4px 4px 0}
+.msg{font-family:var(--mono);font-size:11.5px;color:var(--sage);min-height:16px;margin-top:8px}
+.msg.warn{color:var(--rust)}
+ul.tight{margin:6px 0 0;padding-left:18px;color:var(--paper-dim);font-size:14.5px}
+ul.tight li{margin-bottom:5px}
+code{font-family:var(--mono);font-size:12.5px;color:var(--gold);background:var(--ink-3);padding:1px 5px;border-radius:2px}
+.prose{max-width:70ch}
+.prose p{color:var(--paper-dim);font-size:15px}
+.prose strong{color:var(--paper);font-weight:500}
+
+footer.stamp{
+  margin-top:48px;padding-top:14px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--paper-faint);text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="kicker">Environmental Systems · Year 9 · Networks</p>
+  <h1>The Pellet Graph</h1>
+  <p class="standfirst">A food web has one kind of arrow; a knowledge graph has many. Type in what you found, label the relation, and see what the class dataset knows that no single pellet does.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="graph" aria-selected="true">Graph</button>
+  <button role="tab" data-tab="enter" aria-selected="false">Enter data</button>
+  <button role="tab" data-tab="metrics" aria-selected="false">Hubs</button>
+  <button role="tab" data-tab="query" aria-selected="false">Queries</button>
+  <button role="tab" data-tab="teach" aria-selected="false">Teaching</button>
+</nav>
+
+<!-- ============ GRAPH ============ -->
+<section class="panel active" id="panel-graph">
+  <div class="grid side">
+    <div>
+      <div class="stage">
+        <svg id="graph" role="img" aria-label="Knowledge graph of pellet contents and ecological relations"></svg>
+        <div class="stage-hud" id="hud"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div>
+      <h3>Relation types</h3>
+      <p class="note">Switch a relation off to see what stops travelling through the network.</p>
+      <div class="chips" id="relChips"></div>
+
+      <h3>Selected node</h3>
+      <div class="card" id="inspector">
+        <p class="note" style="margin:0">Tap a node to see every statement that mentions it, and who recorded it.</p>
+      </div>
+      <div class="btnrow">
+        <button class="act quiet" id="btnKnock">Remove node</button>
+        <button class="act quiet" id="btnRestore">Restore all</button>
+      </div>
+      <div class="msg" id="graphMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ENTER ============ -->
+<section class="panel" id="panel-enter">
+  <h2>One pellet, one row at a time</h2>
+  <p class="note">Every statement is three parts: a <strong>subject</strong>, a <strong>relation</strong>, an <strong>object</strong>. That triple is the whole idea behind a knowledge graph, and it is the same format the biomedical people use for genes and diseases.</p>
+
+  <div class="card">
+    <div class="row triple">
+      <div>
+        <label class="fld" for="inS">Subject</label>
+        <input id="inS" list="nodeList" placeholder="pellet_07" autocomplete="off">
+      </div>
+      <div>
+        <label class="fld" for="inR">Relation</label>
+        <select id="inR"></select>
+      </div>
+      <div>
+        <label class="fld" for="inO">Object</label>
+        <input id="inO" list="nodeList" placeholder="vole jaw" autocomplete="off">
+      </div>
+    </div>
+    <datalist id="nodeList"></datalist>
+    <div class="btnrow">
+      <button class="act" id="btnAdd">Add statement</button>
+      <button class="act quiet" id="btnCustomRel">New relation type</button>
+    </div>
+    <div class="msg" id="addMsg"></div>
+  </div>
+
+  <h3>Bulk entry</h3>
+  <p class="note">One statement per line, parts separated by a vertical bar. Paste a whole class's worth of pellets at once.</p>
+  <div class="card">
+    <textarea id="bulk" spellcheck="false" placeholder="pellet_07 | contains | vole jaw
+vole jaw | identifies | field vole
+pellet_07 | found_in | Church Barn"></textarea>
+    <div class="btnrow">
+      <button class="act" id="btnBulkAdd">Add these</button>
+      <button class="act quiet" id="btnShowAll">Show current data here</button>
+      <button class="act quiet" id="btnReplace">Replace everything with this</button>
+    </div>
+    <div class="msg" id="bulkMsg"></div>
+  </div>
+
+  <h3>Dataset</h3>
+  <div class="btnrow">
+    <button class="act quiet" id="btnSeed">Reload sample pellets</button>
+    <button class="act quiet" id="btnClear">Empty the graph</button>
+  </div>
+  <div class="scroll" style="margin-top:12px">
+    <table id="tripleTable"><thead><tr><th>Subject</th><th>Relation</th><th>Object</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- ============ METRICS ============ -->
+<section class="panel" id="panel-metrics">
+  <h2>Which nodes are doing the work</h2>
+  <p class="note"><strong>Degree</strong> counts the arrows touching a node. <strong>Betweenness</strong> counts how often a node sits on the shortest path between two others, so a node with few arrows can still be a chokepoint. Both respond to the relation switches on the graph tab.</p>
+  <div class="grid two">
+    <div>
+      <h3>Degree</h3>
+      <div class="scroll"><table id="degTable"><thead><tr><th>Node</th><th>Count</th><th style="width:38%"></th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div>
+      <h3>Betweenness</h3>
+      <div class="scroll"><table id="btwTable"><thead><tr><th>Node</th><th>Share</th><th style="width:38%"></th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <h3>Shape of the whole thing</h3>
+  <div class="card"><div id="summary" style="font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--paper-dim)"></div></div>
+</section>
+
+<!-- ============ QUERIES ============ -->
+<section class="panel" id="panel-query">
+  <h2>Ask the graph something</h2>
+
+  <h3>Co-occurrence</h3>
+  <p class="note">Which prey turn up inside the same pellet as this one? Nothing in the data says these animals are connected; the connection comes from sharing a container.</p>
+  <div class="card">
+    <div class="row"><div>
+      <label class="fld" for="coSel">Taxon or specimen</label>
+      <select id="coSel"></select>
+    </div></div>
+    <button class="act" id="btnCo">Find companions</button>
+    <div id="coOut" style="margin-top:10px"></div>
+  </div>
+
+  <h3>Path between two nodes</h3>
+  <p class="note">The strain-design question in miniature: is there a route from here to there, and what does it pass through?</p>
+  <div class="card">
+    <div class="row triple">
+      <div><label class="fld" for="pA">From</label><select id="pA"></select></div>
+      <div><label class="fld" for="pB">To</label><select id="pB"></select></div>
+      <div style="display:flex;align-items:flex-end"><button class="act" id="btnPath" style="width:100%">Find shortest path</button></div>
+    </div>
+    <div id="pathOut"></div>
+  </div>
+
+  <h3>Evidence for a claim</h3>
+  <p class="note">Choose a taxon and the graph will report which physical specimens, in which pellets, are the reason it is on the list at all.</p>
+  <div class="card">
+    <div class="row"><div>
+      <label class="fld" for="evSel">Taxon</label>
+      <select id="evSel"></select>
+    </div></div>
+    <button class="act" id="btnEv">Trace the evidence</button>
+    <div id="evOut" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ============ TEACHING ============ -->
+<section class="panel" id="panel-teach">
+  <h2>Notes for the lesson</h2>
+  <div class="prose">
+    <h3>The move being taught</h3>
+    <p>A food web is a knowledge graph in which every edge happens to carry the same label, which is why removing a species from a food web always looks like the same kind of event. Once edges are typed, removal stops being uniform; taking out a pollinator propagates along a different set of paths from taking out a predator, and the class can watch that happen with the relation switches rather than being told it.</p>
+
+    <h3>Sequence that works</h3>
+    <ul class="tight">
+      <li>Dissect, identify, and enter only the evidence layer: <code>contains</code>, <code>identifies</code>, <code>found_in</code>. Nobody has said anything about eating yet.</li>
+      <li>Ask what the graph currently claims. It claims a barn owl ate a vole only if somebody adds that edge, which surfaces the difference between a bone in a pellet and an interpretation of it.</li>
+      <li>Add the ecological layer: <code>eats</code>, <code>competes_with</code>, <code>shelters_in</code>. The graph now mixes observation with inference, and the colours keep the two visible.</li>
+      <li>Knock out a node. Ask who is orphaned, and whether the orphaning is a fact about the ecosystem or a fact about the dataset.</li>
+    </ul>
+
+    <h3>The geography crossing</h3>
+    <p>Degree and betweenness are the same two numbers you would compute for a bus network or a street grid, and the high scorers behave the same way in all three settings. A market town with two roads can have enormous betweenness, exactly as a single enzyme can be a metabolic chokepoint without being a busy one. Both quantities are countable by hand for a graph this size, so the unit gets its power-law intuitions without needing logarithms.</p>
+
+    <h3>Honest caveats to plant</h3>
+    <ul class="tight">
+      <li>Pellet contents are biased towards prey with durable bones, so absence in the graph is weak evidence of absence in the diet.</li>
+      <li>Co-occurrence inside a pellet is a statement about one owl's evening, not about the two prey species having any relationship at all; the same confusion runs through biomedical knowledge graphs built from co-mention in papers.</li>
+      <li>A misidentified jaw creates a real edge to a fictional species, and the graph will happily compute metrics on it.</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- relation vocabulary ---------------- */
+var RELS = {
+  contains:      {layer:"evidence",   colour:"#8f7420"},
+  found_in:      {layer:"evidence",   colour:"#6d86a3"},
+  identifies:    {layer:"evidence",   colour:"#c9a227"},
+  recorded_by:   {layer:"evidence",   colour:"#6f6d68"},
+  eats:          {layer:"ecological", colour:"#b5653a"},
+  competes_with: {layer:"ecological", colour:"#96708f"},
+  shelters_in:   {layer:"ecological", colour:"#7f9b78"},
+  pollinates:    {layer:"ecological", colour:"#7f9b78"},
+  decomposes:    {layer:"ecological", colour:"#5c6b55"}
+};
+
+var KIND_COLOUR = {
+  pellet:"#c9a227", place:"#6d86a3", specimen:"#b5653a",
+  taxon:"#e8e4dc", plant:"#7f9b78", person:"#96708f", other:"#6f6d68"
+};
+
+/* ---------------- seed data ---------------- */
+var SEED = [
+  ["pellet_01","found_in","Church Barn"],
+  ["pellet_01","recorded_by","group A"],
+  ["pellet_01","contains","jaw 01a"],
+  ["pellet_01","contains","jaw 01b"],
+  ["pellet_01","contains","skull 01c"],
+  ["jaw 01a","identifies","field vole"],
+  ["jaw 01b","identifies","field vole"],
+  ["skull 01c","identifies","common shrew"],
+
+  ["pellet_02","found_in","Church Barn"],
+  ["pellet_02","recorded_by","group B"],
+  ["pellet_02","contains","jaw 02a"],
+  ["pellet_02","contains","skull 02b"],
+  ["jaw 02a","identifies","wood mouse"],
+  ["skull 02b","identifies","field vole"],
+
+  ["pellet_03","found_in","Hedge Row"],
+  ["pellet_03","recorded_by","group C"],
+  ["pellet_03","contains","jaw 03a"],
+  ["pellet_03","contains","jaw 03b"],
+  ["jaw 03a","identifies","bank vole"],
+  ["jaw 03b","identifies","common shrew"],
+
+  ["pellet_04","found_in","Hedge Row"],
+  ["pellet_04","recorded_by","group A"],
+  ["pellet_04","contains","skull 04a"],
+  ["pellet_04","contains","feather 04b"],
+  ["skull 04a","identifies","field vole"],
+  ["feather 04b","identifies","house sparrow"],
+
+  ["pellet_05","found_in","Church Barn"],
+  ["pellet_05","recorded_by","group D"],
+  ["pellet_05","contains","jaw 05a"],
+  ["jaw 05a","identifies","field vole"],
+
+  ["barn owl","eats","field vole"],
+  ["barn owl","eats","bank vole"],
+  ["barn owl","eats","common shrew"],
+  ["barn owl","eats","wood mouse"],
+  ["barn owl","eats","house sparrow"],
+  ["kestrel","eats","field vole"],
+  ["kestrel","competes_with","barn owl"],
+
+  ["field vole","eats","grass"],
+  ["bank vole","eats","bramble"],
+  ["wood mouse","eats","acorn"],
+  ["common shrew","eats","earthworm"],
+  ["house sparrow","eats","grass"],
+  ["earthworm","decomposes","leaf litter"],
+  ["field vole","shelters_in","grass"],
+  ["bank vole","competes_with","field vole"]
+];
+
+/* ---------------- state ---------------- */
+var state = {
+  triples: [],
+  offRels: {},          // relation -> true when switched off
+  removed: {},          // node -> true when knocked out
+  selected: null
+};
+var KEY = "pelletgraph.v1";
+
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state.triples)); }catch(e){}
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var t = JSON.parse(raw); if(Array.isArray(t) && t.length) return t; }
+  }catch(e){}
+  return null;
+}
+
+function seed(){
+  state.triples = SEED.map(function(t){ return {s:t[0], r:t[1], o:t[2]}; });
+}
+
+/* ---------------- derived graph ---------------- */
+var G = {nodes:[], byId:{}, edges:[], adj:{}};
+
+function relOn(r){ return !state.offRels[r]; }
+function alive(n){ return !state.removed[n]; }
+
+function inferKind(id, roles){
+  if(roles.foundSubj) return "pellet";
+  if(roles.placeObj) return "place";
+  if(roles.recorder) return "person";
+  if(roles.specimen) return "specimen";
+  if(roles.eatenPlant) return "plant";
+  if(roles.taxon) return "taxon";
+  return "other";
+}
+
+function rebuild(){
+  var roles = {};
+  function touch(id){ if(!roles[id]) roles[id]={}; return roles[id]; }
+
+  state.triples.forEach(function(t){
+    var a = touch(t.s), b = touch(t.o);
+    if(t.r === "found_in"){ a.foundSubj = 1; b.placeObj = 1; }
+    if(t.r === "recorded_by"){ a.foundSubj = 1; b.recorder = 1; }
+    if(t.r === "contains"){ a.foundSubj = 1; b.specimen = 1; }
+    if(t.r === "identifies"){ a.specimen = 1; b.taxon = 1; }
+    if(t.r === "eats"){ a.taxon = 1; b.taxon = 1; }
+    if(t.r === "shelters_in" || t.r === "decomposes"){ b.eatenPlant = 1; }
+  });
+  // plants: things only ever eaten or sheltered in, never eating
+  state.triples.forEach(function(t){
+    if(t.r === "eats"){ touch(t.s).eater = 1; }
+  });
+  Object.keys(roles).forEach(function(id){
+    if(roles[id].taxon && !roles[id].eater && !roles[id].specimen){
+      var eatenOnly = state.triples.every(function(t){ return !(t.s === id && t.r === "eats"); });
+      if(eatenOnly) roles[id].eatenPlant = 1;
+    }
+  });
+
+  var prev = {};
+  G.nodes.forEach(function(n){ prev[n.id] = n; });
+
+  G.nodes = []; G.byId = {}; G.edges = []; G.adj = {};
+
+  var ids = Object.keys(roles).filter(alive);
+  ids.forEach(function(id, i){
+    var old = prev[id];
+    var n = {
+      id: id,
+      kind: inferKind(id, roles[id]),
+      x: old ? old.x : 380 + 260*Math.cos(i*2.399),
+      y: old ? old.y : 240 + 190*Math.sin(i*2.399),
+      vx: 0, vy: 0, deg: 0, btw: 0
+    };
+    G.nodes.push(n); G.byId[id] = n; G.adj[id] = [];
+  });
+
+  state.triples.forEach(function(t){
+    if(!relOn(t.r)) return;
+    if(!alive(t.s) || !alive(t.o)) return;
+    if(!G.byId[t.s] || !G.byId[t.o]) return;
+    var e = {s:G.byId[t.s], t:G.byId[t.o], r:t.r};
+    G.edges.push(e);
+    G.byId[t.s].deg++; G.byId[t.o].deg++;
+    G.adj[t.s].push(t.o); G.adj[t.o].push(t.s);
+  });
+
+  betweenness();
+  drawGraph();
+  renderMetrics();
+  renderChips();
+  renderTable();
+  renderSelectors();
+  renderInspector();
+  save();
+}
+
+/* Brandes, unweighted, undirected */
+function betweenness(){
+  G.nodes.forEach(function(n){ n.btw = 0; });
+  var ids = G.nodes.map(function(n){ return n.id; });
+  if(ids.length > 400) return;
+  ids.forEach(function(sId){
+    var S = [], P = {}, sigma = {}, d = {}, delta = {};
+    ids.forEach(function(v){ P[v]=[]; sigma[v]=0; d[v]=-1; delta[v]=0; });
+    sigma[sId]=1; d[sId]=0;
+    var Q=[sId];
+    while(Q.length){
+      var v = Q.shift(); S.push(v);
+      (G.adj[v]||[]).forEach(function(w){
+        if(d[w] < 0){ d[w] = d[v]+1; Q.push(w); }
+        if(d[w] === d[v]+1){ sigma[w] += sigma[v]; P[w].push(v); }
+      });
+    }
+    while(S.length){
+      var w = S.pop();
+      P[w].forEach(function(v){ delta[v] += (sigma[v]/sigma[w])*(1+delta[w]); });
+      if(w !== sId) G.byId[w].btw += delta[w];
+    }
+  });
+  G.nodes.forEach(function(n){ n.btw = n.btw/2; });
+}
+
+/* ---------------- SVG rendering + force sim ---------------- */
+var svg = document.getElementById("graph");
+var NS = "http://www.w3.org/2000/svg";
+var gEdges, gNodes, gLabels, W = 800, H = 480, ticks = 0, raf = null;
+
+function sized(){
+  var r = svg.getBoundingClientRect();
+  W = Math.max(280, r.width); H = Math.max(280, r.height);
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+}
+
+function drawGraph(){
+  sized();
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  gEdges = document.createElementNS(NS,"g");
+  gNodes = document.createElementNS(NS,"g");
+  gLabels = document.createElementNS(NS,"g");
+  svg.appendChild(gEdges); svg.appendChild(gNodes); svg.appendChild(gLabels);
+
+  G.edges.forEach(function(e){
+    var ln = document.createElementNS(NS,"line");
+    ln.setAttribute("class","edge");
+    ln.setAttribute("stroke", (RELS[e.r]||{}).colour || "#6f6d68");
+    e.el = ln; gEdges.appendChild(ln);
+  });
+
+  G.nodes.forEach(function(n){
+    var c = document.createElementNS(NS,"circle");
+    c.setAttribute("class","node-circ");
+    c.setAttribute("r", radius(n));
+    c.setAttribute("fill", KIND_COLOUR[n.kind] || KIND_COLOUR.other);
+    c.addEventListener("pointerdown", function(ev){ startDrag(ev, n); });
+    n.el = c; gNodes.appendChild(c);
+
+    var tx = document.createElementNS(NS,"text");
+    tx.setAttribute("class","node-lab" + (n.deg >= 4 ? " big" : ""));
+    tx.setAttribute("text-anchor","middle");
+    tx.textContent = n.id;
+    n.lab = tx; gLabels.appendChild(tx);
+  });
+
+  ticks = 0;
+  if(raf) cancelAnimationFrame(raf);
+  tick();
+  updateHud();
+  renderLegend();
+}
+
+function radius(n){ return 4 + Math.min(11, Math.sqrt(n.deg) * 2.6); }
+
+function tick(){
+  var i, j, a, b, dx, dy, dist, f;
+  var k = Math.sqrt((W*H) / Math.max(1, G.nodes.length)) * 0.62;
+
+  for(i=0;i<G.nodes.length;i++){
+    a = G.nodes[i];
+    for(j=i+1;j<G.nodes.length;j++){
+      b = G.nodes[j];
+      dx = b.x-a.x; dy = b.y-a.y;
+      dist = Math.sqrt(dx*dx+dy*dy) || 0.01;
+      if(dist > 300) continue;
+      f = (k*k)/(dist*dist) * 0.9;
+      dx/=dist; dy/=dist;
+      a.vx -= dx*f; a.vy -= dy*f;
+      b.vx += dx*f; b.vy += dy*f;
+    }
+  }
+  G.edges.forEach(function(e){
+    dx = e.t.x-e.s.x; dy = e.t.y-e.s.y;
+    dist = Math.sqrt(dx*dx+dy*dy) || 0.01;
+    f = (dist-k)*0.035;
+    dx/=dist; dy/=dist;
+    e.s.vx += dx*f; e.s.vy += dy*f;
+    e.t.vx -= dx*f; e.t.vy -= dy*f;
+  });
+  G.nodes.forEach(function(n){
+    n.vx += (W/2 - n.x)*0.0022;
+    n.vy += (H/2 - n.y)*0.0022;
+    if(n.fixed) { n.vx = 0; n.vy = 0; return; }
+    n.vx *= 0.86; n.vy *= 0.86;
+    n.x += Math.max(-14, Math.min(14, n.vx));
+    n.y += Math.max(-14, Math.min(14, n.vy));
+    var r = radius(n)+14;
+    n.x = Math.max(r, Math.min(W-r, n.x));
+    n.y = Math.max(r+6, Math.min(H-r, n.y));
+  });
+
+  G.edges.forEach(function(e){
+    e.el.setAttribute("x1", e.s.x); e.el.setAttribute("y1", e.s.y);
+    e.el.setAttribute("x2", e.t.x); e.el.setAttribute("y2", e.t.y);
+  });
+  G.nodes.forEach(function(n){
+    n.el.setAttribute("cx", n.x); n.el.setAttribute("cy", n.y);
+    n.lab.setAttribute("x", n.x); n.lab.setAttribute("y", n.y - radius(n) - 4);
+  });
+
+  ticks++;
+  if(ticks < 600) raf = requestAnimationFrame(tick);
+}
+
+var drag = null;
+function startDrag(ev, n){
+  ev.preventDefault();
+  select(n.id);
+  drag = n; n.fixed = true;
+  ticks = 0; if(!raf) raf = requestAnimationFrame(tick); else { cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); }
+  svg.setPointerCapture && svg.setPointerCapture(ev.pointerId);
+}
+svg.addEventListener("pointermove", function(ev){
+  if(!drag) return;
+  var r = svg.getBoundingClientRect();
+  drag.x = (ev.clientX - r.left) * (W / r.width);
+  drag.y = (ev.clientY - r.top) * (H / r.height);
+});
+function endDrag(){ if(drag){ drag.fixed = false; drag = null; } }
+svg.addEventListener("pointerup", endDrag);
+svg.addEventListener("pointercancel", endDrag);
+window.addEventListener("resize", function(){ sized(); ticks = 0; if(raf) cancelAnimationFrame(raf); tick(); });
+
+function select(id){
+  state.selected = id;
+  G.nodes.forEach(function(n){ n.el.classList.toggle("sel", n.id === id); });
+  G.edges.forEach(function(e){ e.el.classList.toggle("hl", e.s.id === id || e.t.id === id); });
+  renderInspector();
+}
+
+function updateHud(){
+  document.getElementById("hud").textContent =
+    G.nodes.length + " nodes · " + G.edges.length + " edges";
+}
+
+function renderLegend(){
+  var used = {};
+  G.nodes.forEach(function(n){ used[n.kind] = 1; });
+  var html = Object.keys(used).map(function(k){
+    return '<span><i class="swatch" style="background:'+(KIND_COLOUR[k]||KIND_COLOUR.other)+'"></i>'+k+'</span>';
+  }).join("");
+  document.getElementById("legend").innerHTML = html;
+}
+
+/* ---------------- chips ---------------- */
+function usedRels(){
+  var u = {};
+  state.triples.forEach(function(t){ u[t.r] = 1; });
+  return Object.keys(u).sort();
+}
+function renderChips(){
+  var box = document.getElementById("relChips");
+  box.innerHTML = "";
+  usedRels().forEach(function(r){
+    var on = relOn(r);
+    var col = (RELS[r]||{}).colour || "#6f6d68";
+    var b = document.createElement("button");
+    b.className = "chip" + (on ? "" : " dead");
+    b.textContent = r;
+    b.setAttribute("data-on", on ? "1" : "0");
+    if(on){ b.style.background = col; b.style.borderColor = col; }
+    b.addEventListener("click", function(){
+      if(state.offRels[r]) delete state.offRels[r]; else state.offRels[r] = true;
+      rebuild();
+    });
+    box.appendChild(b);
+  });
+}
+
+/* ---------------- inspector ---------------- */
+function renderInspector(){
+  var box = document.getElementById("inspector");
+  var id = state.selected;
+  if(!id || !G.byId[id]){
+    box.innerHTML = '<p class="note" style="margin:0">Tap a node to see every statement that mentions it, and who recorded it.</p>';
+    return;
+  }
+  var n = G.byId[id];
+  var rows = state.triples.filter(function(t){ return t.s === id || t.o === id; });
+  var html = '<div style="font-family:var(--serif);font-size:20px;color:var(--paper)">'+id+'</div>';
+  html += '<div style="margin:6px 0 10px"><span class="pill">'+n.kind+'</span><span class="pill">degree '+n.deg+'</span><span class="pill">betweenness '+n.btw.toFixed(1)+'</span></div>';
+  html += rows.map(function(t){
+    var col = (RELS[t.r]||{}).colour || "#6f6d68";
+    var dim = relOn(t.r) ? "" : "opacity:.4;";
+    return '<div style="font-size:13.5px;margin-bottom:5px;'+dim+'">'+
+      esc(t.s)+' <span style="font-family:var(--mono);font-size:11px;color:'+col+'">'+esc(t.r)+'</span> '+esc(t.o)+'</div>';
+  }).join("");
+  box.innerHTML = html;
+}
+
+/* ---------------- metrics ---------------- */
+function renderMetrics(){
+  var byDeg = G.nodes.slice().sort(function(a,b){ return b.deg - a.deg; }).slice(0,14);
+  var maxDeg = byDeg.length ? byDeg[0].deg || 1 : 1;
+  fillTable("degTable", byDeg, function(n){ return n.deg; }, maxDeg, function(n){ return String(n.deg); });
+
+  var byBtw = G.nodes.slice().sort(function(a,b){ return b.btw - a.btw; }).slice(0,14);
+  var maxB = byBtw.length ? (byBtw[0].btw || 1) : 1;
+  fillTable("btwTable", byBtw, function(n){ return n.btw; }, maxB, function(n){ return n.btw.toFixed(1); });
+
+  var kinds = {};
+  G.nodes.forEach(function(n){ kinds[n.kind] = (kinds[n.kind]||0)+1; });
+  var degs = G.nodes.map(function(n){ return n.deg; });
+  var mean = degs.length ? degs.reduce(function(a,b){return a+b;},0)/degs.length : 0;
+  var iso = degs.filter(function(d){ return d === 0; }).length;
+  var comp = components();
+  var s = "";
+  s += "nodes " + G.nodes.length + "\n";
+  s += "edges " + G.edges.length + "\n";
+  s += "mean degree " + mean.toFixed(2) + "\n";
+  s += "highest degree " + (byDeg[0] ? byDeg[0].id + " (" + byDeg[0].deg + ")" : "none") + "\n";
+  s += "isolated nodes " + iso + "\n";
+  s += "separate pieces " + comp + "\n";
+  s += "node kinds " + Object.keys(kinds).map(function(k){ return k+" "+kinds[k]; }).join(", ");
+  document.getElementById("summary").textContent = s;
+  updateHud();
+}
+function fillTable(id, arr, val, max, fmt){
+  var tb = document.querySelector("#"+id+" tbody");
+  tb.innerHTML = "";
+  arr.forEach(function(n){
+    var tr = document.createElement("tr");
+    tr.className = "clickable";
+    var pct = max ? (val(n)/max*100) : 0;
+    tr.innerHTML = '<td>'+esc(n.id)+'</td><td class="num">'+fmt(n)+'</td>'+
+      '<td><i class="bar" style="width:'+Math.max(2,pct)+'%"></i></td>';
+    tr.addEventListener("click", function(){ showTab("graph"); select(n.id); });
+    tb.appendChild(tr);
+  });
+}
+function components(){
+  var seen = {}, c = 0;
+  G.nodes.forEach(function(n){
+    if(seen[n.id]) return;
+    c++; var q=[n.id]; seen[n.id]=1;
+    while(q.length){
+      var v=q.shift();
+      (G.adj[v]||[]).forEach(function(w){ if(!seen[w]){ seen[w]=1; q.push(w); } });
+    }
+  });
+  return c;
+}
+
+/* ---------------- data entry ---------------- */
+function relSelect(){
+  var sel = document.getElementById("inR");
+  var cur = sel.value;
+  var all = {};
+  Object.keys(RELS).forEach(function(r){ all[r]=1; });
+  usedRels().forEach(function(r){ all[r]=1; });
+  sel.innerHTML = Object.keys(all).sort().map(function(r){
+    return '<option value="'+esc(r)+'">'+esc(r)+'</option>';
+  }).join("");
+  if(cur && all[cur]) sel.value = cur;
+}
+
+function addTriple(s, r, o, quiet){
+  s = (s||"").trim(); r = (r||"").trim(); o = (o||"").trim();
+  if(!s || !r || !o) return false;
+  var dup = state.triples.some(function(t){ return t.s===s && t.r===r && t.o===o; });
+  if(dup) return false;
+  state.triples.push({s:s, r:r, o:o});
+  return true;
+}
+
+document.getElementById("btnAdd").addEventListener("click", function(){
+  var s = document.getElementById("inS").value;
+  var r = document.getElementById("inR").value;
+  var o = document.getElementById("inO").value;
+  var m = document.getElementById("addMsg");
+  if(addTriple(s,r,o)){
+    m.className = "msg"; m.textContent = "added: " + s + " " + r + " " + o;
+    document.getElementById("inO").value = "";
+    relSelect(); rebuild();
+  } else {
+    m.className = "msg warn"; m.textContent = "nothing added (blank field, or that statement is already in the graph)";
+  }
+});
+
+document.getElementById("btnCustomRel").addEventListener("click", function(){
+  var r = prompt("Name a new relation, lower case with underscores, for example parasitises or disperses_seeds_of");
+  if(!r) return;
+  r = r.trim().replace(/\s+/g,"_").toLowerCase();
+  if(!RELS[r]) RELS[r] = {layer:"custom", colour:"#96708f"};
+  relSelect();
+  document.getElementById("inR").value = r;
+});
+
+document.getElementById("btnBulkAdd").addEventListener("click", function(){ bulkAdd(false); });
+document.getElementById("btnReplace").addEventListener("click", function(){ bulkAdd(true); });
+
+function bulkAdd(replace){
+  var txt = document.getElementById("bulk").value;
+  var lines = txt.split("\n");
+  var added = 0, bad = 0;
+  if(replace) state.triples = [];
+  lines.forEach(function(ln){
+    if(!ln.trim()) return;
+    var parts = ln.split(/\s*[|\t]\s*/);
+    if(parts.length < 3){ bad++; return; }
+    var r = parts[1].trim().replace(/\s+/g,"_").toLowerCase();
+    if(!RELS[r]) RELS[r] = {layer:"custom", colour:"#96708f"};
+    if(addTriple(parts[0], r, parts.slice(2).join(" | "))) added++;
+  });
+  var m = document.getElementById("bulkMsg");
+  m.className = bad ? "msg warn" : "msg";
+  m.textContent = added + " statements added" + (bad ? ", " + bad + " lines skipped (need three parts separated by |)" : "");
+  relSelect(); rebuild();
+}
+
+document.getElementById("btnShowAll").addEventListener("click", function(){
+  document.getElementById("bulk").value = state.triples.map(function(t){
+    return t.s + " | " + t.r + " | " + t.o;
+  }).join("\n");
+  var m = document.getElementById("bulkMsg");
+  m.className = "msg"; m.textContent = "current dataset written above; select and copy it to keep a copy";
+});
+
+document.getElementById("btnSeed").addEventListener("click", function(){ seed(); relSelect(); rebuild(); });
+document.getElementById("btnClear").addEventListener("click", function(){
+  if(confirm("Empty the graph completely?")){ state.triples = []; state.removed = {}; state.selected = null; rebuild(); }
+});
+
+function renderTable(){
+  var tb = document.querySelector("#tripleTable tbody");
+  tb.innerHTML = "";
+  state.triples.forEach(function(t, i){
+    var col = (RELS[t.r]||{}).colour || "#6f6d68";
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td>'+esc(t.s)+'</td>'+
+      '<td style="font-family:var(--mono);font-size:12px;color:'+col+'">'+esc(t.r)+'</td>'+
+      '<td>'+esc(t.o)+'</td>'+
+      '<td style="text-align:right"><button class="chip" data-del="'+i+'">remove</button></td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll("[data-del]").forEach(function(b){
+    b.addEventListener("click", function(){
+      state.triples.splice(parseInt(b.getAttribute("data-del"),10), 1);
+      rebuild();
+    });
+  });
+  var dl = document.getElementById("nodeList");
+  var ids = {};
+  state.triples.forEach(function(t){ ids[t.s]=1; ids[t.o]=1; });
+  dl.innerHTML = Object.keys(ids).sort().map(function(i){ return '<option value="'+esc(i)+'">'; }).join("");
+}
+
+/* ---------------- knock out ---------------- */
+document.getElementById("btnKnock").addEventListener("click", function(){
+  var m = document.getElementById("graphMsg");
+  if(!state.selected){ m.className="msg warn"; m.textContent = "select a node on the graph first"; return; }
+  var before = components(), id = state.selected;
+  state.removed[id] = true;
+  state.selected = null;
+  rebuild();
+  var after = components();
+  var orphans = G.nodes.filter(function(n){ return n.deg === 0; }).map(function(n){ return n.id; });
+  m.className = "msg";
+  m.textContent = "removed " + id + " · pieces " + before + " to " + after +
+    (orphans.length ? " · now isolated: " + orphans.join(", ") : " · nothing isolated");
+});
+document.getElementById("btnRestore").addEventListener("click", function(){
+  state.removed = {}; state.offRels = {};
+  document.getElementById("graphMsg").textContent = "";
+  rebuild();
+});
+
+/* ---------------- queries ---------------- */
+function renderSelectors(){
+  var ids = G.nodes.map(function(n){ return n.id; }).sort();
+  ["coSel","pA","pB","evSel"].forEach(function(id){
+    var sel = document.getElementById(id);
+    var cur = sel.value;
+    sel.innerHTML = ids.map(function(i){ return '<option value="'+esc(i)+'">'+esc(i)+'</option>'; }).join("");
+    if(cur && ids.indexOf(cur) >= 0) sel.value = cur;
+  });
+}
+
+document.getElementById("btnCo").addEventListener("click", function(){
+  var target = document.getElementById("coSel").value;
+  // pellets that identify this taxon (via specimens) or directly contain it
+  var pellets = {};
+  state.triples.forEach(function(t){
+    if(t.r === "identifies" && t.o === target){
+      state.triples.forEach(function(u){
+        if(u.r === "contains" && u.o === t.s) pellets[u.s] = 1;
+      });
+    }
+    if(t.r === "contains" && t.o === target) pellets[t.s] = 1;
+  });
+  var companions = {};
+  Object.keys(pellets).forEach(function(p){
+    state.triples.forEach(function(t){
+      if(t.r === "contains" && t.s === p){
+        state.triples.forEach(function(u){
+          if(u.r === "identifies" && u.s === t.o && u.o !== target){
+            companions[u.o] = (companions[u.o]||0)+1;
+          }
+        });
+      }
+    });
+  });
+  var keys = Object.keys(companions).sort(function(a,b){ return companions[b]-companions[a]; });
+  var out = document.getElementById("coOut");
+  if(!Object.keys(pellets).length){
+    out.innerHTML = '<p class="note" style="margin:0">No pellet in the dataset contains this one, so there is nothing to co-occur with.</p>';
+    return;
+  }
+  out.innerHTML = '<p class="note" style="margin:0 0 6px">Found in ' + Object.keys(pellets).length + ' pellet(s): ' +
+    Object.keys(pellets).map(function(p){return esc(p);}).join(", ") + '</p>' +
+    (keys.length
+      ? keys.map(function(k){ return '<span class="pill">'+esc(k)+' × '+companions[k]+'</span>'; }).join("")
+      : '<p class="note" style="margin:0">Always found alone.</p>');
+});
+
+document.getElementById("btnPath").addEventListener("click", function(){
+  var a = document.getElementById("pA").value, b = document.getElementById("pB").value;
+  var out = document.getElementById("pathOut");
+  if(a === b){ out.innerHTML = '<p class="note">Same node.</p>'; return; }
+  var prevN = {}, seen = {}; seen[a]=1;
+  var q=[a], found=false;
+  while(q.length && !found){
+    var v=q.shift();
+    var nb = G.adj[v]||[];
+    for(var i=0;i<nb.length;i++){
+      var w=nb[i];
+      if(seen[w]) continue;
+      seen[w]=1; prevN[w]=v; q.push(w);
+      if(w===b){ found=true; break; }
+    }
+  }
+  if(!found){
+    out.innerHTML = '<p class="note" style="color:var(--rust)">No route with the relation types currently switched on. Turn one back on and try again.</p>';
+    return;
+  }
+  var path=[b];
+  while(path[0] !== a) path.unshift(prevN[path[0]]);
+  var html = path.map(function(id, i){
+    var edge = "";
+    if(i < path.length-1){
+      var t = state.triples.find(function(t){
+        return relOn(t.r) && ((t.s===path[i]&&t.o===path[i+1])||(t.o===path[i]&&t.s===path[i+1]));
+      });
+      var col = t ? ((RELS[t.r]||{}).colour||"#6f6d68") : "#6f6d68";
+      edge = ' <span style="font-family:var(--mono);font-size:11px;color:'+col+'">→ '+(t?esc(t.r):"")+' →</span> ';
+    }
+    return '<strong style="color:var(--paper)">'+esc(id)+'</strong>' + edge;
+  }).join("");
+  out.innerHTML = '<p class="note" style="margin:8px 0 0">'+html+'</p>'+
+    '<p class="note" style="margin:6px 0 0;font-family:var(--mono);font-size:11px">length '+(path.length-1)+' steps</p>';
+});
+
+document.getElementById("btnEv").addEventListener("click", function(){
+  var taxon = document.getElementById("evSel").value;
+  var rows = [];
+  state.triples.forEach(function(t){
+    if(t.r === "identifies" && t.o === taxon){
+      var spec = t.s, pellet = null, place = null, who = null;
+      state.triples.forEach(function(u){
+        if(u.r === "contains" && u.o === spec) pellet = u.s;
+      });
+      if(pellet){
+        state.triples.forEach(function(u){
+          if(u.s === pellet && u.r === "found_in") place = u.o;
+          if(u.s === pellet && u.r === "recorded_by") who = u.o;
+        });
+      }
+      rows.push({spec:spec, pellet:pellet, place:place, who:who});
+    }
+  });
+  var out = document.getElementById("evOut");
+  if(!rows.length){
+    out.innerHTML = '<p class="note" style="margin:0;color:var(--rust)">No specimen in the dataset supports this taxon. It is in the graph only because somebody asserted an ecological edge, which is an interpretation rather than a find.</p>';
+    return;
+  }
+  out.innerHTML = '<div class="scroll"><table><thead><tr><th>Specimen</th><th>Pellet</th><th>Site</th><th>Recorded by</th></tr></thead><tbody>' +
+    rows.map(function(r){
+      return '<tr><td>'+esc(r.spec)+'</td><td>'+esc(r.pellet||"—")+'</td><td>'+esc(r.place||"—")+'</td><td>'+esc(r.who||"—")+'</td></tr>';
+    }).join("") + '</tbody></table></div>';
+});
+
+/* ---------------- tabs ---------------- */
+function showTab(name){
+  document.querySelectorAll("nav.tabs button").forEach(function(b){
+    b.setAttribute("aria-selected", b.getAttribute("data-tab") === name ? "true" : "false");
+  });
+  document.querySelectorAll(".panel").forEach(function(p){
+    p.classList.toggle("active", p.id === "panel-" + name);
+  });
+  if(name === "graph"){ sized(); ticks = 0; if(raf) cancelAnimationFrame(raf); tick(); }
+}
+document.querySelectorAll("nav.tabs button").forEach(function(b){
+  b.addEventListener("click", function(){ showTab(b.getAttribute("data-tab")); });
+});
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+/* ---------------- boot ---------------- */
+var saved = load();
+if(saved){ state.triples = saved.filter(function(t){ return t && t.s && t.r && t.o; }); }
+if(!state.triples.length) seed();
+state.triples.forEach(function(t){ if(!RELS[t.r]) RELS[t.r] = {layer:"custom", colour:"#96708f"}; });
+relSelect();
+rebuild();
+
+})();
+</script>
+</body>
+</html>
