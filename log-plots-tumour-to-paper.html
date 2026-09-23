@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Counting in powers of ten: log plots from a tumour to a paper ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f141b; --panel:#161d27; --panel2:#1c2531; --rule:#2b3542;
+  --paper:#ebe4d3; --dim:#9aa3ae; --gold:#c9a44e; --gold-soft:rgba(201,164,78,.16);
+  --rose:#d57d71; --sage:#8cb9a2; --grid:#253040; --grid2:#1d2632;
+  --serif:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#0f141b; --panel:#161d27; --paper:#ebe4d3; } }
+:root[data-theme="dark"]{ --ink:#0f141b; --panel:#161d27; --paper:#ebe4d3; }
+:root[data-theme="light"]{ --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --grid:#d6cebd; --grid2:#e0d9c9; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+main{max-width:780px;margin:0 auto;padding:0 20px 40px}
+p{margin:0 0 1em;max-width:68ch}
+h1,h2{font-family:var(--serif);font-weight:600;letter-spacing:.005em;line-height:1.08;margin:0}
+h1{font-size:clamp(2.5rem,7vw,4.1rem);margin-top:56px}
+h2{font-size:clamp(1.8rem,4.6vw,2.4rem);display:flex;gap:.45em;align-items:baseline;margin:0 0 .6em}
+h2 .n{color:var(--gold);font-style:italic;font-weight:500}
+.lede{font-family:var(--serif);font-size:1.4rem;line-height:1.4;color:var(--dim);margin:14px 0 0;max-width:34em}
+section{padding:64px 0 8px;border-top:1px solid var(--rule);margin-top:48px}
+em{font-style:italic}
+sup{font-size:.7em;line-height:0}
+.math{font-family:var(--serif);font-size:1.18em;font-style:italic;white-space:nowrap}
+code,.cell{font-family:var(--mono);font-size:.86em;white-space:nowrap}
+a{color:var(--gold)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;margin-top:36px;background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:26px}
+@media (max-width:680px){.hero{grid-template-columns:1fr}}
+.count{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,6.5vw,3.3rem);line-height:1;color:var(--paper);font-variant-numeric:lining-nums tabular-nums;word-break:break-word}
+.count.bad{color:var(--rose)}
+.countsub{color:var(--dim);margin-top:8px;font-size:.98rem}
+.tumour-wrap{display:flex;flex-direction:column;align-items:center}
+#tumourSvg{width:100%;max-width:260px;height:auto}
+
+/* controls */
+.ctl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin:14px 0 4px;font-size:.95rem}
+.ctl label{color:var(--dim)}
+input[type=range]{accent-color:var(--gold);width:100%;max-width:340px;height:28px}
+.morph{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;max-width:520px;color:var(--dim);font-size:.9rem}
+button{font:500 .95rem var(--sans);color:var(--ink);background:var(--gold);border:0;border-radius:3px;padding:9px 16px;cursor:pointer}
+button.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+button[aria-pressed="true"].ghost{background:var(--gold-soft)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.check{display:flex;gap:8px;align-items:center;cursor:pointer}
+.check input{accent-color:var(--gold);width:18px;height:18px}
+input[type=text]{font:500 1rem var(--sans);background:var(--panel2);color:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;width:14em}
+
+/* figures */
+figure{margin:22px 0 10px;background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:14px 14px 10px}
+figure svg.plot{width:100%;display:block;overflow:visible}
+figcaption,.readout{font-size:.95rem;color:var(--dim);margin-top:8px;min-height:1.6em}
+.readout strong{color:var(--paper);font-weight:600}
+.readout .r{color:var(--rose)} .readout .g{color:var(--sage)} .readout .y{color:var(--gold)}
+svg text{font-family:var(--sans)}
+.tick{fill:var(--dim);font-size:12px}
+.axlab{fill:var(--paper);font-size:13px}
+.pt{cursor:pointer}
+.table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums;margin:10px 0 4px}
+.table th{font-weight:500;color:var(--dim);text-align:right;padding:4px 8px;border-bottom:1px solid var(--rule)}
+.table td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--grid2)}
+.table-wrap{overflow-x:auto}
+
+.aside{border-left:2px solid var(--gold);padding:4px 0 4px 16px;margin:18px 0;color:var(--paper)}
+.aside p{margin-bottom:.4em}
+
+/* error hunt */
+.bug{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:18px 18px 14px;margin:18px 0}
+.bug .where{font-family:var(--mono);font-size:.8rem;color:var(--gold)}
+.bug pre{font-family:var(--mono);font-size:.86rem;background:var(--panel2);padding:10px 12px;border-radius:3px;margin:8px 0 12px;white-space:pre-wrap;overflow-x:auto;color:var(--paper)}
+.bug .q{font-weight:500;margin-bottom:8px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button{background:var(--panel2);color:var(--paper);text-align:left;border:1px solid var(--rule);font-weight:400;line-height:1.4}
+.opts button.right{border-color:var(--sage);background:rgba(140,185,162,.14)}
+.opts button.wrong{border-color:var(--rose);background:rgba(213,125,113,.12)}
+.fb{margin-top:10px;font-size:.95rem;display:none}
+.fb.show{display:block}
+.score{font-family:var(--serif);font-size:1.3rem;color:var(--gold)}
+
+/* dimension dial */
+#dial{width:100%;display:block}
+
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+@media (max-width:620px){.summary{grid-template-columns:1fr}}
+.summary div{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:16px}
+.summary h3{font-family:var(--serif);font-size:1.45rem;font-weight:600;margin:0 0 6px}
+
+footer{border-top:1px solid var(--rule);margin-top:64px;padding:26px 20px 34px;text-align:center;color:var(--dim);font-family:var(--serif);font-size:1.08rem;font-style:italic;letter-spacing:.02em}
+footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top:6px;opacity:.8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Counting in powers of ten</h1>
+<p class="lede">How a graph with a stretched axis tells you how fast a tumour doubles, and how the same trick finds the hidden power in a crumpled ball of paper.</p>
+
+<div class="hero" aria-label="Tumour size to cell count">
+  <div>
+    <p style="margin-bottom:.5em;color:var(--dim)">A tumour <strong id="dOut" style="color:var(--paper)">4.0 mm</strong> across holds roughly</p>
+    <div class="count" id="countOut">64 000 000</div>
+    <div class="countsub" id="countSub">cancer cells, which is about 64 million or 6.4 × 10<sup>7</sup></div>
+    <div class="ctl" style="margin-top:18px">
+      <input type="range" id="dSlider" min="0" max="1000" value="594" aria-label="Tumour diameter">
+    </div>
+    <label class="check"><input type="checkbox" id="unitBug"> Use the spreadsheet's cell size exactly as printed, <span class="cell">d = 10mm</span></label>
+  </div>
+  <div class="tumour-wrap">
+    <svg id="tumourSvg" viewBox="0 0 240 240" role="img" aria-label="Tumour drawn to scale"></svg>
+    <div class="countsub" style="text-align:center">drawn to scale; one cell would be far too small to see</div>
+  </div>
+</div>
+
+<section id="s1">
+  <h2><span class="n">1</span> From a diameter to a number of cells</h2>
+  <p>Doctors cannot count the cells in a tumour, but a scan can measure its diameter <span class="math">D</span>. If we imagine both the tumour and each cell as little balls, the number of cells that fit inside is the ratio of their diameters multiplied by itself three times, because volume grows as length cubed:</p>
+  <p style="text-align:center"><span class="math" style="font-size:1.6em">N = (D / d)<sup>3</sup></span></p>
+  <p>A cancer cell is about <span class="math">d</span> = 10 micrometres across, and since one millimetre is 1000 micrometres, a 4 mm tumour is 400 cells wide, which means 400 × 400 × 400 = 64 million cells. Slide the hero control above and watch how quickly the count runs away from you, because every time the diameter doubles the number of cells multiplies by eight.</p>
+  <div class="aside"><p>Tick the box in the panel above to use the spreadsheet's printed value, <span class="cell">d = 10mm</span>. A 4 mm lump then contains less than a tenth of one cell, which is impossible, and that nonsense answer is your first clue that the spreadsheet has lost a symbol somewhere. You will hunt this and five other errors in stage 5.</p></div>
+</section>
+
+<section id="s2">
+  <h2><span class="n">2</span> The graph that squashes its own data</h2>
+  <p>Here are the six scans from the spreadsheet, with the patient's first scan counted as day 0. Plotted on ordinary axes, where each gridline adds the same amount, four of the six points appear to sit on the floor of the graph, even though the smallest of them is 64 million cells.</p>
+  <div class="table-wrap"><table class="table" id="dataTable"></table></div>
+  <figure>
+    <svg class="plot" id="p2" role="img" aria-label="Cell number against time"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m2" min="0" max="1000" value="0" aria-label="Stretch the vertical axis from ordinary to logarithmic"><span>logarithmic</span></div>
+      <button id="b2">Switch to a log scale</button>
+    </div>
+    <figcaption id="c2">Tap or hover a point to read its value.</figcaption>
+  </figure>
+  <p>On a logarithmic axis each gridline is ten times the one below it, so equal steps up the page mean equal <em>multiplications</em> rather than equal additions. Once the axis is stretched the squashed points lift off the floor, and something surprising appears, because the six points now lie very nearly on a straight line.</p>
+</section>
+
+<section id="s3">
+  <h2><span class="n">3</span> What a logarithm actually measures</h2>
+  <p>The logarithm of a number, written <span class="math">log<sub>10</sub></span>, is simply how many times you must multiply 1 by ten to reach it, so log<sub>10</sub> 1000 = 3 and log<sub>10</sub> 64 000 000 is about 7.81, which tells you that 64 million sits a little more than four-fifths of the way from ten million to a hundred million. Type any positive number to see where it lands on the ladder alongside the six tumour counts.</p>
+  <figure>
+    <svg class="plot" id="ladder" role="img" aria-label="Ladder of powers of ten"></svg>
+    <div class="ctl">
+      <label for="numIn">Type a number</label>
+      <input type="text" id="numIn" value="64 000 000" inputmode="decimal" autocomplete="off">
+      <button class="ghost" data-n="2">2</button>
+      <button class="ghost" data-n="1000000">1 000 000</button>
+      <button class="ghost" data-n="128000000">128 000 000</button>
+    </div>
+    <figcaption id="cLadder"></figcaption>
+  </figure>
+  <p>Try 64 000 000 and then 128 000 000, and notice that doubling always moves the marker the same distance, 0.301 of a step, whether you double a tiny number or an enormous one. That fixed distance is the whole reason a doubling process becomes a straight line on a log scale.</p>
+</section>
+
+<section id="s4">
+  <h2><span class="n">4</span> A straight line means a steady doubling time</h2>
+  <p>The gold line is the straight line that fits the six points best on the log scale. Drag the time tracer and follow the two vertical markers: the rose one marks any day you choose, and the green one marks the day on which the line has reached exactly twice as many cells. However far along you slide, the gap between them never changes.</p>
+  <figure>
+    <svg class="plot" id="p4" role="img" aria-label="Log of cell number against time with doubling time tracer"></svg>
+    <div class="ctl">
+      <label for="tr4">Time tracer</label>
+      <input type="range" id="tr4" min="0" max="1000" value="200" aria-label="Time tracer">
+    </div>
+    <div class="ctl">
+      <button class="ghost" id="ext4" aria-pressed="false">Run the line back to a single cell</button>
+      <label class="check"><input type="checkbox" id="bug4"> Apply the simulation sheet's radius bug</label>
+    </div>
+    <div class="readout" id="r4"></div>
+  </figure>
+  <p>This tumour doubles roughly every 169 days, and it grows tenfold roughly every 561 days. A quantity that doubles in equal times is growing <em>exponentially</em>, and on a graph with a log vertical axis and an ordinary time axis, which is called a semi-log graph, exponential growth is always a straight line whose slope sets the doubling time.</p>
+  <p>Running the line backwards is where the log scale earns its keep, because the ordinary graph could never show one cell and forty billion on the same page. The line suggests the first cancer cell appeared roughly twelve years before the first scan, which is why early detection matters so much and why doctors think of a tumour's history in doublings.</p>
+  <div class="aside"><p>Look at the last two scans, taken only 32 days apart. Cubing the diameter also cubes its uncertainty, so a 10% slip in measuring <span class="math">D</span> becomes roughly a 30% error in <span class="math">N</span>. That is why the spreadsheet averages three readings for some scans, and why no single point should be trusted to set the slope on its own.</p></div>
+</section>
+
+<section id="s5">
+  <h2><span class="n">5</span> Hunting the spreadsheet's errors</h2>
+  <p>The original spreadsheets arrived with mistakes in them, some from careless typing and some from symbols that vanished when the file was converted. Each card shows the cell exactly as it appears. <span class="score" id="score"></span></p>
+  <div id="bugs"></div>
+</section>
+
+<section id="s6">
+  <h2><span class="n">6</span> The bridge: stretching both axes</h2>
+  <p>The tumour data hides a second kind of relationship. Plot the number of cells against the diameter instead of against time, and you are looking at <span class="math">N = (D/d)<sup>3</sup></span>, a <em>power law</em>, in which one quantity is another raised to a fixed power. Stretching only the vertical axis will not straighten this curve, but stretching both axes will.</p>
+  <figure>
+    <svg class="plot" id="p6" role="img" aria-label="Cell number against diameter"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m6" min="0" max="1000" value="0" aria-label="Stretch both axes"><span>log–log</span></div>
+      <button id="b6">Stretch both axes</button>
+    </div>
+    <div class="readout" id="r6"></div>
+  </figure>
+  <p>On a log–log graph a tenfold increase in diameter always climbs exactly three tenfold steps in cell number, so the gradient of the straight line is 3, which is the power in the formula. This is the key idea for the rest of the lesson: if you did not know the power, you could measure it by drawing a log–log graph and reading its gradient.</p>
+</section>
+
+<section id="s7">
+  <h2><span class="n">7</span> Finding an unknown power in crumpled paper</h2>
+  <p>Squeeze a sheet of paper into a ball and measure its mass and its diameter, then repeat with bigger sheets. A solid ball would follow mass ∝ diameter<sup>3</sup> and a flat disc would follow mass ∝ diameter<sup>2</sup>, so nobody can tell you in advance which power crumpled paper obeys, and the only way to find out is to measure it.</p>
+  <figure>
+    <div class="ctl" style="margin-top:0">
+      <button class="ghost" id="dsWorked" aria-pressed="true">Worked set: five balls</button>
+      <button class="ghost" id="dsClass" aria-pressed="false">Class set: nine balls</button>
+    </div>
+    <svg class="plot" id="p7" role="img" aria-label="Mass against diameter of crumpled paper balls"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m7" min="0" max="1000" value="0" aria-label="Stretch both axes"><span>log–log</span></div>
+      <button id="b7">Stretch both axes</button>
+    </div>
+    <div class="ctl">
+      <button class="ghost" id="fit7" aria-pressed="false">Show the calculator's best fit</button>
+    </div>
+    <div class="readout" id="r7"></div>
+    <svg id="dial" role="img" aria-label="Where your gradient sits between a line, a sheet and a solid ball"></svg>
+  </figure>
+  <p>Once both axes are stretched, drag the two gold handles until your line runs through the middle of the points, and read off its gradient. Tap any point to leave it out of the calculator's fit, which lets you test what a single suspicious ball does to the answer.</p>
+  <div class="aside">
+    <p>The worked set gives a power close to 2.4, which lies between the flat sheet's 2 and the solid ball's 3, because a crumpled ball is mostly trapped air and bigger balls trap proportionally more of it. Physicists call a non-whole power like this a <em>fractal dimension</em>.</p>
+    <p>Now switch to the class set. All nine balls together give a gradient below 1, which would mean a bigger ball is somehow less dense than a flat sheet, and the culprit is ball 4, whose 5 g of paper supposedly measured 1.75 cm on all three attempts. Leave it out and the gradient jumps to about 2.6. The class masses also span less than one power of ten, so small measuring errors tilt the line far more than they do in the worked set, which spans more than two.</p>
+  </div>
+</section>
+
+<section id="s8">
+  <h2><span class="n">8</span> Two kinds of stretched graph</h2>
+  <div class="summary">
+    <div><h3>Semi-log</h3><p style="margin:0">Log vertical axis, ordinary horizontal axis. A straight line means exponential growth, where the quantity multiplies by the same factor in equal times, and the slope gives the doubling time, as it did for the tumour.</p></div>
+    <div><h3>Log–log</h3><p style="margin:0">Both axes logarithmic. A straight line means a power law, and the gradient of that line is the power itself, which is how we found 3 for cells in a tumour and about 2.4 for paper in a ball.</p></div>
+  </div>
+  <p style="margin-top:18px">Multiplying every value by the same constant, whether through a unit change or a bug like the halved diameter, slides a log graph up or down without tilting it, so the doubling time and the power survive even when the spreadsheet does not.</p>
+</section>
+
+</main>
+<footer>
+  Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
+  <div class="src">Data from the Kinetics of Cancer Cell Growth Excelet and the class crumpled-paper spreadsheet, with errors corrected as described in stage 5.</div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const lg = Math.log10;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- number formatting ---------- */
+function mant(v, dp){ let e = Math.floor(lg(Math.abs(v))); let m = v / Math.pow(10,e); let ms = m.toFixed(dp); if (parseFloat(ms) >= 10){ e++; m = v/Math.pow(10,e); ms = m.toFixed(dp);} return [ms.replace(/\.0+$/,''), e]; }
+function sciH(v, dp=1){ if (v === 0) return '0'; const [m,e] = mant(v,dp); return `${m} × 10<sup>${e<0?'−'+(-e):e}</sup>`; }
+function powS(k){ return `10<tspan dy="-0.55em" font-size="0.72em">${k<0?'−'+(-k):k}</tspan>`; }
+function sciS(v){ if (v === 0) return '0'; const [m,e] = mant(v,0); return (m === '1' ? '' : m + '×') + powS(e); }
+function grouped(n){ return Math.round(n).toLocaleString('en-GB').replace(/,/g, '\u2009'); }
+function plain(v){ if (Math.abs(v) >= 1) return (Math.round(v*100)/100).toLocaleString('en-GB'); return String(+v.toPrecision(2)); }
+function words(n){ const u=[[1e12,'trillion'],[1e9,'billion'],[1e6,'million'],[1e3,'thousand']]; for (const [b,w] of u) if (n>=b) return `about ${+(n/b).toPrecision(2)} ${w}`; return `about ${+n.toPrecision(2)}`; }
+
+/* ---------- least squares ---------- */
+function fit(xs, ys){ const n = xs.length; let sx=0,sy=0,sxx=0,sxy=0; for (let i=0;i<n;i++){sx+=xs[i];sy+=ys[i];sxx+=xs[i]*xs[i];sxy+=xs[i]*ys[i];} const m=(n*sxy-sx*sy)/(n*sxx-sx*sx); return {m, b:(sy-m*sx)/n}; }
+
+/* ---------- animation ---------- */
+function animate(from, to, cb, dur=950){ if (reduced){ cb(to); return; } const t0 = performance.now(); (function step(now){ let u = Math.min(1,(now-t0)/dur); const e = u<.5 ? 4*u*u*u : 1-Math.pow(-2*u+2,3)/2; cb(from+(to-from)*e); if (u<1) requestAnimationFrame(step); })(t0); }
+
+/* ---------- generic morphing plot ---------- */
+function axisMap(ax, a, b){
+  const s = ax.lin ? (ax.s||0) : 1;
+  return v => {
+    const nl = ax.lin ? (v-ax.lin[0])/(ax.lin[1]-ax.lin[0]) : 0;
+    const ng = (v>0 && ax.log) ? (lg(v)-ax.log[0])/(ax.log[1]-ax.log[0]) : -9;
+    return a + (b-a)*((1-s)*nl + s*ng);
+  };
+}
+function niceStep(x){ const p = Math.pow(10,Math.floor(lg(x))); const f = x/p; return (f<1.5?1:f<3?2:f<7?5:10)*p; }
+
+function ticks(ax, f, horiz, box){
+  const {L,R,T,B} = box; let out = '';
+  const s = ax.lin ? (ax.s||0) : 1;
+  const inR = p => horiz ? (p>=L-0.5 && p<=R+0.5) : (p<=B+0.5 && p>=T-0.5);
+  const put = (p, label, op, major) => {
+    if (!inR(p)) return;
+    const col = major ? 'var(--grid)' : 'var(--grid2)';
+    if (horiz){ out += `<line x1="${p}" x2="${p}" y1="${T}" y2="${B}" stroke="${col}" opacity="${op}"/>`; if (label) out += `<text class="tick" x="${p}" y="${B+19}" text-anchor="middle" opacity="${op}">${label}</text>`; }
+    else { out += `<line x1="${L}" x2="${R}" y1="${p}" y2="${p}" stroke="${col}" opacity="${op}"/>`; if (label) out += `<text class="tick" x="${L-8}" y="${p+4}" text-anchor="end" opacity="${op}">${label}</text>`; }
+  };
+  if (ax.lin && s < 0.999){
+    const st = niceStep((ax.lin[1]-ax.lin[0])/(horiz?6:5));
+    for (let v = Math.ceil(ax.lin[0]/st)*st; v <= ax.lin[1]+st*1e-6; v += st){
+      if (s>0 && v<=0) continue;
+      const vv = Math.abs(v) < st*1e-6 ? 0 : v;
+      put(f(vv), ax.sci ? sciS(vv) : plain(vv), 1-s, true);
+    }
+  }
+  if (ax.log && s > 0.001){
+    const span = ax.log[1]-ax.log[0];
+    for (let k = Math.floor(ax.log[0]); k <= Math.ceil(ax.log[1]); k++){
+      for (let m = 1; m <= 9; m++){
+        if (m>1 && span>4.5) break;
+        const v = m*Math.pow(10,k);
+        let label = '';
+        if (m===1) label = ax.plain ? plain(v) : powS(k);
+        else if (ax.plain && (m===2 || m===5) && span<=3) label = plain(v);
+        put(f(v), label, s, m===1);
+      }
+    }
+  }
+  return out;
+}
+
+function samples(x0, x1, logish){
+  const xs = [];
+  for (let i=0;i<=160;i++) xs.push(x0+(x1-x0)*i/160);
+  if (logish && x0>0){ const a=lg(x0), b=lg(x1); for (let i=0;i<=160;i++) xs.push(Math.pow(10,a+(b-a)*i/160)); xs.sort((p,q)=>p-q); }
+  return xs;
+}
+
+let clipN = 0;
+function drawPlot(svg, P){
+  const W = Math.max(300, svg.clientWidth || svg.parentNode.clientWidth || 640);
+  const H = P.h ? P.h(W) : Math.round(W<520 ? W*0.86 : W*0.56);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const box = {L:P.ml||66, R:W-26, T:14, B:H-48};
+  const X = axisMap(P.x, box.L, box.R), Y = axisMap(P.y, box.B, box.T);
+  const id = svg.id + 'clip';
+  let s = `<defs><clipPath id="${id}"><rect x="${box.L}" y="${box.T}" width="${box.R-box.L}" height="${box.B-box.T}"/></clipPath></defs>`;
+  s += ticks(P.x, X, true, box) + ticks(P.y, Y, false, box);
+  s += `<rect x="${box.L}" y="${box.T}" width="${box.R-box.L}" height="${box.B-box.T}" fill="none" stroke="var(--rule)"/>`;
+  s += `<g clip-path="url(#${id})">`;
+  (P.curves||[]).forEach(c => {
+    const xs = samples(c.x0, c.x1, (P.x.s||0)>0);
+    let d = '', pen = false;
+    xs.forEach(x => { const yv = c.f(x); const px = X(x), py = Y(yv); if (!isFinite(px)||!isFinite(py)||yv<=0&&(P.y.s||!P.y.lin)){pen=false;return;} d += (pen?'L':'M')+px.toFixed(1)+' '+py.toFixed(1); pen = true; });
+    s += `<path d="${d}" fill="none" stroke="${c.col||'var(--gold)'}" stroke-width="${c.w||2}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} opacity="${c.op==null?1:c.op}"/>`;
+  });
+  if (P.under) s += P.under(X, Y, box);
+  s += `</g>`;
+  (P.points||[]).forEach((p,i) => {
+    const px = X(p.x), py = Y(p.y);
+    if (!isFinite(px)||!isFinite(py)) return;
+    const col = p.col || 'var(--rose)';
+    s += `<circle class="pt" data-i="${i}" tabindex="0" cx="${px}" cy="${py}" r="6" fill="${p.ex?'none':col}" stroke="${col}" stroke-width="2" opacity="${p.op==null?1:p.op}"><title>${p.tip||''}</title></circle>`;
+  });
+  if (P.over) s += P.over(X, Y, box);
+  s += `<text class="axlab" x="${(box.L+box.R)/2}" y="${H-8}" text-anchor="middle">${P.x.label}</text>`;
+  s += `<text class="axlab" transform="translate(14 ${(box.T+box.B)/2}) rotate(-90)" text-anchor="middle">${P.y.label}</text>`;
+  svg.innerHTML = s;
+  return {X, Y, box, W, H};
+}
+
+/* ---------- data ---------- */
+const days = [0,154,516,740,1513,1545];
+const Dmm  = [4,5,8,(11+12+14)/3,(29+33+31)/3,34];
+const Ncell = Dmm.map(D => Math.pow(D*1000/10, 3));
+const semi = fit(days, Ncell.map(lg));             // log10 N = m t + b
+const T2 = lg(2)/semi.m, T10 = 1/semi.m;
+
+const tb = $('#dataTable');
+tb.innerHTML = '<tr><th>day</th><th>diameter / mm</th><th>cells, N</th><th>log<sub>10</sub> N</th></tr>' +
+  days.map((t,i)=>`<tr><td>${t}</td><td>${Dmm[i].toFixed(1)}</td><td>${sciH(Ncell[i],2)}</td><td>${lg(Ncell[i]).toFixed(2)}</td></tr>`).join('');
+
+/* ---------- hero ---------- */
+const dS = $('#dSlider'), bugBox = $('#unitBug');
+const DMIN = -1, DMAX = lg(50);
+function hero(){
+  const D = Math.pow(10, DMIN + (DMAX-DMIN)*dS.value/1000);
+  const dum = bugBox.checked ? 10000 : 10;
+  const N = Math.pow(D*1000/dum, 3);
+  $('#dOut').textContent = (D<1 ? D.toFixed(2) : D.toFixed(1)) + ' mm';
+  const c = $('#countOut'), sub = $('#countSub');
+  if (N < 1){ c.textContent = N.toPrecision(2); c.classList.add('bad'); sub.innerHTML = 'of one cell, which cannot be right: something in the spreadsheet has shrunk a micrometre into a millimetre'; }
+  else { c.textContent = grouped(Number(N.toPrecision(3))); c.classList.remove('bad'); sub.innerHTML = `cancer cells, which is ${words(N)} or ${sciH(N,1)}`; }
+  const r = Math.min(110, D*2.2);
+  let g = `<circle cx="120" cy="120" r="${Math.max(r,0.6)}" fill="var(--rose)" fill-opacity=".28" stroke="var(--rose)" stroke-width="1.5"/>`;
+  g += `<line x1="20" x2="108" y1="228" y2="228" stroke="var(--dim)" stroke-width="2"/><text x="64" y="221" text-anchor="middle" class="tick">20 mm</text>`;
+  $('#tumourSvg').innerHTML = g;
+}
+dS.addEventListener('input', hero); bugBox.addEventListener('change', hero); hero();
+
+/* ---------- stage 2 ---------- */
+const P2 = {
+  x:{lin:[0,1600], label:'time / days'},
+  y:{lin:[0,4.2e10], log:[7,11], s:0, sci:true, label:'number of cells, N'},
+  curves:[], points: days.map((t,i)=>({x:t, y:Ncell[i], tip:`Day ${t}: ${Dmm[i].toFixed(1)} mm`}))
+};
+const svg2 = $('#p2');
+function r2(){ drawPlot(svg2, P2); }
+const m2 = $('#m2'), b2 = $('#b2');
+function set2(s){ P2.y.s = s; m2.value = Math.round(s*1000); b2.textContent = s>0.5 ? 'Switch back to ordinary' : 'Switch to a log scale'; r2(); }
+m2.addEventListener('input', () => set2(m2.value/1000));
+b2.addEventListener('click', () => animate(P2.y.s, P2.y.s>0.5?0:1, set2));
+function pointCaption(svg, cap, fn){
+  const show = e => { const i = e.target.dataset && e.target.dataset.i; if (i!=null) cap.innerHTML = fn(+i); };
+  svg.addEventListener('pointerover', show); svg.addEventListener('focusin', show);
+}
+pointCaption(svg2, $('#c2'), i => `Day ${days[i]}: diameter ${Dmm[i].toFixed(1)} mm, so N = ${sciH(Ncell[i],2)} cells.`);
+
+/* ---------- stage 3 ladder ---------- */
+const lad = $('#ladder'); let ladV = 64e6;
+const ladNames = ['1','10','100','thousand','10 thousand','100 thousand','million','10 million','100 million','billion','10 billion','100 billion','trillion'];
+function rLadder(){
+  const W = Math.max(300, lad.clientWidth || 640), H = 186, L = 20, R = W-20, y = 96;
+  lad.setAttribute('viewBox',`0 0 ${W} ${H}`); lad.setAttribute('height',H);
+  const X = k => L + (R-L)*k/12;
+  let s = `<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="2"/>`;
+  for (let k=0;k<=12;k++){
+    s += `<line x1="${X(k)}" x2="${X(k)}" y1="${y-7}" y2="${y+7}" stroke="var(--dim)"/>`;
+    s += `<text class="tick" x="${X(k)}" y="${y+24}" text-anchor="middle">${powS(k)}</text>`;
+    if (k%3===0) s += `<text class="tick" x="${X(k)}" y="${y+40}" text-anchor="middle" font-size="10.5">${ladNames[k]}</text>`;
+  }
+  Ncell.forEach((n,i)=>{ s += `<circle cx="${X(lg(n))}" cy="${y}" r="5" fill="var(--rose)"/>`; });
+  s += `<line x1="${X(lg(Ncell[0]))}" x2="${X(lg(Ncell[5]))}" y1="${y+54}" y2="${y+54}" stroke="var(--rose)"/><text class="tick" x="${X((lg(Ncell[0])+lg(Ncell[5]))/2)}" y="${y+72}" text-anchor="middle" style="fill:var(--rose)">the six tumour scans</text>`;
+  if (ladV>0 && isFinite(ladV)){
+    const k = lg(ladV), kc = Math.max(-0.2, Math.min(12.2, k));
+    s += `<path d="M${X(kc)} ${y-10} l-7 -14 h14 z" fill="var(--gold)"/>`;
+    s += `<text x="${Math.max(L+40,Math.min(R-40,X(kc)))}" y="${y-32}" text-anchor="middle" style="fill:var(--gold);font-size:13px">log₁₀ = ${k.toFixed(3)}</text>`;
+  }
+  lad.innerHTML = s;
+  const c = $('#cLadder');
+  if (!(ladV>0)) c.textContent = 'Only positive numbers have a logarithm, because no number of multiplications by ten will ever reach zero or go below it.';
+  else { const k = lg(ladV); c.innerHTML = `${grouped(ladV) || ladV} lies ${k.toFixed(3)} steps along the ladder, since 10<sup>${k.toFixed(3)}</sup> = ${ladV>=1e5?sciH(ladV,2):plain(ladV)}.` + (ladV<1? ' Numbers smaller than 1 have negative logarithms, off the left end.' : ladV>1e12 ? ' That is off the right end of this ladder.' : ''); }
+}
+function parseNum(t){ t = t.replace(/[\s,\u2009]/g,'').replace(/×10\^?/,'e').replace(/x10\^?/i,'e'); const v = Number(t); return isFinite(v) ? v : NaN; }
+$('#numIn').addEventListener('input', e => { ladV = parseNum(e.target.value); rLadder(); });
+document.querySelectorAll('#s3 button[data-n]').forEach(b => b.addEventListener('click', () => { ladV = +b.dataset.n; $('#numIn').value = grouped(ladV); rLadder(); }));
+
+/* ---------- stage 4 ---------- */
+const svg4 = $('#p4'), tr4 = $('#tr4');
+let ext4 = false, bug4 = false;
+const Nfit = t => Math.pow(10, semi.b + semi.m*t);
+function dom4(){ return ext4 ? {x:[-4800,2200], y:[-0.4,12]} : {x:[0,1600], y:[7.5,11]}; }
+function r4(){
+  const d = dom4();
+  const t = d.x[0] + (d.x[1]-T2-d.x[0]) * tr4.value/1000;
+  const pts = days.map((tt,i)=>({x:tt, y:Ncell[i], tip:`Day ${tt}`}));
+  if (bug4) days.forEach((tt,i)=>pts.push({x:tt, y:Ncell[i]/8, col:'var(--dim)', op:.9, tip:`Day ${tt} with the radius bug`}));
+  const curves = [{f:Nfit, x0:d.x[0], x1:d.x[1]}];
+  if (bug4) curves.push({f:x=>Nfit(x)/8, x0:d.x[0], x1:d.x[1], col:'var(--dim)', dash:'6 5'});
+  const P = {
+    x:{lin:d.x, label:'time / days (day 0 is the first scan)'},
+    y:{log:d.y, label:'number of cells, N  (log scale)'},
+    points:pts, curves,
+    under:(X,Y,box)=>{
+      let s = '';
+      if (ext4){
+        [[0,'one cell'],[7,'about the smallest a scan can find'],[11,'the spreadsheet\u2019s lethal burden']].forEach(([k,lab])=>{
+          const y = Y(Math.pow(10,k)); s += `<line x1="${box.L}" x2="${box.R}" y1="${y}" y2="${y}" stroke="var(--dim)" stroke-dasharray="2 4"/><text x="${box.L+8}" y="${y-6}" class="tick">${lab}</text>`; });
+      }
+      const n1 = Nfit(t), n2 = Nfit(t+T2);
+      const x1 = X(t), x2 = X(t+T2), y1 = Y(n1), y2 = Y(n2);
+      s += `<line x1="${x1}" x2="${x1}" y1="${box.B}" y2="${y1}" stroke="var(--rose)" stroke-width="2"/>`;
+      s += `<line x1="${x2}" x2="${x2}" y1="${box.B}" y2="${y2}" stroke="var(--sage)" stroke-width="2"/>`;
+      s += `<line x1="${box.L}" x2="${x1}" y1="${y1}" y2="${y1}" stroke="var(--rose)" stroke-dasharray="4 4"/>`;
+      s += `<line x1="${box.L}" x2="${x2}" y1="${y2}" y2="${y2}" stroke="var(--sage)" stroke-dasharray="4 4"/>`;
+      s += `<circle cx="${x1}" cy="${y1}" r="4.5" fill="var(--rose)"/><circle cx="${x2}" cy="${y2}" r="4.5" fill="var(--sage)"/>`;
+      return s;
+    }
+  };
+  drawPlot(svg4, P);
+  const fN = v => v < 1e5 ? grouped(Number(v.toPrecision(3))) : sciH(v,2);
+  let html = `At day <span class="r">${Math.round(t)}</span> the line reads <strong>${fN(Nfit(t))}</strong> cells, and at day <span class="g">${Math.round(t+T2)}</span> it reads <strong>${fN(Nfit(t+T2))}</strong>, exactly twice as many. Doubling time: <strong>${Math.round(T2)} days</strong>, wherever you put the tracer.`;
+  if (ext4){ const t0 = -semi.b/semi.m, t7 = (7-semi.b)/semi.m, t11 = (11-semi.b)/semi.m;
+    html += `<br>The line reaches one cell at day <span class="y">${Math.round(t0)}</span>, about ${(-t0/365.25).toFixed(0)} years before the first scan, crosses 10<sup>7</sup> at day ${Math.round(t7)}, and reaches 10<sup>11</sup> at day ${Math.round(t11)}. Getting from one cell to the first scan took about ${(( semi.b)/lg(2)).toFixed(0)} doublings.`; }
+  if (bug4) html += `<br>With the radius bug every count is divided by 8, so the grey line drops by log<sub>10</sub> 8 ≈ 0.90 of a step, yet it stays parallel to the gold one and the doubling time is still ${Math.round(T2)} days.`;
+  $('#r4').innerHTML = html;
+}
+tr4.addEventListener('input', r4);
+$('#ext4').addEventListener('click', e => { ext4 = !ext4; e.target.setAttribute('aria-pressed', ext4); e.target.textContent = ext4 ? 'Back to the six scans' : 'Run the line back to a single cell'; r4(); });
+$('#bug4').addEventListener('change', e => { bug4 = e.target.checked; r4(); });
+
+/* ---------- stage 5 bugs ---------- */
+const BUGS = [
+ {where:'intro sheet, cells G17 and G18', code:'where D is the tumor diameter, mm, and d is the diameter of a cancer cell, d = 10mm\nand 1 mm = 1000 mm.',
+  q:'What should the cell diameter really be?', opts:['10 mm, exactly as written','10 μm (micrometres), because the symbol μ has been lost','10 cm, because cancer cells are large'], a:1,
+  fb:'The formula <span class="cell">=(B5*1000/10)^3</span> turns millimetres into micrometres by multiplying by 1000, so the spreadsheet itself assumes d = 10 μm. The Greek letter μ vanished when the file was converted, which also turned “1 mm = 1000 μm” into the nonsense “1 mm = 1000 mm”. Using 10 mm makes every count a billion times too small.'},
+ {where:'intro G15, assess B18 and assess C14', code:'N = (D/d)3\n…requires at least 107 cells…\nN = Noekt',
+  q:'What has gone wrong in all three lines?', opts:['They are three unrelated typing mistakes','Superscripts and subscripts were flattened onto the line','Nothing, 107 cells is the detection limit'], a:1,
+  fb:'They should read N = (D/d)<sup>3</sup>, 10<sup>7</sup> cells and N = N<sub>0</sub>e<sup>kt</sup>. Reading 10<sup>7</sup> as 107 underestimates the detection limit by a factor of about 93 000. With 10<sup>7</sup> cells the smallest detectable tumour is 10 μm × (10<sup>7</sup>)<sup>1/3</sup> ≈ 2.2 mm across.'},
+ {where:'stud_ simulation, cells B4 and B13', code:'B3: Starting Tumor Diameter\nB4: =A4/2\nB13: =(B4*1000/10)^3',
+  q:'What does dividing by 2 do to the starting number of cells N₀?', opts:['It converts centimetres into millimetres','It turns the diameter into a radius, so N₀ comes out 8 times too small','Nothing, because it cancels out later'], a:1,
+  fb:'Halving the diameter and then cubing gives (½)<sup>3</sup> = ⅛. Tick the radius-bug box in stage 4 to see the effect: the whole line drops by log<sub>10</sub> 8 ≈ 0.9 of a step but stays parallel, because multiplying by a constant slides a log graph without tilting it.'},
+ {where:'stud_ simulation, cells B19 to B23', code:'first cell:  =-LN(#REF!)/#REF!\ndetection:   =LN(C21/#REF!)/#REF!\nlethal:      =LN(C23/#REF!)/#REF!',
+  q:'What does #REF! mean here?', opts:['The formula divides by zero','The formula points at cells that were deleted, and should use N₀ and k','A cell contains text instead of a number'], a:1,
+  fb:'The time to grow from N<sub>0</sub> to N is t = ln(N/N<sub>0</sub>)/k, so the formulas should read <span class="cell">=LN(C21/No)/k</span>, and for the first cell, where N = 1, <span class="cell">=-LN(No)/k</span>, which is negative because it lies in the past. The teacher copy has also lost these names in its N column, so every value below B32 breaks.'},
+ {where:'crumpled paper file, sheet crumpled, cell B1', code:'B1: mass, m/kg\nvalues: 1, 4, 16, 64, 256',
+  q:'Is this unit believable?', opts:['Yes, paper is heavy','No, a 256 kg paper ball is absurd, so the unit label is wrong','It does not matter because mass is not used'], a:1,
+  fb:'The masses are really relative sizes, each ball four times the last. Happily a wrong unit cannot change the power: converting units multiplies every mass by the same number, which slides a log–log line up or down without changing its gradient.'},
+ {where:'crumpled paper file, student_mass_peas, cells F2 and F3', code:'F2: =average(D2:E2)\nF3: =average(C3:E3)\nE5: " "   (a single space)',
+  q:'What is wrong with F2?', opts:['Nothing, it matches the other rows','It leaves out C2, so ball 1\u2019s mean uses only two of its three diameters','It should add the diameters rather than average them'], a:1,
+  fb:'Ball 1 gets a mean of 3.75 cm instead of 3.33 cm. Cell E5 hides a similar trap, because it contains a space rather than a number, so AVERAGE quietly uses only two readings for ball 4 without warning anyone.'}
+];
+const bugsEl = $('#bugs'); let got = 0, tried = 0;
+BUGS.forEach((b,bi) => {
+  const d = document.createElement('div'); d.className = 'bug';
+  d.innerHTML = `<div class="where">${b.where}</div><pre>${b.code}</pre><div class="q">${b.q}</div><div class="opts">${b.opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div><div class="fb">${b.fb}</div>`;
+  let done = false;
+  d.querySelectorAll('.opts button').forEach(btn => btn.addEventListener('click', () => {
+    const i = +btn.dataset.i;
+    if (i === b.a){ btn.classList.add('right'); d.querySelector('.fb').classList.add('show'); if (!done){ done = true; tried++; if (!d.dataset.miss) got++; score(); } }
+    else { btn.classList.add('wrong'); d.dataset.miss = 1; }
+  }));
+  bugsEl.appendChild(d);
+});
+function score(){ $('#score').textContent = tried ? `Found first time: ${got} of ${tried}` : ''; }
+
+/* ---------- stage 6 ---------- */
+const svg6 = $('#p6'), m6 = $('#m6'), b6 = $('#b6');
+const P6 = {
+  x:{lin:[0,40], log:[lg(3),lg(50)], s:0, plain:true, label:'tumour diameter, D / mm'},
+  y:{lin:[0,4.2e10], log:[7,11.2], s:0, sci:true, label:'number of cells, N'},
+  curves:[{f:D=>Math.pow(100*D,3), x0:0.5, x1:50}],
+  points: Dmm.map((D,i)=>({x:D, y:Ncell[i], tip:`${D.toFixed(1)} mm`})),
+  over:(X,Y,box)=>{
+    const s = P6.x.s; if (s<0.9) return '';
+    const op = (s-0.9)/0.1, x1=X(4), x2=X(40), y1=Y(Math.pow(400,3)), y2=Y(Math.pow(4000,3));
+    return `<g opacity="${op}"><line x1="${x1}" x2="${x2}" y1="${y1}" y2="${y1}" stroke="var(--sage)" stroke-width="2"/><line x1="${x2}" x2="${x2}" y1="${y1}" y2="${y2}" stroke="var(--sage)" stroke-width="2"/>
+      <text x="${(x1+x2)/2}" y="${y1+18}" text-anchor="middle" style="fill:var(--sage);font-size:13px">×10 in D: one step across</text>
+      <text x="${x2-8}" y="${(y1+y2)/2}" text-anchor="end" style="fill:var(--sage);font-size:13px">×1000 in N: three steps up</text></g>`;
+  }
+};
+function set6(s){ P6.x.s = P6.y.s = s; m6.value = Math.round(s*1000); b6.textContent = s>0.5?'Back to ordinary axes':'Stretch both axes'; drawPlot(svg6,P6);
+  const f = fit(Dmm.map(lg), Ncell.map(lg));
+  $('#r6').innerHTML = s>0.98 ? `Straight line. Gradient = <strong>${f.m.toFixed(2)}</strong>, the power in N = (D/d)<sup>3</sup>.` : s<0.02 ? 'A steepening curve: each extra millimetre adds more cells than the last.' : 'Keep stretching and watch the curve unbend.'; }
+m6.addEventListener('input', ()=>set6(m6.value/1000));
+b6.addEventListener('click', ()=>animate(P6.x.s, P6.x.s>0.5?0:1, set6));
+
+/* ---------- stage 7 ---------- */
+const DS = {
+  worked:{d:[1.5,2.4,4.6,7.3,15.5], m:[1,4,16,64,256], ex:[0,0,0,0,0],
+    x:{lin:[0,17], log:[0,1.3], plain:true, label:'mean diameter, d / cm'},
+    y:{lin:[0,280], log:[-0.2,2.6], plain:true, label:'mass (each ball four times the last)'},
+    h:[{lx:0.2,ly:0.3},{lx:1.15,ly:1.25}], tips:i=>`ball ${i+1}`},
+  class:{d:[4.0,4.3,5.267,1.75,4.3,3.2,4.4,4.6,4.453], m:[4,4.5,5.3,5,5,2,11,10,5], ex:[0,0,0,0,0,0,0,0,0],
+    x:{lin:[0,6], log:[0.15,0.8], plain:true, label:'mean diameter, d / cm'},
+    y:{lin:[0,12], log:[0.2,1.15], plain:true, label:'mass, m / g'},
+    h:[{lx:0.3,ly:0.35},{lx:0.72,ly:0.8}], tips:i=>`ball ${i+1}`}
+};
+let cur = 'worked', s7 = 0, showFit = false, drag = null, last7 = null;
+const svg7 = $('#p7'), m7 = $('#m7'), b7 = $('#b7');
+function lsq(){ const ds = DS[cur]; const xs=[], ys=[]; ds.d.forEach((d,i)=>{ if(!ds.ex[i]){xs.push(lg(d)); ys.push(lg(ds.m[i]));} }); return xs.length>=2 ? fit(xs,ys) : null; }
+function r7(focusH){
+  const ds = DS[cur]; ds.x.s = ds.y.s = s7;
+  const L = lsq();
+  const curves = [];
+  if (showFit && L) curves.push({f:x=>Math.pow(10,L.b)*Math.pow(x,L.m), x0:Math.pow(10,ds.x.log[0]-0.2), x1:Math.pow(10,ds.x.log[1]+0.2), col:'var(--sage)', w:2});
+  const handles = s7 > 0.98;
+  svg7.style.touchAction = handles ? 'none' : 'auto';
+  last7 = drawPlot(svg7, {
+    x:ds.x, y:ds.y, curves,
+    points: ds.d.map((d,i)=>({x:d, y:ds.m[i], ex:!!ds.ex[i], col:'var(--rose)', tip:ds.tips(i)+(ds.ex[i]?' (left out)':'')})),
+    over:(X,Y,box)=>{
+      if (!handles) return '';
+      const [a,b] = ds.h; const g = (b.ly-a.ly)/(b.lx-a.lx);
+      const ext = (lx0) => a.ly + g*(lx0-a.lx);
+      const lx0 = ds.x.log[0]-0.1, lx1 = ds.x.log[1]+0.1;
+      let s = `<line x1="${X(Math.pow(10,lx0))}" y1="${Y(Math.pow(10,ext(lx0)))}" x2="${X(Math.pow(10,lx1))}" y2="${Y(Math.pow(10,ext(lx1)))}" stroke="var(--gold)" stroke-width="2" clip-path="url(#p7clip)"/>`;
+      ds.h.forEach((h,k)=>{ s += `<circle data-h="${k}" tabindex="0" role="slider" aria-label="Line handle ${k+1}, use arrow keys" cx="${X(Math.pow(10,h.lx))}" cy="${Y(Math.pow(10,h.ly))}" r="11" fill="var(--gold)" fill-opacity=".25" stroke="var(--gold)" stroke-width="2" style="cursor:grab"/>`; });
+      return s;
+    }
+  });
+  if (focusH != null){ const el = svg7.querySelector(`[data-h="${focusH}"]`); if (el) el.focus(); }
+  const [a,b] = ds.h; const g = (b.ly-a.ly)/(b.lx-a.lx);
+  let html = '';
+  if (!handles) html = s7<0.02 ? 'On ordinary axes the points curve upwards, and a curve is hard to read a power from.' : 'Keep stretching until both axes are fully logarithmic.';
+  else html = `Your line's gradient: <span class="y"><strong>${g.toFixed(2)}</strong></span>.`;
+  if (showFit) html += L ? ` Calculator's best fit through the ${ds.ex.filter(x=>!x).length} included points: <span class="g"><strong>${L.m.toFixed(2)}</strong></span>.` : ' Include at least two points for a fit.';
+  const n = ds.ex.filter(x=>x).length; if (n) html += ` (${n} left out)`;
+  $('#r7').innerHTML = html;
+  dial(handles ? g : null, showFit && L ? L.m : null);
+}
+function dial(gy, gf){
+  const el = $('#dial'); const W = Math.max(300, el.clientWidth || 640), H = 86, L = 24, R = W-24, y = 44;
+  el.setAttribute('viewBox',`0 0 ${W} ${H}`); el.setAttribute('height',H);
+  const X = v => L + (R-L)*(Math.max(0,Math.min(3.5,v)))/3.5;
+  let s = `<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="2"/>`;
+  [[1,'string or line'],[2,'flat sheet'],[3,'solid ball']].forEach(([v,t])=>{ s += `<line x1="${X(v)}" x2="${X(v)}" y1="${y-8}" y2="${y+8}" stroke="var(--dim)"/><text class="tick" x="${X(v)}" y="${y+26}" text-anchor="middle">${v}: ${t}</text>`; });
+  s += `<text class="tick" x="${X(0)}" y="${y+26}" text-anchor="start">0</text>`;
+  if (gf!=null) s += `<path d="M${X(gf)} ${y-6} l-6 -12 h12 z" fill="var(--sage)"/>`;
+  if (gy!=null) s += `<path d="M${X(gy)} ${y-6} l-6 -12 h12 z" fill="var(--gold)"/><text x="${X(gy)}" y="${y-24}" text-anchor="middle" style="fill:var(--gold);font-size:12px">yours</text>`;
+  el.innerHTML = s;
+}
+function set7(s){ s7 = s; m7.value = Math.round(s*1000); b7.textContent = s>0.5?'Back to ordinary axes':'Stretch both axes'; r7(); }
+m7.addEventListener('input', ()=>set7(m7.value/1000));
+b7.addEventListener('click', ()=>animate(s7, s7>0.5?0:1, set7));
+$('#fit7').addEventListener('click', e => { showFit = !showFit; e.target.setAttribute('aria-pressed', showFit); e.target.textContent = showFit ? 'Hide the best fit' : 'Show the calculator\u2019s best fit'; r7(); });
+function pickDS(k){ cur = k; $('#dsWorked').setAttribute('aria-pressed', k==='worked'); $('#dsClass').setAttribute('aria-pressed', k==='class'); r7(); }
+$('#dsWorked').addEventListener('click', ()=>pickDS('worked'));
+$('#dsClass').addEventListener('click', ()=>pickDS('class'));
+function svgPt(e){ const p = svg7.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg7.getScreenCTM().inverse()); }
+function toLog(px, py){ const ds = DS[cur], b = last7.box; return { lx: ds.x.log[0] + (px-b.L)/(b.R-b.L)*(ds.x.log[1]-ds.x.log[0]), ly: ds.y.log[0] + (b.B-py)/(b.B-b.T)*(ds.y.log[1]-ds.y.log[0]) }; }
+function clampH(h){ const ds = DS[cur]; h.lx = Math.max(ds.x.log[0], Math.min(ds.x.log[1], h.lx)); h.ly = Math.max(ds.y.log[0], Math.min(ds.y.log[1], h.ly)); }
+function fixSame(k){ const ds = DS[cur], o = ds.h[1-k], h = ds.h[k]; if (Math.abs(h.lx-o.lx) < 0.02) h.lx = o.lx + (k ? 0.02 : -0.02); }
+function toggleEx(i){ const ds = DS[cur]; ds.ex[i] = ds.ex[i] ? 0 : 1; r7(); const el = svg7.querySelector(`[data-i="${i}"]`); if (el) el.focus(); }
+svg7.addEventListener('pointerdown', e => {
+  const t = e.target;
+  if (t.dataset.h != null){ drag = +t.dataset.h; svg7.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+  if (t.dataset.i != null){ toggleEx(+t.dataset.i); }
+});
+svg7.addEventListener('pointermove', e => { if (drag==null) return; const p = svgPt(e); const L = toLog(p.x,p.y); const h = DS[cur].h[drag]; h.lx = L.lx; h.ly = L.ly; clampH(h); fixSame(drag); r7(); });
+const endDrag = () => { drag = null; };
+svg7.addEventListener('pointerup', endDrag); svg7.addEventListener('pointercancel', endDrag);
+svg7.addEventListener('keydown', e => {
+  const a = document.activeElement; if (!a || !svg7.contains(a)) return;
+  if (a.dataset.h != null){
+    const k = +a.dataset.h, h = DS[cur].h[k], st = 0.02;
+    const mv = {ArrowLeft:[-st,0], ArrowRight:[st,0], ArrowUp:[0,st], ArrowDown:[0,-st]}[e.key];
+    if (!mv) return; e.preventDefault(); h.lx += mv[0]; h.ly += mv[1]; clampH(h); fixSame(k); r7(k);
+  } else if (a.dataset.i != null && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); toggleEx(+a.dataset.i); }
+});
+
+/* ---------- initial draw and resize ---------- */
+function all(){ r2(); rLadder(); r4(); set6(P6.x.s); r7(); }
+all();
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(all, 120); });
+})();
+</script>
+</body>
+</html>
