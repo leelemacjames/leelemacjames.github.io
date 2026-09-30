@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy for escape, field for orbit, and moving between them</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#0e1116; --panel:#151a22; --panel2:#1b212b; --ink:#e8e4da; --muted:#9aa0a8;
+  --amber:#e0a84a; --teal:#5fb3a8; --rose:#d9776b; --rule:#2a313c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:inherit;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.65;}
+.wrap{max-width:820px;margin:0 auto;padding:28px 20px 40px;}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.12;margin:8px 0 10px;font-weight:600;letter-spacing:-.01em;}
+h2{font-size:clamp(22px,4.2vw,28px);margin:0 0 8px;font-weight:600;color:var(--amber);}
+p{margin:0 0 14px;max-width:68ch;}
+.sub{color:var(--muted);font-style:italic;max-width:62ch;}
+section{border-top:1px solid var(--rule);padding:30px 0 10px;margin-top:26px;}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;margin:14px 0;}
+canvas{width:100%;display:block;background:var(--panel2);border-radius:4px;touch-action:none;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px;font-family:var(--sans);font-size:14px;}
+.ctl label{color:var(--muted);min-width:104px;}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--amber);}
+.ctl output{min-width:84px;text-align:right;font-variant-numeric:tabular-nums;}
+.btn{background:transparent;color:var(--amber);border:1px solid var(--amber);border-radius:4px;padding:7px 12px;font-family:var(--sans);font-size:13px;cursor:pointer;margin:6px 6px 0 0;}
+.read{font-family:var(--sans);font-size:14px;line-height:1.75;margin-top:10px;}
+.read b{color:var(--amber);font-weight:600;font-variant-numeric:tabular-nums;}
+.read .g{color:var(--teal);} .read .r{color:var(--rose);}
+.note{border-left:3px solid var(--teal);padding:4px 0 4px 14px;margin:16px 0;font-size:16px;}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14px;margin:8px 0;}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+th{color:var(--muted);font-weight:500;}
+.q{margin:22px 0;} .q .mk{font-family:var(--sans);font-size:13px;color:var(--muted);margin-left:6px;}
+textarea{width:100%;min-height:70px;margin:6px 0;resize:vertical;background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:4px;font-family:var(--sans);font-size:15px;padding:8px;}
+details{margin:6px 0 0;} summary{color:var(--amber);font-family:var(--sans);font-size:13px;cursor:pointer;}
+details p{margin-top:8px;font-size:16px;}
+footer{margin-top:44px;padding:18px 0 6px;border-top:2px solid var(--amber);text-align:center;font-family:var(--sans);font-size:12px;letter-spacing:.08em;color:var(--muted);}
+@media print{
+  :root{--bg:#fff;--panel:#fff;--panel2:#f2f2ef;--ink:#111;--muted:#555;--amber:#8a5a00;--teal:#0d6b60;--rose:#a3271a;--rule:#bbb;}
+  body{font-size:12pt;} .ctl,.btn,summary{display:none;} section{page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Energy for escape, field for orbit, and moving between them</h1>
+  <p class="sub">The hard IB questions about rockets and satellites are all solved by choosing the right one of two tools, and by knowing how they meet in the single result E = −GMm/2r. Every panel below uses the Earth, with G = 6.67 × 10⁻¹¹ N m² kg⁻², M = 5.97 × 10²⁴ kg and R = 6.37 × 10⁶ m, and a spacecraft of mass 1000 kg.</p>
+</header>
+
+<section>
+<h2>Which tool, and why</h2>
+<p>The field strength of a point mass falls as 1/r², so the force on a rocket changes all the way up, and the work done against it is an integral that we would otherwise have to evaluate at every stage. The gravitational potential V = −GM/r is that integral already done, with the zero of energy placed at infinity, so the work needed to move a mass m between two points is simply mΔV, whatever path is taken. This is why any question that compares two positions, such as escape, a maximum height, or a change of orbit, is answered fastest with energy.</p>
+<p>A circular orbit asks a different question, because the speed of a satellite is fixed by the requirement that the gravitational force supplies exactly the centripetal force, mv²/r = GMm/r², and that balance holds at a single radius at a time. Energy on its own cannot say how fast the satellite must move at a given radius, so the field strength g = GM/r² is the tool there. The two tools meet in the total energy of the orbit, which comes out as a neat negative number once the orbital speed from the force balance is fed into the energy expression.</p>
+</section>
+
+<section>
+<h2>A. Moving between equipotentials</h2>
+<p>Two shells of constant potential are shown around the Earth. The work done by the rocket engines to move a mass between them, slowly enough that no kinetic energy is gained, is mΔV, which is the vertical gap between the two points on the potential graph. The familiar shortcut mgh treats the field as constant and therefore follows the tangent to the curve rather than the curve itself.</p>
+<div class="panel">
+  <div class="ctl"><label for="ra">Shell a, radius</label><input id="ra" type="range" min="1" max="5" step="0.05" value="1"><output id="rao"></output></div>
+  <div class="ctl"><label for="rb">Shell b, radius</label><input id="rb" type="range" min="1" max="6" step="0.05" value="2"><output id="rbo"></output></div>
+  <div class="grid2"><canvas id="cA"></canvas><canvas id="cA2"></canvas></div>
+  <div class="read" id="outA"></div>
+</div>
+<div class="note">The curve bends away from its tangent, so the constant-g estimate lies above the true change in potential whenever the rocket climbs a large fraction of the radius. For small heights the tangent and the curve are indistinguishable, which is why mgh works near the surface and fails for a climb to a distant orbit.</div>
+</section>
+
+<section>
+<h2>B. Escape by energy</h2>
+<p>A rocket launched straight up at speed v has a total energy per kilogram of ½v² − GM/R, and this total stays constant as it rises (air resistance and engine thrust after launch are ignored). The rocket climbs until all its kinetic energy has been converted, which happens where the total energy line meets the potential curve. If the total energy is zero or positive the line never meets the curve and the rocket escapes, so the escape speed follows from ½v² = GM/R.</p>
+<div class="panel">
+  <div class="ctl"><label for="vB">Launch speed</label><input id="vB" type="range" min="0" max="12.5" step="0.05" value="8"><output id="vBo"></output></div>
+  <button class="btn" id="b79">Orbital speed at the surface</button><button class="btn" id="b112">Escape speed</button>
+  <canvas id="cB"></canvas>
+  <div class="read" id="outB"></div>
+</div>
+<div class="note">The shaded region is the kinetic energy available at each radius, and it shrinks to nothing at the turning point. Because the potential curve flattens toward zero at large distance, even a small positive total energy carries the rocket out to infinity with speed to spare.</div>
+</section>
+
+<section>
+<h2>C. Orbit by field strength</h2>
+<p>A satellite on a circular path needs a net inward force, and gravity is the only force acting, so mv²/r = GMm/r² and v = √(GM/r). Inserting this into the energy gives a kinetic energy of GMm/2r, a potential energy of −GMm/r, and a total of −GMm/2r, so the total energy equals minus the kinetic energy and half the potential energy. Move the slider to see the three quantities change, and watch how the period grows with radius.</p>
+<div class="panel">
+  <div class="ctl"><label for="rC">Orbit radius</label><input id="rC" type="range" min="1.02" max="7.2" step="0.01" value="1.063"><output id="rCo"></output></div>
+  <button class="btn" id="pLEO">Low Earth orbit, 400 km</button><button class="btn" id="pGPS">GPS orbit</button><button class="btn" id="pGEO">Geostationary</button>
+  <div class="grid2"><canvas id="cC"></canvas><canvas id="cC2"></canvas></div>
+  <div class="read" id="outC"></div>
+</div>
+<div class="note">The animation runs about 1400 times faster than real time, so the low orbit takes roughly four seconds per lap and the geostationary orbit about a minute. The satellite always falls toward the Earth, and the sideways speed carries it past the surface as it falls, which is what circular orbit means.</div>
+</section>
+
+<section>
+<h2>D. Changing orbit</h2>
+<p>The energy of a circular orbit is −GMm/2r, so moving to a larger orbit raises the total energy, and the work done by the engines equals that change. The kinetic energy falls by the same amount, because it equals minus the total, and the potential energy rises by twice that amount. A rocket therefore fires its engines to go up and ends with a slower satellite. The standard practical route is the Hohmann transfer, which uses one burn to enter an ellipse that touches both circles, and a second burn at the far end to circularise.</p>
+<div class="panel">
+  <div class="ctl"><label for="r1">Start orbit</label><input id="r1" type="range" min="1.02" max="7.2" step="0.01" value="1.063"><output id="r1o"></output></div>
+  <div class="ctl"><label for="r2">Target orbit</label><input id="r2" type="range" min="1.02" max="7.2" step="0.01" value="6.62"><output id="r2o"></output></div>
+  <button class="btn" id="hUp">LEO to geostationary</button><button class="btn" id="hDown">Geostationary to LEO</button><button class="btn" id="hGPS">LEO to GPS orbit</button>
+  <div class="grid2"><canvas id="cD"></canvas><canvas id="cD2"></canvas></div>
+  <div class="read" id="outD"></div>
+</div>
+<div class="note">On the energy bars the amber marker is the total energy, and it always sits at the level of the kinetic bar reversed in sign. Watch the two bars as you raise the target orbit, because the kinetic bar shrinks while the potential bar grows, and the total energy climbs toward zero, the level of escape.</div>
+</section>
+
+<section>
+<h2>Questions</h2>
+
+<div class="q">
+  <p><b>1.</b> A probe of mass 1000 kg is raised from the surface of the Earth to a height equal to the radius of the Earth. Calculate the work done (a) using mgh with g = 9.81 N kg⁻¹ and (b) using gravitational potential, and explain which is valid.<span class="mk">[4]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>(a) mgh = 1000 × 9.81 × 6.37 × 10⁶ = 6.25 × 10¹⁰ J. (b) V at the surface is −GM/R = −62.5 MJ kg⁻¹ and V at 2R is −31.3 MJ kg⁻¹, so the work is 1000 × 31.3 × 10⁶ = 3.13 × 10¹⁰ J. Only (b) is valid, because the field falls to a quarter of its surface value at 2R, and the constant-g estimate overstates the work by a factor of 2 here.</p></details>
+</div>
+
+<div class="q">
+  <p><b>2.</b> Derive the escape speed from the surface of a planet of mass M and radius R, and explain why an energy argument is preferable to integrating the force.<span class="mk">[3]</span></p>
+  <textarea placeholder="Your derivation"></textarea>
+  <details><summary>Show model answer</summary><p>To escape, the total energy must reach zero at infinity, so ½mv² − GMm/R = 0 and v = √(2GM/R), which is 11.2 km s⁻¹ for the Earth. The force changes with r throughout the climb, so a force argument requires an integral of GMm/r² from R to infinity, and the potential energy −GMm/r is the result of that integral, allowing the answer to be written from the start and end states alone.</p></details>
+</div>
+
+<div class="q">
+  <p><b>3.</b> A rocket is fired vertically from the surface at an initial speed of 8.0 km s⁻¹ and then coasts. Ignoring air resistance and the rotation of the Earth, calculate the greatest distance from the centre of the Earth that it reaches.<span class="mk">[4]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>The total energy per kilogram is ½(8000)² − 3.982 × 10¹⁴/6.37 × 10⁶ = 3.20 × 10⁷ − 6.25 × 10⁷ = −3.05 × 10⁷ J kg⁻¹. At the highest point the kinetic energy is zero, so −GM/r = −3.05 × 10⁷ and r = 1.31 × 10⁷ m, which is 2.05 Earth radii, or a height of about 6.7 × 10⁶ m above the surface.</p></details>
+</div>
+
+<div class="q">
+  <p><b>4.</b> Use the gravitational field strength to show that the orbital speed of a satellite is v = √(GM/r), and hence show that its total energy is −GMm/2r.<span class="mk">[4]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>Gravity supplies the centripetal force, so mv²/r = GMm/r², giving v² = GM/r. The kinetic energy is ½mv² = GMm/2r and the potential energy is −GMm/r, so the total is GMm/2r − GMm/r = −GMm/2r. The total is therefore minus the kinetic energy and half the potential energy, and it is negative for every bound orbit.</p></details>
+</div>
+
+<div class="q">
+  <p><b>5.</b> A satellite of mass 1000 kg moves from a circular orbit of radius 6.77 × 10⁶ m to a circular orbit of radius 4.22 × 10⁷ m. Calculate the change in (a) total energy, (b) kinetic energy and (c) potential energy, and explain why the engines must do work on the satellite even though its speed decreases.<span class="mk">[6]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>The total energies are −GMm/2r, which gives −29.4 GJ for the inner orbit and −4.72 GJ for the outer, so ΔE = +24.7 GJ. The kinetic energy falls from 29.4 GJ to 4.72 GJ, so ΔKE = −24.7 GJ, and the potential energy rises from −58.8 GJ to −9.44 GJ, so ΔPE = +49.4 GJ. The speed drops from 7.67 km s⁻¹ to 3.07 km s⁻¹, but the potential energy gain is twice the kinetic energy loss, and the engines must supply the net 24.7 GJ.</p></details>
+</div>
+
+<div class="q">
+  <p><b>6.</b> Air resistance causes a satellite to spiral down from an orbit of altitude 400 km to an orbit of altitude 300 km. State and explain what happens to its speed, its kinetic energy, its potential energy and its total energy.<span class="mk">[5]</span></p>
+  <textarea placeholder="Your explanation"></textarea>
+  <details><summary>Show model answer</summary><p>The speed rises from 7.669 km s⁻¹ to 7.727 km s⁻¹, because v = √(GM/r) grows as r shrinks. For each 1000 kg the kinetic energy rises by 0.44 GJ, the potential energy falls by 0.88 GJ, and the total energy falls by 0.44 GJ. Drag does negative work and removes energy from the orbit, while the fall in the gravitational field releases twice as much potential energy as drag removes, and half of that surplus appears as extra kinetic energy.</p></details>
+</div>
+
+<div class="q">
+  <p><b>7.</b> A satellite in a circular orbit of radius 6.77 × 10⁶ m has a mass of 1000 kg. Calculate the additional kinetic energy, and the additional speed, that it needs in order to escape from the Earth, and compare the energy with that needed to escape from the surface.<span class="mk">[4]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>The total energy is −29.4 GJ, so 29.4 GJ more must be supplied to reach zero, and this equals the present kinetic energy. The escape speed at this radius is √2 times the orbital speed, which is 10.8 km s⁻¹, so the extra speed is 3.18 km s⁻¹. Escaping from the surface needs 62.5 GJ for the same mass, so a satellite already in low orbit has done about half of the work.</p></details>
+</div>
+
+<div class="q">
+  <p><b>8 (stretch).</b> For the Hohmann transfer from the 400 km orbit to the geostationary orbit, the transfer ellipse has a semi-major axis a = (r₁ + r₂)/2, and the speed at any point on it obeys v² = GM(2/r − 1/a). Calculate the two burns and the time taken for the transfer.<span class="mk">[5]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>With r₁ = 6.77 × 10⁶ m and r₂ = 4.22 × 10⁷ m, a = 2.45 × 10⁷ m. The speed at the low point of the ellipse is 10.07 km s⁻¹ against a circular speed of 7.67 km s⁻¹, so the first burn is 2.40 km s⁻¹. At the far point the ellipse speed is 1.62 km s⁻¹ against a circular speed of 3.07 km s⁻¹, so the second burn is 1.46 km s⁻¹. The transfer takes half an orbital period of the ellipse, π√(a³/GM), which is about 5.3 hours.</p></details>
+</div>
+</section>
+
+<section>
+<h2>The picture in one place</h2>
+<table>
+  <tr><th>Question type</th><th>Tool</th><th>Key relation</th></tr>
+  <tr><td>Work between two positions, maximum height</td><td>Potential difference</td><td>W = mΔV, with V = −GM/r</td></tr>
+  <tr><td>Escape</td><td>Energy, total equal to zero</td><td>½v² = GM/R, so v = √(2GM/R)</td></tr>
+  <tr><td>Speed and period in circular orbit</td><td>Field strength and centripetal force</td><td>v² = GM/r, T² ∝ r³</td></tr>
+  <tr><td>Energy of an orbit</td><td>Combine both</td><td>E = −GMm/2r = −KE = ½PE</td></tr>
+  <tr><td>Change of orbit</td><td>Energy difference</td><td>ΔE = (GMm/2)(1/r₁ − 1/r₂)</td></tr>
+  <tr><td>Drag on a satellite</td><td>Energy and orbit together</td><td>E falls, r falls, v rises</td></tr>
+</table>
+</section>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const TAU=2*Math.PI,G=6.67e-11,ME=5.97e24,RE=6.37e6,GM=G*ME,MS=1000;
+const C={amber:'#e0a84a',teal:'#5fb3a8',rose:'#d9776b',ink:'#e8e4da',muted:'#9aa0a8'};
+function setup(c,h){const dpr=window.devicePixelRatio||1,w=c.clientWidth;c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.height=h+'px';const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);return {g,w,h};}
+function arrow(g,x,y,dx,dy,L,hl){const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m;const x2=x+dx*L,y2=y+dy*L;hl=hl||6;g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();const a=0.45;g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-hl*(dx*Math.cos(a)-dy*Math.sin(a)),y2-hl*(dy*Math.cos(a)+dx*Math.sin(a)));g.moveTo(x2,y2);g.lineTo(x2-hl*(dx*Math.cos(-a)-dy*Math.sin(-a)),y2-hl*(dy*Math.cos(-a)+dx*Math.sin(-a)));g.stroke();}
+function frame(g,w,h,x0,x1,y0,y1,xl,yl,m){m=m||{l:50,r:12,t:14,b:38};
+  const fx=x=>m.l+(x-x0)/(x1-x0)*(w-m.l-m.r),fy=y=>h-m.b-(y-y0)/(y1-y0)*(h-m.t-m.b);
+  g.strokeStyle=C.muted;g.lineWidth=1;g.beginPath();g.moveTo(m.l,m.t);g.lineTo(m.l,h-m.b);g.lineTo(w-m.r,h-m.b);g.stroke();
+  if(y0<0&&y1>0){g.strokeStyle='#39414e';g.beginPath();g.moveTo(m.l,fy(0));g.lineTo(w-m.r,fy(0));g.stroke();}
+  g.fillStyle=C.muted;g.font='12px -apple-system,Segoe UI,Arial,sans-serif';g.textAlign='center';g.fillText(xl,(m.l+w-m.r)/2,h-6);
+  g.save();g.translate(12,(m.t+h-m.b)/2);g.rotate(-Math.PI/2);g.fillText(yl,0,0);g.restore();return {fx,fy,m};}
+const fmt=(v,d)=>v.toFixed(d);
+const Vr=r=>-GM/r;  // J/kg, r in metres
+
+/* ---------- A ---------- */
+function drawA(){
+  const ra=+$('ra').value,rb=+$('rb').value;$('rao').textContent=ra.toFixed(2)+' R';$('rbo').textContent=rb.toFixed(2)+' R';
+  let {g,w,h}=setup($('cA'),280);const cx=w/2,cy=h/2,sc=(Math.min(w,h)/2-10)/6.2;
+  g.fillStyle='rgba(95,179,168,.45)';g.beginPath();g.arc(cx,cy,sc,0,TAU);g.fill();
+  [[ra,C.amber,'a'],[rb,C.rose,'b']].forEach(([r,c,l])=>{g.strokeStyle=c;g.lineWidth=2;g.setLineDash([5,4]);g.beginPath();g.arc(cx,cy,r*sc,0,TAU);g.stroke();g.setLineDash([]);g.fillStyle=c;g.font='13px sans-serif';g.textAlign='left';g.fillText(l,cx+r*sc*0.72+4,cy-r*sc*0.72-4);});
+  g.strokeStyle=C.ink;g.lineWidth=2.4;if(Math.abs(rb-ra)>0.03)arrow(g,cx,cy-ra*sc,0,rb>ra?-1:1,Math.abs(rb-ra)*sc,8);
+  g.fillStyle=C.ink;g.beginPath();g.arc(cx,cy-ra*sc,4,0,TAU);g.fill();
+  const p=setup($('cA2'),280);g=p.g;const f=frame(g,p.w,p.h,1,6.2,-66,0,'r / R','V (MJ per kg)');
+  g.beginPath();for(let i=0;i<=200;i++){const r=1+5.2*i/200;i?g.lineTo(f.fx(r),f.fy(Vr(r*RE)/1e6)):g.moveTo(f.fx(r),f.fy(Vr(r*RE)/1e6));}
+  g.strokeStyle=C.ink;g.lineWidth=2;g.stroke();
+  const Va=Vr(ra*RE)/1e6,Vb=Vr(rb*RE)/1e6,ga=GM/(ra*RE)**2,slope=ga*RE/1e6,Vt=Va+slope*(rb-ra);
+  g.save();g.beginPath();g.rect(f.m.l,f.m.t,p.w-f.m.l-f.m.r,p.h-f.m.t-f.m.b);g.clip();
+  g.strokeStyle=C.amber;g.lineWidth=1.8;g.beginPath();g.moveTo(f.fx(ra-0.8),f.fy(Va-slope*0.8));g.lineTo(f.fx(6.2),f.fy(Va+slope*(6.2-ra)));g.stroke();g.restore();
+  g.setLineDash([3,4]);g.strokeStyle=C.muted;g.lineWidth=1;[[ra,Va],[rb,Vb]].forEach(([r,v])=>{g.beginPath();g.moveTo(f.fx(r),f.fy(v));g.lineTo(f.fx(r),p.h-f.m.b);g.moveTo(f.fx(r),f.fy(v));g.lineTo(f.m.l,f.fy(v));g.stroke();});g.setLineDash([]);
+  g.fillStyle=C.amber;g.beginPath();g.arc(f.fx(ra),f.fy(Va),5,0,TAU);g.fill();g.fillStyle=C.rose;g.beginPath();g.arc(f.fx(rb),f.fy(Vb),5,0,TAU);g.fill();
+  if(Vt<=0){g.strokeStyle=C.amber;g.lineWidth=2;g.beginPath();g.arc(f.fx(rb),f.fy(Vt),5.5,0,TAU);g.stroke();}
+  g.fillStyle=C.muted;g.textAlign='left';g.fillText('tangent (constant g)',f.fx(3.3),f.fy(-8));
+  const dV=Vb-Va,W=MS*dV*1e6,h_=(rb-ra)*RE,Wm=MS*ga*h_;
+  $('outA').innerHTML='V at a = <b>'+fmt(Va,1)+'</b>, V at b = <b>'+fmt(Vb,1)+'</b> MJ kg⁻¹, so ΔV = <b>'+fmt(dV,1)+'</b> MJ kg⁻¹'+
+   '<br>Work by the engines on 1000 kg, mΔV = <b class="g">'+fmt(W/1e9,2)+' GJ</b>'+
+   '<br>Constant-g estimate mg<sub>a</sub>h = <b>'+fmt(Wm/1e9,2)+' GJ</b> with g at a = '+fmt(ga,2)+' N kg⁻¹'+
+   (Math.abs(W)>1e6?'<br>The shortcut is <b class="r">'+fmt(Wm/W,2)+' times</b> the true value':'');
+}
+$('ra').addEventListener('input',drawA);$('rb').addEventListener('input',drawA);
+
+/* ---------- B ---------- */
+function drawB(){
+  const v=+$('vB').value*1000;$('vBo').textContent=(v/1000).toFixed(2)+' km/s';
+  const {g,w,h}=setup($('cB'),300);const f=frame(g,w,h,1,8,-66,6,'r / R','energy per kg (MJ)');
+  const E=(0.5*v*v-GM/RE)/1e6,curve=r=>Vr(r*RE)/1e6;
+  let rt=E<0?(-GM/(E*1e6))/RE:Infinity,rEnd=Math.min(rt,8);
+  g.beginPath();g.moveTo(f.fx(1),f.fy(E));for(let i=0;i<=200;i++){const r=1+(rEnd-1)*i/200;g.lineTo(f.fx(r),f.fy(curve(r)));}g.closePath();g.fillStyle='rgba(95,179,168,.3)';g.fill();
+  g.beginPath();for(let i=0;i<=300;i++){const r=1+7*i/300;i?g.lineTo(f.fx(r),f.fy(curve(r))):g.moveTo(f.fx(r),f.fy(curve(r)));}g.strokeStyle=C.ink;g.lineWidth=2;g.stroke();
+  g.strokeStyle=C.amber;g.lineWidth=2;g.beginPath();g.moveTo(f.fx(1),f.fy(E));g.lineTo(f.fx(8),f.fy(E));g.stroke();
+  g.fillStyle=C.muted;g.textAlign='left';g.font='12px sans-serif';g.fillText('total energy E',f.fx(5.4),f.fy(E)-6);g.fillText('potential V = −GM/r',f.fx(4.3),f.fy(curve(4.3))+16);
+  g.fillStyle=C.ink;g.beginPath();g.arc(f.fx(1),f.fy(curve(1)),5,0,TAU);g.fill();
+  if(rt<=8){g.fillStyle=C.rose;g.beginPath();g.arc(f.fx(rt),f.fy(E),6,0,TAU);g.fill();g.fillText('turning point',f.fx(rt)+8,f.fy(E)+16);}
+  const ve=Math.sqrt(2*GM/RE);
+  $('outB').innerHTML='Total energy per kg, ½v² − GM/R = <b>'+fmt(E,1)+' MJ kg⁻¹</b> (escape speed is '+fmt(ve/1000,2)+' km s⁻¹)'+
+   (E<0?'<br>The rocket stops at r = <b class="g">'+fmt(rt,2)+' R</b> = '+fmt(rt*RE/1e6,1)+' × 10⁶ m, a height of <b>'+fmt((rt-1)*RE/1e3,0)+' km</b>, then falls back'
+       :'<br><b class="g">E ≥ 0, so the rocket escapes</b>'+(E>0?', reaching infinity with speed '+fmt(Math.sqrt(2*E*1e6)/1000,2)+' km s⁻¹':' and arrives at infinity with no speed left'));
+}
+$('vB').addEventListener('input',drawB);
+$('b79').addEventListener('click',()=>{$('vB').value=(Math.sqrt(GM/RE)/1000).toFixed(2);drawB();});
+$('b112').addEventListener('click',()=>{$('vB').value=(Math.sqrt(2*GM/RE)/1000).toFixed(2);drawB();});
+
+/* ---------- C ---------- */
+let thC=0,lastT=null;
+function drawC2(){
+  const r=+$('rC').value;
+  const {g,w,h}=setup($('cC2'),300);const f=frame(g,w,h,1,7.2,-66,36,'r / R','energy (GJ, 1000 kg)');
+  const fns=[[x=>GM*MS/(2*x*RE)/1e9,C.teal,'KE'],[x=>-GM*MS/(x*RE)/1e9,C.rose,'PE'],[x=>-GM*MS/(2*x*RE)/1e9,C.amber,'E']];
+  fns.forEach(([fn,c,l])=>{g.beginPath();for(let i=0;i<=200;i++){const x=1+6.2*i/200;i?g.lineTo(f.fx(x),f.fy(fn(x))):g.moveTo(f.fx(x),f.fy(fn(x)));}g.strokeStyle=c;g.lineWidth=2;g.stroke();
+    g.fillStyle=c;g.font='12px sans-serif';g.textAlign='left';g.fillText(l,f.fx(6.75),f.fy(fn(6.75))+(l==='PE'?14:-5));
+    g.beginPath();g.arc(f.fx(r),f.fy(fn(r)),5,0,TAU);g.fill();});
+  g.setLineDash([3,4]);g.strokeStyle=C.muted;g.beginPath();g.moveTo(f.fx(r),f.m.t);g.lineTo(f.fx(r),h-f.m.b);g.stroke();g.setLineDash([]);
+  const rm=r*RE,v=Math.sqrt(GM/rm),T=TAU*rm/v,ke=0.5*MS*v*v,pe=-GM*MS/rm,E=ke+pe;
+  const launch=E-(-GM*MS/RE);
+  $('rCo').textContent=r.toFixed(2)+' R';
+  $('outC').innerHTML='Field strength g = GM/r² = <b>'+fmt(GM/rm**2,2)+' N kg⁻¹</b>, speed v = √(GM/r) = <b>'+fmt(v/1000,2)+' km s⁻¹</b>, period T = <b>'+(T>7200?fmt(T/3600,1)+' h':fmt(T/60,1)+' min')+'</b>'+
+   '<br>KE = <b class="g">'+fmt(ke/1e9,2)+' GJ</b>, PE = <b class="r">'+fmt(pe/1e9,2)+' GJ</b>, E = <b>'+fmt(E/1e9,2)+' GJ</b> (E = −KE = PE/2)'+
+   '<br>Extra speed to escape from here = (√2 − 1)v = <b>'+fmt((Math.SQRT2-1)*v/1000,2)+' km s⁻¹</b>, extra energy = <b>'+fmt(-E/1e9,2)+' GJ</b>'+
+   '<br>Launch from the surface (at rest, rotation ignored) needs <b>'+fmt(launch/1e9,1)+' GJ</b> to reach this orbit, against '+fmt(GM*MS/RE/1e9,1)+' GJ to escape';
+}
+function animC(ts){
+  const r=+$('rC').value;
+  if(lastT==null)lastT=ts;const dt=Math.min(0.05,(ts-lastT)/1000);lastT=ts;
+  const rm=r*RE,T=TAU*Math.sqrt(rm**3/GM);thC+=TAU*dt*1400/T;
+  const {g,w,h}=setup($('cC'),300);const cx=w/2,cy=h/2,sc=(Math.min(w,h)/2-8)/7.2;
+  g.fillStyle='rgba(95,179,168,.5)';g.beginPath();g.arc(cx,cy,Math.max(5,sc),0,TAU);g.fill();
+  g.strokeStyle='#4a5361';g.lineWidth=1;g.setLineDash([3,4]);g.beginPath();g.arc(cx,cy,r*sc,0,TAU);g.stroke();g.setLineDash([]);
+  const x=cx+r*sc*Math.cos(thC),y=cy-r*sc*Math.sin(thC);
+  g.lineWidth=2.4;g.strokeStyle=C.rose;arrow(g,x,y,cx-x,cy-y,30,7);
+  g.strokeStyle=C.teal;arrow(g,x,y,-Math.sin(thC),-Math.cos(thC),30,7);
+  g.fillStyle=C.ink;g.beginPath();g.arc(x,y,5,0,TAU);g.fill();
+  g.font='12px sans-serif';g.fillStyle=C.rose;g.textAlign='left';g.fillText('g',10,h-26);g.fillStyle=C.teal;g.fillText('v',10,h-10);
+  g.fillStyle=C.muted;g.fillText('  gravity supplies mv²/r',22,h-26);g.fillText('  velocity is perpendicular to the force',22,h-10);
+  animD(ts);requestAnimationFrame(animC);
+}
+$('rC').addEventListener('input',drawC2);
+$('pLEO').addEventListener('click',()=>{$('rC').value=1.063;drawC2();});
+$('pGPS').addEventListener('click',()=>{$('rC').value=4.17;drawC2();});
+$('pGEO').addEventListener('click',()=>{$('rC').value=6.62;drawC2();});
+
+/* ---------- D ---------- */
+function kepler(M,e){let E=M;for(let i=0;i<40;i++)E-=(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));return E;}
+function hoh(){
+  const r1=+$('r1').value*RE,r2=+$('r2').value*RE,a=(r1+r2)/2,e=Math.abs(r2-r1)/(r1+r2),b=a*Math.sqrt(1-e*e);
+  const vc1=Math.sqrt(GM/r1),vc2=Math.sqrt(GM/r2),v1t=Math.sqrt(GM*(2/r1-1/a)),v2t=Math.sqrt(GM*(2/r2-1/a));
+  return {r1,r2,a,e,b,up:r2>=r1,vc1,vc2,dv1:v1t-vc1,dv2:vc2-v2t,T1:TAU*Math.sqrt(r1**3/GM),T2:TAU*Math.sqrt(r2**3/GM),Th:Math.PI*Math.sqrt(a**3/GM)};
+}
+function drawD2(){
+  const H=hoh();$('r1o').textContent=(H.r1/RE).toFixed(2)+' R';$('r2o').textContent=(H.r2/RE).toFixed(2)+' R';
+  const {g,w,h}=setup($('cD2'),300);
+  const en=r=>({ke:GM*MS/(2*r),pe:-GM*MS/r,e:-GM*MS/(2*r)});
+  const A=en(H.r1),B=en(H.r2),mx=Math.max(Math.abs(A.pe),Math.abs(B.pe),A.ke,B.ke)/1e9*1.15;
+  const m={l:48,r:10,t:16,b:34},fy=v=>h/2-(v/1e9)/mx*(h/2-m.t-6);
+  g.strokeStyle=C.muted;g.lineWidth=1;g.beginPath();g.moveTo(m.l,fy(0));g.lineTo(w-m.r,fy(0));g.stroke();
+  g.fillStyle=C.muted;g.font='12px sans-serif';g.textAlign='right';g.fillText('0',m.l-6,fy(0)+4);
+  g.save();g.translate(12,h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('energy (GJ, 1000 kg)',0,0);g.restore();
+  [[A,'start',0],[B,'target',1]].forEach(([d,l,k])=>{
+    const cxx=m.l+(w-m.l-m.r)*(0.27+0.46*k),bw=(w-m.l-m.r)*0.11;
+    g.fillStyle='rgba(95,179,168,.75)';g.fillRect(cxx-bw*1.25,fy(d.ke),bw,fy(0)-fy(d.ke));
+    g.fillStyle='rgba(217,119,107,.75)';g.fillRect(cxx-bw*0.1,fy(0),bw,fy(d.pe)-fy(0));
+    g.strokeStyle=C.amber;g.lineWidth=3;g.beginPath();g.moveTo(cxx-bw*1.5,fy(d.e));g.lineTo(cxx+bw*1.4,fy(d.e));g.stroke();
+    g.fillStyle=C.ink;g.textAlign='center';g.fillText(l,cxx,h-10);
+    g.fillStyle=C.teal;g.fillText(fmt(d.ke/1e9,1),cxx-bw*0.75,fy(d.ke)-4);g.fillStyle=C.rose;g.fillText(fmt(d.pe/1e9,1),cxx+bw*0.45,fy(d.pe)+13);
+    g.fillStyle=C.amber;g.fillText('E '+fmt(d.e/1e9,1),cxx+bw*0.2,fy(d.e)-6);});
+  g.fillStyle=C.muted;g.textAlign='left';g.fillText('KE',m.l+4,m.t+4);g.fillStyle=C.rose;g.fillText('PE',m.l+26,m.t+4);g.fillStyle=C.amber;g.fillText('total E',m.l+50,m.t+4);
+  const dE=B.e-A.e,dK=B.ke-A.ke,dP=B.pe-A.pe;
+  $('outD').innerHTML='Speeds: start <b>'+fmt(H.vc1/1000,2)+'</b> km s⁻¹, target <b>'+fmt(H.vc2/1000,2)+'</b> km s⁻¹'+
+   '<br>ΔE = <b class="g">'+fmt(dE/1e9,2)+' GJ</b> (work done by the engines), ΔKE = <b>'+fmt(dK/1e9,2)+' GJ</b>, ΔPE = <b>'+fmt(dP/1e9,2)+' GJ</b>'+
+   (H.e>1e-4?'<br>Hohmann burns: first <b>'+fmt(H.dv1,0)+' m s⁻¹</b>, second <b>'+fmt(H.dv2,0)+' m s⁻¹</b>, total speed change <b>'+fmt(Math.abs(H.dv1)+Math.abs(H.dv2),0)+' m s⁻¹</b>, transfer time <b>'+fmt(H.Th/3600,2)+' h</b>':'<br>The two orbits are the same, so no transfer is needed.');
+}
+function animD(ts){
+  const c=$('cD'),H=hoh(),{g,w,h}=setup(c,300);
+  const cx=w/2,cy=h/2,mr=Math.max(H.r1,H.r2),sc=(Math.min(w,h)/2-10)/mr;
+  g.fillStyle='rgba(95,179,168,.5)';g.beginPath();g.arc(cx,cy,Math.max(3,RE*sc),0,TAU);g.fill();
+  [[H.r1,C.amber],[H.r2,C.rose]].forEach(([r,c2])=>{g.strokeStyle=c2;g.lineWidth=1.4;g.beginPath();g.arc(cx,cy,r*sc,0,TAU);g.stroke();});
+  if(H.e<1e-4){return;}
+  const xc=(H.r1-H.r2)/2;
+  g.setLineDash([4,4]);g.strokeStyle=C.muted;g.lineWidth=1.2;g.beginPath();
+  for(let i=0;i<=120;i++){const E=Math.PI*i/120,x=xc+H.a*Math.cos(E),y=H.b*Math.sin(E);i?g.lineTo(cx+x*sc,cy-y*sc):g.moveTo(cx+x*sc,cy-y*sc);}g.stroke();g.setLineDash([]);
+  const half=5,scale=H.Th/half;
+  const dA=Math.min(H.T1/4/scale,3),dC=Math.min(H.T2/4/scale,3),pause=1.0,total=dA+half+dC+pause;
+  const t=(ts/1000)%total;let px,py,label,burnT=null;
+  const angA=TAU*scale/H.T1,angC=TAU*scale/H.T2;
+  if(t<dA){const th=-(dA-t)*angA;px=H.r1*Math.cos(th);py=H.r1*Math.sin(th);label='Coasting in the start orbit';}
+  else if(t<dA+half){const s=t-dA,M=(H.up?0:Math.PI)+Math.PI*s/half,E=kepler(M,H.e),sx=H.a*(Math.cos(E)-H.e),sy=H.b*Math.sin(E);px=H.up?sx:-sx;py=H.up?sy:-sy;label='Transfer ellipse, engines off';}
+  else if(t<dA+half+dC){const th=Math.PI+(t-dA-half)*angC;px=H.r2*Math.cos(th);py=H.r2*Math.sin(th);label='Coasting in the target orbit';}
+  else{px=-H.r2*Math.cos(0);py=0;px=H.r2*Math.cos(Math.PI+dC*angC);py=H.r2*Math.sin(Math.PI+dC*angC);label='Target orbit reached';}
+  [[dA,'burn 1',H.r1,0],[dA+half,'burn 2',-H.r2,0]].forEach(([tb,l,bx,by],i)=>{const d=t-tb;if(d>=0&&d<0.6){g.strokeStyle='rgba(255,255,255,'+(1-d/0.6)+')';g.lineWidth=2.5;g.beginPath();g.arc(cx+bx*sc,cy-by*sc,6+d*40,0,TAU);g.stroke();label=i?'Burn 2 circularises the orbit':'Burn 1 enters the transfer ellipse';}});
+  g.fillStyle=C.ink;g.beginPath();g.arc(cx+px*sc,cy-py*sc,5,0,TAU);g.fill();
+  g.fillStyle=C.muted;g.font='12px sans-serif';g.textAlign='left';g.fillText(label,10,h-10);
+  g.fillStyle=C.amber;g.fillText('start orbit',10,18);g.fillStyle=C.rose;g.fillText('target orbit',10,34);
+}
+['r1','r2'].forEach(id=>$(id).addEventListener('input',drawD2));
+$('hUp').addEventListener('click',()=>{$('r1').value=1.063;$('r2').value=6.62;drawD2();});
+$('hDown').addEventListener('click',()=>{$('r1').value=6.62;$('r2').value=1.063;drawD2();});
+$('hGPS').addEventListener('click',()=>{$('r1').value=1.063;$('r2').value=4.17;drawD2();});
+
+function all(){drawA();drawB();drawC2();drawD2();}
+window.addEventListener('resize',all);
+all();requestAnimationFrame(animC);
+</script>
+</body>
+</html>

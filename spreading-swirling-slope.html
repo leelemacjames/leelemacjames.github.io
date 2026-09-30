@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spreading, Swirling and Slope: IB Physics Worksheet</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#0e1116; --panel:#151a22; --panel2:#1b212b; --ink:#e8e4da; --muted:#9aa0a8;
+  --amber:#e0a84a; --teal:#5fb3a8; --rose:#d9776b; --rule:#2a313c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:inherit;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.65;}
+.wrap{max-width:820px;margin:0 auto;padding:28px 20px 40px;}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.12;margin:8px 0 10px;font-weight:600;letter-spacing:-.01em;}
+h2{font-size:clamp(22px,4.2vw,28px);margin:0 0 8px;font-weight:600;color:var(--amber);}
+h3{font-size:18px;margin:22px 0 6px;font-weight:600;}
+p{margin:0 0 14px;max-width:68ch;}
+.sub{color:var(--muted);font-style:italic;max-width:60ch;}
+.nameline{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0 0;font-family:var(--sans);font-size:14px;color:var(--muted);}
+.nameline span{border-bottom:1px solid var(--rule);padding:0 0 2px;min-width:150px;}
+section{border-top:1px solid var(--rule);padding:30px 0 10px;margin-top:26px;}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;margin:14px 0;}
+canvas{width:100%;display:block;background:var(--panel2);border-radius:4px;touch-action:none;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px;font-family:var(--sans);font-size:14px;}
+.ctl label{color:var(--muted);min-width:112px;}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--amber);}
+.ctl output{min-width:64px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums;}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;}
+.seg button{background:transparent;color:var(--muted);border:0;padding:8px 14px;font:inherit;font-family:var(--sans);font-size:14px;cursor:pointer;}
+.seg button[aria-pressed=true]{background:var(--amber);color:#14110a;}
+.read{font-family:var(--sans);font-size:14px;color:var(--ink);line-height:1.7;margin-top:8px;}
+.read b{color:var(--amber);font-weight:600;font-variant-numeric:tabular-nums;}
+.read .g{color:var(--teal);}
+.note{border-left:3px solid var(--teal);padding:4px 0 4px 14px;color:var(--ink);margin:16px 0;font-size:16px;}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14px;margin:8px 0;}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;}
+th{color:var(--muted);font-weight:500;}
+input.num,textarea{background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:4px;font:inherit;font-family:var(--sans);font-size:15px;padding:6px 8px;}
+input.num{width:96px;}
+input.num.ok{border-color:var(--teal);} input.num.bad{border-color:var(--rose);}
+textarea{width:100%;min-height:74px;margin:6px 0;resize:vertical;}
+button.chk,summary{font-family:var(--sans);font-size:13px;cursor:pointer;}
+button.chk{background:transparent;color:var(--amber);border:1px solid var(--amber);border-radius:4px;padding:5px 10px;margin-left:6px;}
+.fb{font-family:var(--sans);font-size:13px;margin-left:8px;color:var(--muted);font-style:normal;}
+.fb.ok{color:var(--teal);} .fb.bad{color:var(--rose);}
+.q{margin:22px 0;padding-left:0;}
+.q .mk{font-family:var(--sans);font-size:13px;color:var(--muted);margin-left:6px;}
+details{margin:6px 0 0;} summary{color:var(--amber);}
+details p{margin-top:8px;font-size:16px;}
+footer{margin-top:44px;padding:18px 0 6px;border-top:2px solid var(--amber);text-align:center;font-family:var(--sans);font-size:12px;letter-spacing:.08em;color:var(--muted);}
+@media print{
+  :root{--bg:#fff;--panel:#fff;--panel2:#f4f4f2;--ink:#111;--muted:#555;--amber:#8a5a00;--teal:#0d6b60;--rose:#a3271a;--rule:#bbb;}
+  body{font-size:12pt;} .ctl,.seg,button.chk,summary{display:none;} details[open] summary{display:none;}
+  section{page-break-inside:avoid;} canvas{border:1px solid #bbb;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Spreading, swirling and slope</h1>
+  <p class="sub">One geometric idea sits behind the inverse-square laws of gravity, electric charge and radiation, the 1/r law of a current-carrying wire, and the way we read a field from a potential graph. Work through the interactive panels, then answer the questions.</p>
+  <div class="nameline"><span>Name</span><span>Class</span><span>Date</span></div>
+</header>
+
+<!-- ============ A ============ -->
+<section>
+<h2>A. A fixed amount spread over a growing shell</h2>
+<p>Imagine a point source that sends out a fixed number of field lines, or a fixed power of light, in all directions. Every closed shell drawn around the source is crossed by the same total, because nothing is created or destroyed between one shell and the next. The share arriving at each square metre of the shell therefore depends only on how large the shell has become, and a sphere of radius r has area 4πr², whereas a circle of radius r has circumference 2πr.</p>
+
+<div class="panel">
+  <div class="ctl"><label>Space has</label>
+    <div class="seg" role="group" aria-label="dimension">
+      <button id="d3" aria-pressed="true">3 dimensions (sphere)</button>
+      <button id="d2" aria-pressed="false">2 dimensions (circle)</button>
+    </div>
+  </div>
+  <div class="ctl"><label for="rA">Shell radius r</label><input id="rA" type="range" min="1" max="10" step="0.5" value="2"><output id="rAo">2.0</output></div>
+  <div class="grid2">
+    <canvas id="cA"></canvas>
+    <canvas id="cA2"></canvas>
+  </div>
+  <div class="read" id="outA"></div>
+</div>
+
+<div class="note">The sixteen rays always cross every shell, yet the gap between neighbouring rays widens in proportion to r in two dimensions and in proportion to r² in three (the shaded wedge shows one gap growing). Field strength and intensity measure lines per unit of shell, so they shrink in the same proportion.</div>
+
+<h3>Doubling test</h3>
+<p>A source is observed at distance r, and the observer then moves out to a larger distance. Give the new field or intensity as a fraction of the original (decimals or fractions such as 1/4 are accepted).</p>
+<table>
+  <tr><th>Situation</th><th>New value ÷ old value</th></tr>
+  <tr><td>3D point source, r changes to 2r</td><td><span class="ans"><input class="num" data-ans="0.25" data-hint="Sphere area grows by 2² = 4."><button class="chk">Check</button><em class="fb"></em></span></td></tr>
+  <tr><td>3D point source, r changes to 3r</td><td><span class="ans"><input class="num" data-ans="0.1111" data-hint="Area grows by 3² = 9."><button class="chk">Check</button><em class="fb"></em></span></td></tr>
+  <tr><td>2D source (long line or ripples), r changes to 2r</td><td><span class="ans"><input class="num" data-ans="0.5" data-hint="Circumference grows by 2."><button class="chk">Check</button><em class="fb"></em></span></td></tr>
+  <tr><td>2D source, r changes to 3r</td><td><span class="ans"><input class="num" data-ans="0.3333" data-hint="Circumference grows by 3."><button class="chk">Check</button><em class="fb"></em></span></td></tr>
+</table>
+</section>
+
+<!-- ============ B ============ -->
+<section>
+<h2>B. Cutting the flux: the probe box</h2>
+<p>Place a small imaginary box in a field and ask two questions of it. The first, which we can call the sprinkler question, asks whether more field leaves the box through its faces than enters, so that the box behaves like a source (this is what the word divergence describes). The second, the paddle-wheel question, asks whether the field pushes round the edge of the box in a loop, so that a tiny paddle wheel would turn (this is what curl describes). Drag the box, resize it, and change the field. The numbers use units in which the source strength is 1.</p>
+
+<div class="panel">
+  <div class="ctl"><label>Field</label>
+    <div class="seg" role="group" aria-label="field">
+      <button id="fP" aria-pressed="true">Point charge</button>
+      <button id="fL" aria-pressed="false">Line charge</button>
+      <button id="fW" aria-pressed="false">Wire (B)</button>
+    </div>
+  </div>
+  <div class="ctl"><label for="sB">Box edge s</label><input id="sB" type="range" min="0.2" max="3" step="0.1" value="1"><output id="sBo">1.0</output></div>
+  <canvas id="cB"></canvas>
+  <div class="read" id="outB"></div>
+</div>
+
+<div class="note">The point-charge field has a fixed total flux of 4π through any box that contains the charge, whatever its size or position, and zero through any box that does not. That constancy is the flux-cutting statement of the inverse-square law, and it has the same content as the shell picture in section A. For the wire, the same job is done by the circulation around the box.</div>
+
+<h3>Prediction table</h3>
+<p>Before you move the box, predict what each field gives for a box that does not contain the source. Write zero or non-zero.</p>
+<table>
+  <tr><th>Field</th><th>Net flux out of box</th><th>Circulation around box</th></tr>
+  <tr><td>Point charge</td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td></tr>
+  <tr><td>Line charge</td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td></tr>
+  <tr><td>Wire (magnetic field)</td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td><td><input class="num" style="width:110px" placeholder="zero / non-zero"></td></tr>
+</table>
+<details><summary>Show the pattern</summary><p>For all three fields, a box that misses the source gives zero flux and zero circulation, because away from the source the field lines are neither created nor destroyed and none of these fields swirls except the wire. The difference shows up when the box contains the source: the two electric fields then give non-zero flux and zero circulation, while the wire gives zero flux and non-zero circulation.</p></details>
+</section>
+
+<!-- ============ C ============ -->
+<section>
+<h2>C. The wire: circles instead of spheres</h2>
+<p>A long straight wire has no charge to spread, since the wire is neutral and the magnetic field lines never begin or end. The field instead swirls round the wire in closed loops, and what stays fixed from one loop to the next is the sum of B along the loop multiplied by its length, which Ampère's law sets equal to μ₀I for any loop enclosing the current. The loop is a circle of circumference 2πr, so B × 2πr = μ₀I, and B falls as 1/r.</p>
+
+<div class="panel">
+  <div class="ctl"><label for="iC">Current I</label><input id="iC" type="range" min="1" max="20" step="1" value="10"><output id="iCo">10 A</output></div>
+  <div class="ctl"><label for="rC">Loop radius r</label><input id="rC" type="range" min="1" max="10" step="0.5" value="3"><output id="rCo">3.0 cm</output></div>
+  <canvas id="cC"></canvas>
+  <div class="read" id="outC"></div>
+  <table id="tabC"></table>
+</div>
+
+<div class="note">The last column of the table stays the same in every row, and this is the circulation. Compare this with the sphere in section A: the electric line charge is the same picture with the field arrows pointing outward along the radius, whereas the wire has the field arrows turned a quarter turn to run round the circle.</div>
+</section>
+
+<!-- ============ D ============ -->
+<section>
+<h2>D. Questions</h2>
+
+<div class="q">
+  <p><b>1.</b> A small lamp gives an intensity of 36 W m⁻² at a distance of 2.0 m. Treating it as a point source radiating uniformly with no absorption, calculate the intensity at 6.0 m.<span class="mk">[2]</span></p>
+  <span class="ans"><input class="num" data-ans="4" data-hint="Tripling r divides the intensity by 9." data-unit="W m⁻²"><button class="chk">Check</button><em class="fb"></em></span> W m⁻²
+</div>
+
+<div class="q">
+  <p><b>2.</b> The gravitational field strength at the surface of the Earth is 9.81 N kg⁻¹. Calculate the field strength at a height above the surface equal to one Earth radius.<span class="mk">[2]</span></p>
+  <span class="ans"><input class="num" data-ans="2.45" data-hint="Distance from the centre is 2R, so divide by 4."><button class="chk">Check</button><em class="fb"></em></span> N kg⁻¹
+</div>
+
+<div class="q">
+  <p><b>3.</b> A long straight wire produces a magnetic field of 50 μT at a distance of 2.0 cm. Determine the field at 5.0 cm.<span class="mk">[2]</span></p>
+  <span class="ans"><input class="num" data-ans="20" data-hint="B is proportional to 1/r, so multiply by 2/5."><button class="chk">Check</button><em class="fb"></em></span> μT
+</div>
+
+<div class="q">
+  <p><b>4.</b> A very long fluorescent tube is modelled as an infinite line source, so that its light spreads out over cylinders. Its intensity is 8.0 W m⁻² at 1.0 m. Calculate the intensity at 4.0 m.<span class="mk">[2]</span></p>
+  <span class="ans"><input class="num" data-ans="2" data-hint="Cylinder area grows in proportion to r, so the intensity falls as 1/r."><button class="chk">Check</button><em class="fb"></em></span> W m⁻²
+</div>
+
+<div class="q">
+  <p><b>5.</b> Ripples spread across the surface of a pond from a point where a stone fell. The energy in the ripple stays constant as it spreads, and the amplitude of a wave is proportional to the square root of its intensity. Deduce how the amplitude depends on the distance from the stone.<span class="mk">[3]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>The ripple spreads over a circle of circumference 2πr, so the intensity is proportional to 1/r. The amplitude is proportional to the square root of intensity, which gives an amplitude proportional to 1/√r, and this is why pond ripples fade more slowly than sound or light from a point source, whose amplitude falls as 1/r.</p></details>
+</div>
+
+<div class="q">
+  <p><b>6.</b> Explain, using the idea of field lines crossing a sphere, why a point charge in our three-dimensional space cannot have a field that falls as 1/r³.<span class="mk">[3]</span></p>
+  <textarea placeholder="Your explanation"></textarea>
+  <details><summary>Show model answer</summary><p>The number of field lines leaving the charge is fixed by the size of the charge, and the same number must cross every sphere centred on it. The sphere's area grows as r², so the lines per unit area, which is the field strength, can only fall as 1/r². A 1/r³ field would mean that lines had vanished between one sphere and the next.</p></details>
+</div>
+
+<div class="q">
+  <p><b>7.</b> The magnetic field lines round a straight wire are closed circles. Use the box probe from section B to explain why no net magnetic flux leaves a small box placed beside the wire, and state what the loop calculation gives instead.<span class="mk">[3]</span></p>
+  <textarea placeholder="Your explanation"></textarea>
+  <details><summary>Show model answer</summary><p>Every field line that enters the box also leaves it, since the lines are closed loops with no start or end, so the net flux is zero for any box. What the field does have is a circulation, because adding up B along a loop that encloses the wire gives μ₀I, and that non-zero sum is the swirl that curl describes.</p></details>
+</div>
+</section>
+
+<!-- ============ E ============ -->
+<section>
+<h2>E. Reading the field from the slope of the potential</h2>
+<p>Every radial field met in this course can also be found from a potential graph. The field in the radial direction is the negative of the gradient of the potential, E = −ΔV/Δr for electricity and g = −ΔV/Δr for gravity, so a steep graph means a strong field and the sign of the slope tells us which way the field points. Move the point along the curve and compare the slope of the tangent with the field calculated from the inverse-square law.</p>
+
+<div class="panel">
+  <div class="ctl"><label>Field</label>
+    <div class="seg" role="group" aria-label="potential type">
+      <button id="pE" aria-pressed="true">Electric, Q = +5.0 nC</button>
+      <button id="pG" aria-pressed="false">Gravitational, Earth</button>
+    </div>
+  </div>
+  <div class="ctl"><label for="rE">Position r</label><input id="rE" type="range" min="0" max="100" step="1" value="30"><output id="rEo"></output></div>
+  <canvas id="cE"></canvas>
+  <div class="read" id="outE"></div>
+</div>
+
+<div class="note">The tangent flattens as r grows, and the slope shrinks as 1/r², which returns us to the inverse-square law from the other side. The electric slope is negative, so the radial field points outward, whereas the gravitational slope is positive, so the field points inward toward the mass.</div>
+
+<div class="q">
+  <p><b>8.</b> Use the electric setting with r = 0.10 m. Read the potential and calculate the field strength from kQ/r². Then state what value the slope of the tangent should have, including its sign.<span class="mk">[3]</span></p>
+  <textarea placeholder="Your working"></textarea>
+  <details><summary>Show model answer</summary><p>V = kQ/r = (8.99 × 10⁹)(5.0 × 10⁻⁹)/0.10 ≈ 450 V, and E = kQ/r² ≈ 4.5 × 10³ V m⁻¹ directed outward. Because E equals minus the gradient, the tangent should have a gradient of about −4.5 × 10³ V m⁻¹, and the panel confirms this.</p></details>
+</div>
+
+<div class="q">
+  <p><b>9 (stretch).</b> The wire's field circulates, so that the sum of B round a full loop is μ₀I rather than zero. Suggest why this field cannot be described by a single potential whose slope gives B, in the way that the electric field of a point charge can.<span class="mk">[2]</span></p>
+  <textarea placeholder="Your suggestion"></textarea>
+  <details><summary>Show model answer</summary><p>A field taken from a potential returns to the same value after a round trip, so the sum of the field along any closed loop is zero, and the electric field of a point charge does this. The wire's field gives μ₀I round a loop, so a single-valued potential cannot exist for it, which is the same fact as the field having curl on the wire.</p></details>
+</div>
+</section>
+
+<section>
+<h2>F. The common pattern</h2>
+<table>
+  <tr><th>Field</th><th>Shell or loop</th><th>Fixed by the source</th><th>Result</th></tr>
+  <tr><td>Point charge, gravity, point light source</td><td>Sphere, area 4πr²</td><td>Flux or power through the shell</td><td>1/r²</td></tr>
+  <tr><td>Line charge, long tube, ripples</td><td>Circle, length 2πr</td><td>Flux or power per unit length</td><td>1/r</td></tr>
+  <tr><td>Straight wire (B)</td><td>Circle, length 2πr</td><td>Circulation, μ₀I</td><td>1/r</td></tr>
+  <tr><td>Any of the electric or gravitational fields</td><td>Slope of the V–r graph</td><td>Field = −gradient of V</td><td>Same laws</td></tr>
+</table>
+</section>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const TAU=2*Math.PI;
+function setup(c,h){const dpr=window.devicePixelRatio||1;const w=c.clientWidth;c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.height=h+'px';const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);return {g,w,h};}
+const C={amber:'#e0a84a',teal:'#5fb3a8',rose:'#d9776b',ink:'#e8e4da',muted:'#9aa0a8',rule:'#2a313c'};
+function arrow(g,x,y,dx,dy,L){const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m;const x2=x+dx*L,y2=y+dy*L;g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();const a=0.5,hl=5;g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-hl*(dx*Math.cos(a)-dy*Math.sin(a)),y2-hl*(dy*Math.cos(a)+dx*Math.sin(a)));g.moveTo(x2,y2);g.lineTo(x2-hl*(dx*Math.cos(-a)-dy*Math.sin(-a)),y2-hl*(dy*Math.cos(-a)+dx*Math.sin(-a)));g.stroke();}
+function seg(ids,cb){ids.forEach(id=>$(id).addEventListener('click',()=>{ids.forEach(j=>$(j).setAttribute('aria-pressed',j===id));cb(id);}));}
+function frame(g,w,h,m,x0,x1,y0,y1,xl,yl){
+  const fx=x=>m.l+(x-x0)/(x1-x0)*(w-m.l-m.r), fy=y=>h-m.b-(y-y0)/(y1-y0)*(h-m.t-m.b);
+  g.strokeStyle=C.muted;g.lineWidth=1;g.beginPath();g.moveTo(m.l,m.t);g.lineTo(m.l,h-m.b);g.lineTo(w-m.r,h-m.b);g.stroke();
+  g.fillStyle=C.muted;g.font='12px -apple-system,Segoe UI,Arial,sans-serif';g.textAlign='center';g.fillText(xl,(m.l+w-m.r)/2,h-6);
+  g.save();g.translate(12,(m.t+h-m.b)/2);g.rotate(-Math.PI/2);g.fillText(yl,0,0);g.restore();
+  return {fx,fy};
+}
+
+/* ---------- A ---------- */
+let dimA=3;
+function drawA(){
+  const r=+$('rA').value;$('rAo').textContent=r.toFixed(1);
+  let {g,w,h}=setup($('cA'),280);
+  const cx=w/2,cy=h/2,maxR=Math.min(w,h)/2-8,R=14+(r-1)/9*(maxR-14),N=16;
+  g.strokeStyle='#3a4250';g.lineWidth=1;
+  for(let i=0;i<N;i++){const a=TAU*i/N;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+maxR*Math.cos(a),cy+maxR*Math.sin(a));g.stroke();}
+  g.fillStyle='rgba(224,168,74,.28)';g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,R,0,TAU/N);g.closePath();g.fill();
+  g.setLineDash([3,4]);g.strokeStyle=C.muted;g.beginPath();g.arc(cx,cy,14,0,TAU);g.stroke();g.setLineDash([]);
+  g.strokeStyle=C.amber;g.lineWidth=2;g.beginPath();g.arc(cx,cy,R,0,TAU);g.stroke();
+  if(dimA===3){g.lineWidth=1;g.strokeStyle='rgba(224,168,74,.55)';g.beginPath();g.ellipse(cx,cy,R,R*0.3,0,0,TAU);g.stroke();}
+  g.fillStyle=C.amber;for(let i=0;i<N;i++){const a=TAU*i/N;g.beginPath();g.arc(cx+R*Math.cos(a),cy+R*Math.sin(a),2.6,0,TAU);g.fill();}
+  g.fillStyle=C.ink;g.beginPath();g.arc(cx,cy,4,0,TAU);g.fill();
+  const S=dimA===3?4*Math.PI*r*r:TAU*r, rel=1/Math.pow(r,dimA-1);
+  $('outA').innerHTML=(dimA===3?'Shell area 4πr² = <b>'+S.toFixed(1)+'</b> (units²)':'Shell length 2πr = <b>'+S.toFixed(1)+'</b> (units)')+
+    '<br>Lines crossing the shell: <b class="g">16</b> at every radius'+
+    '<br>Field or intensity relative to r = 1: <b>'+rel.toFixed(3)+'</b> which is 1/r<sup>'+(dimA-1)+'</sup>';
+  const p=setup($('cA2'),280);g=p.g;
+  const f=frame(g,p.w,p.h,{l:46,r:12,t:14,b:36},1,10,0,1.05,'r','relative field or intensity');
+  [[3,2],[2,1]].forEach(([d,e])=>{g.beginPath();for(let x=1;x<=10.001;x+=0.1){const X=f.fx(x),Y=f.fy(1/Math.pow(x,e));x===1?g.moveTo(X,Y):g.lineTo(X,Y);}
+    g.strokeStyle=d===dimA?C.amber:'#4a5361';g.lineWidth=d===dimA?2.5:1.2;g.stroke();});
+  g.fillStyle=C.amber;g.beginPath();g.arc(f.fx(r),f.fy(rel),5,0,TAU);g.fill();
+  g.fillStyle=C.muted;g.textAlign='left';g.fillText('1/r² (3D)',f.fx(2.3),f.fy(0.32));g.fillText('1/r (2D)',f.fx(5.6),f.fy(0.42));
+}
+$('rA').addEventListener('input',drawA);
+seg(['d3','d2'],id=>{dimA=id==='d3'?3:2;drawA();});
+
+/* ---------- B ---------- */
+const FIELDS={
+  fP:(x,y,z)=>{const r2=x*x+y*y+z*z,r3=Math.pow(r2,1.5);return [x/r3,y/r3,z/r3];},
+  fL:(x,y,z)=>{const r2=x*x+y*y;return [x/r2,y/r2,0];},
+  fW:(x,y,z)=>{const r2=x*x+y*y;return [-y/r2,x/r2,0];}
+};
+let fieldB='fP',px=2,py=1;
+function drawB(){
+  const s=+$('sB').value;$('sBo').textContent=s.toFixed(1);
+  const cw=$('cB').clientWidth,H=Math.min(cw,380);
+  const {g,w,h}=setup($('cB'),H);
+  const sc=Math.min(w,h)/8,ox=w/2,oy=h/2,X=x=>ox+x*sc,Y=y=>oy-y*sc,F=FIELDS[fieldB];
+  g.lineWidth=1.3;
+  for(let ix=-4;ix<=4;ix++)for(let iy=-4;iy<=4;iy++){
+    if(Math.hypot(ix,iy)<0.5)continue;
+    const v=F(ix,iy,0),m=Math.hypot(v[0],v[1]);
+    const a=Math.max(0.18,Math.min(1,0.25+0.6*(Math.log10(m)+1.3)));
+    g.strokeStyle='rgba(232,228,218,'+a.toFixed(2)+')';
+    arrow(g,X(ix)-7*v[0]/m,Y(iy)+7*v[1]/m,v[0],-v[1],14);
+  }
+  const inside=Math.abs(px)<s/2&&Math.abs(py)<s/2;
+  g.fillStyle=inside?'rgba(224,168,74,.18)':'rgba(95,179,168,.15)';g.strokeStyle=inside?C.amber:C.teal;g.lineWidth=2;
+  g.fillRect(X(px-s/2),Y(py+s/2),s*sc,s*sc);g.strokeRect(X(px-s/2),Y(py+s/2),s*sc,s*sc);
+  g.fillStyle=C.rose;g.beginPath();g.arc(ox,oy,7,0,TAU);g.fill();g.fillStyle='#14110a';g.font='bold 12px sans-serif';g.textAlign='center';g.textBaseline='middle';
+  if(fieldB==='fW'){g.fillStyle='#14110a';g.beginPath();g.arc(ox,oy,2.2,0,TAU);g.fill();}else g.fillText('+',ox,oy+.5);
+  g.textBaseline='alphabetic';
+  // numerics
+  const n=24,d=s/n;let flux=0,circ=0;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const u=-s/2+(i+.5)*d,v=-s/2+(j+.5)*d;
+    flux+=(F(px+s/2,py+u,v)[0]-F(px-s/2,py+u,v)[0])*d*d;
+    flux+=(F(px+u,py+s/2,v)[1]-F(px+u,py-s/2,v)[1])*d*d;
+    flux+=(F(px+u,py+v,s/2)[2]-F(px+u,py+v,-s/2)[2])*d*d;
+  }
+  for(let i=0;i<n;i++){const u=-s/2+(i+.5)*d;
+    circ+=F(px+u,py-s/2,0)[0]*d;circ+=F(px+s/2,py+u,0)[1]*d;
+    circ-=F(px+u,py+s/2,0)[0]*d;circ-=F(px-s/2,py+u,0)[1]*d;}
+  const z=v=>Math.abs(v)<0.01;
+  const expF=fieldB==='fP'?4*Math.PI:fieldB==='fL'?TAU*s:0, expC=fieldB==='fW'?TAU:0;
+  $('outB').innerHTML='Box '+(inside?'<b>contains</b> the source':'<b class="g">misses</b> the source')+
+   '<br>Net flux out of the box: <b>'+flux.toFixed(3)+'</b>'+(inside&&expF?' (expected '+expF.toFixed(3)+(fieldB==='fP'?' = 4π':' = 2π × s')+')':'')+
+   ' '+(z(flux)?'<span class="g">no net spreading, so the sprinkler stays dry</span>':'net spreading, so the box holds a source')+
+   '<br>Circulation around the box: <b>'+circ.toFixed(3)+'</b>'+(inside&&expC?' (expected '+expC.toFixed(3)+' = 2π)':'')+
+   ' '+(z(circ)?'<span class="g">no swirl, so the paddle wheel stays still</span>':'a swirl, so the paddle wheel turns');
+}
+seg(['fP','fL','fW'],id=>{fieldB=id;drawB();});
+$('sB').addEventListener('input',drawB);
+(function(){const c=$('cB');let drag=false;
+ function mv(e){const r=c.getBoundingClientRect(),sc=Math.min(r.width,r.height)/8;px=Math.max(-3.9,Math.min(3.9,((e.clientX-r.left)-r.width/2)/sc));py=Math.max(-3.9,Math.min(3.9,-((e.clientY-r.top)-r.height/2)/sc));drawB();}
+ c.addEventListener('pointerdown',e=>{drag=true;c.setPointerCapture(e.pointerId);mv(e);});
+ c.addEventListener('pointermove',e=>{if(drag)mv(e);});
+ c.addEventListener('pointerup',()=>drag=false);c.addEventListener('pointercancel',()=>drag=false);})();
+
+/* ---------- C ---------- */
+function drawC(){
+  const I=+$('iC').value,rc=+$('rC').value;$('iCo').textContent=I+' A';$('rCo').textContent=rc.toFixed(1)+' cm';
+  const {g,w,h}=setup($('cC'),280);
+  const cx=w/2,cy=h/2,sc=(Math.min(w,h)/2-8)/10;
+  g.strokeStyle='#39414e';g.lineWidth=1;[2,4,6,8,10].forEach(k=>{g.beginPath();g.arc(cx,cy,k*sc,0,TAU);g.stroke();});
+  g.strokeStyle=C.amber;g.lineWidth=2.2;g.beginPath();g.arc(cx,cy,rc*sc,0,TAU);g.stroke();
+  g.strokeStyle=C.amber;g.lineWidth=1.6;
+  const k=8;for(let i=0;i<k;i++){const a=TAU*i/k+0.2,x=cx+rc*sc*Math.cos(a),y=cy-rc*sc*Math.sin(a);arrow(g,x-6*(-Math.sin(a)),y-6*(-Math.cos(a)),-Math.sin(a),-Math.cos(a),12);}
+  g.fillStyle=C.rose;g.beginPath();g.arc(cx,cy,7,0,TAU);g.fill();g.fillStyle='#14110a';g.beginPath();g.arc(cx,cy,2.4,0,TAU);g.fill();
+  g.fillStyle=C.muted;g.font='12px sans-serif';g.textAlign='left';g.fillText('current out of the page',cx+12,cy+4);
+  const mu=4*Math.PI*1e-7,B=mu*I/(TAU*rc/100);
+  $('outC').innerHTML='B = μ₀I / 2πr = <b>'+(B*1e6).toFixed(1)+' μT</b> at r = '+rc.toFixed(1)+' cm'+
+    '<br>B × 2πr = <b class="g">'+(B*TAU*rc/100*1e6).toFixed(2)+' μT m</b> which equals μ₀I';
+  let t='<tr><th>r (cm)</th><th>B (μT)</th><th>2πr (m)</th><th>B × 2πr (μT m)</th></tr>';
+  [1,2,4,8].forEach(r=>{const b=mu*I/(TAU*r/100);t+='<tr><td>'+r+'</td><td>'+(b*1e6).toFixed(1)+'</td><td>'+(TAU*r/100).toFixed(3)+'</td><td>'+(b*TAU*r/100*1e6).toFixed(2)+'</td></tr>';});
+  $('tabC').innerHTML=t;
+}
+$('iC').addEventListener('input',drawC);$('rC').addEventListener('input',drawC);
+
+/* ---------- E ---------- */
+const kk=8.99e9,Qc=5e-9,GM=3.986e14,RE=6.371e6;
+let potE='pE';
+const PE={
+  pE:{x0:0.05,x1:0.5,V:r=>kk*Qc/r,xl:'r (m)',yl:'V (volts)',ymin:0,ymax:950,fmtR:r=>r.toFixed(3)+' m'},
+  pG:{x0:1,x1:5,V:u=>-GM/(u*RE)/1e6,xl:'r (Earth radii)',yl:'V (MJ per kg)',ymin:-66,ymax:0,fmtR:u=>u.toFixed(2)+' R'}
+};
+function drawE(){
+  const P=PE[potE],t=+$('rE').value/100,x=P.x0+t*(P.x1-P.x0);
+  $('rEo').textContent=P.fmtR(x);
+  const {g,w,h}=setup($('cE'),300);
+  const f=frame(g,w,h,{l:52,r:14,t:14,b:38},P.x0,P.x1,P.ymin,P.ymax,P.xl,P.yl);
+  g.beginPath();for(let i=0;i<=200;i++){const xx=P.x0+(P.x1-P.x0)*i/200,X=f.fx(xx),Y=f.fy(P.V(xx));i?g.lineTo(X,Y):g.moveTo(X,Y);}
+  g.strokeStyle=C.ink;g.lineWidth=2;g.stroke();
+  const dx=(P.x1-P.x0)*1e-4,slope=(P.V(x+dx)-P.V(x-dx))/(2*dx),V0=P.V(x);
+  const xa=P.x0,xb=P.x1;g.save();g.beginPath();g.rect(52,14,w-52-14,h-14-38);g.clip();
+  g.beginPath();g.moveTo(f.fx(xa),f.fy(V0+slope*(xa-x)));g.lineTo(f.fx(xb),f.fy(V0+slope*(xb-x)));g.strokeStyle=C.amber;g.lineWidth=2;g.stroke();g.restore();
+  g.fillStyle=C.amber;g.beginPath();g.arc(f.fx(x),f.fy(V0),5.5,0,TAU);g.fill();
+  if(potE==='pE'){
+    const E=kk*Qc/(x*x);
+    $('outE').innerHTML='Potential V = kQ/r = <b>'+V0.toFixed(0)+' V</b>'+
+     '<br>Slope of tangent ΔV/Δr = <b>'+slope.toFixed(0)+' V m⁻¹</b>, so E = −slope = <b>'+(-slope).toFixed(0)+' V m⁻¹</b>'+
+     '<br>Inverse-square value kQ/r² = <b class="g">'+E.toFixed(0)+' V m⁻¹</b>, and the negative slope means the field points <b>outward</b>';
+  }else{
+    const gm=GM/((x*RE)*(x*RE)), sl=slope*1e6/RE;
+    $('outE').innerHTML='Potential V = −GM/r = <b>'+V0.toFixed(1)+' MJ kg⁻¹</b>'+
+     '<br>Slope of tangent ΔV/Δr = <b>+'+sl.toFixed(2)+' J kg⁻¹ per m</b>, so g = −slope = <b>'+(-sl).toFixed(2)+' N kg⁻¹</b>'+
+     '<br>Inverse-square value GM/r² = <b class="g">'+gm.toFixed(2)+' N kg⁻¹</b>, and the positive slope means the field points <b>inward</b>';
+  }
+}
+seg(['pE','pG'],id=>{potE=id;drawE();});$('rE').addEventListener('input',drawE);
+
+/* ---------- checks ---------- */
+function parse(s){s=s.trim().replace(',','.');if(s.includes('/')){const [a,b]=s.split('/');return parseFloat(a)/parseFloat(b);}return parseFloat(s);}
+document.addEventListener('click',e=>{
+  if(!e.target.classList.contains('chk'))return;
+  const box=e.target.parentElement,inp=box.querySelector('input'),fb=box.querySelector('.fb');
+  const v=parse(inp.value),a=parseFloat(inp.dataset.ans);
+  if(isNaN(v)){fb.textContent='Enter a number first.';fb.className='fb bad';return;}
+  const ok=Math.abs(v-a)<=0.03*Math.abs(a);
+  inp.className='num '+(ok?'ok':'bad');fb.className='fb '+(ok?'ok':'bad');
+  fb.textContent=ok?'Correct.':'Not yet. '+inp.dataset.hint;
+});
+
+function all(){drawA();drawB();drawC();drawE();}
+window.addEventListener('resize',all);all();
+</script>
+</body>
+</html>
