@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Which Way Round · Transformation matrices, oriented area and rotation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f2e8; --surface:#fffdf7; --plate:#efe7d4; --ink:#1d1a14; --muted:#6a6150;
+  --rule:#d8cdb4; --gold:#8a6a1f; --grid:#e6dcc6; --axis:#9c8f74;
+  --pos:#b8862a; --neg:#2f7a70; --e1:#2f62a8; --e2:#b0402f;
+  --display:"Cormorant Garamond","Garamond","Georgia",serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12110e; --surface:#1b1915; --plate:#23201a; --ink:#ece4d2; --muted:#a89e88;
+    --rule:#3a3428; --gold:#d4ad5a; --grid:#2a261f; --axis:#6d6452;
+    --pos:#d4ad5a; --neg:#6fc2b4; --e1:#7fa9e0; --e2:#e08a74; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12110e; --surface:#1b1915; --plate:#23201a; --ink:#ece4d2; --muted:#a89e88;
+  --rule:#3a3428; --gold:#d4ad5a; --grid:#2a261f; --axis:#6d6452;
+  --pos:#d4ad5a; --neg:#6fc2b4; --e1:#7fa9e0; --e2:#e08a74; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0}
+.hero{padding:52px 0 24px;border-bottom:1px solid var(--rule)}
+.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);line-height:1}
+.hero p{max-width:66ch;color:var(--muted);margin:14px 0 0}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.ghost{border:1px solid var(--rule);background:var(--surface);border-radius:6px;padding:6px 12px;font-size:.88rem}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;font-size:.88rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:7px;vertical-align:-1px;background:var(--c)}
+section{padding:40px 0 8px}
+section > h2{font-size:2.2rem;line-height:1.1}
+section > .lede{max-width:68ch;margin:6px 0 20px;color:var(--muted)}
+
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+.stage{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px}
+.stage canvas{display:block;touch-action:none;margin:0 auto}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 18px}
+.minput{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:6px 8px;align-items:center;margin:4px 0 12px}
+.minput .br{font-family:var(--display);font-size:3.4rem;line-height:1;color:var(--muted);font-weight:500}
+.minput input{width:100%;padding:6px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);font-family:var(--mono);font-size:.95rem;text-align:center}
+.minput input.c1{border-bottom:2px solid var(--e1)} .minput input.c2{border-bottom:2px solid var(--e2)}
+.big{font-family:var(--display);font-size:2.6rem;line-height:1;font-weight:600}
+.readout{margin:4px 0 12px}
+.readout .lab-k{font-size:.82rem;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:.92rem;margin:10px 0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);font-size:.88rem}
+.family{padding:10px 12px;border-left:3px solid var(--gold);background:var(--plate);font-size:.93rem;margin:10px 0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px}
+.presets button{border:1px solid var(--rule);background:transparent;border-radius:999px;padding:4px 11px;font-size:.84rem}
+.presets button:hover{border-color:var(--gold);color:var(--gold)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.primary{background:var(--gold);border:1px solid var(--gold);color:var(--bg);border-radius:4px;padding:6px 14px;font-size:.9rem}
+.check{font-size:.88rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.spark{margin-top:14px;border-top:1px dashed var(--rule);padding-top:10px}
+.spark canvas{display:block;width:100%}
+.spark p{margin:4px 0 0;font-size:.86rem;color:var(--muted)}
+
+/* gallery */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 12px;display:flex;flex-direction:column}
+.card h3{font-size:1.4rem;line-height:1.15}
+.card .cv{margin:8px 0 6px}
+.card canvas{display:block;width:100%}
+.mat{display:inline-grid;gap:1px 12px;padding:2px 9px;border-left:2px solid var(--muted);border-right:2px solid var(--muted);border-radius:5px;font-family:var(--mono);font-size:.82rem;text-align:right;margin:8px 0 2px}
+.card .det{font-size:.88rem;margin:4px 0}
+.card .det b{font-weight:600}
+.card .note{font-size:.88rem;color:var(--muted);margin:6px 0 8px;flex:1}
+.slider{display:grid;grid-template-columns:5.2em 1fr 3.6em;gap:8px;align-items:center;font-size:.86rem}
+.slider input{width:100%;accent-color:var(--gold)}
+.slider output{font-family:var(--mono);font-size:.8rem;text-align:right}
+.card .send{align-self:flex-start;margin-top:8px;border:1px solid var(--rule);background:transparent;border-radius:4px;padding:4px 10px;font-size:.84rem}
+.card .send:hover{border-color:var(--gold);color:var(--gold)}
+
+/* compose */
+.compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.pick{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-bottom:12px}
+.pick select{padding:6px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--bg)}
+.eq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:.9rem}
+
+footer.stamp{margin-top:56px;background:#12110e;color:#ece4d2;border-top:1px solid #3a3428;padding:28px 20px calc(28px + env(safe-area-inset-bottom,0px));text-align:center}
+footer.stamp p{margin:0;font-family:"Cormorant Garamond",Georgia,serif;font-size:1.15rem;letter-spacing:.02em}
+footer.stamp span{color:#d4ad5a}
+@media (max-width:820px){.lab,.compose{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="toprow">
+      <h1>Which Way Round</h1>
+      <button class="ghost" id="theme" aria-label="Toggle light or dark">Theme</button>
+    </div>
+    <p>A transformation matrix sends the unit square to a parallelogram, and its determinant records two things at once: how much area the image has, and whether the corners still run anticlockwise. Drag the images of the two basis vectors below and watch the sign of that area keep score of handedness, then turn to the gallery of standard transformations, redrawn so that the orientation is visible.</p>
+    <div class="legend">
+      <span style="--c:var(--pos)">positive area, orientation kept</span>
+      <span style="--c:var(--neg)">negative area, the square turned over</span>
+      <span style="--c:var(--e1)">image of (1, 0)</span>
+      <span style="--c:var(--e2)">image of (0, 1)</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+<section id="lab-sec">
+  <h2>The lab</h2>
+  <p class="lede">The columns of the matrix are where (1, 0) and (0, 1) land. The curved arrow at the origin turns from the first image to the second; while it turns anticlockwise the determinant is positive, and the moment the second image swings past the line of the first the arrow reverses and the area changes sign.</p>
+  <div class="lab">
+    <div class="stage" id="stageWrap"><canvas id="lab" aria-label="Interactive plane: drag the blue and red handles"></canvas></div>
+    <div class="panel">
+      <div class="minput">
+        <span class="br" style="grid-row:span 2">[</span>
+        <input id="ma" class="c1" type="number" step="0.05" aria-label="a">
+        <input id="mb" class="c2" type="number" step="0.05" aria-label="b">
+        <span class="br" style="grid-row:span 2">]</span>
+        <input id="mc" class="c1" type="number" step="0.05" aria-label="c">
+        <input id="md" class="c2" type="number" step="0.05" aria-label="d">
+      </div>
+      <div class="readout">
+        <div class="lab-k">Oriented area of the image of the unit square, ad − bc</div>
+        <div class="big" id="det">1</div>
+        <div id="orient" style="font-size:.93rem"></div>
+      </div>
+      <dl class="kv">
+        <dt>Trace τ</dt><dd id="tr"></dd>
+        <dt>τ² − 4δ</dt><dd id="disc"></dd>
+        <dt>Image of (1, 0)</dt><dd id="i1"></dd>
+        <dt>Image of (0, 1)</dt><dd id="i2"></dd>
+      </dl>
+      <div class="family" id="family"></div>
+      <div class="presets" id="presets"></div>
+      <div class="row">
+        <button class="primary" id="animate">Grow from the identity</button>
+        <label class="check"><input type="checkbox" id="snap"> snap to quarters</label>
+      </div>
+      <div class="spark">
+        <canvas id="spark" height="90"></canvas>
+        <p id="sparkNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The gallery</h2>
+  <p class="lede">The standard transformations, each with its parameters live. Two entries differ from the usual poster: the rotation is written for column vectors, so it turns anticlockwise as its angle increases, and the map that sends (x, y) to (−x, −y) is shown as what its determinant says it is, a half-turn.</p>
+  <div class="grid" id="gallery"></div>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <p class="lede">Applying A and then B gives the product BA, and its oriented area is the product of the two: area factors multiply, and so do orientations, which is why two reflections always make a rotation. The selections below use each card's current settings.</p>
+  <div class="compose">
+    <div class="stage" id="compWrap"><canvas id="comp" aria-label="Result of the composition"></canvas></div>
+    <div class="panel">
+      <div class="pick">
+        <label for="selA">First, A</label><select id="selA"></select>
+        <label for="selB">Then, B</label><select id="selB"></select>
+      </div>
+      <div class="eq" id="compMats"></div>
+      <div class="readout" style="margin-top:12px">
+        <div class="lab-k">det(BA) = det B × det A</div>
+        <div class="big" id="compDet"></div>
+      </div>
+      <div class="family" id="compFamily"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="stamp">
+  <p>Constructed by Silicon <span>·</span> Anthropic Claude — Architect Carbon <span>·</span> LeeMcCullochJames</p>
+</footer>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pal = () => ({bg:css('--surface'),grid:css('--grid'),axis:css('--axis'),ink:css('--ink'),muted:css('--muted'),pos:css('--pos'),neg:css('--neg'),e1:css('--e1'),e2:css('--e2')});
+const EPS = 1e-9;
+const fmt = x => { const v = Math.abs(x) < 5e-3 ? 0 : x; return (Math.round(v*100)/100).toString(); };
+const det2 = m => m.a*m.d - m.b*m.c;
+
+function fit(cv, w, h){
+  const r = window.devicePixelRatio || 1;
+  cv.width = Math.round(w*r); cv.height = Math.round(h*r);
+  cv.style.width = w+'px'; cv.style.height = h+'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(r,0,0,r,0,0); return ctx;
+}
+
+function arrowHead(ctx, x, y, dx, dy, s){
+  const L = Math.hypot(dx,dy) || 1; dx/=L; dy/=L;
+  ctx.beginPath(); ctx.moveTo(x,y);
+  ctx.lineTo(x - s*dx + s*0.55*dy, y - s*dy - s*0.55*dx);
+  ctx.lineTo(x - s*dx - s*0.55*dy, y - s*dy + s*0.55*dx);
+  ctx.closePath(); ctx.fill();
+}
+
+const FRECTS = [[.22,.12,.40,.88],[.22,.72,.78,.88],[.22,.44,.64,.58]];
+
+function drawScene(ctx, W, H, m, o){
+  const P = pal(), range = o.range || 2;
+  const sc = Math.min(W,H)/(2*range), ox = W/2, oy = H/2;
+  const S = (x,y) => [ox + x*sc, oy - y*sc];
+  const T = (x,y) => [m.a*x + m.b*y + (m.tx||0), m.c*x + m.d*y + (m.ty||0)];
+  const D = det2(m);
+  const col = D > EPS ? P.pos : D < -EPS ? P.neg : P.muted;
+  ctx.fillStyle = P.bg; ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.lineWidth = 1; ctx.strokeStyle = P.grid;
+  const n = Math.ceil(range);
+  const stepG = range > 3 ? 1 : 0.5;
+  for (let g = -n; g <= n + 1e-9; g += stepG){
+    let [x1,y1] = S(g,-range), [x2,y2] = S(g,range); ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    [x1,y1] = S(-range,g); [x2,y2] = S(range,g); ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.strokeStyle = P.axis; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(...S(-range,0)); ctx.lineTo(...S(range,0)); ctx.moveTo(...S(0,-range)); ctx.lineTo(...S(0,range)); ctx.stroke();
+  ctx.fillStyle = P.muted; ctx.font = '11px "IBM Plex Mono", monospace';
+  ctx.fillText('1', ...S(1,0).map((v,i)=>v+(i?14:-3))); ctx.fillText('1', ...S(0,1).map((v,i)=>v+(i?4:-12)));
+  // ghost square and F
+  ctx.setLineDash([4,4]); ctx.strokeStyle = P.axis;
+  ctx.beginPath(); [[0,0],[1,0],[1,1],[0,1]].forEach((p,i)=>{const q=S(...p); i?ctx.lineTo(...q):ctx.moveTo(...q);}); ctx.closePath(); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = .18; ctx.fillStyle = P.muted;
+  FRECTS.forEach(r => { ctx.beginPath(); [[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]].forEach((p,i)=>{const q=S(...p); i?ctx.lineTo(...q):ctx.moveTo(...q);}); ctx.fill(); });
+  ctx.globalAlpha = 1;
+  // image parallelogram
+  const corners = [[0,0],[1,0],[1,1],[0,1]].map(p => S(...T(...p)));
+  ctx.beginPath(); corners.forEach((q,i)=> i?ctx.lineTo(...q):ctx.moveTo(...q)); ctx.closePath();
+  ctx.globalAlpha = .16; ctx.fillStyle = col; ctx.fill(); ctx.globalAlpha = 1;
+  ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+  // F glyph
+  ctx.fillStyle = col; ctx.globalAlpha = .92;
+  FRECTS.forEach(r => { ctx.beginPath(); [[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]].forEach((p,i)=>{const q=S(...T(...p)); i?ctx.lineTo(...q):ctx.moveTo(...q);}); ctx.closePath(); ctx.fill(); });
+  ctx.globalAlpha = 1;
+  // traversal chevrons
+  if (Math.abs(D) > EPS){
+    ctx.fillStyle = col;
+    for (let i=0;i<4;i++){
+      const p = corners[i], q = corners[(i+1)%4];
+      const dx = q[0]-p[0], dy = q[1]-p[1];
+      if (Math.hypot(dx,dy) < 20) continue;
+      arrowHead(ctx, (p[0]+q[0])/2 + dx*0.06, (p[1]+q[1])/2 + dy*0.06, dx, dy, 7);
+    }
+  }
+  // basis images
+  const O = S(...T(0,0)), A1 = S(...T(1,0)), A2 = S(...T(0,1));
+  [[A1,P.e1],[A2,P.e2]].forEach(([q,c]) => {
+    ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(...O); ctx.lineTo(...q); ctx.stroke();
+    if (Math.hypot(q[0]-O[0], q[1]-O[1]) > 8) arrowHead(ctx, q[0], q[1], q[0]-O[0], q[1]-O[1], 10);
+  });
+  // orientation arc
+  const n1 = Math.hypot(m.a,m.c), n2 = Math.hypot(m.b,m.d);
+  if (Math.abs(D) > EPS && n1 > 1e-6 && n2 > 1e-6){
+    const a1 = Math.atan2(m.c, m.a), delta = Math.atan2(D, m.a*m.b + m.c*m.d);
+    const r = Math.max(14, Math.min(30, 0.34*sc, 0.6*Math.min(n1,n2)*sc));
+    ctx.strokeStyle = P.ink; ctx.fillStyle = P.ink; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(O[0], O[1], r, -a1, -(a1+delta), delta > 0); ctx.stroke();
+    const E = a1 + delta, tip = [O[0] + r*Math.cos(E), O[1] - r*Math.sin(E)];
+    const sg = Math.sign(delta);
+    arrowHead(ctx, tip[0], tip[1], -sg*Math.sin(E), -sg*Math.cos(E), 7);
+  }
+  // labels and handles
+  if (o.labels){
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    const lab = (q, txt, c, dx, dy) => { ctx.fillStyle = c; ctx.fillText(txt, q[0]+dx, q[1]+dy); };
+    lab(A1, `(${fmt(m.a)}, ${fmt(m.c)})`, P.e1, 8, -8);
+    lab(A2, `(${fmt(m.b)}, ${fmt(m.d)})`, P.e2, 8, -8);
+  }
+  if (o.handles){
+    [[A1,P.e1],[A2,P.e2]].forEach(([q,c]) => {
+      ctx.fillStyle = P.bg; ctx.strokeStyle = c; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(q[0], q[1], 8, 0, 2*Math.PI); ctx.fill(); ctx.stroke();
+    });
+  }
+  return {S, sc, ox, oy};
+}
+
+function classify(m){
+  const t = m.a + m.d, D = det2(m), disc = t*t - 4*D;
+  const near = (x,y) => Math.abs(x-y) < 1e-6;
+  if (near(m.a,1)&&near(m.d,1)&&near(m.b,0)&&near(m.c,0)) return 'The identity: every vector stays put, so area and orientation are both untouched.';
+  if (Math.abs(D) < 1e-6) return '<b>Collapsing.</b> The determinant is zero, so the plane is crushed onto a line or a point; with no area left there is no orientation to keep or reverse.';
+  const orth = near(m.a,m.d) && near(m.b,-m.c) && near(D,1);
+  if (orth){ const ang = Math.atan2(m.c,m.a)*180/Math.PI; return `<b>Elliptic: a rotation</b> through ${fmt(ang)}°. Its eigenvalues are complex, cos θ ± i sin θ, and its determinant cos²θ + sin²θ is exactly 1.`; }
+  if (disc < -1e-9){ const r = Math.sqrt(D), ang = Math.acos(Math.max(-1,Math.min(1,t/(2*r))))*180/Math.PI; return `<b>Elliptic.</b> τ² − 4δ is negative, so no real direction is left fixed: the matrix is a rotation through ${fmt(ang)}° with scale factor ${fmt(r)}, seen in a stretched coordinate system.`; }
+  if (Math.abs(disc) <= 1e-9){ const l = t/2; return near(m.b,0)&&near(m.c,0) ? `<b>Parabolic, degenerate:</b> a uniform scaling by ${fmt(l)}.` : `<b>Parabolic: a shear</b>${near(l,1)?'':` combined with scaling by ${fmt(l)}`}. The single repeated eigenvalue ${fmt(l)} fixes one direction only.`; }
+  const s = Math.sqrt(disc), l1 = (t+s)/2, l2 = (t-s)/2;
+  if (D < 0){ const refl = near(t,0) && near(D,-1); return `<b>Hyperbolic, orientation reversing${refl?': a reflection':''}.</b> Real eigenvalues ${fmt(l1)} and ${fmt(l2)} of opposite sign: one direction is flipped${refl?' and the other, the mirror, is fixed':''}.`; }
+  const hyp = near(D,1); return `<b>Hyperbolic${hyp?': a squeeze or hyperbolic rotation':''}.</b> Two real eigenvalues, ${fmt(l1)} and ${fmt(l2)}, each stretching its own direction${hyp?'; their product is 1, so area is kept while the square is squeezed':''}.`;
+}
+
+/* ------------ lab ------------ */
+const lab = document.getElementById('lab'), stageWrap = document.getElementById('stageWrap');
+const ins = {a:ma, b:mb, c:mc, d:md};
+const state = {m:{a:1.2, b:0.5, c:0.3, d:1.1}, range:2.5, size:480, anim:null, drag:null};
+let labCtx, labGeom;
+
+function writeInputs(m){ for (const k in ins) ins[k].value = fmt(m[k]); }
+function readouts(m){
+  const D = det2(m), t = m.a + m.d, P = pal();
+  const el = document.getElementById('det');
+  el.textContent = fmt(D); el.style.color = D > EPS ? P.pos : D < -EPS ? P.neg : P.muted;
+  document.getElementById('orient').textContent = D > EPS ? 'Orientation kept: the corners of the image still run anticlockwise.' : D < -EPS ? 'Orientation reversed: the image is the square turned over, its corners running clockwise.' : 'No orientation: the square has collapsed.';
+  document.getElementById('tr').textContent = fmt(t);
+  document.getElementById('disc').textContent = fmt(t*t - 4*D);
+  document.getElementById('i1').textContent = `(${fmt(m.a)}, ${fmt(m.c)})`;
+  document.getElementById('i2').textContent = `(${fmt(m.b)}, ${fmt(m.d)})`;
+  document.getElementById('family').innerHTML = classify(m);
+}
+function drawLab(m){ labGeom = drawScene(labCtx, state.size, state.size, m, {range:state.range, handles:true, labels:true}); }
+function renderLab(){ drawLab(state.m); readouts(state.m); drawSpark(); }
+
+function sizeLab(){
+  const w = Math.min(stageWrap.clientWidth - 20, 560);
+  state.size = Math.max(260, w); labCtx = fit(lab, state.size, state.size); renderLab();
+}
+for (const k in ins) ins[k].addEventListener('input', () => { const v = parseFloat(ins[k].value); if (!isNaN(v)) { state.m[k] = v; renderLab(); } });
+
+function toWorld(e){
+  const r = lab.getBoundingClientRect();
+  const x = (e.clientX - r.left - labGeom.ox)/labGeom.sc, y = -(e.clientY - r.top - labGeom.oy)/labGeom.sc;
+  return [x,y];
+}
+lab.addEventListener('pointerdown', e => {
+  if (state.anim) return;
+  const [x,y] = toWorld(e), m = state.m;
+  const d1 = Math.hypot(x-m.a, y-m.c), d2 = Math.hypot(x-m.b, y-m.d);
+  const lim = 18/labGeom.sc;
+  if (Math.min(d1,d2) > lim) return;
+  state.drag = d1 <= d2 ? 1 : 2; lab.setPointerCapture(e.pointerId); e.preventDefault();
+});
+lab.addEventListener('pointermove', e => {
+  if (!state.drag) return;
+  let [x,y] = toWorld(e);
+  const q = document.getElementById('snap').checked ? 0.25 : 0.05;
+  x = Math.max(-state.range, Math.min(state.range, Math.round(x/q)*q));
+  y = Math.max(-state.range, Math.min(state.range, Math.round(y/q)*q));
+  if (state.drag === 1){ state.m.a = x; state.m.c = y; } else { state.m.b = x; state.m.d = y; }
+  writeInputs(state.m); renderLab();
+});
+['pointerup','pointercancel'].forEach(ev => lab.addEventListener(ev, () => state.drag = null));
+
+const PRESETS = {
+  'Identity':{a:1,b:0,c:0,d:1},
+  'Rotate 60°':{a:Math.cos(Math.PI/3),b:-Math.sin(Math.PI/3),c:Math.sin(Math.PI/3),d:Math.cos(Math.PI/3)},
+  'Shear':{a:1,b:1,c:0,d:1},
+  'Reflect in y = x':{a:0,b:1,c:1,d:0},
+  'Half-turn':{a:-1,b:0,c:0,d:-1},
+  'Hyperbolic, u = ln 3':{a:5/3,b:4/3,c:4/3,d:5/3},
+  'Collapse':{a:1,b:2,c:0.5,d:1}
+};
+const presetBox = document.getElementById('presets');
+Object.entries(PRESETS).forEach(([name, m]) => {
+  const b = document.createElement('button'); b.textContent = name;
+  b.addEventListener('click', () => { if (state.anim) return; state.m = {...m}; writeInputs(state.m); renderLab(); });
+  presetBox.appendChild(b);
+});
+
+/* determinant along the straight path from I to M */
+const spark = document.getElementById('spark');
+function pathDet(m, t){ const u = 1 - t; return (u + t*m.a)*(u + t*m.d) - t*t*m.b*m.c; }
+function drawSpark(marker){
+  const w = spark.parentElement.clientWidth, h = 90, ctx = fit(spark, w, h), P = pal(), m = state.m;
+  ctx.fillStyle = P.bg; ctx.fillRect(0,0,w,h);
+  const N = 120, vals = [...Array(N+1)].map((_,i) => pathDet(m, i/N));
+  let lo = Math.min(0, ...vals), hi = Math.max(1, ...vals); const pad = (hi-lo)*0.12 || 0.5; lo -= pad; hi += pad;
+  const X = t => 8 + t*(w-16), Y = v => h - 8 - (v-lo)/(hi-lo)*(h-16);
+  ctx.strokeStyle = P.axis; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(1),Y(0)); ctx.stroke();
+  for (let i=0;i<N;i++){
+    const v = (vals[i]+vals[i+1])/2;
+    ctx.strokeStyle = v > 0 ? P.pos : P.neg; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(X(i/N), Y(vals[i])); ctx.lineTo(X((i+1)/N), Y(vals[i+1])); ctx.stroke();
+  }
+  const roots = [];
+  for (let i=0;i<N;i++) if (vals[i] === 0 || vals[i]*vals[i+1] < 0) roots.push((i + Math.abs(vals[i])/(Math.abs(vals[i])+Math.abs(vals[i+1])||1))/N);
+  ctx.fillStyle = P.ink; roots.forEach(t => { ctx.beginPath(); ctx.arc(X(t), Y(0), 3.5, 0, 2*Math.PI); ctx.fill(); });
+  if (marker !== undefined){ ctx.strokeStyle = P.ink; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(X(marker),4); ctx.lineTo(X(marker),h-4); ctx.stroke(); ctx.setLineDash([]); }
+  ctx.font = '11px "IBM Plex Mono", monospace'; ctx.fillStyle = P.muted; ctx.fillText('I', X(0)+2, 12); ctx.fillText('M', X(1)-10, 12);
+  document.getElementById('sparkNote').textContent = roots.length
+    ? `Along the straight path (1 − t)I + tM the oriented area passes through zero at t ≈ ${roots.map(r=>r.toFixed(2)).join(' and ')}: the square must flatten before it can turn over.`
+    : 'Along the straight path (1 − t)I + tM the oriented area never vanishes, so the square reaches its image without ever being flattened.';
+}
+document.getElementById('animate').addEventListener('click', () => {
+  if (state.anim) return;
+  const M = {...state.m}, dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 2200, t0 = performance.now();
+  state.anim = true;
+  const step = now => {
+    const t = Math.min(1, (now - t0)/dur), u = 1 - t;
+    const mi = {a:u + t*M.a, b:t*M.b, c:t*M.c, d:u + t*M.d};
+    drawLab(mi); readouts(mi); drawSpark(t);
+    if (t < 1) requestAnimationFrame(step); else { state.anim = null; renderLab(); }
+  };
+  requestAnimationFrame(step);
+});
+
+/* ------------ gallery ------------ */
+const rad = d => d*Math.PI/180;
+const CARDS = [
+  {id:'id', title:'No change', params:[], f:()=>({a:1,b:0,c:0,d:1}), note:'Area 1, and the corners still run anticlockwise.'},
+  {id:'tr', title:'Translate', range:2.2, params:[{k:'X',min:-1,max:1,step:.05,v:.4},{k:'Y',min:-1,max:1,step:.05,v:.3}], f:p=>({a:1,b:0,c:0,d:1,tx:p.X,ty:p.Y}), note:'A translation moves the origin, so in the plane it is not a matrix at all; the third coordinate makes it one, and the 3 × 3 determinant is still the area factor, 1.'},
+  {id:'sc', title:'Scale about origin', range:2.2, params:[{k:'W',min:-2,max:2,step:.05,v:1.5},{k:'H',min:-2,max:2,step:.05,v:.8}], f:p=>({a:p.W,b:0,c:0,d:p.H}), note:'The area factor is WH. Make one factor negative and the image turns over; make both negative and it is the right way round again, rotated by half a turn.'},
+  {id:'rot', title:'Rotate about origin', params:[{k:'θ',min:-180,max:180,step:1,v:35,unit:'°'}], f:p=>({a:Math.cos(rad(p['θ'])),b:-Math.sin(rad(p['θ'])),c:Math.sin(rad(p['θ'])),d:Math.cos(rad(p['θ']))}), note:'Written for column vectors this turns anticlockwise. Its transpose, often printed in the same place, turns the same angle clockwise; both have determinant cos²θ + sin²θ = 1.'},
+  {id:'shx', title:'Shear in x direction', params:[{k:'A',min:-1.5,max:1.5,step:.05,v:.6}], f:p=>({a:1,b:p.A,c:0,d:1}), note:'Every shear keeps area exactly, because the parallelogram keeps both its base and its height.'},
+  {id:'shy', title:'Shear in y direction', params:[{k:'B',min:-1.5,max:1.5,step:.05,v:.5}], f:p=>({a:1,b:0,c:p.B,d:1}), note:'The same argument with x and y exchanged: the determinant is 1 − 0 × B = 1.'},
+  {id:'half', title:'Half-turn', params:[], f:()=>({a:-1,b:0,c:0,d:-1}), note:'Often labelled a reflection about the origin, but its determinant is +1 and the orientation arrow still turns anticlockwise: it is the rotation through 180°.'},
+  {id:'rx', title:'Reflect in the x-axis', params:[], f:()=>({a:1,b:0,c:0,d:-1}), note:'Determinant −1: the same area with the opposite handedness, and the F reads backwards.'},
+  {id:'ry', title:'Reflect in the y-axis', params:[], f:()=>({a:-1,b:0,c:0,d:1}), note:'Determinant −1 again; the arrow from the first image to the second now turns clockwise.'},
+  {id:'rl', title:'Reflect in y = (tan φ)x', params:[{k:'φ',min:-90,max:90,step:1,v:30,unit:'°'}], f:p=>({a:Math.cos(rad(2*p['φ'])),b:Math.sin(rad(2*p['φ'])),c:Math.sin(rad(2*p['φ'])),d:-Math.cos(rad(2*p['φ']))}), note:'Every reflection has trace 0 and determinant −1; the mirror is the direction with eigenvalue 1, and its perpendicular is flipped.'},
+  {id:'hy', title:'Hyperbolic rotation', range:2.6, params:[{k:'u',min:-1.5,max:1.5,step:.001,v:1.099}], f:p=>({a:Math.cosh(p.u),b:Math.sinh(p.u),c:Math.sinh(p.u),d:Math.cosh(p.u)}), note:'Determinant cosh²u − sinh²u = 1, so area is kept while the square is squeezed along y = x. At u = ln 3 ≈ 1.099, (1, 0) lands on (5/3, 4/3): the 3-4-5 triangle on the unit hyperbola.'},
+  {id:'pr', title:'Project onto the x-axis', params:[], f:()=>({a:1,b:0,c:0,d:0}), note:'Determinant 0: the square collapses onto a segment, and with no area left there is no orientation to keep.'}
+];
+const gallery = document.getElementById('gallery');
+function cardMatrix(c){ const p = {}; c.params.forEach(q => p[q.k] = q.v); return Object.assign({tx:0,ty:0}, c.f(p)); }
+function matHTML(m){
+  const rows = [[m.a,m.b,m.tx||0],[m.c,m.d,m.ty||0],[0,0,1]];
+  return `<div class="mat" style="grid-template-columns:repeat(3,auto)">${rows.flat().map(v=>`<span>${fmt(v)}</span>`).join('')}</div>`;
+}
+const cardEls = {};
+CARDS.forEach(c => {
+  const el = document.createElement('article'); el.className = 'card';
+  el.innerHTML = `<h3>${c.title}</h3><div class="mwrap"></div><div class="cv"><canvas></canvas></div><div class="det"></div>${c.params.map(p=>`<label class="slider"><span>${p.k}</span><input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.v}" data-k="${p.k}" aria-label="${p.k}"><output></output></label>`).join('')}<p class="note">${c.note}</p><button class="send">Open in the lab</button>`;
+  gallery.appendChild(el);
+  cardEls[c.id] = el;
+  el.querySelectorAll('input[type=range]').forEach(inp => inp.addEventListener('input', () => {
+    c.params.find(p => p.k === inp.dataset.k).v = parseFloat(inp.value); drawCard(c); drawCompose();
+  }));
+  el.querySelector('.send').addEventListener('click', () => {
+    const m = cardMatrix(c); state.m = {a:m.a,b:m.b,c:m.c,d:m.d}; writeInputs(state.m); renderLab();
+    document.getElementById('lab-sec').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  });
+});
+function drawCard(c){
+  const el = cardEls[c.id], cv = el.querySelector('canvas'), w = el.querySelector('.cv').clientWidth;
+  const m = cardMatrix(c), D = det2(m), P = pal();
+  drawScene(fit(cv, w, Math.round(w*0.82)), w, Math.round(w*0.82), m, {range:c.range || 1.8});
+  el.querySelector('.mwrap').innerHTML = matHTML(m);
+  el.querySelectorAll('.slider').forEach((s,i) => s.querySelector('output').textContent = fmt(c.params[i].v) + (c.params[i].unit||''));
+  const word = D > EPS ? 'orientation kept' : D < -EPS ? 'orientation reversed' : 'collapsed';
+  el.querySelector('.det').innerHTML = `det = <b style="color:${D>EPS?P.pos:D<-EPS?P.neg:P.muted}">${fmt(D)}</b> · ${word}`;
+}
+
+/* ------------ composition ------------ */
+const selA = document.getElementById('selA'), selB = document.getElementById('selB'), comp = document.getElementById('comp'), compWrap = document.getElementById('compWrap');
+CARDS.forEach(c => { selA.add(new Option(c.title, c.id)); selB.add(new Option(c.title, c.id)); });
+selA.value = 'rx'; selB.value = 'rl';
+function mul(B, A){ return {a:B.a*A.a + B.b*A.c, b:B.a*A.b + B.b*A.d, c:B.c*A.a + B.d*A.c, d:B.c*A.b + B.d*A.d, tx:B.a*A.tx + B.b*A.ty + B.tx, ty:B.c*A.tx + B.d*A.ty + B.ty}; }
+function drawCompose(){
+  const cA = CARDS.find(c => c.id === selA.value), cB = CARDS.find(c => c.id === selB.value);
+  const A = cardMatrix(cA), B = cardMatrix(cB), M = mul(B, A), P = pal();
+  const w = Math.min(compWrap.clientWidth - 20, 520);
+  drawScene(fit(comp, w, w), w, w, M, {range:2.6, labels:true});
+  document.getElementById('compMats').innerHTML = `<span>B</span>${matHTML(B)}<span>×</span><span>A</span>${matHTML(A)}<span>=</span>${matHTML(M)}`;
+  const dA = det2(A), dB = det2(B), dM = det2(M), el = document.getElementById('compDet');
+  el.textContent = `${fmt(dB)} × ${fmt(dA)} = ${fmt(dM)}`; el.style.color = dM > EPS ? P.pos : dM < -EPS ? P.neg : P.muted;
+  let extra = '';
+  if (dA < -EPS && dB < -EPS && Math.abs(A.a + A.d) < 1e-6 && Math.abs(B.a + B.d) < 1e-6)
+    extra = ' Two reflections: their orientations cancel, and the product is a rotation through twice the angle between the mirrors.';
+  if (Math.abs(M.tx) > 1e-6 || Math.abs(M.ty) > 1e-6) extra += ' The product also translates by (' + fmt(M.tx) + ', ' + fmt(M.ty) + '), which leaves area and orientation alone.';
+  document.getElementById('compFamily').innerHTML = classify(M) + extra;
+}
+selA.addEventListener('change', drawCompose); selB.addEventListener('change', drawCompose);
+
+/* ------------ layout, theme ------------ */
+function layoutAll(){ sizeLab(); CARDS.forEach(drawCard); drawCompose(); }
+let raf; new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(layoutAll); }).observe(document.body);
+document.getElementById('theme').addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark'; layoutAll();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', layoutAll);
+writeInputs(state.m);
+layoutAll();
+if (document.fonts) document.fonts.ready.then(layoutAll);
+</script>
+</body>
+</html>
