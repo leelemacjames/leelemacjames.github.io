@@ -117,6 +117,24 @@ footer{margin-top:3.5rem;padding:2rem 0 2.6rem;border-top:1px solid var(--rule);
 footer .stamp{font-style:italic;font-size:1.05rem;color:var(--muted);letter-spacing:.02em}
 footer .stamp b{font-weight:500;color:var(--gold)}
 footer .rule{width:3rem;height:1px;background:var(--gold);margin:0 auto 1rem}
+.primer{background:var(--panel);border-radius:4px;padding:1rem 1.1rem;margin:1.6rem 0}
+.primer p{font-size:1.12rem;margin:.5rem 0}
+.gloss{display:grid;grid-template-columns:auto 1fr;gap:.25rem .9rem;font-size:1.08rem;margin:.6rem 0}
+.gloss b{font-weight:600}
+.tries{display:grid;gap:.6rem;margin:1rem 0}
+.try{display:grid;grid-template-columns:auto 1fr;gap:.2rem .8rem;align-items:start;border-top:1px solid var(--rule);padding-top:.6rem}
+.try button{font:500 .8rem "IBM Plex Sans",sans-serif;background:var(--panel2);color:var(--gold);border:1px solid var(--gold);border-radius:6px;padding:.35rem .6rem;cursor:pointer;white-space:nowrap}
+.try .t{font-size:1.08rem}
+.try .t b{font-weight:600}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-top:.55rem}
+.cell{font:.78rem "IBM Plex Sans",sans-serif;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:.3rem .45rem;line-height:1.35}
+.cell .l{color:var(--muted);font-size:.7rem;display:block}
+.cell .w{font-family:"Cormorant Garamond",serif;font-size:1.08rem;font-style:italic}
+.cell.good{border-color:var(--street)} .cell.badc{border-color:var(--bad)} .cell.guess{border-color:var(--gold);border-style:dashed}
+.flash{animation:flash 1s ease}
+@keyframes flash{0%{background:color-mix(in srgb,var(--gold) 45%,var(--panel))}100%{background:var(--panel)}}
+.effect{background:var(--panel);border-left:3px solid var(--gold);padding:.7rem 1rem;margin:1.2rem 0 0;font-size:1.08rem}
+.effect .h{font:600 .75rem "IBM Plex Sans",sans-serif;color:var(--gold);display:block;margin-bottom:.2rem}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -130,8 +148,20 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <p class="sub">A two-layer attention toy that carries one English sentence into French, on into Spanish, and back into English</p>
   <p class="big-sentence" id="heroSentence"></p>
   <div class="relay" id="heroRelay" aria-live="polite"></div>
-  <p class="lead">Tap <em>tired</em> or <em>wide</em> and watch the French pronoun and the Spanish ending change; every number behind the change is laid out below, hop by hop, and the ideas that make sense of those numbers follow after the machine.</p>
+  <p class="lead">Tap <em>tired</em> or <em>wide</em> and watch the French pronoun and the Spanish ending change. The short primer and experiments below explain what to look for, the machine lays out every number behind the change hop by hop, and the ideas that make sense of those numbers follow after it.</p>
 </header>
+
+<div class="primer">
+  <p>French and Spanish give every noun a grammatical gender, masculine or feminine, which has nothing to do with sex and simply has to be learnt with the word, and the words that refer back to a noun must match it. Four facts are all you need:</p>
+  <div class="gloss">
+    <b class="animal">l’animal, el animal</b><span>“the animal” is masculine in both languages</span>
+    <b class="street">la rue, la calle</b><span>“the street” is feminine in both languages</span>
+    <b>il / elle</b><span>French for “it” when it means a masculine or a feminine noun</span>
+    <b>‑o / ‑a</b><span>Spanish adjectives end in ‑o for masculine nouns and ‑a for feminine ones, as in <em>cansado</em> and <em>ancha</em></span>
+  </div>
+  <p>Translating <em>it</em> into French therefore forces the machine to decide whether the animal or the street is meant, and a wrong decision shows up as the wrong pronoun. The controls below let you take evidence away from the machine and see what breaks: <b>meaning</b> lets it use what words mean, such as the fact that only living things get tired, <b>grammatical gender</b> lets it use the masculine and feminine markings already on the page, and <b>sharpness</b> sets how decisively it commits to its best guess. The strip of three boxes under the controls always shows the current French, Spanish and English results, outlined solid when correct, red when wrong and dashed when the machine had no evidence and simply guessed.</p>
+  <div class="tries" id="tries"></div>
+</div>
 
 <div class="bar" id="controls">
   <div class="tabs" role="tablist" id="tabs"></div>
@@ -141,7 +171,9 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <label><input type="checkbox" id="chkG" checked> grammatical gender</label>
     <label>sharpness <input type="range" id="sharp" min="1" max="12" step="0.5" value="6"> <span class="mono" id="sharpV">6</span></label>
   </div>
+  <div class="strip" id="strip" aria-live="polite"></div>
 </div>
+<div class="effect" id="effect"></div>
 
 <section id="machine"></section>
 
@@ -369,8 +401,8 @@ function renderHero(C){
   const langs=['French','Spanish','English'];
   document.getElementById('heroRelay').innerHTML=C.stages.map((st,i)=>{
     const col=st.res.pick==='tie'?'var(--bad)':`var(--${(i<2?(st.fem?'street':'animal'):st.res.pick)})`;
-    const ok=st.okGender&&st.res.pick===C.truth;
-    return `<div class="relay-row"><span class="lang">${langs[i]}</span><span>${sentenceHTML(st.out,st.outIdx,col)}</span><span class="ok" style="color:${ok?'var(--street)':'var(--bad)'}">${ok?'✓':'✗'}</span></div>`;}).join('');
+    const s=hopStatus(C,i);
+    return `<div class="relay-row"><span class="lang">${langs[i]}</span><span>${sentenceHTML(st.out,st.outIdx,col)}</span><span class="ok" style="color:${s==='good'?'var(--street)':s==='guess'?'var(--gold)':'var(--bad)'}">${s==='good'?'✓':s==='guess'?'?':'✗'}</span></div>`;}).join('');
   document.querySelectorAll('#heroSentence .adj-toggle button').forEach(b=>b.onclick=()=>{state.adj=b.dataset.adj;render();});
 }
 
@@ -429,7 +461,7 @@ function renderMachine(C){
   html+=`<div class="step"><span class="n">Step 5 · Scale, exponentiate, share out</span>
    ${staircase([{label:nA,cls:'animal',raw:R.raw[R.iA],score:R.s2[R.iA],count:1},{label:nS,cls:'street',raw:R.raw[R.iS],score:R.s2[R.iS],count:1},{label:`the other ${others} tokens`,raw:0,score:0,count:others}],true)}
    ${attnSVG(T,R.a,R.w2)}
-   <p class="verdict ${R.pick===C.truth?'good':'badv'}">Referent chosen: ${refName(R.pick)}${R.pick==='tie'?'':` with ${pct(Math.max(R.pA,R.pS))} of the attention`}${R.pick===C.truth?' ✓':`, though the sentence meant ${refName(C.truth)} ✗`}</p></div>`;
+   <p class="verdict ${R.pick===C.truth?'good':'badv'}">${R.pick==='tie'?`The animal and the street score exactly the same, so the attention cannot choose between them and the decoder will have to guess; the sentence meant ${refName(C.truth)}.`:`Referent chosen: ${refName(R.pick)} with ${pct(Math.max(R.pA,R.pS))} of the attention${R.pick===C.truth?' ✓':`, though the sentence meant ${refName(C.truth)} ✗`}`}</p></div>`;
 
   // 6 values
   const vA=[T[R.iA].v[I.anim],T[R.iA].v[I.fr],T[R.iA].v[I.es]],vS=[T[R.iS].v[I.anim],T[R.iS].v[I.fr],T[R.iS].v[I.es]];
@@ -454,6 +486,7 @@ function renderMachine(C){
   html+=`<div class="step"><span class="n">Step 7 · Read out ${['French','Spanish','English'][i]}</span>
    <p>${decText}</p><div class="eq">${arith}</div><div class="probs">${dec}</div>
    <div class="out">${sentenceHTML(st.out,st.outIdx,col)}</div>
+   ${R.pick==='tie'&&i<2?`<p class="verdict" style="color:var(--gold)">With no evidence the decoder falls back on the masculine, which is a guess; it is right for the animal and wrong for the street.</p>`:''}
    ${i<2&&!st.okGender?`<p class="verdict badv">The gender is wrong for ${refName(C.truth)}, and the next hop will read this mistake as if it were evidence.</p>`:''}
    ${i===2&&!(C.stages[0].okGender&&C.stages[1].okGender)?`<p class="verdict badv">The English reads correctly, yet an earlier hop got the gender wrong; English has nowhere to show the error, so it disappears from view.</p>`:''}
    ${i<2?`<button class="btn" type="button" id="nextHop">Carry this into hop ${i+2}</button>`:''}</div>`;
@@ -497,12 +530,63 @@ document.getElementById('kStreet').onclick=()=>{document.getElementById('theta')
 function renderControls(){
   document.getElementById('tabs').innerHTML=STAGES.map((s,i)=>`<button type="button" role="tab" aria-selected="${i===state.stage}" data-i="${i}">${i+1}. ${s}</button>`).join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{state.stage=+b.dataset.i;render();});
-  document.querySelectorAll('#adjSeg button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.adj===state.adj);b.onclick=()=>{state.adj=b.dataset.adj;render();};});
+  document.querySelectorAll('#adjSeg button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.adj===state.adj);b.onclick=()=>{state.exp=null;state.adj=b.dataset.adj;render();};});
 }
-function render(){const C=chain();renderControls();renderHero(C);renderMachine(C);renderSummary(C);renderDot();}
-document.getElementById('chkM').onchange=e=>{state.M=e.target.checked?1:0;render();};
-document.getElementById('chkG').onchange=e=>{state.G=e.target.checked?1:0;render();};
-document.getElementById('sharp').oninput=e=>{state.s=+e.target.value;document.getElementById('sharpV').textContent=state.s;render();};
+const EXPS=[
+ {name:'Swap the adjective',set:{adj:'wide',stage:0,M:1,G:1,s:6},
+  look:'Watch <em>il</em> become <em>elle</em> and <em>cansado</em> become <em>ancha</em> in the strip above. The street is feminine in both languages, so once the adjective points at the street every gendered word downstream has to change with it.'},
+ {name:'Take away meaning',set:{adj:'wide',stage:0,M:0,G:1,s:6},
+  look:'English <em>it</em> has no gender, so without meaning the machine has no way to separate the animal from the street; step 5 shows the attention split exactly in half, and the French box turns red because the forced guess, <em>il</em>, is wrong for the street.'},
+ {name:'Let grammar do the work',set:{adj:'tired',stage:1,M:0,G:1,s:6},
+  look:'Hop 1 is dashed because it had to guess and happened to guess right. In hop 2 the French word <em>il</em> already announces “masculine”, and only the animal is masculine, so step 5 shows the machine confidently finding the animal with meaning still switched off.'},
+ {name:'Watch a mistake vanish',set:{adj:'wide',stage:2,M:0,G:1,s:6},
+  look:'The wrong <em>il</em> from hop 1 is read in hop 2 as genuine evidence for the animal, giving <em>ancho</em> where <em>ancha</em> was needed, yet the final English reads perfectly because English <em>it</em> has no gender to get wrong. Round-trip translation can hide errors in exactly this way.'},
+ {name:'Blunt the attention',set:{adj:'tired',stage:0,M:1,G:1,s:1},
+  look:'At the lowest sharpness the scores are squeezed together before the softmax, so in step 5 the minor words soak up more of the attention and the winner’s share falls well below its usual 90 per cent; the answer survives, though with far less confidence.'},
+ {name:'Remove every clue',set:{adj:'tired',stage:0,M:0,G:0,s:6},
+  look:'With neither meaning nor gender every hop is a coin toss, and all three boxes are dashed even where the guess happens to be right. Try <em>wide</em> as well, where the same guesses come out wrong.'}
+];
+state.exp=null;
+function renderTries(){
+  document.getElementById('tries').innerHTML=EXPS.map((e,k)=>`<div class="try"><button type="button" data-k="${k}">Try it</button><span class="t"><b>${e.name}.</b> ${e.look.split('. ')[0].replace(/<[^>]+>/g,'')}.</span></div>`).join('');
+  document.querySelectorAll('#tries button').forEach(b=>b.onclick=()=>{
+    const e=EXPS[+b.dataset.k];Object.assign(state,e.set);state.exp=+b.dataset.k;
+    document.getElementById('chkM').checked=!!state.M;document.getElementById('chkG').checked=!!state.G;
+    document.getElementById('sharp').value=state.s;document.getElementById('sharpV').textContent=state.s;
+    render();document.getElementById('controls').scrollIntoView({behavior:'smooth'});});
+}
+function hopWords(C){return C.stages.map((st,i)=>i===0?`${st.out[9].w} … ${st.out[12].w}`:i===1?`${st.out[8].w} … ${st.out[10].w}`:`it … ${st.out[10].w}`);}
+function hopStatus(C,i){const st=C.stages[i];if(st.res.pick==='tie')return 'guess';return (st.okGender&&st.res.pick===C.truth)?'good':'badc';}
+let prevWords=null;
+function renderStrip(C){
+  const words=hopWords(C),langs=['French','Spanish','English'];
+  document.getElementById('strip').innerHTML=C.stages.map((st,i)=>{
+    const s=hopStatus(C,i),mark=s==='good'?'✓':s==='guess'?'? guessed':'✗';
+    const share=st.res.pick==='tie'?'50 / 50':pct(Math.max(st.res.pA,st.res.pS))+' on the '+st.res.pick;
+    return `<div class="cell ${s}${prevWords&&prevWords[i]!==words[i]?' flash':''}"><span class="l">${langs[i]} ${mark}</span><span class="w">${words[i]}</span><span class="l">${share}</span></div>`;}).join('');
+  prevWords=words;
+}
+function withState(over){const saved={...state};Object.assign(state,over);const C=chain();Object.assign(state,saved);return C;}
+function flipText(C,key,label){
+  const alt=withState({[key]:state[key]?0:1}),a=hopWords(C),b=hopWords(alt),langs=['French','Spanish','English'];
+  const changes=a.map((w,i)=>w!==b[i]?`${langs[i]} would change from <em>${w}</em> to <em>${b[i]}</em>`:null).filter(Boolean);
+  const verb=state[key]?'Switching '+label+' off':'Switching '+label+' on';
+  if(changes.length)return `${verb}: ${changes.join('; ')}.`;
+  const i=state.stage,x=C.stages[i].res,y=alt.stages[i].res;
+  const s0=x.pick==='tie'?'an even split':pct(Math.max(x.pA,x.pS)),s1=y.pick==='tie'?'an even split':pct(Math.max(y.pA,y.pS));
+  if(s0===s1)return `${verb} would change nothing in any hop with the current settings${i===0&&key==='G'?', since English <em>it</em> carries no gender for the machine to read':''}.`;
+  return `${verb} would leave every word the same and only move the attention in hop ${i+1} from ${s0} to ${s1}${hopStatus(C,i)==='guess'&&hopStatus(alt,i)!=='guess'?', turning a guess into a decision':hopStatus(alt,i)==='guess'&&hopStatus(C,i)!=='guess'?`, leaving the machine to guess, and its masculine fallback ${C.truth==='animal'?'happens to be right':'is wrong'} for this sentence`:''}.`;
+}
+function renderEffect(C){
+  const e=state.exp!==null?EXPS[state.exp]:null;
+  document.getElementById('effect').innerHTML=(e?`<span class="h">${e.name}</span><p style="margin:.2rem 0 .6rem">${e.look}</p>`:'')+
+   `<span class="h">What the switches would do right now</span>${flipText(C,'M','meaning')} ${flipText(C,'G','grammatical gender')}`;
+}
+function render(){const C=chain();renderControls();renderHero(C);renderStrip(C);renderEffect(C);renderMachine(C);renderSummary(C);renderDot();}
+renderTries();
+document.getElementById('chkM').onchange=e=>{state.exp=null;state.M=e.target.checked?1:0;render();};
+document.getElementById('chkG').onchange=e=>{state.exp=null;state.G=e.target.checked?1:0;render();};
+document.getElementById('sharp').oninput=e=>{state.exp=null;state.s=+e.target.value;document.getElementById('sharpV').textContent=state.s;render();};
 const root=document.documentElement,tb=document.getElementById('themeBtn');
 const isDark=()=>root.dataset.theme?root.dataset.theme==='dark':true;
 function setThemeLabel(){tb.textContent=isDark()?'Light page':'Dark page';}
