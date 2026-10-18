@@ -144,8 +144,8 @@ footer.stamp b{color:var(--gold);font-weight:500}
   <header class="top">
     <div>
       <div class="eyebrow">McMurmerings · knowledge graph · read from the apps sheet</div>
-      <h1>The <em>Meta</em> Apps Graph</h1>
-      <p class="lede">A catalogue by subject; domain, theme, host and the concepts named in it. Follow the triples to see which ideas hold the collection together, and where the apps live once they leave leelemacjames.github.io.</p>
+      <h1>The <em>Maths</em> Apps Graph</h1>
+      <p class="lede">Every app in the catalogue becomes a subject; its domain, theme, host and the concepts named in it become objects. Follow the triples to see which ideas hold the collection together, and where the apps live once they leave leelemacjames.github.io.</p>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -600,7 +600,7 @@ async function loadLive(){
     const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`,{cache:'no-store'});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const rows=rowsFromTable(parseCSV(await res.text()));if(!rows.length)throw new Error('empty');
-    ROWS=rows;SOURCE='live';rebuild();setStatus(`Live sheet · ${rows.length} rows · ${new Date().toLocaleTimeString()}`,true);
+    ROWS=rows;SOURCE='live';rebuild();applyURL();setStatus(`Live sheet · ${rows.length} rows · ${new Date().toLocaleTimeString()}`,true);
   }catch(e){setStatus(`Live sheet not reachable from this page, so the ${SNAP_DATE} snapshot is shown. Load a CSV export to update.`)}
   srcNote();
 }
@@ -635,35 +635,29 @@ const aS=document.getElementById('aS'),aP=document.getElementById('aP'),aO=docum
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(sim){const {width:w,height:h}=document.getElementById('field').getBoundingClientRect();sim.force('x').x(w/2);sim.force('y').y(h/2);sim.alpha(.2).restart()}},200)});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>draw());
 
+
+/* ---------- deep links: ?subject=Maths&rel=domain&host=pages,repo&level=H&focus=Name&delay=1800 ---------- */
+const URLQ=new URLSearchParams(location.search);let urlTimer=null;
+function urlList(k){const v=URLQ.get(k);return v?v.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean):null}
+function keepOnly(store,wanted,labelOf){if(!wanted)return;Object.keys(store).forEach(k=>{const lab=(labelOf?labelOf(k):k).toLowerCase();store[k]=wanted.some(w=>lab===w||lab.includes(w)||k.toLowerCase()===w)})}
+function applyURL(){
+  if(![...URLQ.keys()].length)return;
+  const want=(URLQ.get('subject')||'').toLowerCase();
+  if(want){const hit=[...new Set(ROWS.map(r=>r.Subject))].find(x=>(x||'').toLowerCase()===want);
+    if(hit&&hit!==subject){subject=hit;rebuild()}}
+  clearTimeout(urlTimer);
+  urlTimer=setTimeout(()=>{
+    const rel=urlList('rel');
+    if(rel)Object.keys(filt.pred).forEach(p=>{if(p!=='custom')filt.pred[p]=rel.some(w=>p.toLowerCase()===w||PRED[p].label.toLowerCase().includes(w))});
+    keepOnly(filt.host,urlList('host'));keepOnly(filt.level,urlList('level'));keepOnly(filt.hub,urlList('hub'));
+    buildFilters();update();
+    const f=URLQ.get('focus');
+    setTimeout(()=>{if(typeof fit==='function')fit();if(f){const id=resolveLabel(f);if(id){document.getElementById('search').value=f;select(id)}}},reduce?0:900);
+  },+(URLQ.get('delay')||1800));
+}
 ROWS=SNAPSHOT.map(r=>Object.fromEntries(COLS.map((c,i)=>[c,r[i]||''])));
-rebuild();srcNote();setStatus(`Snapshot · ${SNAP_DATE}`);
+rebuild();srcNote();setStatus(`Snapshot · ${SNAP_DATE}`);applyURL();
 loadLive();
-})();
-</script>
-<!-- Paste just before </body> in All_Apps_Graph.html.
-     Reads ?subject=Maths&focus=AlevelFormulaBook_Worked&delay=1800 from the address,
-     selects the subject first, then after the delay types the focus term into the search box. -->
-<script>
-(function(){
-  var q=new URLSearchParams(location.search);
-  var subj=(q.get('subject')||'').toLowerCase(), focus=q.get('focus'), wait=+(q.get('delay')||1800);
-  if(!subj&&!focus) return;
-  function fire(el,type){el.dispatchEvent(new Event(type,{bubbles:true}));}
-  function findSelect(){return [...document.querySelectorAll('select')].find(function(s){
-    return [...s.options].some(function(o){return o.text.trim().toLowerCase().indexOf(subj)===0;});});}
-  function findBox(){var all=[...document.querySelectorAll('input[type="search"],input[type="text"],input:not([type])')];
-    return all.find(function(i){return /search|find|filter|node/i.test(i.placeholder||'');})||all[0];}
-  var tries=0;
-  (function attempt(){
-    var sel=subj?findSelect():null, box=focus?findBox():null;
-    if((subj&&!sel)||(focus&&!box)){ if(++tries<75) setTimeout(attempt,200); return; }
-    if(sel){var o=[...sel.options].find(function(o){return o.text.trim().toLowerCase().indexOf(subj)===0;});sel.value=o.value;fire(sel,'change');}
-    if(box) setTimeout(function(){
-      box.focus(); box.value=focus; fire(box,'input'); fire(box,'change');
-      box.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
-      box.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',bubbles:true}));
-    },wait);
-  })();
 })();
 </script>
 
