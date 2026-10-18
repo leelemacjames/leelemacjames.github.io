@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Making curves straight: linearisation for A level</title>
+<script>
+/* apply the saved theme before the page paints (shared key across McMurmerings pages) */
+(function(){try{var t=localStorage.getItem('mcm-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f141b; --panel:#161d27; --panel2:#1c2531; --rule:#2b3542;
+  --paper:#ebe4d3; --dim:#9aa3ae; --gold:#c9a44e; --gold-soft:rgba(201,164,78,.16);
+  --rose:#d57d71; --sage:#8cb9a2; --sky:#86aedb; --grid:#253040; --grid2:#1d2632;
+  --serif:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ color-scheme:light; --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --sky:#3d6ea8; --grid:#d6cebd; --grid2:#e0d9c9; }
+}
+:root[data-theme="light"]{ color-scheme:light; --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --sky:#3d6ea8; --grid:#d6cebd; --grid2:#e0d9c9; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+main{max-width:800px;margin:0 auto;padding:0 20px 40px}
+p{margin:0 0 1em;max-width:68ch}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.08;margin:0}
+h1{font-size:clamp(2.5rem,7vw,4.1rem);margin-top:56px}
+h2{font-size:clamp(1.8rem,4.6vw,2.4rem);display:flex;gap:.45em;align-items:baseline;margin:0 0 .6em}
+h2 .n{color:var(--gold);font-style:italic;font-weight:500}
+.eyebrow{font:500 .78rem var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-top:44px}
+.lede{font-family:var(--serif);font-size:1.4rem;line-height:1.4;color:var(--dim);margin:14px 0 0;max-width:34em}
+section{padding:60px 0 8px;border-top:1px solid var(--rule);margin-top:44px}
+sup{font-size:.7em;line-height:0}
+.math{font-family:var(--serif);font-size:1.18em;font-style:italic;white-space:nowrap}
+.display{text-align:center;font-family:var(--serif);font-style:italic;font-size:1.45em;margin:.4em 0 1em}
+a{color:var(--gold)}
+
+/* settings */
+.gear{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:20;width:42px;height:42px;border-radius:50%;border:1px solid var(--rule);background:var(--panel);color:var(--paper);font-size:20px;cursor:pointer;display:grid;place-items:center}
+.gear:hover{border-color:var(--gold);color:var(--gold)}
+.settings{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:14px;z-index:20;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;min-width:200px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none}
+.settings.open{display:block}
+.settings h3{font-size:1.25rem;margin-bottom:8px}
+.settings label{display:flex;gap:10px;align-items:center;padding:4px 0;cursor:pointer;font-size:.95rem}
+.settings input{accent-color:var(--gold);width:17px;height:17px}
+
+/* hero */
+.hero{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:24px;margin-top:34px}
+.race{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:620px){.race{grid-template-columns:1fr}}
+.race div{border-top:2px solid var(--rule);padding-top:12px}
+.race .a{border-color:var(--dim)} .race .b{border-color:var(--gold)}
+.big{font-family:var(--serif);font-weight:600;font-size:clamp(2.3rem,6.5vw,3.4rem);line-height:1;font-variant-numeric:lining-nums tabular-nums}
+.big.g{color:var(--gold)}
+.sub{color:var(--dim);font-size:.95rem;margin-top:6px}
+
+/* controls */
+.ctl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin:14px 0 4px;font-size:.95rem}
+.ctl label{color:var(--dim)}
+input[type=range]{accent-color:var(--gold);width:100%;max-width:320px;height:28px}
+.morph{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;max-width:540px;color:var(--dim);font-size:.9rem}
+button{font:500 .95rem var(--sans);color:var(--ink);background:var(--gold);border:0;border-radius:3px;padding:9px 16px;cursor:pointer}
+button.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+button[aria-pressed="true"].ghost{background:var(--gold-soft)}
+.seg{display:inline-flex;border:1px solid var(--gold);border-radius:3px;overflow:hidden}
+.seg button{border-radius:0;background:transparent;color:var(--gold)}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* figures */
+figure{margin:22px 0 10px;background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:14px 14px 10px}
+svg.plot{width:100%;display:block;overflow:visible}
+svg text{font-family:var(--sans)}
+.tick{fill:var(--dim);font-size:12px}
+.axlab{fill:var(--paper);font-size:13px}
+.readout{font-size:.97rem;color:var(--dim);margin-top:8px;min-height:1.6em}
+.readout strong{color:var(--paper);font-weight:600}
+.y{color:var(--gold)} .r{color:var(--rose)} .g{color:var(--sage)}
+
+/* tables */
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;font-size:.93rem;font-variant-numeric:tabular-nums;margin:10px 0 4px}
+.table th{font-weight:500;color:var(--dim);text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
+.table td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--grid2);white-space:nowrap}
+.table td.const{color:var(--gold);font-weight:600;background:var(--gold-soft)}
+.table.sum td,.table.sum th{text-align:left;white-space:normal}
+
+.aside{border-left:2px solid var(--gold);padding:4px 0 4px 16px;margin:18px 0}
+.aside p{margin-bottom:.4em}
+
+/* exam questions */
+.q{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:18px 18px 14px;margin:18px 0}
+.q .tag{font:500 .76rem var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.q ol{margin:10px 0 6px;padding-left:1.3em}
+.q li{margin:6px 0;display:none}
+.q li.on{display:list-item}
+.q .nav{display:flex;gap:10px;margin-top:8px}
+
+footer{border-top:1px solid var(--rule);margin-top:64px;padding:26px 20px 34px;text-align:center;color:var(--dim);font-family:var(--serif);font-size:1.08rem;font-style:italic}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<button class="gear" id="gear" aria-label="Settings" aria-expanded="false" aria-controls="settings">⚙</button>
+<div class="settings" id="settings" role="dialog" aria-label="Settings">
+  <h3>Settings</h3>
+  <div role="radiogroup" aria-label="Theme">
+    <label><input type="radio" name="theme" value="auto"> Match my device</label>
+    <label><input type="radio" name="theme" value="light"> Light</label>
+    <label><input type="radio" name="theme" value="dark"> Dark</label>
+  </div>
+</div>
+
+<main>
+<div class="eyebrow">Edexcel A level Mathematics · Exponentials and logarithms</div>
+<h1>Making curves straight</h1>
+<p class="lede">Why a billion pounds takes 100 000 years to save and only about two centuries to grow, and how choosing the right axis turns every curve in this story into a straight line you can read.</p>
+
+<div class="hero" aria-label="Two ways to reach one billion pounds">
+  <p style="margin-bottom:14px">Put aside <strong>£10 000 a year</strong> until you have <strong>£1 000 000 000</strong>.</p>
+  <div class="race">
+    <div class="a"><div class="sub" style="margin:0 0 6px">Under the mattress, no interest</div><div class="big">100 000 years</div><div class="sub">£10 000 × 100 000 = £10<sup>9</sup>, an arithmetic series</div></div>
+    <div class="b"><div class="sub" style="margin:0 0 6px">Invested at <span id="rateOut">4%</span> compound interest</div><div class="big g" id="yearsOut">212 years</div><div class="sub" id="yearsSub">a geometric series does the work</div></div>
+  </div>
+  <div class="ctl" style="margin-top:16px"><label for="rate">Interest rate</label><input type="range" id="rate" min="1" max="40" value="16" aria-label="Interest rate"></div>
+</div>
+
+<section id="s1">
+  <h2><span class="n">1</span> Two series, two kinds of growth</h2>
+  <p>Saving £10 000 a year without interest gives the arithmetic series 10 000, 20 000, 30 000, and so on, so after <span class="math">n</span> years you hold <span class="math">10 000n</span> pounds and reaching 10<sup>9</sup> needs <span class="math">n</span> = 10<sup>9</sup> ÷ 10<sup>4</sup> = 10<sup>5</sup>. Invest the same payments at a rate <span class="math">r</span> and each year’s balance is multiplied by <span class="math">1 + r</span> before the next £10 000 arrives, so the total is the sum of a geometric series:</p>
+  <p class="display">S<sub>n</sub> = 10 000 (1.04<sup>n</sup> − 1) ÷ 0.04</p>
+  <p>Setting this equal to 10<sup>9</sup> gives 1.04<sup>n</sup> = 4001, and taking logarithms of both sides turns the unknown power into something we can divide by, <span class="math">n = log 4001 ÷ log 1.04 ≈ 211.5</span>, so the balance first passes a billion after 212 years. Move the rate slider in the panel above and notice that halving the rate does far more than double the wait.</p>
+</section>
+
+<section id="s2">
+  <h2><span class="n">2</span> Differences tell you which graph will be straight</h2>
+  <p>Choose a sequence and look down the columns. Whichever column settles to a constant, highlighted in gold, tells you which axes will turn the points into a straight line.</p>
+  <div class="ctl"><div class="seg" id="seqSeg">
+    <button data-k="mattress" aria-pressed="true">Mattress savings</button>
+    <button data-k="ball" aria-pressed="false">Rolling ball</button>
+    <button data-k="lump" aria-pressed="false">£10 000 at 4%</button>
+    <button data-k="annuity" aria-pressed="false">£10 000 a year at 4%</button>
+  </div></div>
+  <div class="table-wrap"><table class="table" id="diffTable"></table></div>
+  <div class="readout" id="diffNote"></div>
+  <p>Constant first differences mean a straight line on ordinary axes. Constant second differences mean a quadratic, which is straight when plotted against <span class="math">n²</span> rather than <span class="math">n</span>. A constant ratio means a geometric sequence, which is straight once the vertical axis is logarithmic. Saving every year at 4% is a curious mixture, because its first differences are themselves geometric, and for large <span class="math">n</span> it behaves almost exactly like a geometric sequence.</p>
+</section>
+
+<section id="s3">
+  <h2><span class="n">3</span> Straightening a curve by changing the axis</h2>
+  <p>A quadratic curves on ordinary axes, yet if the horizontal axis is ruled so that equal distances mean equal changes in <span class="math">x²</span> rather than in <span class="math">x</span>, the same points fall on a straight line. The axis labels still show <span class="math">x</span>, but they bunch up on the left and spread out on the right, exactly as the labels on log paper do. A square-root law straightens in the opposite way, on an axis ruled by <span class="math">√x</span>.</p>
+  <figure>
+    <div class="ctl" style="margin-top:0"><div class="seg" id="relSeg">
+      <button data-k="quad" aria-pressed="true">Quadratic, y = 3x² + 2</button>
+      <button data-k="pend" aria-pressed="false">Pendulum, T ∝ √L</button>
+    </div></div>
+    <svg class="plot" id="p3" role="img" aria-label="Data plotted against a changing horizontal axis"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m3" min="0" max="1000" value="0" aria-label="Change the horizontal axis"><span id="m3lab">ruled by x²</span></div>
+      <button id="b3">Change the axis</button>
+    </div>
+    <div class="readout" id="r3"></div>
+  </figure>
+  <p>This is linearisation in its plainest form: write the law as <span class="math">Y = mX + c</span> by choosing <span class="math">X</span> and <span class="math">Y</span> cleverly, plot <span class="math">Y</span> against <span class="math">X</span>, and read the constants from the gradient and the intercept. For the pendulum, <span class="math">T = 2π√(L/g)</span> becomes a line through the origin when <span class="math">T</span> is plotted against <span class="math">√L</span>, and its gradient, <span class="math">2π/√g</span>, gives a measurement of <span class="math">g</span>.</p>
+</section>
+
+<section id="s4">
+  <h2><span class="n">4</span> Semi-log graphs: exponential growth becomes a line</h2>
+  <p>For a model <span class="math">y = ab<sup>x</sup></span>, taking logarithms gives <span class="math">log y = log a + x log b</span>, which is a straight line when <span class="math">log y</span> is plotted against <span class="math">x</span>. A logarithmic vertical axis does this for you, because each gridline is ten times the one below. The same machinery describes compound interest and the growth of a tumour, so switch between them.</p>
+  <figure>
+    <div class="ctl" style="margin-top:0"><div class="seg" id="ctxSeg">
+      <button data-k="money" aria-pressed="true">Savings in £</button>
+      <button data-k="tumour" aria-pressed="false">Tumour cells</button>
+    </div></div>
+    <svg class="plot" id="p4" role="img" aria-label="Growth against time with a changing vertical axis"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m4" min="0" max="1000" value="0" aria-label="Stretch the vertical axis"><span>logarithmic</span></div>
+      <button id="b4">Stretch the vertical axis</button>
+    </div>
+    <div class="ctl" id="rate4wrap"><label for="rate4">Interest rate</label><input type="range" id="rate4" min="1" max="40" value="16" aria-label="Interest rate"><span id="rate4Out" class="y">4%</span></div>
+    <div class="readout" id="r4"></div>
+  </figure>
+  <div class="aside"><p>On ordinary axes the mattress saver never leaves the floor of the money graph, while on the logarithmic axis the same straight line bends over, because adding £10 000 to a growing pile is a smaller and smaller <em>multiplication</em>. Straightness depends on the axes as much as on the data.</p></div>
+</section>
+
+<section id="s5">
+  <h2><span class="n">5</span> Log–log graphs: power laws become a line</h2>
+  <p>For a model <span class="math">y = ax<sup>n</sup></span>, taking logarithms gives <span class="math">log y = log a + n log x</span>, so plotting <span class="math">log y</span> against <span class="math">log x</span> gives a straight line whose gradient is the power <span class="math">n</span> and whose intercept is <span class="math">log a</span>. Both axes must be stretched this time.</p>
+  <figure>
+    <div class="ctl" style="margin-top:0"><div class="seg" id="powSeg">
+      <button data-k="cells" aria-pressed="true">Tumour cells against diameter</button>
+      <button data-k="paper" aria-pressed="false">Crumpled paper balls</button>
+    </div></div>
+    <svg class="plot" id="p5" role="img" aria-label="Power law with both axes changing"></svg>
+    <div class="ctl">
+      <div class="morph"><span>ordinary</span><input type="range" id="m5" min="0" max="1000" value="0" aria-label="Stretch both axes"><span>log–log</span></div>
+      <button id="b5">Stretch both axes</button>
+    </div>
+    <div class="readout" id="r5"></div>
+  </figure>
+  <p>The tumour gives a power of exactly 3, because the number of cells is the volume ratio <span class="math">(D/d)<sup>3</sup></span>. Crumpled paper gives about 2.4, between a flat sheet’s 2 and a solid ball’s 3, because a crumpled ball is mostly trapped air; nobody could have told you that power in advance, and the log–log gradient is how you measure it.</p>
+</section>
+
+<section id="s6">
+  <h2><span class="n">6</span> Choosing what to plot</h2>
+  <div class="table-wrap"><table class="table sum">
+    <tr><th>What you notice</th><th>Model</th><th>Plot</th><th>Straight line</th></tr>
+    <tr><td>constant first differences</td><td>y = mx + c</td><td>y against x</td><td>gradient m, intercept c</td></tr>
+    <tr><td>constant second differences</td><td>y = ax² + c</td><td>y against x²</td><td>gradient a, intercept c</td></tr>
+    <tr><td>y grows like a square root</td><td>y = k√x</td><td>y against √x</td><td>gradient k, through the origin</td></tr>
+    <tr><td>constant ratio</td><td>y = ab<sup>x</sup></td><td>log y against x</td><td>gradient log b, intercept log a</td></tr>
+    <tr><td>doubling x always multiplies y by the same factor</td><td>y = ax<sup>n</sup></td><td>log y against log x</td><td>gradient n, intercept log a</td></tr>
+  </table></div>
+</section>
+
+<section id="s7">
+  <h2><span class="n">7</span> Exam-style questions</h2>
+  <p>Try each question first, then reveal the working one step at a time.</p>
+  <div id="qs"></div>
+</section>
+</main>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</footer>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), lg=Math.log10;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- settings: theme ---------- */
+const gear=$('#gear'), panel=$('#settings');
+gear.addEventListener('click',()=>{const o=panel.classList.toggle('open');gear.setAttribute('aria-expanded',o)});
+document.addEventListener('click',e=>{if(!panel.contains(e.target)&&e.target!==gear){panel.classList.remove('open');gear.setAttribute('aria-expanded',false)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){panel.classList.remove('open');gear.setAttribute('aria-expanded',false)}});
+let saved='auto';try{saved=localStorage.getItem('mcm-theme')||'auto'}catch(e){}
+document.querySelectorAll('input[name=theme]').forEach(r=>{r.checked=r.value===saved;r.addEventListener('change',()=>{
+  const v=r.value;if(v==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',v);
+  try{v==='auto'?localStorage.removeItem('mcm-theme'):localStorage.setItem('mcm-theme',v)}catch(e){}})});
+
+/* ---------- formatting ---------- */
+function mant(v,dp){let e=Math.floor(lg(Math.abs(v)));let ms=(v/10**e).toFixed(dp);if(parseFloat(ms)>=10){e++;ms=(v/10**e).toFixed(dp)}return[ms.replace(/\.0+$/,''),e]}
+function sciH(v,dp=1){if(!v)return'0';const[m,e]=mant(v,dp);return`${m} × 10<sup>${e<0?'−'+(-e):e}</sup>`}
+function powS(k){return`10<tspan dy="-0.55em" font-size="0.72em">${k<0?'−'+(-k):k}</tspan>`}
+function sciS(v){if(!v)return'0';const[m,e]=mant(v,0);return(m==='1'?'':m+'×')+powS(e)}
+function plain(v){if(Math.abs(v)>=1)return(Math.round(v*100)/100).toLocaleString('en-GB');return String(+v.toPrecision(2))}
+function money(v){if(v>=1e9)return'£'+(v/1e9).toPrecision(3)+' billion';if(v>=1e6)return'£'+(v/1e6).toPrecision(3)+' million';return'£'+Math.round(v).toLocaleString('en-GB')}
+function fit(xs,ys){const n=xs.length;let sx=0,sy=0,sxx=0,sxy=0;for(let i=0;i<n;i++){sx+=xs[i];sy+=ys[i];sxx+=xs[i]*xs[i];sxy+=xs[i]*ys[i]}const m=(n*sxy-sx*sy)/(n*sxx-sx*sx);return{m,b:(sy-m*sx)/n}}
+function animate(from,to,cb,dur=950){if(reduced){cb(to);return}const t0=performance.now();(function step(now){const u=Math.min(1,(now-t0)/dur);const e=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;cb(from+(to-from)*e);if(u<1)requestAnimationFrame(step)})(t0)}
+
+/* ---------- morphing plot engine: an axis blends its ordinary scale with a transformed one ---------- */
+const TF={log:v=>v>0?lg(v):NaN, sq:v=>v*v, sqrt:v=>v>=0?Math.sqrt(v):NaN};
+function mapper(ax,a,b){const s=ax.tf?(ax.lin?ax.s||0:1):0, f=ax.tf?TF[ax.tf]:null;
+  return v=>{const nl=ax.lin?(v-ax.lin[0])/(ax.lin[1]-ax.lin[0]):0;let nt=0;
+    if(f){const t=f(v);nt=isFinite(t)?(t-ax.tdom[0])/(ax.tdom[1]-ax.tdom[0]):-9}
+    return a+(b-a)*((1-s)*nl+s*nt)}}
+function niceStep(x){const p=10**Math.floor(lg(x)),f=x/p;return(f<1.5?1:f<3?2:f<7?5:10)*p}
+function ticks(ax,M,horiz,box){
+  const{L,R,T,B}=box;let out='';const s=ax.tf?(ax.lin?ax.s||0:1):0;
+  const inR=p=>horiz?(p>=L-.5&&p<=R+.5):(p<=B+.5&&p>=T-.5);
+  const put=(p,label,op,major)=>{if(!inR(p)||op<=0.01)return;const col=major?'var(--grid)':'var(--grid2)';
+    if(horiz){out+=`<line x1="${p}" x2="${p}" y1="${T}" y2="${B}" stroke="${col}" opacity="${op}"/>`;if(label)out+=`<text class="tick" x="${p}" y="${B+19}" text-anchor="middle" opacity="${op}">${label}</text>`}
+    else{out+=`<line x1="${L}" x2="${R}" y1="${p}" y2="${p}" stroke="${col}" opacity="${op}"/>`;if(label)out+=`<text class="tick" x="${L-8}" y="${p+4}" text-anchor="end" opacity="${op}">${label}</text>`}};
+  const lab=v=>ax.fmt?ax.fmt(v):ax.sci?sciS(v):plain(v);
+  if(ax.lin&&s<.999){const st=niceStep((ax.lin[1]-ax.lin[0])/(horiz?6:5));
+    for(let v=Math.ceil(ax.lin[0]/st)*st;v<=ax.lin[1]+st*1e-6;v+=st){const vv=Math.abs(v)<st*1e-6?0:v;if(ax.tf==='log'&&s>0&&vv<=0)continue;put(M(vv),lab(vv),1-s,true)}}
+  if(ax.tf&&s>.001){
+    if(ax.tf==='log'){const span=ax.tdom[1]-ax.tdom[0];
+      for(let k=Math.floor(ax.tdom[0]);k<=Math.ceil(ax.tdom[1]);k++)for(let m=1;m<=9;m++){if(m>1&&span>4.5)break;const v=m*10**k;
+        let l='';if(m===1)l=ax.plainLog?plain(v):powS(k);else if(ax.plainLog&&(m===2||m===5)&&span<=2.6)l=plain(v);put(M(v),l,s,m===1)}}
+    else if(ax.tf==='sq'){const a=Math.ceil(Math.sqrt(Math.max(0,ax.tdom[0]))),b=Math.floor(Math.sqrt(ax.tdom[1]));for(let v=a;v<=b;v++)put(M(v),v===0&&s>.5?'':lab(v),s,true)}
+    else if(ax.tf==='sqrt'){const b=Math.floor(Math.sqrt(ax.tdom[1]));for(let k=0;k<=b;k++)put(M(k*k),lab(k*k),s,true)}
+  }
+  return out}
+function drawPlot(svg,P){
+  const W=Math.max(300,svg.clientWidth||svg.parentNode.clientWidth||640);
+  const H=Math.round(W<520?W*.86:W*.56);
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('height',H);
+  const box={L:P.ml||66,R:W-24,T:14,B:H-48};
+  const X=mapper(P.x,box.L,box.R),Y=mapper(P.y,box.B,box.T),cid=svg.id+'c';
+  let s=`<defs><clipPath id="${cid}"><rect x="${box.L}" y="${box.T}" width="${box.R-box.L}" height="${box.B-box.T}"/></clipPath></defs>`;
+  s+=ticks(P.x,X,true,box)+ticks(P.y,Y,false,box);
+  s+=`<rect x="${box.L}" y="${box.T}" width="${box.R-box.L}" height="${box.B-box.T}" fill="none" stroke="var(--rule)"/><g clip-path="url(#${cid})">`;
+  (P.curves||[]).forEach(c=>{let d='',pen=false;const N=400;
+    for(let i=0;i<=N;i++){const x=c.logx?10**(lg(c.x0)+(lg(c.x1)-lg(c.x0))*i/N):c.x0+(c.x1-c.x0)*i/N;const yv=c.f(x),px=X(x),py=Y(yv);
+      if(!isFinite(px)||!isFinite(py)||(P.y.tf==='log'&&yv<=0)){pen=false;continue}d+=(pen?'L':'M')+px.toFixed(1)+' '+py.toFixed(1);pen=true}
+    s+=`<path d="${d}" fill="none" stroke="${c.col||'var(--gold)'}" stroke-width="${c.w||2}" ${c.dash?`stroke-dasharray="${c.dash}"`:''}/>`});
+  if(P.under)s+=P.under(X,Y,box);
+  s+='</g>';
+  (P.points||[]).forEach(p=>{const px=X(p.x),py=Y(p.y);if(!isFinite(px)||!isFinite(py))return;
+    s+=`<circle cx="${px}" cy="${py}" r="5.5" fill="${p.col||'var(--rose)'}" stroke="${p.col||'var(--rose)'}" stroke-width="1.5"><title>${p.tip||''}</title></circle>`});
+  if(P.over)s+=P.over(X,Y,box);
+  s+=`<text class="axlab" x="${(box.L+box.R)/2}" y="${H-8}" text-anchor="middle">${P.x.label}</text>`;
+  s+=`<text class="axlab" transform="translate(14 ${(box.T+box.B)/2}) rotate(-90)" text-anchor="middle">${P.y.label}</text>`;
+  svg.innerHTML=s;return{X,Y,box}}
+function seg(id,cb){const el=$(id);el.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.k)}))}
+
+/* ---------- hero and shared rate ---------- */
+let rate=0.04;
+const yearsTo=(r,target=1e9,pay=1e4)=>Math.log(1+target*r/pay)/Math.log(1+r);
+const annuity=(n,r)=>1e4*(Math.pow(1+r,n)-1)/r;
+function setRate(r){rate=r;const v=Math.round(r*400);$('#rate').value=v;$('#rate4').value=v;
+  const pct=(r*100).toFixed(2).replace(/\.?0+$/,'')+'%';$('#rateOut').textContent=pct;$('#rate4Out').textContent=pct;
+  const n=yearsTo(r);$('#yearsOut').textContent=Math.ceil(n)+' years';
+  $('#yearsSub').innerHTML=`(1 + r)<sup>n</sup> must reach ${Math.round(1+1e9*r/1e4)}, so n = log ${Math.round(1+1e9*r/1e4)} ÷ log ${(1+r).toFixed(4).replace(/0+$/,'')} ≈ ${n.toFixed(1)}`;
+  if(ctx==='money')r4()}
+$('#rate').addEventListener('input',e=>setRate(e.target.value/400));
+$('#rate4').addEventListener('input',e=>setRate(e.target.value/400));
+
+/* ---------- stage 2: differences ---------- */
+const SEQ={
+  mattress:{name:'u<sub>n</sub> = 10 000n',f:n=>1e4*n,start:0,fmt:v=>Math.round(v).toLocaleString('en-GB'),c:'d1',
+    note:'The first differences are all £10 000, so the points lie on a straight line on ordinary axes.'},
+  ball:{name:'d<sub>n</sub> = 4.9n²  (metres fallen after n seconds)',f:n=>4.9*n*n,start:0,fmt:v=>(+v.toFixed(1)).toLocaleString('en-GB'),c:'d2',
+    note:'The second differences are all 9.8, so the sequence is quadratic and becomes straight when plotted against n² instead of n.'},
+  lump:{name:'u<sub>n</sub> = 10 000 × 1.04<sup>n</sup>',f:n=>1e4*1.04**n,start:0,fmt:v=>Math.round(v).toLocaleString('en-GB'),c:'ratio',
+    note:'Every ratio is 1.04, so the sequence is geometric and becomes straight on a logarithmic vertical axis; notice that its differences are geometric too, growing by 4% each time.'},
+  annuity:{name:'S<sub>n</sub> = 10 000(1.04<sup>n</sup> − 1) ÷ 0.04',f:n=>annuity(n,0.04),start:1,fmt:v=>Math.round(v).toLocaleString('en-GB'),c:'dratio',
+    note:'No column is constant, but the first differences grow by exactly 4% each year, because each difference is the payment plus a year of interest. The ratios creep towards 1.04, so for large n the sequence is almost geometric and its semi-log graph straightens.'}
+};
+function rDiff(k){const S=SEQ[k],ns=[...Array(8)].map((_,i)=>i+S.start),u=ns.map(S.f);
+  const d1=u.slice(1).map((v,i)=>v-u[i]),d2=d1.slice(1).map((v,i)=>v-d1[i]),rt=u.slice(1).map((v,i)=>u[i]?v/u[i]:NaN),dr=d1.slice(1).map((v,i)=>v/d1[i]);
+  const cell=(v,on,f)=>`<td class="${on?'const':''}">${v==null||!isFinite(v)?'':f(v)}</td>`;
+  let h=`<tr><th>n</th><th>${S.name}</th><th>first difference</th><th>second difference</th><th>ratio u<sub>n+1</sub> ÷ u<sub>n</sub></th>${k==='annuity'?'<th>ratio of differences</th>':''}</tr>`;
+  ns.forEach((n,i)=>{h+=`<tr><td>${n}</td><td>${S.fmt(u[i])}</td>${cell(d1[i],S.c==='d1',S.fmt)}${cell(d2[i],S.c==='d2',S.fmt)}${cell(rt[i],S.c==='ratio',v=>v.toFixed(4))}${k==='annuity'?cell(dr[i],true,v=>v.toFixed(4)):''}</tr>`});
+  $('#diffTable').innerHTML=h;$('#diffNote').innerHTML=S.note}
+seg('#seqSeg',rDiff);rDiff('mattress');
+
+/* ---------- stage 3: change the horizontal axis ---------- */
+const noise=[1.02,.98,1.012,.99,1.016,.985,1.004,1.01];
+const REL={
+  quad:{xs:[1,2,3,4,5,6,7,8],f:x=>3*x*x+2,tf:'sq',lin:[0,8.5],tdom:[0,72.25],ylin:[0,220],xl:'x',xlT:'x, on an axis ruled by x²',yl:'y',lab:'ruled by x²',
+    read:(m,c)=>`Plotted against X = x², the points lie on the line <strong>y = ${m.toFixed(2)}X + ${c.toFixed(1)}</strong>, so y ≈ ${m.toFixed(1)}x² + ${c.toFixed(0)}, recovering the 3 and the 2 despite the measuring errors.`},
+  pend:{xs:[.2,.4,.6,.8,1,1.4,1.8,2.2],f:L=>2.006*Math.sqrt(L),tf:'sqrt',lin:[0,2.5],tdom:[0,1.58],ylin:[0,3.4],xl:'length, L / m',xlT:'length L / m, on an axis ruled by √L',yl:'period, T / s',lab:'ruled by √L',
+    read:(m,c)=>`Plotted against X = √L, the line is <strong>T = ${m.toFixed(3)}X ${c<0?'−':'+'} ${Math.abs(c).toFixed(3)}</strong>, close to passing through the origin. Since the gradient is 2π/√g, g = (2π ÷ ${m.toFixed(3)})² ≈ <strong>${(2*Math.PI/m)**2>0?((2*Math.PI/m)**2).toFixed(2):''} m s<sup>−2</sup></strong>.`}
+};
+let rel='quad',s3=0;
+function r3(){const R=REL[rel],pts=R.xs.map((x,i)=>({x,y:R.f(x)*noise[i],tip:`(${x}, ${(R.f(x)*noise[i]).toFixed(2)})`}));
+  const xs=pts.map(p=>TF[R.tf](p.x)),fl=fit(xs,pts.map(p=>p.y));
+  drawPlot($('#p3'),{x:{lin:R.lin,tf:R.tf,tdom:R.tdom,s:s3,label:s3>.5?R.xlT:R.xl},y:{lin:R.ylin,label:R.yl},points:pts,
+    curves:s3>.98?[{f:x=>fl.m*TF[R.tf](x)+fl.b,x0:0,x1:R.lin[1]}]:[],
+    over:(X,Y,box)=>{if(s3<.98)return'';let o='';const span=R.tdom[1]-R.tdom[0],st=niceStep(span/5);
+      for(let v=0;v<=R.tdom[1]+1e-9;v+=st){const p=box.L+(v-R.tdom[0])/span*(box.R-box.L);o+=`<text class="tick" x="${p}" y="${box.T+14}" text-anchor="middle" style="fill:var(--gold)">${+v.toFixed(2)}</text>`}
+      return o+`<text class="tick" x="${box.L+8}" y="${box.T+32}" text-anchor="start" style="fill:var(--gold)">${R.tf==='sq'?'top scale: X = x²':'top scale: X = √L'}</text>`}});
+  $('#m3lab').textContent=R.lab;$('#b3').textContent=s3>.5?'Back to ordinary':'Change the axis';
+  $('#r3').innerHTML=s3>.98?R.read(fl.m,fl.b):s3<.02?(rel==='quad'?'On ordinary axes the points curve upwards: the second differences are constant, which is the mark of a quadratic.':'On ordinary axes the points curve over, rising quickly at first and then more slowly.'):'Keep going and watch the curve unbend; the gold labels along the top appear once the axis is fully ruled by the new variable.'}
+function set3(s){s3=s;$('#m3').value=Math.round(s*1000);r3()}
+$('#m3').addEventListener('input',e=>set3(e.target.value/1000));
+$('#b3').addEventListener('click',()=>animate(s3,s3>.5?0:1,set3));
+seg('#relSeg',k=>{rel=k;r3()});
+
+/* ---------- stage 4: semi-log, money or tumour ---------- */
+const days=[0,154,516,740,1513,1545],Dmm=[4,5,8,(11+12+14)/3,(29+33+31)/3,34],Ncell=Dmm.map(D=>(D*100)**3);
+const semi=fit(days,Ncell.map(lg));
+let ctx='money',s4=0;
+function r4(){
+  let P,txt='';
+  if(ctx==='money'){const n1=yearsTo(rate),xmax=Math.max(60,Math.min(400,Math.ceil(n1*1.15/10)*10));
+    P={x:{lin:[0,xmax],label:'time / years'},y:{lin:[0,1.3e9],tf:'log',tdom:[3.8,9.4],s:s4,fmt:v=>v?'£'+(+(v/1e9).toFixed(2))+'bn':'0',label:'balance / £'},
+      curves:[{f:n=>1e4*n,x0:.5,x1:xmax,col:'var(--sky)'},{f:n=>annuity(n,rate),x0:.5,x1:xmax},{f:()=>1e9,x0:0,x1:xmax,col:'var(--rose)',dash:'5 5',w:1.5}],
+      over:(X,Y,box)=>`<text class="tick" x="${box.R-6}" y="${Y(1e9)-7}" text-anchor="end" style="fill:var(--rose)">£1 billion</text>`+
+        `<circle cx="${X(n1)}" cy="${Y(1e9)}" r="5" fill="var(--gold)"/>`};
+    const g=lg(1+rate);
+    txt=`<span class="y">Gold</span>: £10 000 a year at ${(rate*100).toFixed(2).replace(/\.?0+$/,'')}% passes £1 billion in year <strong>${Math.ceil(n1)}</strong>. <span style="color:var(--sky)">Blue</span>: the mattress saver has ${money(1e4*Math.ceil(n1))} by then.`;
+    if(s4>.98)txt+=` On the log axis the gold curve straightens with gradient log(1 + r) ≈ <strong>${g.toFixed(4)}</strong> per year, so the balance is multiplied by ${(1+rate).toFixed(4).replace(/0+$/,'')} each year and by ten every <strong>${(1/g).toFixed(1)} years</strong>.`;
+    else if(s4<.02)txt+=' On ordinary axes the blue line hardly leaves the floor and the gold curve stays hidden until the last few decades.';
+    $('#rate4wrap').style.display='';
+  } else {
+    const T2=lg(2)/semi.m,a=10**semi.b,b=10**semi.m;
+    P={x:{lin:[0,1600],label:'time / days since the first scan'},y:{lin:[0,4.2e10],tf:'log',tdom:[7,11],s:s4,sci:true,label:'number of cells, N'},
+      points:days.map((t,i)=>({x:t,y:Ncell[i],tip:`day ${t}: ${Dmm[i].toFixed(1)} mm`})),
+      curves:s4>.98?[{f:t=>10**(semi.b+semi.m*t),x0:0,x1:1600}]:[]};
+    txt=s4>.98?`The six scans lie close to the line <strong>log N = ${semi.b.toFixed(2)} + ${semi.m.toFixed(5)}t</strong>, so in the form N = ab<sup>t</sup>, a = 10<sup>${semi.b.toFixed(2)}</sup> ≈ ${sciH(a,1)} and b = 10<sup>${semi.m.toFixed(5)}</sup> ≈ ${b.toFixed(5)} per day. The tumour doubles every <strong>${Math.round(T2)} days</strong>, which is log 2 ÷ log b.`
+      :s4<.02?'On ordinary axes four of the six scans sit on the floor, although the smallest is 64 million cells.':'Keep stretching: the squashed points lift off the floor and line up.';
+    $('#rate4wrap').style.display='none';
+  }
+  drawPlot($('#p4'),P);$('#r4').innerHTML=txt;$('#b4').textContent=s4>.5?'Back to ordinary':'Stretch the vertical axis'}
+function set4(s){s4=s;$('#m4').value=Math.round(s*1000);r4()}
+$('#m4').addEventListener('input',e=>set4(e.target.value/1000));
+$('#b4').addEventListener('click',()=>animate(s4,s4>.5?0:1,set4));
+seg('#ctxSeg',k=>{ctx=k;r4()});
+
+/* ---------- stage 5: log-log ---------- */
+const POW={
+  cells:{xs:Dmm,ys:Ncell,x:{lin:[0,40],tdom:[lg(3),lg(50)],plainLog:true,label:'tumour diameter, D / mm'},y:{lin:[0,4.2e10],tdom:[7,11.2],sci:true,label:'number of cells, N'},
+    word:'N = aD<sup>n</sup>',note:n=>`a gradient of ${n.toFixed(2)}, the 3 in N = (D/d)<sup>3</sup>`},
+  paper:{xs:[1.5,2.4,4.6,7.3,15.5],ys:[1,4,16,64,256],x:{lin:[0,17],tdom:[0,1.3],plainLog:true,label:'mean diameter, d / cm'},y:{lin:[0,280],tdom:[-.2,2.6],plainLog:true,label:'mass (each ball four times the last)'},
+    word:'m = ad<sup>n</sup>',note:n=>`a gradient of ${n.toFixed(2)}, between a flat sheet’s 2 and a solid ball’s 3`}
+};
+let pw='cells',s5=0;
+function r5(){const D=POW[pw],f=fit(D.xs.map(lg),D.ys.map(lg));
+  drawPlot($('#p5'),{x:Object.assign({},D.x,{tf:'log',s:s5}),y:Object.assign({},D.y,{tf:'log',s:s5}),
+    points:D.xs.map((x,i)=>({x,y:D.ys[i]})),curves:s5>.98?[{f:x=>10**(f.b+f.m*lg(x)),x0:10**(D.x.tdom[0]),x1:10**(D.x.tdom[1]),logx:true}]:[]});
+  $('#r5').innerHTML=s5>.98?`Straight line: <strong>log y = ${f.b<0?'−'+(-f.b).toFixed(2):f.b.toFixed(2)} + ${f.m.toFixed(2)} log x</strong>, ${D.note(f.m)}. In the form ${D.word}, n ≈ ${f.m.toFixed(2)} and a ≈ 10<sup>${f.b<0?'−'+(-f.b).toFixed(2):f.b.toFixed(2)}</sup> ≈ ${(10**f.b).toPrecision(2)}.`
+    :s5<.02?'On ordinary axes the curve steepens, and no power can be read from a curve by eye.':'Keep stretching both axes.';
+  $('#b5').textContent=s5>.5?'Back to ordinary':'Stretch both axes'}
+function set5(s){s5=s;$('#m5').value=Math.round(s*1000);r5()}
+$('#m5').addEventListener('input',e=>set5(e.target.value/1000));
+$('#b5').addEventListener('click',()=>animate(s5,s5>.5?0:1,set5));
+seg('#powSeg',k=>{pw=k;r5()});
+
+/* ---------- stage 7: exam-style questions ---------- */
+const QS=[
+ {tag:'Exponential model',q:'The number of bacteria N after t hours is modelled by N = ab<sup>t</sup>. A graph of log<sub>10</sub> N against t is a straight line through (0, 2.3) and (10, 4.1). Find a and b, and interpret b.',
+  s:['Take logs: log N = log a + t log b, which is Y = c + mX with Y = log N and X = t.','The intercept is log a = 2.3, so a = 10<sup>2.3</sup> ≈ 200.','The gradient is (4.1 − 2.3) ÷ 10 = 0.18 = log b, so b = 10<sup>0.18</sup> ≈ 1.51.','b is the factor per hour: the population grows by about 51% every hour.']},
+ {tag:'Power law',q:'Two variables satisfy y = ax<sup>n</sup>. A graph of log<sub>10</sub> y against log<sub>10</sub> x is a straight line through (0.5, 1.6) and (1.5, 3.4). Find n and a.',
+  s:['Take logs: log y = log a + n log x, so the gradient is n and the intercept is log a.','n = (3.4 − 1.6) ÷ (1.5 − 0.5) = 1.8.','Substitute (0.5, 1.6): log a = 1.6 − 1.8 × 0.5 = 0.7.','So a = 10<sup>0.7</sup> ≈ 5.01, giving y ≈ 5.01x<sup>1.8</sup>.']},
+ {tag:'Geometric series',q:'£10 000 is invested at the start of every year at 4% compound interest. Find the number of complete years before the total first exceeds £1 000 000 000.',
+  s:['After n years the total is the geometric sum 10 000(1.04<sup>n</sup> − 1) ÷ 0.04.','Require 10 000(1.04<sup>n</sup> − 1) ÷ 0.04 > 10<sup>9</sup>, so 1.04<sup>n</sup> > 4001.','Take logs of both sides: n log 1.04 > log 4001, so n > log 4001 ÷ log 1.04 ≈ 211.5.','So 212 complete years, against 100 000 years without interest.']},
+ {tag:'Choosing the axes',q:'A sequence has terms 2, 5, 14, 29, 50, 77. Show that it is quadratic and state what to plot to obtain a straight line.',
+  s:['First differences: 3, 9, 15, 21, 27.','Second differences: 6, 6, 6, 6, which are constant, so u<sub>n</sub> is quadratic with leading coefficient 6 ÷ 2 = 3.','Indeed u<sub>n</sub> = 3n² + 2 for n = 0, 1, 2, … .','Plot u<sub>n</sub> against n² to obtain a straight line of gradient 3 and intercept 2.']}
+];
+$('#qs').innerHTML=QS.map((q,i)=>`<div class="q" data-q="${i}"><div class="tag">${q.tag}</div><p style="margin:6px 0 0">${q.q}</p><ol>${q.s.map(x=>`<li>${x}</li>`).join('')}</ol><div class="nav"><button class="ghost" data-a="next">Next step</button><button class="ghost" data-a="reset">Hide working</button></div></div>`).join('');
+document.querySelectorAll('.q').forEach(el=>{const li=[...el.querySelectorAll('li')];let k=0;
+  el.querySelector('[data-a=next]').addEventListener('click',e=>{if(k<li.length)li[k++].classList.add('on');if(k===li.length)e.target.textContent='All steps shown'});
+  el.querySelector('[data-a=reset]').addEventListener('click',()=>{li.forEach(x=>x.classList.remove('on'));k=0;el.querySelector('[data-a=next]').textContent='Next step'})});
+
+/* ---------- draw ---------- */
+function all(){r3();r4();r5()}
+setRate(0.04);all();
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(all,120)});
+})();
+</script>
+</body>
+</html>
