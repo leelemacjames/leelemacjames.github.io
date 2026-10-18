@@ -640,5 +640,31 @@ rebuild();srcNote();setStatus(`Snapshot · ${SNAP_DATE}`);
 loadLive();
 })();
 </script>
+<!-- Paste just before </body> in All_Apps_Graph.html.
+     Reads ?subject=Maths&focus=AlevelFormulaBook_Worked&delay=1800 from the address,
+     selects the subject first, then after the delay types the focus term into the search box. -->
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var subj=(q.get('subject')||'').toLowerCase(), focus=q.get('focus'), wait=+(q.get('delay')||1800);
+  if(!subj&&!focus) return;
+  function fire(el,type){el.dispatchEvent(new Event(type,{bubbles:true}));}
+  function findSelect(){return [...document.querySelectorAll('select')].find(function(s){
+    return [...s.options].some(function(o){return o.text.trim().toLowerCase().indexOf(subj)===0;});});}
+  function findBox(){var all=[...document.querySelectorAll('input[type="search"],input[type="text"],input:not([type])')];
+    return all.find(function(i){return /search|find|filter|node/i.test(i.placeholder||'');})||all[0];}
+  var tries=0;
+  (function attempt(){
+    var sel=subj?findSelect():null, box=focus?findBox():null;
+    if((subj&&!sel)||(focus&&!box)){ if(++tries<75) setTimeout(attempt,200); return; }
+    if(sel){var o=[...sel.options].find(function(o){return o.text.trim().toLowerCase().indexOf(subj)===0;});sel.value=o.value;fire(sel,'change');}
+    if(box) setTimeout(function(){
+      box.focus(); box.value=focus; fire(box,'input'); fire(box,'change');
+      box.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+      box.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',bubbles:true}));
+    },wait);
+  })();
+})();
+</script>
 
 </body></html>
