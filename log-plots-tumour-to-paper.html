@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){try{var t=localStorage.getItem('mcm-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})();</script>
 <title>Counting in powers of ten: log plots from a tumour to a paper ball</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,9 +19,10 @@
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#0f141b; --panel:#161d27; --paper:#ebe4d3; } }
+:root{color-scheme:dark}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){ color-scheme:light; --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --grid:#d6cebd; --grid2:#e0d9c9; } }
 :root[data-theme="dark"]{ --ink:#0f141b; --panel:#161d27; --paper:#ebe4d3; }
-:root[data-theme="light"]{ --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --grid:#d6cebd; --grid2:#e0d9c9; }
+:root[data-theme="light"]{ color-scheme:light; --ink:#f3efe5; --panel:#e9e3d5; --panel2:#e2dbca; --rule:#cfc6b2; --paper:#1c2230; --dim:#5b6472; --gold:#94701c; --gold-soft:rgba(148,112,28,.14); --rose:#b3503f; --sage:#3e7d5f; --grid:#d6cebd; --grid2:#e0d9c9; }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
@@ -78,18 +80,6 @@ svg text{font-family:var(--sans)}
 .aside{border-left:2px solid var(--gold);padding:4px 0 4px 16px;margin:18px 0;color:var(--paper)}
 .aside p{margin-bottom:.4em}
 
-/* error hunt */
-.bug{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:18px 18px 14px;margin:18px 0}
-.bug .where{font-family:var(--mono);font-size:.8rem;color:var(--gold)}
-.bug pre{font-family:var(--mono);font-size:.86rem;background:var(--panel2);padding:10px 12px;border-radius:3px;margin:8px 0 12px;white-space:pre-wrap;overflow-x:auto;color:var(--paper)}
-.bug .q{font-weight:500;margin-bottom:8px}
-.opts{display:flex;flex-direction:column;gap:6px}
-.opts button{background:var(--panel2);color:var(--paper);text-align:left;border:1px solid var(--rule);font-weight:400;line-height:1.4}
-.opts button.right{border-color:var(--sage);background:rgba(140,185,162,.14)}
-.opts button.wrong{border-color:var(--rose);background:rgba(213,125,113,.12)}
-.fb{margin-top:10px;font-size:.95rem;display:none}
-.fb.show{display:block}
-.score{font-family:var(--serif);font-size:1.3rem;color:var(--gold)}
 
 /* dimension dial */
 #dial{width:100%;display:block}
@@ -102,9 +92,24 @@ svg text{font-family:var(--sans)}
 footer{border-top:1px solid var(--rule);margin-top:64px;padding:26px 20px 34px;text-align:center;color:var(--dim);font-family:var(--serif);font-size:1.08rem;font-style:italic;letter-spacing:.02em}
 footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top:6px;opacity:.8}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* settings */
+.gear{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:20;width:42px;height:42px;border-radius:50%;border:1px solid var(--rule);background:var(--panel);color:var(--paper);font-size:20px;cursor:pointer;display:grid;place-items:center;padding:0}
+.gear:hover,.gear[aria-expanded="true"]{border-color:var(--gold);color:var(--gold)}
+.settings{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:14px;z-index:20;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;min-width:200px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none}
+.settings.open{display:block}.settings h3{font-family:var(--serif);font-size:1.25rem;font-weight:600;margin:0 0 8px}
+.settings label{display:flex;gap:10px;align-items:center;padding:4px 0;cursor:pointer;font-size:.95rem}.settings input{accent-color:var(--gold);width:17px;height:17px}
 </style>
 </head>
 <body>
+<button class="gear" id="gear" aria-label="Settings" aria-expanded="false" aria-controls="settings">⚙</button>
+<div class="settings" id="settings" role="dialog" aria-label="Settings"><h3>Settings</h3>
+  <div role="radiogroup" aria-label="Theme">
+    <label><input type="radio" name="theme" value="auto"> Match my device</label>
+    <label><input type="radio" name="theme" value="light"> Light</label>
+    <label><input type="radio" name="theme" value="dark"> Dark</label>
+  </div>
+</div>
 <main>
 
 <h1>Counting in powers of ten</h1>
@@ -118,7 +123,6 @@ footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top
     <div class="ctl" style="margin-top:18px">
       <input type="range" id="dSlider" min="0" max="1000" value="594" aria-label="Tumour diameter">
     </div>
-    <label class="check"><input type="checkbox" id="unitBug"> Use the spreadsheet's cell size exactly as printed, <span class="cell">d = 10mm</span></label>
   </div>
   <div class="tumour-wrap">
     <svg id="tumourSvg" viewBox="0 0 240 240" role="img" aria-label="Tumour drawn to scale"></svg>
@@ -131,12 +135,11 @@ footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top
   <p>Doctors cannot count the cells in a tumour, but a scan can measure its diameter <span class="math">D</span>. If we imagine both the tumour and each cell as little balls, the number of cells that fit inside is the ratio of their diameters multiplied by itself three times, because volume grows as length cubed:</p>
   <p style="text-align:center"><span class="math" style="font-size:1.6em">N = (D / d)<sup>3</sup></span></p>
   <p>A cancer cell is about <span class="math">d</span> = 10 micrometres across, and since one millimetre is 1000 micrometres, a 4 mm tumour is 400 cells wide, which means 400 × 400 × 400 = 64 million cells. Slide the hero control above and watch how quickly the count runs away from you, because every time the diameter doubles the number of cells multiplies by eight.</p>
-  <div class="aside"><p>Tick the box in the panel above to use the spreadsheet's printed value, <span class="cell">d = 10mm</span>. A 4 mm lump then contains less than a tenth of one cell, which is impossible, and that nonsense answer is your first clue that the spreadsheet has lost a symbol somewhere. You will hunt this and five other errors in stage 5.</p></div>
 </section>
 
 <section id="s2">
   <h2><span class="n">2</span> The graph that squashes its own data</h2>
-  <p>Here are the six scans from the spreadsheet, with the patient's first scan counted as day 0. Plotted on ordinary axes, where each gridline adds the same amount, four of the six points appear to sit on the floor of the graph, even though the smallest of them is 64 million cells.</p>
+  <p>Here are the six scans from one patient's record, with the first scan counted as day 0. Plotted on ordinary axes, where each gridline adds the same amount, four of the six points appear to sit on the floor of the graph, even though the smallest of them is 64 million cells.</p>
   <div class="table-wrap"><table class="table" id="dataTable"></table></div>
   <figure>
     <svg class="plot" id="p2" role="img" aria-label="Cell number against time"></svg>
@@ -177,23 +180,17 @@ footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top
     </div>
     <div class="ctl">
       <button class="ghost" id="ext4" aria-pressed="false">Run the line back to a single cell</button>
-      <label class="check"><input type="checkbox" id="bug4"> Apply the simulation sheet's radius bug</label>
     </div>
     <div class="readout" id="r4"></div>
   </figure>
   <p>This tumour doubles roughly every 169 days, and it grows tenfold roughly every 561 days. A quantity that doubles in equal times is growing <em>exponentially</em>, and on a graph with a log vertical axis and an ordinary time axis, which is called a semi-log graph, exponential growth is always a straight line whose slope sets the doubling time.</p>
   <p>Running the line backwards is where the log scale earns its keep, because the ordinary graph could never show one cell and forty billion on the same page. The line suggests the first cancer cell appeared roughly twelve years before the first scan, which is why early detection matters so much and why doctors think of a tumour's history in doublings.</p>
-  <div class="aside"><p>Look at the last two scans, taken only 32 days apart. Cubing the diameter also cubes its uncertainty, so a 10% slip in measuring <span class="math">D</span> becomes roughly a 30% error in <span class="math">N</span>. That is why the spreadsheet averages three readings for some scans, and why no single point should be trusted to set the slope on its own.</p></div>
+  <div class="aside"><p>Look at the last two scans, taken only 32 days apart. Cubing the diameter also cubes its uncertainty, so a 10% slip in measuring <span class="math">D</span> becomes roughly a 30% error in <span class="math">N</span>. That is why some scans average three readings, and why no single point should be trusted to set the slope on its own.</p></div>
 </section>
 
-<section id="s5">
-  <h2><span class="n">5</span> Hunting the spreadsheet's errors</h2>
-  <p>The original spreadsheets arrived with mistakes in them, some from careless typing and some from symbols that vanished when the file was converted. Each card shows the cell exactly as it appears. <span class="score" id="score"></span></p>
-  <div id="bugs"></div>
-</section>
 
 <section id="s6">
-  <h2><span class="n">6</span> The bridge: stretching both axes</h2>
+  <h2><span class="n">5</span> The bridge: stretching both axes</h2>
   <p>The tumour data hides a second kind of relationship. Plot the number of cells against the diameter instead of against time, and you are looking at <span class="math">N = (D/d)<sup>3</sup></span>, a <em>power law</em>, in which one quantity is another raised to a fixed power. Stretching only the vertical axis will not straighten this curve, but stretching both axes will.</p>
   <figure>
     <svg class="plot" id="p6" role="img" aria-label="Cell number against diameter"></svg>
@@ -207,7 +204,7 @@ footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top
 </section>
 
 <section id="s7">
-  <h2><span class="n">7</span> Finding an unknown power in crumpled paper</h2>
+  <h2><span class="n">6</span> Finding an unknown power in crumpled paper</h2>
   <p>Squeeze a sheet of paper into a ball and measure its mass and its diameter, then repeat with bigger sheets. A solid ball would follow mass ∝ diameter<sup>3</sup> and a flat disc would follow mass ∝ diameter<sup>2</sup>, so nobody can tell you in advance which power crumpled paper obeys, and the only way to find out is to measure it.</p>
   <figure>
     <div class="ctl" style="margin-top:0">
@@ -233,18 +230,18 @@ footer .src{font-family:var(--sans);font-style:normal;font-size:.8rem;margin-top
 </section>
 
 <section id="s8">
-  <h2><span class="n">8</span> Two kinds of stretched graph</h2>
+  <h2><span class="n">7</span> Two kinds of stretched graph</h2>
   <div class="summary">
     <div><h3>Semi-log</h3><p style="margin:0">Log vertical axis, ordinary horizontal axis. A straight line means exponential growth, where the quantity multiplies by the same factor in equal times, and the slope gives the doubling time, as it did for the tumour.</p></div>
     <div><h3>Log–log</h3><p style="margin:0">Both axes logarithmic. A straight line means a power law, and the gradient of that line is the power itself, which is how we found 3 for cells in a tumour and about 2.4 for paper in a ball.</p></div>
   </div>
-  <p style="margin-top:18px">Multiplying every value by the same constant, whether through a unit change or a bug like the halved diameter, slides a log graph up or down without tilting it, so the doubling time and the power survive even when the spreadsheet does not.</p>
+  <p style="margin-top:18px">Multiplying every value by the same constant, through a change of units for example, slides a log graph up or down without tilting it, so the doubling time and the power do not depend on the units you happen to measure in.</p>
 </section>
 
 </main>
 <footer>
   Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames
-  <div class="src">Data from the Kinetics of Cancer Cell Growth Excelet and the class crumpled-paper spreadsheet, with errors corrected as described in stage 5.</div>
+  <div class="src">Tumour data from the Kinetics of Cancer Cell Growth Excelet; crumpled-paper data from a class experiment.</div>
 </footer>
 
 <script>
@@ -366,22 +363,22 @@ tb.innerHTML = '<tr><th>day</th><th>diameter / mm</th><th>cells, N</th><th>log<s
   days.map((t,i)=>`<tr><td>${t}</td><td>${Dmm[i].toFixed(1)}</td><td>${sciH(Ncell[i],2)}</td><td>${lg(Ncell[i]).toFixed(2)}</td></tr>`).join('');
 
 /* ---------- hero ---------- */
-const dS = $('#dSlider'), bugBox = $('#unitBug');
+const dS = $('#dSlider');
 const DMIN = -1, DMAX = lg(50);
 function hero(){
   const D = Math.pow(10, DMIN + (DMAX-DMIN)*dS.value/1000);
-  const dum = bugBox.checked ? 10000 : 10;
+  const dum = 10;
   const N = Math.pow(D*1000/dum, 3);
   $('#dOut').textContent = (D<1 ? D.toFixed(2) : D.toFixed(1)) + ' mm';
   const c = $('#countOut'), sub = $('#countSub');
-  if (N < 1){ c.textContent = N.toPrecision(2); c.classList.add('bad'); sub.innerHTML = 'of one cell, which cannot be right: something in the spreadsheet has shrunk a micrometre into a millimetre'; }
+  if (N < 1){ c.textContent = N.toPrecision(2); c.classList.add('bad'); sub.innerHTML = 'of one cell, so a tumour this small is below the size of a single cell'; }
   else { c.textContent = grouped(Number(N.toPrecision(3))); c.classList.remove('bad'); sub.innerHTML = `cancer cells, which is ${words(N)} or ${sciH(N,1)}`; }
   const r = Math.min(110, D*2.2);
   let g = `<circle cx="120" cy="120" r="${Math.max(r,0.6)}" fill="var(--rose)" fill-opacity=".28" stroke="var(--rose)" stroke-width="1.5"/>`;
   g += `<line x1="20" x2="108" y1="228" y2="228" stroke="var(--dim)" stroke-width="2"/><text x="64" y="221" text-anchor="middle" class="tick">20 mm</text>`;
   $('#tumourSvg').innerHTML = g;
 }
-dS.addEventListener('input', hero); bugBox.addEventListener('change', hero); hero();
+dS.addEventListener('input', hero); hero();
 
 /* ---------- stage 2 ---------- */
 const P2 = {
@@ -432,16 +429,14 @@ document.querySelectorAll('#s3 button[data-n]').forEach(b => b.addEventListener(
 
 /* ---------- stage 4 ---------- */
 const svg4 = $('#p4'), tr4 = $('#tr4');
-let ext4 = false, bug4 = false;
+let ext4 = false;
 const Nfit = t => Math.pow(10, semi.b + semi.m*t);
 function dom4(){ return ext4 ? {x:[-4800,2200], y:[-0.4,12]} : {x:[0,1600], y:[7.5,11]}; }
 function r4(){
   const d = dom4();
   const t = d.x[0] + (d.x[1]-T2-d.x[0]) * tr4.value/1000;
   const pts = days.map((tt,i)=>({x:tt, y:Ncell[i], tip:`Day ${tt}`}));
-  if (bug4) days.forEach((tt,i)=>pts.push({x:tt, y:Ncell[i]/8, col:'var(--dim)', op:.9, tip:`Day ${tt} with the radius bug`}));
   const curves = [{f:Nfit, x0:d.x[0], x1:d.x[1]}];
-  if (bug4) curves.push({f:x=>Nfit(x)/8, x0:d.x[0], x1:d.x[1], col:'var(--dim)', dash:'6 5'});
   const P = {
     x:{lin:d.x, label:'time / days (day 0 is the first scan)'},
     y:{log:d.y, label:'number of cells, N  (log scale)'},
@@ -449,7 +444,7 @@ function r4(){
     under:(X,Y,box)=>{
       let s = '';
       if (ext4){
-        [[0,'one cell'],[7,'about the smallest a scan can find'],[11,'the spreadsheet\u2019s lethal burden']].forEach(([k,lab])=>{
+        [[0,'one cell'],[7,'about the smallest a scan can find'],[11,'roughly a lethal burden']].forEach(([k,lab])=>{
           const y = Y(Math.pow(10,k)); s += `<line x1="${box.L}" x2="${box.R}" y1="${y}" y2="${y}" stroke="var(--dim)" stroke-dasharray="2 4"/><text x="${box.L+8}" y="${y-6}" class="tick">${lab}</text>`; });
       }
       const n1 = Nfit(t), n2 = Nfit(t+T2);
@@ -467,49 +462,12 @@ function r4(){
   let html = `At day <span class="r">${Math.round(t)}</span> the line reads <strong>${fN(Nfit(t))}</strong> cells, and at day <span class="g">${Math.round(t+T2)}</span> it reads <strong>${fN(Nfit(t+T2))}</strong>, exactly twice as many. Doubling time: <strong>${Math.round(T2)} days</strong>, wherever you put the tracer.`;
   if (ext4){ const t0 = -semi.b/semi.m, t7 = (7-semi.b)/semi.m, t11 = (11-semi.b)/semi.m;
     html += `<br>The line reaches one cell at day <span class="y">${Math.round(t0)}</span>, about ${(-t0/365.25).toFixed(0)} years before the first scan, crosses 10<sup>7</sup> at day ${Math.round(t7)}, and reaches 10<sup>11</sup> at day ${Math.round(t11)}. Getting from one cell to the first scan took about ${(( semi.b)/lg(2)).toFixed(0)} doublings.`; }
-  if (bug4) html += `<br>With the radius bug every count is divided by 8, so the grey line drops by log<sub>10</sub> 8 ≈ 0.90 of a step, yet it stays parallel to the gold one and the doubling time is still ${Math.round(T2)} days.`;
   $('#r4').innerHTML = html;
 }
 tr4.addEventListener('input', r4);
 $('#ext4').addEventListener('click', e => { ext4 = !ext4; e.target.setAttribute('aria-pressed', ext4); e.target.textContent = ext4 ? 'Back to the six scans' : 'Run the line back to a single cell'; r4(); });
-$('#bug4').addEventListener('change', e => { bug4 = e.target.checked; r4(); });
 
-/* ---------- stage 5 bugs ---------- */
-const BUGS = [
- {where:'intro sheet, cells G17 and G18', code:'where D is the tumor diameter, mm, and d is the diameter of a cancer cell, d = 10mm\nand 1 mm = 1000 mm.',
-  q:'What should the cell diameter really be?', opts:['10 mm, exactly as written','10 μm (micrometres), because the symbol μ has been lost','10 cm, because cancer cells are large'], a:1,
-  fb:'The formula <span class="cell">=(B5*1000/10)^3</span> turns millimetres into micrometres by multiplying by 1000, so the spreadsheet itself assumes d = 10 μm. The Greek letter μ vanished when the file was converted, which also turned “1 mm = 1000 μm” into the nonsense “1 mm = 1000 mm”. Using 10 mm makes every count a billion times too small.'},
- {where:'intro G15, assess B18 and assess C14', code:'N = (D/d)3\n…requires at least 107 cells…\nN = Noekt',
-  q:'What has gone wrong in all three lines?', opts:['They are three unrelated typing mistakes','Superscripts and subscripts were flattened onto the line','Nothing, 107 cells is the detection limit'], a:1,
-  fb:'They should read N = (D/d)<sup>3</sup>, 10<sup>7</sup> cells and N = N<sub>0</sub>e<sup>kt</sup>. Reading 10<sup>7</sup> as 107 underestimates the detection limit by a factor of about 93 000. With 10<sup>7</sup> cells the smallest detectable tumour is 10 μm × (10<sup>7</sup>)<sup>1/3</sup> ≈ 2.2 mm across.'},
- {where:'stud_ simulation, cells B4 and B13', code:'B3: Starting Tumor Diameter\nB4: =A4/2\nB13: =(B4*1000/10)^3',
-  q:'What does dividing by 2 do to the starting number of cells N₀?', opts:['It converts centimetres into millimetres','It turns the diameter into a radius, so N₀ comes out 8 times too small','Nothing, because it cancels out later'], a:1,
-  fb:'Halving the diameter and then cubing gives (½)<sup>3</sup> = ⅛. Tick the radius-bug box in stage 4 to see the effect: the whole line drops by log<sub>10</sub> 8 ≈ 0.9 of a step but stays parallel, because multiplying by a constant slides a log graph without tilting it.'},
- {where:'stud_ simulation, cells B19 to B23', code:'first cell:  =-LN(#REF!)/#REF!\ndetection:   =LN(C21/#REF!)/#REF!\nlethal:      =LN(C23/#REF!)/#REF!',
-  q:'What does #REF! mean here?', opts:['The formula divides by zero','The formula points at cells that were deleted, and should use N₀ and k','A cell contains text instead of a number'], a:1,
-  fb:'The time to grow from N<sub>0</sub> to N is t = ln(N/N<sub>0</sub>)/k, so the formulas should read <span class="cell">=LN(C21/No)/k</span>, and for the first cell, where N = 1, <span class="cell">=-LN(No)/k</span>, which is negative because it lies in the past. The teacher copy has also lost these names in its N column, so every value below B32 breaks.'},
- {where:'crumpled paper file, sheet crumpled, cell B1', code:'B1: mass, m/kg\nvalues: 1, 4, 16, 64, 256',
-  q:'Is this unit believable?', opts:['Yes, paper is heavy','No, a 256 kg paper ball is absurd, so the unit label is wrong','It does not matter because mass is not used'], a:1,
-  fb:'The masses are really relative sizes, each ball four times the last. Happily a wrong unit cannot change the power: converting units multiplies every mass by the same number, which slides a log–log line up or down without changing its gradient.'},
- {where:'crumpled paper file, student_mass_peas, cells F2 and F3', code:'F2: =average(D2:E2)\nF3: =average(C3:E3)\nE5: " "   (a single space)',
-  q:'What is wrong with F2?', opts:['Nothing, it matches the other rows','It leaves out C2, so ball 1\u2019s mean uses only two of its three diameters','It should add the diameters rather than average them'], a:1,
-  fb:'Ball 1 gets a mean of 3.75 cm instead of 3.33 cm. Cell E5 hides a similar trap, because it contains a space rather than a number, so AVERAGE quietly uses only two readings for ball 4 without warning anyone.'}
-];
-const bugsEl = $('#bugs'); let got = 0, tried = 0;
-BUGS.forEach((b,bi) => {
-  const d = document.createElement('div'); d.className = 'bug';
-  d.innerHTML = `<div class="where">${b.where}</div><pre>${b.code}</pre><div class="q">${b.q}</div><div class="opts">${b.opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div><div class="fb">${b.fb}</div>`;
-  let done = false;
-  d.querySelectorAll('.opts button').forEach(btn => btn.addEventListener('click', () => {
-    const i = +btn.dataset.i;
-    if (i === b.a){ btn.classList.add('right'); d.querySelector('.fb').classList.add('show'); if (!done){ done = true; tried++; if (!d.dataset.miss) got++; score(); } }
-    else { btn.classList.add('wrong'); d.dataset.miss = 1; }
-  }));
-  bugsEl.appendChild(d);
-});
-function score(){ $('#score').textContent = tried ? `Found first time: ${got} of ${tried}` : ''; }
-
-/* ---------- stage 6 ---------- */
+/* ---------- stage 5 (log-log bridge) ---------- */
 const svg6 = $('#p6'), m6 = $('#m6'), b6 = $('#b6');
 const P6 = {
   x:{lin:[0,40], log:[lg(3),lg(50)], s:0, plain:true, label:'tumour diameter, D / mm'},
@@ -618,6 +576,18 @@ svg7.addEventListener('keydown', e => {
 function all(){ r2(); rLadder(); r4(); set6(P6.x.s); r7(); }
 all();
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(all, 120); });
+})();
+</script>
+<script>
+(function(){
+  var gear=document.getElementById('gear'),panel=document.getElementById('settings'),root=document.documentElement;
+  gear.addEventListener('click',function(e){e.stopPropagation();var o=panel.classList.toggle('open');gear.setAttribute('aria-expanded',o)});
+  document.addEventListener('click',function(e){if(!panel.contains(e.target)){panel.classList.remove('open');gear.setAttribute('aria-expanded','false')}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){panel.classList.remove('open');gear.setAttribute('aria-expanded','false')}});
+  var saved='auto';try{saved=localStorage.getItem('mcm-theme')||'auto'}catch(e){}
+  panel.querySelectorAll('input[name=theme]').forEach(function(r){r.checked=r.value===saved;r.addEventListener('change',function(){
+    if(r.value==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',r.value);
+    try{r.value==='auto'?localStorage.removeItem('mcm-theme'):localStorage.setItem('mcm-theme',r.value)}catch(e){}})});
 })();
 </script>
 </body>
