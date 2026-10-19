@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>(function(){try{var t=localStorage.getItem('mcm-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Peas or Paper? · Power Laws & The Fractal Signature of Life</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -21,7 +22,18 @@
     --font-serif: 'Cormorant Garamond', serif;
     --font-mono: 'IBM Plex Mono', monospace;
     --font-sans: 'IBM Plex Sans', sans-serif;
+    --nav-bg: rgba(14,14,15,0.95); --rule-soft: rgba(42,42,46,0.5); --plot-axis: #3a3a3e;
+    color-scheme: dark;
   }
+  @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){ color-scheme:light;--bg:#f4f0e6;--surface:#ebe5d7;--surface2:#e3dccb;--gold:#94701c;--gold-dim:#b0924f;--green:#2f7a4c;--blue:#2f5f9e;--red:#a8483a;
+    --text:#1c2230;--text-dim:#5b6472;--border:#cfc6b2;--nav-bg:rgba(244,240,230,0.95);--rule-soft:rgba(28,34,48,0.12);--plot-axis:#a39a86; } }
+  :root[data-theme="light"]{ color-scheme:light;--bg:#f4f0e6;--surface:#ebe5d7;--surface2:#e3dccb;--gold:#94701c;--gold-dim:#b0924f;--green:#2f7a4c;--blue:#2f5f9e;--red:#a8483a;
+    --text:#1c2230;--text-dim:#5b6472;--border:#cfc6b2;--nav-bg:rgba(244,240,230,0.95);--rule-soft:rgba(28,34,48,0.12);--plot-axis:#a39a86; }
+  .gear{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:50%;width:30px;height:30px;font-size:15px;line-height:1;cursor:pointer;flex-shrink:0;margin-left:0}
+  .gear:hover,.gear[aria-expanded="true"]{color:var(--gold);border-color:var(--gold)}
+  .settings{position:fixed;top:56px;right:14px;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 16px;min-width:200px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:var(--font-sans);font-size:.9rem}
+  .settings.open{display:block}.settings b{display:block;font:600 1.15rem var(--font-serif);margin-bottom:6px;color:var(--text)}
+  .settings label{display:flex;gap:9px;align-items:center;padding:3px 0;cursor:pointer;color:var(--text)}.settings input{accent-color:var(--gold)}
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -37,7 +49,7 @@
   /* ── STICKY NAV ── */
   nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(14,14,15,0.95);
+    background: var(--nav-bg);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
     padding: 0.75rem 2rem;
@@ -188,7 +200,7 @@
   }
   td {
     padding: 0.5rem 0.8rem; color: var(--text-dim);
-    border-bottom: 1px solid rgba(42,42,46,0.5);
+    border-bottom: 1px solid var(--rule-soft);
   }
   td.highlight { color: var(--text); }
 
@@ -277,7 +289,15 @@
     <div class="step-dot" onclick="scrollTo('s4')" id="dot4"><div class="dot"></div>Life</div>
     <div class="step-dot" onclick="scrollTo('s5')" id="dot5"><div class="dot"></div>Reflect</div>
   </div>
+  <button class="gear" id="gear" type="button" aria-label="Settings" aria-expanded="false">⚙</button>
 </nav>
+<div class="settings" id="settings" role="dialog" aria-label="Settings"><b>Settings</b>
+  <div role="radiogroup" aria-label="Theme">
+    <label><input type="radio" name="theme" value="auto"> Match my device</label>
+    <label><input type="radio" name="theme" value="light"> Light</label>
+    <label><input type="radio" name="theme" value="dark"> Dark</label>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- SECTION 0 · SCALE -->
@@ -726,7 +746,12 @@ function toggleHint(id){
 }
 
 // ── CANVAS UTILITIES ─────────────────────────────────────────
-const GOLD='#c9a84c', BLUE='#5b9bd5', GREEN='#5faf7a', DIM='#3a3a3e', TEXT='#8a857a';
+let GOLD, BLUE, GREEN, DIM, TEXT, SURF;
+function readTheme(){
+  const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
+  GOLD=v('--gold'); BLUE=v('--blue'); GREEN=v('--green'); DIM=v('--plot-axis'); TEXT=v('--text-dim'); SURF=v('--surface');
+}
+readTheme();
 
 function drawAxes(ctx, w, h, pad, xlabel, ylabel){
   ctx.strokeStyle=DIM; ctx.lineWidth=1;
@@ -775,7 +800,7 @@ function updatePowerPlot(){
   const rawC = document.getElementById('rawCanvas');
   const rctx = rawC.getContext('2d');
   rctx.clearRect(0,0,rawC.width,rawC.height);
-  rctx.fillStyle='#161618'; rctx.fillRect(0,0,rawC.width,rawC.height);
+  rctx.fillStyle=SURF; rctx.fillRect(0,0,rawC.width,rawC.height);
   const w=rawC.width, h=rawC.height, pad=40;
   drawAxes(rctx,w,h,pad,'x','y');
   const k=1, xmax=5, ymax=n>0?Math.pow(xmax,n):10;
@@ -789,7 +814,7 @@ function updatePowerPlot(){
   const logC = document.getElementById('logCanvas');
   const lctx = logC.getContext('2d');
   lctx.clearRect(0,0,logC.width,logC.height);
-  lctx.fillStyle='#161618'; lctx.fillRect(0,0,logC.width,logC.height);
+  lctx.fillStyle=SURF; lctx.fillRect(0,0,logC.width,logC.height);
   drawAxes(lctx,w,h,pad,'log x','log y');
   const lxmin=-0.5, lxmax=1, lymin=n<0?-5:n*lxmin-0.2, lymax=n*lxmax+0.2;
   const lspan=Math.max(Math.abs(lymax-lymin),1);
@@ -810,7 +835,7 @@ function drawPeas(slope){
   const c=document.getElementById('peasCanvas');
   const ctx=c.getContext('2d');
   ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle=SURF; ctx.fillRect(0,0,c.width,c.height);
   const w=c.width,h=c.height,pad=50;
   drawAxes(ctx,w,h,pad,'log10(diameter / cm)','log10(mass / g)');
   const xmin=-0.1,xmax=0.75,ymin=-0.1,ymax=2.2;
@@ -852,7 +877,7 @@ function drawPaper(slope){
   const c=document.getElementById('paperCanvas');
   const ctx=c.getContext('2d');
   ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle=SURF; ctx.fillRect(0,0,c.width,c.height);
   const w=c.width,h=c.height,pad=50;
   drawAxes(ctx,w,h,pad,'log10(diameter / cm)','log10(mass / g)');
   const xmin=0.1,xmax=1.3,ymin=-0.1,ymax=2.6;
@@ -888,7 +913,7 @@ function drawComp(){
   const c=document.getElementById('compCanvas');
   const ctx=c.getContext('2d');
   ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle=SURF; ctx.fillRect(0,0,c.width,c.height);
   const w=c.width,h=c.height,pad=50;
   drawAxes(ctx,w,h,pad,'log10(diameter)','log10(mass)');
   const xmin=0,xmax=1.4,ymin=-0.3,ymax=2.7;
@@ -921,7 +946,7 @@ function drawKleiber(){
   const c=document.getElementById('kleiberCanvas');
   const ctx=c.getContext('2d');
   ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#161618'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle=SURF; ctx.fillRect(0,0,c.width,c.height);
   const w=c.width,h=c.height,pad=55;
   drawAxes(ctx,w,h,pad,'log10(Mass / g)','log10(BMR / W)');
   const xmin=1,xmax=8,ymin=-2.5,ymax=5.5;
@@ -962,6 +987,22 @@ drawKleiber();
 
 // trigger visible for first section
 setTimeout(updateProgress,200);
+</script>
+<script>
+(function(){
+  const gear=document.getElementById('gear'),panel=document.getElementById('settings'),root=document.documentElement;
+  function redraw(){readTheme();updatePowerPlot();updatePeas();updatePaper();drawComp();drawKleiber();}
+  gear.addEventListener('click',e=>{e.stopPropagation();const o=panel.classList.toggle('open');gear.setAttribute('aria-expanded',o)});
+  document.addEventListener('click',e=>{if(!panel.contains(e.target)){panel.classList.remove('open');gear.setAttribute('aria-expanded','false')}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){panel.classList.remove('open');gear.setAttribute('aria-expanded','false')}});
+  let saved='auto';try{saved=localStorage.getItem('mcm-theme')||'auto'}catch(e){}
+  panel.querySelectorAll('input[name=theme]').forEach(r=>{r.checked=r.value===saved;r.addEventListener('change',()=>{
+    if(r.value==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',r.value);
+    try{r.value==='auto'?localStorage.removeItem('mcm-theme'):localStorage.setItem('mcm-theme',r.value)}catch(e){}
+    redraw();})});
+  const mq=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
+  if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{if(!root.hasAttribute('data-theme'))redraw()});
+})();
 </script>
 </body>
 </html>
