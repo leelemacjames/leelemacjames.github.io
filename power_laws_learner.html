@@ -252,6 +252,9 @@
   footer span { color: var(--gold-dim); }
 
   /* ── HIGHLIGHT BOX ── */
+  .logruler-fig{margin:1.6rem 0 0;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:12px 14px 10px}
+  .logruler-fig svg{width:100%;display:block;overflow:visible}
+  .logruler-fig figcaption{font-size:.88rem;color:var(--text-dim);margin-top:8px;line-height:1.5}
   .insight-box {
     background: linear-gradient(135deg, rgba(201,168,76,0.05), transparent);
     border: 1px solid var(--gold-dim); padding: 1.5rem; margin: 2rem 0;
@@ -306,7 +309,7 @@
 <div class="container">
   <div class="section-tag">§ 0 · Setting the Stage</div>
   <h1>Peas or Paper?<br><em>The fractal signature of life</em></h1>
-  <p>You are a gathering of roughly 10<sup>27</sup> atoms — one order of magnitude more than a blueberry muffin (10<sup>26</sup> atoms), yet orders of magnitude fewer than an asteroid. Before we ask <em>why</em>, we need to feel the sheer audacity of cosmic scale.</p>
+  <p>You are a gathering of roughly 10<sup>27</sup> atoms, about a thousand times more than a blueberry muffin, yet a vanishing fraction of an asteroid. Before we ask <em>why</em>, we need to feel the sheer audacity of cosmic scale.</p>
 
   <div class="scale-strip">
     <div class="scale-item">
@@ -367,15 +370,20 @@
   </div>
 
   <div class="question-block">
-    <div class="q">The scale above is <strong>not</strong> arithmetic — each step multiplies by the same factor. What kind of sequence is this?</div>
+    <div class="q">Neighbours on this strip differ by very different factors: muffin to chihuahua is ×10, while tree to asteroid is ×10<sup>12</sup>. Yet the strip sets them out at equal spacing. Which statement is true?</div>
     <div class="choices">
-      <button class="choice-btn" onclick="check(this,'wrong')">Arithmetic — each step adds a fixed amount</button>
-      <button class="choice-btn" onclick="check(this,'correct')">Geometric — each step multiplies by a fixed ratio</button>
-      <button class="choice-btn" onclick="check(this,'wrong')">Linear — the gaps look the same because the axis is special</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">It is a geometric sequence, because every step multiplies by the same ratio</button>
+      <button class="choice-btn" onclick="check(this,'correct')">Equal spacing hides the size of the jumps; placing each object at the logarithm of its mass shows them fairly</button>
+      <button class="choice-btn" onclick="check(this,'wrong')">A linear axis in grams would show the jumps best</button>
     </div>
-    <div class="feedback good" id="fb0c">Exactly. The axis uses a <strong>logarithmic scale</strong> — each tick multiplies the quantity by 10. That's why the gap between a muffin and a human looks the same as the gap between a human and the observable universe: both span ~7 orders of magnitude. The universe speaks in multiplication, not addition.</div>
-    <div class="feedback bad" id="fb0w">Not quite. Look again: consecutive values differ by a <em>factor</em> of 10, not a fixed difference. That makes it geometric, which is why we need a log scale to display it sensibly.</div>
+    <div class="feedback good" id="fb0c">Exactly. The strip is only a ranking, so it cannot tell a ×10 step from a ×10<sup>12</sup> one. Placing each object at its exponent, which is the base-10 logarithm of its mass, makes distance proportional to the number of factors of ten between two objects: one step from muffin to chihuahua, twelve from tree to asteroid. That ruler is drawn below.</div>
+    <div class="feedback bad" id="fb0w">Not quite. The ratios between neighbours run from 10 to 10<sup>15</sup>, so this is no geometric sequence; and on a linear axis in grams everything except the galaxy would sit within a hair’s breadth of zero. What tells you how big each jump is, is the difference between exponents.</div>
   </div>
+
+  <figure class="logruler-fig">
+    <svg id="logRuler" role="img" aria-label="The same objects placed by the logarithm of their mass"></svg>
+    <figcaption>The same objects placed by log<sub>10</sub>(mass / g). Equal distances now mean equal numbers of factors of ten, so the empty stretches are real: nothing on this list lives between a tree and an asteroid. A power law between two quantities only shows itself once <em>both</em> are placed this way, which is where § 1 picks up.</figcaption>
+  </figure>
 
   <div class="insight-box">
     <p>🐕 → 🌍 mind-bender: if each of the 10<sup>27</sup> atoms in a chihuahua were swapped for an Earth-mass object, the result would have the mass of the observable universe. The chihuahua contains a cosmos.</p>
@@ -1002,6 +1010,37 @@ setTimeout(updateProgress,200);
     redraw();})});
   const mq=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
   if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{if(!root.hasAttribute('data-theme'))redraw()});
+})();
+</script>
+<script>
+(function(){
+  const svg=document.getElementById('logRuler');if(!svg)return;
+  const items=[...document.querySelectorAll('#s0 .scale-item')].map(el=>{
+    const sup=el.querySelector('.scale-exp sup');const e=parseFloat((sup?sup.textContent:'0').replace('\u2212','-'));
+    return {icon:el.querySelector('.scale-icon').textContent.trim(),name:el.querySelector('.scale-name').textContent.trim(),e};
+  });
+  function draw(){
+    const W=Math.max(300,svg.clientWidth||svg.parentNode.clientWidth||700),L=18,R=W-18;
+    const lo=Math.floor((Math.min(...items.map(i=>i.e))-2)/5)*5,hi=Math.ceil((Math.max(...items.map(i=>i.e))+2)/5)*5;
+    const X=e=>L+(R-L)*(e-lo)/(hi-lo),narrow=W<560,step=narrow?10:5,fs=narrow?11:12,cw=narrow?6.2:7;
+    const sorted=[...items].sort((a,b)=>a.e-b.e),right=[],place=[];
+    sorted.forEach(it=>{const x=X(it.e),w=(it.name.length+2)*cw+8;let tier=0;while(right[tier]!=null&&x-w/2<right[tier]+6)tier++;right[tier]=x+w/2;place.push({it,x,tier})});
+    const tiers=right.length,Y=26+tiers*22,H=Y+76;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('height',H);
+    const mono='font-family="IBM Plex Mono, monospace"';
+    let s=`<line x1="${L}" x2="${R}" y1="${Y}" y2="${Y}" stroke="var(--text-dim)" stroke-width="1.5"/>`;
+    for(let k=lo;k<=hi;k++){const major=k%step===0;s+=`<line x1="${X(k)}" x2="${X(k)}" y1="${Y-(major?5:2)}" y2="${Y+(major?5:2)}" stroke="${major?'var(--text-dim)':'var(--border)'}"/>`;
+      if(major)s+=`<text x="${X(k)}" y="${Y+20}" text-anchor="middle" font-size="11" ${mono} fill="var(--text-dim)">${k<0?'\u2212'+(-k):k}</text>`}
+    s+=`<text x="${(L+R)/2}" y="${Y+38}" text-anchor="middle" font-size="11" ${mono} fill="var(--text-dim)">log\u2081\u2080(mass / g)</text>`;
+    place.forEach(({it,x,tier})=>{const ty=Y-14-tier*22;
+      s+=`<line x1="${x}" x2="${x}" y1="${ty+5}" y2="${Y}" stroke="var(--gold-dim)" stroke-width="1"/><circle cx="${x}" cy="${Y}" r="3.5" fill="var(--gold)"/>`;
+      s+=`<text x="${x}" y="${ty}" text-anchor="middle" font-size="${fs}" font-family="IBM Plex Sans, sans-serif" fill="var(--text)">${it.icon} ${it.name}</text>`});
+    const f=n=>items.find(i=>i.name===n),tr=f('Tree'),as=f('Asteroid'),mu=f('Muffin'),ch=f('Chihuahua'),by=Y+62;
+    if(tr&&as)s+=`<line x1="${X(tr.e)}" x2="${X(as.e)}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="2"/><text x="${(X(tr.e)+X(as.e))/2}" y="${by-5}" text-anchor="middle" font-size="11" ${mono} fill="var(--red)">\u00d710\u00b9\u00b2</text>`;
+    if(mu&&ch)s+=`<line x1="${X(mu.e)}" x2="${X(ch.e)}" y1="${by}" y2="${by}" stroke="var(--green)" stroke-width="3"/><text x="${X(mu.e)-4}" y="${by+4}" text-anchor="end" font-size="11" ${mono} fill="var(--green)">\u00d710</text>`;
+    svg.innerHTML=s;
+  }
+  draw();let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(draw,120)});
 })();
 </script>
 </body>
