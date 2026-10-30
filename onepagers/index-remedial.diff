@@ -1,0 +1,383 @@
+--- index_original.html	2026-10-30 16:29:08.308808598 +0000
++++ index.html	2026-10-30 16:30:38.888156611 +0000
+@@ -59,6 +59,15 @@
+     .sheet:target { background:var(--mark); box-shadow:0 0 0 12px var(--mark); }
+     .sheet-number { padding-top:1px; color:var(--teal); font-family:Georgia,serif; font-size:1.9rem; line-height:1.4; font-variant-numeric:tabular-nums; }
+     .sheet-number a { color:inherit; text-decoration:none; }
++    .sheet[data-kind="remedial"] .sheet-number { font-size:1.45rem; }
++    .jump-row { margin:-8px 0 14px; font-size:.8rem; font-weight:650; }
++    .remedial { margin-top:48px; }
++    .remedial > summary { display:flex; align-items:baseline; gap:12px; cursor:pointer; list-style:none; padding:13px 0; border-bottom:2px solid var(--teal); }
++    .remedial > summary::-webkit-details-marker { display:none; }
++    .remedial > summary::before { content:"\25B8"; color:var(--teal); transition:transform .15s; }
++    .remedial[open] > summary::before { transform:rotate(90deg); }
++    .remedial > summary .count { margin-left:auto; }
++    .section-note { margin:14px 0 0; max-width:640px; font-size:.9rem; color:var(--muted); }
+     .sheet h3 { font-family:Georgia,"Times New Roman",serif; font-size:1.36rem; font-weight:500; line-height:1.4; margin:0 0 7px; }
+     .sheet h3 a { text-decoration-thickness:1px; }
+     .sheet p { margin:0 0 11px; color:var(--muted); font-size:.93rem; max-width:625px; }
+@@ -84,6 +93,11 @@
+       .file-meta { width:100%; }
+       footer { flex-direction:column; gap:9px; }
+     }
++    @media(max-width:650px) {
++      .sheet[data-kind="remedial"] { grid-template-columns:58px minmax(0,1fr); }
++      .sheet[data-kind="remedial"] .sheet-number { font-size:1.2rem; }
++      .remedial > summary { flex-wrap:wrap; }
++    }
+     @media print {
+       body { background:white; }
+       .wrap { width:100%; }
+@@ -114,9 +128,10 @@
+         <div><label for="order">Order</label><select id="order" aria-controls="sheets"><option value="number">Number: low to high</option><option value="newest">Newest first</option></select></div>
+         <button class="clear" id="clear" type="button">Clear</button>
+       </form>
+-      <noscript><p>The starting collection, 1–29, is listed below. Enable JavaScript to search and detect later uploads.</p></noscript>
++      <noscript><p>The starting collection, 1–29, is listed below. Enable JavaScript to search, to detect later uploads and to list the remedial one-pagers.</p></noscript>
+       <p class="status" role="status" aria-live="polite"><span id="collection-status"></span><span id="metadata-status">Searchable by number, title or any word inside</span></p>
+       <button class="clear" id="retry-details" type="button" hidden>Retry missing previews</button>
++      <p class="jump-row" id="remedial-jump-row" hidden><a id="remedial-jump" href="#remedial">Remedial one-pagers (<span id="remedial-jump-count">0</span>) &darr;</a></p>
+       <div class="collection-head"><h2>The collection</h2><p class="count" id="count" aria-live="polite">29 sheets</p></div>
+       <div id="sheets">
+         <article class="sheet" id="1" data-number="1">
+@@ -265,9 +280,14 @@
+           <div class="actions"><span class="file-meta">1 page · PDF</span></div>
+         </article>
+       </div>
++      <details class="remedial" id="remedial" hidden>
++        <summary><h2>Remedial one-pagers</h2><span class="count" id="remedial-count" aria-live="polite"></span></summary>
++        <p class="section-note">Back-to-basics sheets that revisit ideas the main collection takes for granted, filed as <code>onepager_ (i1).pdf</code>, <code>onepager_ (i2).pdf</code> and so on. Each keeps its own i-number, so a link to #i72 always finds the same page, whatever main sheet 72 is.</p>
++        <div id="remedial-sheets"></div>
++      </details>
+       <p class="empty" id="empty" hidden>No sheets match that search. Try a number or another word, or use Clear to show the whole collection.</p>
+     </main>
+-    <footer><p>Each sheet keeps its number, so a link to #12 always finds the same page.</p><p class="stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</p></footer>
++    <footer><p>Each sheet keeps its number, so a link to #12 always finds the same page; remedial sheets keep an i-number such as #i12.</p><p class="stamp">Constructed by Silicon &middot; Anthropic Claude &mdash; Architect Carbon &middot; LeeMcCullochJames</p></footer>
+   </div>
+   <!--
+     Upload this one file as onepagers/index.html, beside the numbered PDFs.
+@@ -289,6 +309,18 @@
+     Extraction reads PDF title metadata and opening text from the first page.
+       It does not perform OCR on scanned images. Mathematical layout is
+       approximated in previews; the PDF remains the original document.
++    Remedial one-pagers are files named onepager_ (i1).pdf, onepager_ (i2).pdf
++      and so on, beside the numbered PDFs. They are discovered in the same
++      folder listing, kept in their own collapsible subsection, and identified
++      by an i-number (#i72), so they never collide with main sheet 72.
++    remedialPrefix is the letter that starts a remedial number (default i).
++    remedialFilenameTemplate is the preferred spelling of those names.
++    remedialSeed lists numbers or [from, to] ranges shown before, or without,
++      the GitHub listing (useful if the listing is rate-limited).
++    remedialIndexing "onOpen" reads the remedial PDFs only when the subsection
++      is first opened, searched or linked to; use "immediate" to read them with
++      the main sheets. Manual overrides for a remedial sheet go in details
++      under its key, for example "i72".
+     Bundled dependency: PDF.js 5.6.205, Mozilla and contributors, Apache 2.0.
+       Full license is included below. No external script service is required.
+   -->
+@@ -300,6 +332,10 @@
+   "githubRef": "",
+   "filenameTemplate": "onepager_ ({n}).pdf",
+   "fallbackLastNumber": 29,
++  "remedialPrefix": "i",
++  "remedialFilenameTemplate": "onepager_ (i{n}).pdf",
++  "remedialSeed": [[1, 58], [60, 72]],
++  "remedialIndexing": "onOpen",
+   "details": {
+     "2": {
+       "title": "Two colours on a square, three on a hexagon",
+@@ -1042,7 +1078,11 @@
+ (() => {
+   'use strict';
+   const CONFIG = JSON.parse(document.getElementById('onepager-config').textContent);
+-  const filePattern = /^onepager_\s*\((\d+)\)\.pdf$/i;
++  const remedialKey = String(CONFIG.remedialPrefix || 'i').toLowerCase();
++  const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++  const filePattern = new RegExp('^onepager_\\s*\\((' + escapeRegExp(remedialKey) + ')?(\\d+)\\)\\.pdf$', 'i');
++  const hashPattern = new RegExp('^#(' + escapeRegExp(remedialKey) + ')?0*(\\d+)$', 'i');
++  const numberQuery = new RegExp('^(?:#|onepager[_\\s]*\\(?)?\\s*(' + escapeRegExp(remedialKey) + ')?0*(\\d+)\\)?(?:\\.pdf)?$');
+   const list = document.getElementById('sheets');
+   const form = document.getElementById('filters');
+   const search = document.getElementById('search');
+@@ -1052,6 +1092,11 @@
+   const status = document.getElementById('collection-status');
+   const metadataStatus = document.getElementById('metadata-status');
+   const retry = document.getElementById('retry-details');
++  const remedialSection = document.getElementById('remedial');
++  const remedialList = document.getElementById('remedial-sheets');
++  const remedialCount = document.getElementById('remedial-count');
++  const jumpRow = document.getElementById('remedial-jump-row');
++  const jumpCount = document.getElementById('remedial-jump-count');
+   const cacheKey = 'onepager-catalogue-v3:' + CONFIG.githubOwner + '/' + CONFIG.githubRepo + ':' + location.pathname;
+   const metadataKey = cacheKey + ':pdf-text-1';
+   const metadataCache = readMetadataCache();
+@@ -1059,53 +1104,80 @@
+   let entries = [];
+   let rows = [];
+   let readerPromise;
++  let remedialIndexed = CONFIG.remedialIndexing === 'immediate';
++  let indexing = Promise.resolve();
+ 
+   function parseFile(name) {
+     if (typeof name !== 'string') return null;
+     const match = name.match(filePattern);
+     if (!match) return null;
+-    const number = Number(match[1]);
+-    return Number.isSafeInteger(number) && number > 0 ? {number, name} : null;
++    const number = Number(match[2]);
++    if (!Number.isSafeInteger(number) || number <= 0) return null;
++    const kind = match[1] ? 'remedial' : 'main';
++    return {number, name, kind, key: (kind === 'remedial' ? remedialKey : '') + number};
++  }
++
++  function templateFor(kind) {
++    return kind === 'remedial'
++      ? (CONFIG.remedialFilenameTemplate || 'onepager_ (' + remedialKey + '{n}).pdf')
++      : CONFIG.filenameTemplate;
+   }
+ 
+   function selectFiles(files) {
+-    const byNumber = new Map();
++    const byKey = new Map();
+     for (const file of files) {
+       const entry = parseFile(file.name);
+       if (!entry || (file.type && file.type !== 'file')) continue;
+       entry.sha = typeof file.sha === 'string' ? file.sha : '';
+       entry.size = Number.isFinite(file.size) ? file.size : 0;
+-      const existing = byNumber.get(entry.number);
+-      const preferred = CONFIG.filenameTemplate.replace('{n}', entry.number);
+-      if (!existing || entry.name === preferred) byNumber.set(entry.number, entry);
++      const existing = byKey.get(entry.key);
++      const preferred = templateFor(entry.kind).replace('{n}', entry.number);
++      if (!existing || entry.name === preferred) byKey.set(entry.key, entry);
+     }
+-    return [...byNumber.values()].sort((a, b) => a.number - b.number);
++    return [...byKey.values()].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'main' ? -1 : 1) || a.number - b.number);
++  }
++
++  function expandRanges(spec) {
++    const numbers = [];
++    for (const item of Array.isArray(spec) ? spec : []) {
++      const [from, to] = Array.isArray(item) ? item : [item, item];
++      for (let n = Math.max(1, Number(from) || 0); n <= Number(to); n++) numbers.push(n);
++    }
++    return numbers;
++  }
++
++  function remedialSeedFiles() {
++    return expandRanges(CONFIG.remedialSeed).map(n => ({name: templateFor('remedial').replace('{n}', n)}));
+   }
+ 
+   function seededFiles() {
+-    return Array.from({length: CONFIG.fallbackLastNumber}, (_, index) => ({
++    const main = Array.from({length: CONFIG.fallbackLastNumber}, (_, index) => ({
+       number: index + 1,
+       name: CONFIG.filenameTemplate.replace('{n}', index + 1)
+     }));
++    return main.concat(remedialSeedFiles());
+   }
+ 
+   function buildRow(entry) {
+     const row = document.createElement('article');
++    const remedial = entry.kind === 'remedial';
+     row.className = 'sheet';
+-    row.id = String(entry.number);
++    row.id = entry.key;
+     row.dataset.number = String(entry.number);
++    row.dataset.kind = entry.kind;
++    row.dataset.key = entry.key;
+     row.dataset.filename = entry.name;
+     row.innerHTML = '<div class="sheet-number"><a></a></div>' +
+       '<div class="sheet-info"><h3><a></a></h3><p class="description" hidden></p><div class="tags"></div></div>' +
+       '<div class="actions"><span class="file-meta">PDF</span></div>';
+     const permalink = row.querySelector('.sheet-number a');
+-    permalink.href = '#' + entry.number;
+-    permalink.textContent = '#' + entry.number;
+-    permalink.setAttribute('aria-label', 'Link to one-pager ' + entry.number);
++    permalink.href = '#' + entry.key;
++    permalink.textContent = '#' + entry.key;
++    permalink.setAttribute('aria-label', 'Link to ' + (remedial ? 'remedial ' : '') + 'one-pager ' + entry.key);
+     const title = row.querySelector('h3 a');
+     const href = encodeURIComponent(entry.name);
+     title.href = href;
+-    title.setAttribute('aria-label', 'Open the PDF of one-pager ' + entry.number);
++    title.setAttribute('aria-label', 'Open the PDF of ' + (remedial ? 'remedial ' : '') + 'one-pager ' + entry.key);
+     applyDetail(row, entry);
+     return row;
+   }
+@@ -1120,8 +1192,8 @@
+ 
+   function applyDetail(row, entry) {
+     const extracted=storedDetail(entry) || {};
+-    const detail={...extracted,...(CONFIG.details[String(entry.number)] || {})};
+-    row.querySelector('h3 a').textContent=detail.title || 'One-pager #' + entry.number;
++    const detail={...extracted,...(CONFIG.details[entry.key] || {})};
++    row.querySelector('h3 a').textContent=detail.title || ((entry.kind==='remedial' ? 'Remedial one-pager #' : 'One-pager #') + entry.key);
+     const description=row.querySelector('.description');
+     description.textContent=detail.description || '';
+     description.hidden=!detail.description;
+@@ -1133,7 +1205,7 @@
+     }
+     tags.hidden=!tags.childElementCount;
+     row.querySelector('.file-meta').textContent=detail.pages ? `${detail.pages} ${detail.pages===1?'page':'pages'} · PDF` : 'PDF';
+-    row.dataset.search=normalise([entry.number,entry.name,detail.title || '',detail.description || '',...(detail.tags || []),detail.keywords || '',extracted.fullText || ''].join(' '));
++    row.dataset.search=normalise([entry.key,entry.number,entry.name,entry.kind==='remedial' ? 'remedial' : '',detail.title || '',detail.description || '',...(detail.tags || []),detail.keywords || '',extracted.fullText || ''].join(' '));
+   }
+ 
+   function readMetadataCache() {
+@@ -1173,7 +1245,7 @@
+         const page=await pdf.getPage(1);
+         const [content,metadata]=await Promise.all([page.getTextContent(),pdf.getMetadata().catch(()=>({info:{}}))]);
+         const detail=extractPageDetails(content,metadata.info,page.getViewport({scale:1}).height);
+-        detail.title ||= 'One-pager #' + entry.number;
++        detail.title ||= (entry.kind==='remedial' ? 'Remedial one-pager #' : 'One-pager #') + entry.key;
+         detail.description ||= detail.hasText ? 'Open the PDF to read this sheet.' : 'A text preview is unavailable for this PDF.';
+         return {...detail,sha:entry.sha || '',pages:pdf.numPages};
+       };
+@@ -1184,11 +1256,31 @@
+     }
+   }
+ 
++  function indexTargets() {
++    return entries.filter(entry => entry.kind === 'main' || remedialIndexed);
++  }
++
++  function queueIndex(list) {
++    indexing = indexing.then(() => indexMissing(list)).catch(() => {});
++    return indexing;
++  }
++
++  function wantRemedial() {
++    if (remedialIndexed) return;
++    remedialIndexed = true;
++    queueIndex(indexTargets());
++  }
++
++  function idleStatus() {
++    const pending = !remedialIndexed && entries.some(entry => entry.kind === 'remedial' && !storedDetail(entry));
++    return 'Searchable by number, title or any word inside' + (pending ? '; remedial sheets are read when first opened or searched' : '');
++  }
++
+   async function indexMissing(files) {
+     const missing=files.filter(entry=>!storedDetail(entry));
+     retry.hidden=true;
+     if (!missing.length) {
+-      metadataStatus.textContent='Searchable by number, title or any word inside';
++      metadataStatus.textContent=idleStatus();
+       return;
+     }
+     if (!/^https?:$/.test(location.protocol)) {
+@@ -1220,7 +1312,7 @@
+     persistMetadata();
+     metadataStatus.textContent=failed
+       ? `${failed===1?'One preview needs':failed+' previews need'} another try, though every PDF still opens`
+-      : 'Searchable by number, title or any word inside';
++      : idleStatus();
+     retry.hidden=failed===0;
+   }
+ 
+@@ -1325,35 +1417,60 @@
+ }
+ 
+ 
++  const countLabel = (shown, total) => shown === total ? `${shown} ${shown === 1 ? 'sheet' : 'sheets'}` : `${shown} of ${total} sheets`;
++
+   function filter() {
+     const query = normalise(search.value.trim());
+-    const number = query.match(/^(?:#|onepager[_\s]*\(?)?\s*0*(\d+)\)?(?:\.pdf)?$/);
++    const number = query.match(numberQuery);
+     const words = query.split(/\s+/).filter(Boolean);
+-    let shown = 0;
++    const shown = {main: 0, remedial: 0};
++    const total = {main: 0, remedial: 0};
+     for (const row of rows) {
++      const kind = row.dataset.kind;
++      total[kind]++;
+       row.hidden = number
+-        ? Number(row.dataset.number) !== Number(number[1])
++        ? kind !== (number[1] ? 'remedial' : 'main') || Number(row.dataset.number) !== Number(number[2])
+         : !words.every(word => row.dataset.search.includes(word));
+-      if (!row.hidden) shown++;
++      if (!row.hidden) shown[kind]++;
+     }
+-    count.textContent = shown === rows.length ? `${shown} sheets` : `${shown} of ${rows.length} sheets`;
+-    empty.hidden = shown !== 0;
++    count.textContent = countLabel(shown.main, total.main);
++    remedialCount.textContent = countLabel(shown.remedial, total.remedial);
++    remedialSection.hidden = shown.remedial === 0;
++    if (query && shown.remedial > 0) remedialSection.open = true;
++    empty.hidden = shown.main + shown.remedial !== 0;
+   }
+ 
+   function render(files) {
+     entries = selectFiles(files);
+-    const sorted = [...entries].sort((a, b) => order.value === 'newest' ? b.number - a.number : a.number - b.number);
++    const direction = order.value === 'newest' ? -1 : 1;
++    const sorted = [...entries].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'main' ? -1 : 1) || direction * (a.number - b.number));
+     rows = sorted.map(buildRow);
+-    list.replaceChildren(...rows);
++    const remedialRows = rows.filter(row => row.dataset.kind === 'remedial');
++    list.replaceChildren(...rows.filter(row => row.dataset.kind === 'main'));
++    remedialList.replaceChildren(...remedialRows);
++    jumpRow.hidden = remedialRows.length === 0;
++    jumpCount.textContent = String(remedialRows.length);
+     filter();
+   }
+ 
+   function revealHash() {
+-    const match = location.hash.match(/^#0*(\d+)$/);
+-    const row = match && rows.find(item => Number(item.dataset.number) === Number(match[1]));
++    if (location.hash === '#remedial') {
++      if (!remedialSection.hidden) {
++        remedialSection.open = true;
++        wantRemedial();
++        remedialSection.scrollIntoView({block: 'start'});
++      }
++      return;
++    }
++    const match = location.hash.match(hashPattern);
++    const row = match && rows.find(item => item.dataset.kind === (match[1] ? 'remedial' : 'main') && Number(item.dataset.number) === Number(match[2]));
+     if (!row) return;
+     search.value = '';
+     filter();
++    if (row.dataset.kind === 'remedial') {
++      remedialSection.open = true;
++      wantRemedial();
++    }
+     row.scrollIntoView({block: 'start'});
+   }
+ 
+@@ -1393,7 +1510,7 @@
+   async function refresh() {
+     if (!/^https?:$/.test(location.protocol)) {
+       status.textContent = '';
+-      await indexMissing(entries);
++      await queueIndex(indexTargets());
+       return;
+     }
+     status.textContent = 'Checking for new sheets';
+@@ -1411,18 +1528,20 @@
+     } catch (_) {
+       status.textContent = 'Newest uploads not yet checked';
+     }
+-    await indexMissing(entries);
++    await queueIndex(indexTargets());
+   }
+ 
+   const cached = readCache();
+-  render(cached.length ? cached : (CONFIG.seedFiles || seededFiles()));
++  const initial = cached.length ? cached : (CONFIG.seedFiles || seededFiles());
++  render(initial.some(file => (parseFile(file.name) || {}).kind === 'remedial') ? initial : initial.concat(remedialSeedFiles()));
+   form.hidden = false;
+   form.addEventListener('submit', event => { event.preventDefault(); filter(); });
+-  search.addEventListener('input', filter);
++  search.addEventListener('input', () => { if (search.value.trim()) wantRemedial(); filter(); });
++  remedialSection.addEventListener('toggle', () => { if (remedialSection.open) wantRemedial(); });
+   order.addEventListener('change', () => render(entries));
+   document.getElementById('clear').addEventListener('click', () => { search.value = ''; filter(); search.focus(); });
+   window.addEventListener('hashchange', revealHash);
+-  retry.addEventListener('click',()=>{retry.hidden=true;indexMissing(entries);});
++  retry.addEventListener('click',()=>{retry.hidden=true;queueIndex(indexTargets());});
+   revealHash();
+   refresh();
+ })();
