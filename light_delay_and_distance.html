@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light, Delay and Distance · McMurmerings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b111e; --panel:#121b2e; --panel2:#18233b; --canvas:#0a0f1b;
+  --ink:#ece6d6; --muted:#9ba4b6; --gold:#d3aa4c; --line:#2a3550;
+  --teal:#5fb8b0; --claret:#e0707f; --blue:#78aeff;
+  --serif:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#f6f1e6; --panel:#fffdf8; --panel2:#efe9da; --canvas:#fffdf8;
+  --ink:#19223a; --muted:#5b6578; --gold:#946a10; --line:#d8cfba;
+  --teal:#1c766f; --claret:#9b2b3b; --blue:#2859ad;
+}
+*{box-sizing:border-box}
+.ctrl>*,.read>*,.grid>*{min-width:0}
+.bar nav{min-width:0}
+body{overflow-x:hidden}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--gold)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:6px;height:52px}
+.bar nav{display:flex;gap:4px;flex:1;overflow-x:auto}
+.bar nav a{color:var(--muted);text-decoration:none;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:6px;white-space:nowrap}
+.bar nav a:hover{color:var(--ink);background:var(--panel)}
+#gear{background:none;border:1px solid var(--line);color:var(--ink);width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer}
+#gear:hover{border-color:var(--gold)}
+#settings{position:absolute;right:22px;top:50px;width:250px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:0 12px 30px rgba(0,0,0,.35);display:none}
+#settings.open{display:block}
+#settings h4{margin:0 0 8px;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+#settings label{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg button{flex:1;background:none;border:0;color:var(--muted);padding:7px 4px;font:500 13px var(--sans);cursor:pointer}
+.seg button.on{background:var(--gold);color:#10131c}
+header.hero{padding:54px 0 26px}
+.kick{font:600 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+h1{font:600 clamp(38px,6vw,64px)/1.05 var(--serif);margin:.2em 0 .25em;letter-spacing:-.01em}
+.lede{font:400 clamp(19px,2.2vw,23px)/1.5 var(--serif);color:var(--ink);max-width:62ch;opacity:.92}
+section{padding:34px 0 18px;border-top:1px solid var(--line)}
+section h2{font:600 clamp(28px,3.6vw,38px)/1.15 var(--serif);margin:.1em 0 .3em}
+.num{color:var(--gold);font-family:var(--serif);margin-right:.35em}
+p{max-width:72ch}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+canvas{display:block;width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:8px;touch-action:none}
+.cap{font-size:12.5px;color:var(--muted);margin:6px 2px 12px;max-width:none}
+.ctrl{display:grid;grid-template-columns:150px 1fr 74px;gap:8px 10px;align-items:center;margin:8px 0;font-size:14px}
+.ctrl label{color:var(--muted)}
+.ctrl output{font:500 13px var(--mono);text-align:right;color:var(--ink)}
+@media(max-width:520px){.ctrl{grid-template-columns:1fr 74px}.ctrl label{grid-column:1/-1}}
+input[type=range]{width:100%;accent-color:var(--gold)}
+input[type=number]{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font:500 14px var(--mono)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+button.b{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font:500 13px var(--sans);cursor:pointer}
+button.b:hover{border-color:var(--gold)}
+button.b.gold{background:var(--gold);color:#10131c;border-color:var(--gold)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:6px 0}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.read div{background:var(--panel2);border-radius:8px;padding:8px 10px}
+.read small{display:block;font:600 10px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.read b{font:500 18px var(--mono)}
+.predict{border-left:3px solid var(--gold);background:color-mix(in srgb,var(--teal) 10%,var(--panel));border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;max-width:78ch}
+.predict .k{font:600 10px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.predict p{margin:.3em 0}
+details{margin-top:6px}
+details summary{cursor:pointer;color:var(--gold);font-size:14px}
+details p{margin:.5em 0 0}
+.est{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.est h3,.card h3{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+.bigout{font:500 22px var(--mono);margin:6px 0}
+.good{color:var(--teal)} .bad{color:var(--claret)}
+.rung{display:grid;grid-template-columns:34px 1fr 230px 110px;gap:6px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rung .n{font:600 26px var(--serif);color:var(--gold)}
+.rung h4{margin:0;font:600 17px var(--serif)}
+.rung p{margin:.1em 0 0;font-size:13.5px;color:var(--muted);max-width:none}
+.rung .fac{font:500 14px var(--mono);text-align:right}
+@media(max-width:820px){.rung{grid-template-columns:30px 1fr}.rung .sl,.rung .fac{grid-column:2}}
+.refl p{margin:.7em 0}
+.refl details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;max-width:80ch}
+.refl details summary{color:var(--ink);font-weight:500}
+footer{margin-top:40px;padding:26px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+.stamp{font:500 12px var(--mono);letter-spacing:.02em;color:var(--gold);margin-top:14px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="bar"><div class="wrap">
+  <nav>
+    <a href="#romer">I · Rømer</a><a href="#hubble">II · Galaxies</a><a href="#ladder">III · The ladder</a><a href="#reflect">IV · Reflect</a>
+  </nav>
+  <button id="gear" aria-label="Settings" aria-expanded="false" title="Settings">⚙</button>
+</div>
+<div class="wrap" style="position:relative"><div id="settings" role="dialog" aria-label="Settings">
+  <h4>Appearance</h4>
+  <div class="seg" id="themeSeg">
+    <button data-t="dark">Dark</button><button data-t="light">Light</button><button data-t="auto">Device</button>
+  </div>
+  <h4>Motion</h4>
+  <label><input type="checkbox" id="optMotion"> Start with animation paused</label>
+</div></div>
+</div>
+
+<main class="wrap">
+
+<header class="hero">
+  <div class="kick">McMurmerings · Companion to “How Long Does Light Take?”</div>
+  <h1>Light, Delay and Distance</h1>
+  <p class="lede">Rømer turned a delay into a speed, and the astronomers who followed him turned speeds, angles and brightnesses into distances, so that observational cosmology can be read as a long sequence of comparisons between something known and something seen. This page runs the first of those comparisons with you in charge of the telescope, extends it to the recession of the galaxies, and then lets an error enter at the bottom of the distance ladder and travel upward.</p>
+</header>
+
+<!-- ============================================================ I -->
+<section id="romer">
+  <div class="kick">Part one</div>
+  <h2><span class="num">I</span>Io, the Earth and the eleven-minute drift</h2>
+  <p>Jupiter’s innermost large moon slips into the planet’s shadow once every 1.769 days, and an observer on Earth records the moment it vanishes. With the speed of light set to infinite the recorded times keep perfect step with Io’s orbit, and with a finite speed the eclipses arrive early while the Earth approaches Jupiter and late while it recedes, so that the dots on the right trace out Rømer’s curve as the year goes round. Drag the Earth around its orbit, change the speed of light, and add timing noise to see how much of the signal survives.</p>
+
+  <div class="predict"><div class="k">Predict first</div>
+    <p>When the Earth is nearest to Jupiter, will eclipses be recorded earlier or later than the average, and by about how many seconds does a single orbit of Io drift out of step?</p>
+    <details><summary>Show the answer</summary>
+    <p>Earlier. The light-travel time between the nearest and farthest positions differs by the time light needs to cross the Earth’s orbit, about 998 seconds or 16.6 minutes, so the curve swings roughly 8.3 minutes either side of its average. Spread over the 112 or so orbits of Io in half a year this is about 9 seconds per orbit, which is invisible in any one eclipse and unmistakable once the months have added them up. Rømer’s own estimate of the swing was larger, 22 minutes in total, and the difference is the subject of the estimator below.</p></details>
+  </div>
+
+  <div class="grid">
+    <div>
+      <canvas id="orbit"></canvas>
+      <p class="cap">Bird’s-eye view, planets not to scale. Drag the Earth along its orbit. Gold rings are the wavefronts of each eclipse, visible only when light is slowed down.</p>
+      <canvas id="io"></canvas>
+      <p class="cap">Jupiter and Io in the plane of the orbit, with the Sun to the left. Io is eclipsed when it enters the shadow cylinder, and the geometry of that event does not depend on where the Earth is.</p>
+    </div>
+    <div>
+      <canvas id="omc"></canvas>
+      <p class="cap">Observed eclipse time minus the average prediction, against the date within the year. Teal dots belong to the first year and gold to the second.</p>
+      <div class="card">
+        <div class="btns">
+          <button class="b gold" id="rPlay">Pause</button>
+          <button class="b" id="rReset">Reset</button>
+          <button class="b" id="rLog">Log two years of eclipses</button>
+          <button class="b" id="rNear">Jump to nearest</button>
+          <button class="b" id="rFar">Jump to farthest</button>
+        </div>
+        <div class="ctrl"><label for="rSpeed">Time runs at</label><input type="range" id="rSpeed" min="0.5" max="40" step="0.5" value="6"><output id="rSpeedO"></output></div>
+        <div class="ctrl"><label for="rC">Speed of light</label><input type="range" id="rC" min="0" max="1" step="0.01" value="1"><output id="rCO"></output></div>
+        <label class="chk"><input type="checkbox" id="rInf"> Infinite speed (Descartes)</label>
+        <div class="ctrl"><label for="rSig">Timing noise (1σ)</label><input type="range" id="rSig" min="0" max="120" step="1" value="15"><output id="rSigO"></output></div>
+        <label class="chk"><input type="checkbox" id="rJ"> Let Jupiter move along its orbit</label>
+        <label class="chk"><input type="checkbox" id="rModel"> Show the model curve</label>
+        <div class="read">
+          <div><small>Day</small><b id="oDay">0</b></div>
+          <div><small>Earth to Jupiter</small><b id="oDist">4.20 AU</b></div>
+          <div><small>Light delay now</small><b id="oDelay">0 min</b></div>
+          <div><small>Eclipses logged</small><b id="oN">0</b></div>
+        </div>
+        <div class="est">
+          <h3>Your estimate of c</h3>
+          <p style="margin:.2em 0 .6em;font-size:14px;color:var(--muted)">Read the peak-to-peak swing of the dots as your time difference, and take the extra light path to be the diameter of the Earth’s orbit.</p>
+          <div class="ctrl" style="grid-template-columns:150px 1fr"><label for="eDt">Time difference (min)</label><input type="number" id="eDt" value="16.6" step="0.1" min="0.1"></div>
+          <div class="ctrl" style="grid-template-columns:150px 1fr"><label for="eD">Orbit diameter (million km)</label><input type="number" id="eD" value="299.2" step="0.1" min="1"></div>
+          <div class="btns"><button class="b" id="ePresetR">Rømer: 22 min, 280 Mkm</button><button class="b" id="ePresetM">Modern values</button></div>
+          <div class="bigout" id="eOut"></div>
+          <p style="margin:.2em 0;font-size:14px" id="eFac"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ II -->
+<section id="hubble">
+  <div class="kick">Part two</div>
+  <h2><span class="num">II</span>The galaxies run away in proportion</h2>
+  <p>Hubble’s graph of recession speed against distance is a straight line through the origin, and its slope H₀, in kilometres per second for every megaparsec, turns any distance into a speed. Drag the yellow galaxy outward and its arrow lengthens in step, then switch to the yellow galaxy’s own point of view, where the Milky Way is the one running away and the law looks exactly the same.</p>
+
+  <div class="predict"><div class="k">Predict first</div>
+    <p>If the yellow galaxy is moved to twice its present distance, what happens to its speed, and what would an astronomer in that galaxy measure for the Milky Way?</p>
+    <details><summary>Show the answer</summary>
+    <p>The speed doubles, since it is proportional to distance, and the astronomer would find the Milky Way receding at the speed that Hubble’s law gives for the separation between the two galaxies, with every other galaxy receding in the same proportion. A law of this form has no preferred centre, which is why the expansion cannot be located at any one galaxy.</p></details>
+  </div>
+
+  <div class="grid">
+    <div>
+      <canvas id="hub"></canvas>
+      <p class="cap">Arrow lengths show recession speed (0.2c corresponds to about 70 pixels). Rings mark distance steps of 1000 million light years from the centre.</p>
+      <div class="card">
+        <div class="ctrl"><label for="hH">H₀ in the model</label><input type="range" id="hH" min="40" max="100" step="0.5" value="70"><output id="hHO"></output></div>
+        <div class="ctrl"><label for="hD">Yellow galaxy distance</label><input type="range" id="hD" min="50" max="2800" step="10" value="950"><output id="hDO"></output></div>
+        <label class="chk"><input type="checkbox" id="hView"> View from the yellow galaxy</label>
+        <div class="read">
+          <div><small>Distance</small><b id="hDist">–</b></div>
+          <div><small>In megaparsecs</small><b id="hMpc">–</b></div>
+          <div><small>Recession speed</small><b id="hV">–</b></div>
+          <div><small>Fraction of c</small><b id="hVc">–</b></div>
+          <div><small>Redshift z ≈ v/c</small><b id="hZ">–</b></div>
+          <div><small>Light left it about</small><b id="hLb">–</b></div>
+          <div><small>Hubble time 1/H₀</small><b id="hT">–</b></div>
+        </div>
+        <p class="cap" style="margin-top:0">For these distances v ≈ cz is a fair approximation. Beyond a redshift of about 0.1 the relation bends and the word distance needs a definition (light-travel, comoving or luminosity), which general relativity has to supply.</p>
+      </div>
+    </div>
+    <div>
+      <canvas id="hplot"></canvas>
+      <p class="cap">A sample of galaxies as an astronomer would record them: each speed from a redshift, with some random local motion, and each distance from a standard candle, with a few per cent of scatter.</p>
+      <div class="card">
+        <div class="ctrl"><label for="hEps">Error in the distance scale</label><input type="range" id="hEps" min="-15" max="15" step="0.5" value="0"><output id="hEpsO"></output></div>
+        <div class="btns"><button class="b gold" id="hFit">Fit the line to the data</button><button class="b" id="hNew">Draw a new sample</button></div>
+        <div class="bigout" id="hFitOut"></div>
+        <p style="font-size:14px;color:var(--muted);margin:.3em 0" id="hFitNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ III -->
+<section id="ladder">
+  <div class="kick">Part three</div>
+  <h2><span class="num">III</span>A ladder in which every rung leans on the one below</h2>
+  <p>The film in which Terence Tao and Grant Sanderson walk up the cosmic distance ladder moves through Venus, the speed of light, nearby stars, the Milky Way, nearby galaxies and distant galaxies, and each of those stages is calibrated by the one beneath it. A systematic error in any calibration therefore rides upward through every later rung, and the sliders below let you place one wherever you like and read off what it does to a distance and to the Hubble constant that is built from it.</p>
+
+  <canvas id="ruler"></canvas>
+  <p class="cap">Every distance as a light-travel time on a logarithmic axis. The coloured bars show roughly where each rung of the ladder does its work, with the reaches given as approximate.</p>
+  <div class="card" style="margin-bottom:18px">
+    <div class="ctrl" style="grid-template-columns:150px 1fr 150px"><label for="lgS">Pick a distance</label><input type="range" id="lgS" min="0" max="17.5" step="0.05" value="9"><output id="lgO"></output></div>
+    <div class="read" id="lgRead"></div>
+  </div>
+
+  <div class="card">
+    <div class="btns" style="margin-top:0">
+      <button class="b" id="lPerfect">All rungs exact</button>
+      <button class="b" id="lRomer">Rømer’s 1676 orbit size (−6.4%)</button>
+      <button class="b" id="lSame">Every adjustable rung 3% high</button>
+    </div>
+    <label class="chk"><input type="radio" name="lmode" value="sys" checked> Errors all lean the same way (they multiply)</label>
+    <label class="chk"><input type="radio" name="lmode" value="quad"> Errors independent and random (they add in quadrature)</label>
+    <div id="rungs"></div>
+    <div class="read" id="lRes" style="margin-top:14px"></div>
+    <p class="cap" id="lNote" style="margin-bottom:0"></p>
+  </div>
+</section>
+
+<!-- ============================================================ IV -->
+<section id="reflect" class="refl">
+  <div class="kick">Part four</div>
+  <h2><span class="num">IV</span>Reflecting on distance in general</h2>
+
+  <p>Every distance quoted beyond the surface of the Earth is a delay in disguise: the astronomical unit is 499 seconds of light travel, a light-year is a year of it, and the radar echo that fixes the scale of the inner solar system is a stopwatch reading multiplied by a speed that has been exact since 1983. Rømer’s contribution was to see that a delay can be read in either direction, so that a known distance yields a speed, and the redefinition of the metre completed the loop by fixing the speed and deriving the lengths from it.</p>
+
+  <p>The Earth’s orbit does double duty in this story, because its diameter was the extra path that delayed Io’s eclipses and the same diameter is the baseline from which the parallax of the nearest stars is measured, so that one number sits beneath both Rømer’s speed of light and the first rung that leaves the solar system. An error there travels upward intact, which is why the 6% shortfall in the orbit size of the 1670s would, in the ladder above, shift every later distance by the same 6% and the inferred expansion rate by about 7% in the opposite direction.</p>
+
+  <p>Measurements also differ in what they can conceal. A random error shrinks as observations accumulate, as the scatter of the dots on the eclipse plot shows when you log a second year, whereas a systematic error such as a mis-scaled orbit survives any amount of averaging and can be exposed only by an independent method, which is how the disagreements between Fizeau and Foucault and the later agreement around Michelson taught physicists where to place their trust.</p>
+
+  <p>Constants differ as well. The speed of light stopped being measured when the metre was defined through it, and the astronomical unit was fixed as an exact number of metres in 2012, so the lowest rungs of the ladder are now exact by convention and the uncertainty lives higher up in the calibration of standard candles, while Newton’s constant, which Cavendish weighed in a shed, has no convention to shelter behind. The expansion rate shows the same point from the top: estimates of H₀ from the distance ladder and from the early universe have disagreed by several per cent in recent years, the so-called Hubble tension, and the current state of that disagreement is worth checking in the literature, since asking which assumption each rung rests on is worth more than any single value.</p>
+
+  <details><summary>Rømer’s delay curve repeats every year, yet Io’s true period never changed. What would the curve look like if the period were slowly lengthening, and how could you tell the two effects apart?</summary>
+    <p>A lengthening period would add a drift that grows from year to year, roughly a parabola in the observed-minus-calculated time, whereas the light delay repeats with the geometry of the Earth and Jupiter. Only observations spread over many years can separate the two, which is exactly what the long Paris programme supplied.</p></details>
+  <details><summary>Switch on “Let Jupiter move” and log two years. Why do the two years differ, and what does that say about assuming a fixed Jupiter?</summary>
+    <p>The Earth and Jupiter return to the same relative positions every 399 days and not every 365, so the second year’s curve is shifted in phase from the first. Treating Jupiter as fixed is a good first approximation for half a year and a poorer one over several, and it is one of the reasons that Rømer’s extrapolated delay was inexact.</p></details>
+  <details><summary>A ladder overestimates every distance by 8%. How should the Hubble constant derived from it be corrected?</summary>
+    <p>The true distances are smaller by that factor, so the same speeds divided by smaller distances give an H₀ about 8% higher than the one quoted.</p></details>
+  <details><summary>Why is comparing a galaxy’s recession speed with c meaningful only for small redshifts?</summary>
+    <p>The simple relation v = cz comes from the Doppler shift at low speed, and at large redshift the stretching of space itself and the choice of distance definition both matter. A naive speed above c at great distance involves no signal travelling faster than light, since it describes the growth of the separation and not motion through space.</p></details>
+  <details><summary>Name one measurement from your own teaching in which a systematic error would survive averaging, and say how you would expose it.</summary>
+    <p>Any answer here is a good one; the useful habit is to ask for an independent method that fails in a different way, as Foucault’s mirror did for Fizeau’s wheel.</p></details>
+</section>
+
+<footer>
+  <p style="max-width:none">Sources and starting points: the GeoGebra applets <a href="https://www.geogebra.org/m/CzkWJFrr" target="_blank" rel="noopener">Romer Measurement (Bird’s Eye)</a> by Paul McGrath and <a href="https://www.geogebra.org/m/fDwWp8pT" target="_blank" rel="noopener">Hubble’s Law</a> by Wolfe Wall; the 3Blue1Brown film <a href="https://www.youtube.com/watch?v=hFMaT9oRbs4&t=70s" target="_blank" rel="noopener">Terence Tao continuing history’s cleverest cosmological measurements</a>; the IOP Spark activity <a href="https://spark.iop.org/galileo-and-speed-light" target="_blank" rel="noopener">Galileo and the speed of light</a>; and the Paris Observatory article on Rømer. The simulations on this page are original code, with Io’s orbit, Jupiter’s orbit and the sample of galaxies idealised, and the rung reaches in Part III are approximate.</p>
+  <div class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · LeeMcCullochJames</div>
+</footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var TAU=Math.PI*2, C_KMS=299792.458, AU_KM=149597870.7, LS_YR=31557600;
+var C_AU_DAY=C_KMS*86400/AU_KM;           // light speed in AU per day
+var P_IO=1.769138, T_E=365.25, T_J=4332.59, R_J=5.2, DELTA=Math.asin(1/5.9);
+var MPC_MLY=3.26156;
+
+/* ---------- theme and settings ---------- */
+var cols={};
+function readCols(){
+  var cs=getComputedStyle(document.documentElement);
+  function g(n){return cs.getPropertyValue(n).trim()}
+  cols={canvas:g('--canvas'),line:g('--line'),ink:g('--ink'),muted:g('--muted'),gold:g('--gold'),teal:g('--teal'),claret:g('--claret'),blue:g('--blue'),panel2:g('--panel2')};
+}
+function applyTheme(t){
+  var eff=t==='auto'?(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;
+  document.documentElement.setAttribute('data-theme',eff);
+  document.querySelectorAll('#themeSeg button').forEach(function(b){b.classList.toggle('on',b.dataset.t===t)});
+  try{localStorage.setItem('mm-theme',t)}catch(e){}
+  readCols();
+}
+var savedTheme='dark';
+try{savedTheme=localStorage.getItem('mm-theme')||'dark'}catch(e){}
+document.querySelectorAll('#themeSeg button').forEach(function(b){b.addEventListener('click',function(){applyTheme(b.dataset.t)})});
+$('#gear').addEventListener('click',function(){var o=$('#settings').classList.toggle('open');$('#gear').setAttribute('aria-expanded',o)});
+document.addEventListener('click',function(e){if(!e.target.closest('#settings')&&!e.target.closest('#gear')){$('#settings').classList.remove('open');$('#gear').setAttribute('aria-expanded','false')}});
+var startPaused=false;
+try{startPaused=localStorage.getItem('mm-paused')==='1'}catch(e){}
+var hadPref=false;try{hadPref=localStorage.getItem('mm-paused')!==null}catch(e){}
+if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches&&!hadPref)startPaused=true;
+$('#optMotion').checked=startPaused;
+$('#optMotion').addEventListener('change',function(){try{localStorage.setItem('mm-paused',this.checked?'1':'0')}catch(e){}});
+applyTheme(savedTheme);
+
+/* ---------- canvas registry ---------- */
+var cv={};
+function reg(id,ratio,fixedH){cv[id]={el:document.getElementById(id),ratio:ratio,fixedH:fixedH}}
+reg('orbit',0.78);reg('io',0.5);reg('omc',0.62);reg('hub',0.82);reg('hplot',0.66);reg('ruler',0,250);
+function sizeAll(){
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  for(var k in cv){var o=cv[k];var w=o.el.clientWidth||320;var h=o.fixedH||Math.round(w*o.ratio);
+    o.el.style.height=h+'px';o.el.width=Math.round(w*dpr);o.el.height=Math.round(h*dpr);
+    o.ctx=o.el.getContext('2d');o.ctx.setTransform(dpr,0,0,dpr,0,0);o.w=w;o.h=h;}
+}
+function niceStep(x){var e=Math.pow(10,Math.floor(Math.log10(x)));var f=x/e;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*e}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){var u=0,v;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v)}
+function frame(ctx,w,h,m,x0,x1,y0,y1,xt,yt,xl,yl,fx,fy){
+  var L=m.l,R=w-m.r,T=m.t,B=h-m.b;
+  var X=function(v){return L+(v-x0)/(x1-x0)*(R-L)},Y=function(v){return B-(v-y0)/(y1-y0)*(B-T)};
+  ctx.save();ctx.lineWidth=1;ctx.font='11px "IBM Plex Mono",monospace';
+  ctx.strokeStyle=cols.line;ctx.fillStyle=cols.muted;
+  ctx.textAlign='center';ctx.textBaseline='top';
+  xt.forEach(function(v){ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(X(v),T);ctx.lineTo(X(v),B);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(fx?fx(v):v,X(v),B+4)});
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  yt.forEach(function(v){ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(R,Y(v));ctx.stroke();ctx.globalAlpha=1;ctx.fillText(fy?fy(v):v,L-5,Y(v))});
+  ctx.strokeStyle=cols.muted;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,B);ctx.lineTo(R,B);ctx.stroke();
+  ctx.fillStyle=cols.ink;ctx.font='12px "IBM Plex Sans",sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText(xl,(L+R)/2,h-2);
+  ctx.save();ctx.translate(11,(T+B)/2);ctx.rotate(-Math.PI/2);ctx.textBaseline='top';ctx.fillText(yl,0,-6);ctx.restore();
+  ctx.restore();
+  return {X:X,Y:Y,L:L,R:R,T:T,B:B};
+}
+function arrow(ctx,x0,y0,x1,y1,color,lw){
+  var dx=x1-x0,dy=y1-y0,l=Math.hypot(dx,dy);if(l<1.5)return;
+  ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=lw||1.5;
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+  var hs=Math.min(7,l*.5),a=Math.atan2(dy,dx);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-.4),y1-hs*Math.sin(a-.4));ctx.lineTo(x1-hs*Math.cos(a+.4),y1-hs*Math.sin(a+.4));ctx.closePath();ctx.fill();
+}
+function fmtNum(x,d){return x.toLocaleString('en-GB',{maximumFractionDigits:d===undefined?0:d,minimumFractionDigits:d===undefined?0:d})}
+
+/* ============================================================
+   I. ROEMER
+   ============================================================ */
+var rom={t:0,running:!startPaused,speed:6,cs:1,inf:false,jmove:false,sigma:15,dots:[],pending:[],pulses:[],nextN:1,model:false,mean:0,flash:0,drag:false,wasRunning:false};
+function earthPos(t){var a=Math.PI/2+TAU*t/T_E;return [Math.cos(a),Math.sin(a)]}
+function jupAngle(t){return Math.PI/2+(rom.jmove?TAU*t/T_J:0)}
+function jupPos(t){var a=jupAngle(t);return [R_J*Math.cos(a),R_J*Math.sin(a)]}
+function dist(t){var e=earthPos(t),j=jupPos(t);return Math.hypot(e[0]-j[0],e[1]-j[1])}
+function cEff(){return rom.inf?Infinity:C_AU_DAY*rom.cs}
+function delayDays(t){return rom.inf?0:dist(t)/cEff()}
+function cScaleFromSlider(s){return Math.pow(10,-2*(1-s))}
+function computeMean(){
+  var N=2400,span=rom.jmove?T_J:T_E,s=0;
+  for(var i=0;i<N;i++)s+=delayDays(i*span/N);
+  rom.mean=s/N*1440;
+}
+function nextNFrom(t){var k=Math.ceil(t/P_IO+DELTA/TAU);while((k-DELTA/TAU)*P_IO<t)k++;return k}
+function makeDot(tn){return {x:tn%T_E,y:delayDays(tn)*1440-rom.mean+gauss(Math.random)*rom.sigma/60,yr:Math.floor(tn/T_E)%2}}
+function romClear(){rom.dots=[];rom.pending=[];rom.pulses=[];rom.nextN=nextNFrom(rom.t)}
+function romParamsChanged(){computeMean();romClear()}
+function logYears(n){
+  rom.dots=[];rom.pending=[];rom.pulses=[];
+  var k=1,tn;
+  for(;;k++){tn=(k-DELTA/TAU)*P_IO;if(tn>n*T_E)break;rom.dots.push(makeDot(tn))}
+  rom.nextN=k;
+}
+function stepRom(dt){
+  if(rom.running&&!rom.drag)rom.t+=dt*rom.speed;
+  for(;;){
+    var tn=(rom.nextN-DELTA/TAU)*P_IO;if(tn>rom.t)break;
+    rom.nextN++;
+    var dl=delayDays(tn);
+    if(rom.t-tn<3&&!rom.inf)rom.pulses.push({t0:tn,p:jupPos(tn)});
+    rom.pending.push({T:tn+dl,tn:tn});
+  }
+  var keep=[];
+  for(var i=0;i<rom.pending.length;i++){var o=rom.pending[i];
+    if(o.T<=rom.t){rom.dots.push(makeDot(o.tn));rom.flash=1;if(rom.dots.length>900)rom.dots.shift()}else keep.push(o)}
+  rom.pending=keep;
+  rom.pulses=rom.pulses.filter(function(p){var r=cEff()*(rom.t-p.t0);return r>=0&&r<13});
+  rom.flash=Math.max(0,rom.flash-dt*3);
+}
+function drawOrbit(){
+  var o=cv.orbit,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var cx=w/2,cy=h/2,s=(Math.min(w,h)/2-16)/(R_J+0.5);
+  var X=function(x){return cx+s*x},Y=function(y){return cy-s*y};
+  ctx.lineWidth=1;ctx.strokeStyle=cols.line;
+  ctx.beginPath();ctx.arc(cx,cy,R_J*s,0,TAU);ctx.stroke();
+  ctx.strokeStyle=cols.blue;ctx.globalAlpha=.6;ctx.beginPath();ctx.arc(cx,cy,s,0,TAU);ctx.stroke();ctx.globalAlpha=1;
+  var E=earthPos(rom.t),J=jupPos(rom.t);
+  // pulses
+  rom.pulses.forEach(function(p){var r=cEff()*(rom.t-p.t0)*s;ctx.strokeStyle=cols.gold;ctx.globalAlpha=Math.max(.15,1-r/(13*s));ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(X(p.p[0]),Y(p.p[1]),r,0,TAU);ctx.stroke();ctx.globalAlpha=1});
+  // line to Jupiter
+  ctx.setLineDash([4,4]);ctx.strokeStyle=cols.muted;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(X(E[0]),Y(E[1]));ctx.lineTo(X(J[0]),Y(J[1]));ctx.stroke();ctx.setLineDash([]);
+  // sun
+  var g=ctx.createRadialGradient(cx,cy,0,cx,cy,14);g.addColorStop(0,cols.gold);g.addColorStop(1,'rgba(211,170,76,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,14,0,TAU);ctx.fill();
+  ctx.fillStyle=cols.gold;ctx.beginPath();ctx.arc(cx,cy,4.5,0,TAU);ctx.fill();
+  // E1/E2 ticks when Jupiter fixed
+  ctx.font='11px "IBM Plex Sans",sans-serif';ctx.fillStyle=cols.muted;ctx.textAlign='center';
+  if(!rom.jmove){ctx.fillText('E₁',X(0),Y(1)-12);ctx.fillText('E₂',X(0),Y(-1)+18)}
+  // earth
+  if(rom.flash>0){ctx.strokeStyle=cols.teal;ctx.globalAlpha=rom.flash;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(E[0]),Y(E[1]),7+10*(1-rom.flash),0,TAU);ctx.stroke();ctx.globalAlpha=1}
+  ctx.fillStyle=cols.blue;ctx.beginPath();ctx.arc(X(E[0]),Y(E[1]),5.5,0,TAU);ctx.fill();
+  ctx.strokeStyle=cols.blue;ctx.globalAlpha=.35;ctx.lineWidth=1;ctx.beginPath();ctx.arc(X(E[0]),Y(E[1]),11,0,TAU);ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle=cols.ink;ctx.textAlign='left';ctx.fillText('Earth',X(E[0])+10,Y(E[1])+(E[1]>=0?-8:14));
+  // jupiter
+  ctx.fillStyle=cols.claret;ctx.beginPath();ctx.arc(X(J[0]),Y(J[1]),7,0,TAU);ctx.fill();
+  ctx.fillStyle=cols.ink;ctx.fillText('Jupiter',X(J[0])+11,Y(J[1])+4);
+  ctx.fillText('Sun',cx+8,cy+18);
+  // distance label
+  var mx=(X(E[0])+X(J[0]))/2,my=(Y(E[1])+Y(J[1]))/2;
+  ctx.fillStyle=cols.muted;ctx.textAlign='left';ctx.fillText(dist(rom.t).toFixed(2)+' AU',mx+6,my);
+}
+function drawIo(){
+  var o=cv.io,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var cx=w*0.42,cy=h/2,R=Math.min(h/2-10,w*.2)/6.6;
+  var ro=5.9*R;
+  // shadow
+  ctx.fillStyle=cols.ink;ctx.globalAlpha=.09;ctx.fillRect(cx,cy-R,w-cx,2*R);ctx.globalAlpha=1;
+  ctx.strokeStyle=cols.line;ctx.beginPath();ctx.arc(cx,cy,ro,0,TAU);ctx.stroke();
+  ctx.setLineDash([3,4]);ctx.strokeStyle=cols.muted;ctx.beginPath();ctx.moveTo(cx,cy-R);ctx.lineTo(w,cy-R);ctx.moveTo(cx,cy+R);ctx.lineTo(w,cy+R);ctx.stroke();ctx.setLineDash([]);
+  // jupiter
+  ctx.fillStyle=cols.claret;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.fill();
+  // sun arrow
+  arrow(ctx,cx-ro-6,cy,cx-ro-34,cy,cols.gold,1.5);
+  ctx.fillStyle=cols.gold;ctx.font='11px "IBM Plex Sans",sans-serif';ctx.textAlign='left';ctx.fillText('to Sun',Math.max(4,cx-ro-34),cy-8);
+  // earth direction
+  var E=earthPos(rom.t),J=jupPos(rom.t),beta=Math.atan2(E[1]-J[1],E[0]-J[0])-jupAngle(rom.t);
+  var ex=cx+(ro+22)*Math.cos(beta),ey=cy-(ro+22)*Math.sin(beta);
+  var ex0=cx+(ro+4)*Math.cos(beta),ey0=cy-(ro+4)*Math.sin(beta);
+  arrow(ctx,ex0,ey0,ex,ey,cols.blue,1.5);ctx.fillStyle=cols.blue;ctx.textAlign=Math.cos(beta)>0?'left':'right';ctx.fillText('to Earth',ex+(Math.cos(beta)>0?4:-4),ey+(Math.abs(Math.sin(beta))<0.35?16:4));
+  // io
+  var psi=TAU*rom.t/P_IO;var rel=((psi+Math.PI)%TAU+TAU)%TAU-Math.PI;
+  var inSh=Math.abs(rel)<DELTA;
+  var ix=cx+ro*Math.cos(psi),iy=cy-ro*Math.sin(psi);
+  ctx.fillStyle=inSh?cols.muted:cols.gold;ctx.beginPath();ctx.arc(ix,iy,4.5,0,TAU);ctx.fill();
+  ctx.fillStyle=cols.ink;ctx.textAlign='left';ctx.fillText('Io',ix+7,iy-5);
+  if(inSh){ctx.fillStyle=cols.gold;ctx.textAlign='right';ctx.fillText('Io is in the shadow',w-8,cy-R-8)}
+}
+function drawOmc(){
+  var o=cv.omc,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var amp=rom.inf?0:1/cEff()*1440;
+  var yM=Math.max(amp*1.2,3*rom.sigma/60*1.15,1.5);
+  var st=niceStep(yM/2.5),yt=[];for(var v=-Math.floor(yM/st)*st;v<=yM+1e-9;v+=st)yt.push(+v.toFixed(6));
+  var f=frame(ctx,w,h,{l:46,r:12,t:12,b:40},0,365.25,-yM,yM,[0,50,100,150,200,250,300,350],yt,'Date within the year (days)','Observed − average (minutes)',null,function(v){return Math.abs(v)<10?v.toFixed(1):v.toFixed(0)});
+  ctx.strokeStyle=cols.muted;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(f.L,f.Y(0));ctx.lineTo(f.R,f.Y(0));ctx.stroke();ctx.globalAlpha=1;
+  if(rom.model){
+    ctx.strokeStyle=cols.claret;ctx.lineWidth=1.6;ctx.setLineDash([5,4]);ctx.beginPath();
+    for(var d=0;d<=365.25;d+=3){var y=delayDays(d)*1440-rom.mean;var px=f.X(d),py=f.Y(Math.max(-yM,Math.min(yM,y)));if(d===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  rom.dots.forEach(function(p){
+    ctx.fillStyle=p.yr?cols.gold:cols.teal;ctx.globalAlpha=.75;
+    var py=f.Y(Math.max(-yM,Math.min(yM,p.y)));ctx.beginPath();ctx.arc(f.X(p.x),py,2.3,0,TAU);ctx.fill()});
+  ctx.globalAlpha=1;
+  // current date marker
+  var tx=rom.t%T_E;ctx.strokeStyle=cols.blue;ctx.lineWidth=1.2;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(f.X(tx),f.T);ctx.lineTo(f.X(tx),f.B);ctx.stroke();ctx.globalAlpha=1;
+  if(rom.inf){ctx.fillStyle=cols.ink;ctx.textAlign='center';ctx.font='13px "IBM Plex Sans",sans-serif';ctx.fillText('With infinite c every eclipse arrives on schedule',(f.L+f.R)/2,f.T+18)}
+}
+function updateRomReadouts(){
+  $('#oDay').textContent=fmtNum(rom.t,1);
+  $('#oDist').textContent=dist(rom.t).toFixed(2)+' AU';
+  var dm=delayDays(rom.t)*1440;
+  $('#oDelay').textContent=(dm<100?dm.toFixed(1):fmtNum(dm,0))+' min';
+  $('#oN').textContent=rom.dots.length;
+}
+function setSpeedLabels(){
+  $('#rSpeedO').textContent=rom.speed+' d/s';
+  $('#rCO').textContent=rom.inf?'∞':(rom.cs>=0.995?'1× real':rom.cs.toFixed(rom.cs<0.1?3:2)+'×');
+  $('#rSigO').textContent=rom.sigma+' s';
+}
+function jumpExtreme(far){
+  var best=rom.t,bv=far?-1:1e9;
+  for(var d=0;d<=420;d+=0.25){var t=rom.t+d;var v=dist(t);if(far?v>bv:v<bv){bv=v;best=t}}
+  rom.t=best;romClear();
+}
+function estimate(){
+  var dt=parseFloat($('#eDt').value),D=parseFloat($('#eD').value);
+  if(!(dt>0&&D>0)){$('#eOut').textContent='';$('#eFac').textContent='';return}
+  var c=D*1e6/(dt*60),err=(c-C_KMS)/C_KMS*100;
+  $('#eOut').innerHTML='c ≈ '+fmtNum(c)+' km/s <span class="'+(Math.abs(err)<2?'good':'bad')+'" style="font-size:15px">('+(err>=0?'+':'')+err.toFixed(1)+'%)</span>';
+  var tf=(2*AU_KM/C_KMS/60)/dt,df=D*1e6/(2*AU_KM);
+  $('#eFac').textContent='Compared with the true value, the time you used multiplies c by '+tf.toFixed(3)+' and the distance multiplies it by '+df.toFixed(3)+', which together give '+(tf*df).toFixed(3)+'.';
+}
+function wireRomer(){
+  $('#rPlay').addEventListener('click',function(){rom.running=!rom.running;this.textContent=rom.running?'Pause':'Play'});
+  $('#rReset').addEventListener('click',function(){rom.t=0;romClear()});
+  $('#rLog').addEventListener('click',function(){logYears(2)});
+  $('#rNear').addEventListener('click',function(){jumpExtreme(false)});
+  $('#rFar').addEventListener('click',function(){jumpExtreme(true)});
+  $('#rSpeed').addEventListener('input',function(){rom.speed=+this.value;setSpeedLabels()});
+  $('#rC').addEventListener('input',function(){rom.cs=cScaleFromSlider(+this.value);setSpeedLabels();romParamsChanged()});
+  $('#rInf').addEventListener('change',function(){rom.inf=this.checked;setSpeedLabels();romParamsChanged()});
+  $('#rSig').addEventListener('input',function(){rom.sigma=+this.value;setSpeedLabels()});
+  $('#rJ').addEventListener('change',function(){rom.jmove=this.checked;romParamsChanged()});
+  $('#rModel').addEventListener('change',function(){rom.model=this.checked});
+  $('#eDt').addEventListener('input',estimate);$('#eD').addEventListener('input',estimate);
+  $('#ePresetR').addEventListener('click',function(){$('#eDt').value=22;$('#eD').value=280;estimate()});
+  $('#ePresetM').addEventListener('click',function(){$('#eDt').value=16.6;$('#eD').value=299.2;estimate()});
+  // drag earth
+  var oc=cv.orbit.el;
+  function ang(e){var r=oc.getBoundingClientRect();var x=e.clientX-r.left-r.width/2,y=-(e.clientY-r.top-r.height/2);return Math.atan2(y,x)}
+  function setFromAngle(a){
+    var frac=(((a-Math.PI/2)%TAU)+TAU)%TAU/TAU;
+    var yr=Math.floor(rom.t/T_E);rom.t=yr*T_E+frac*T_E;romClear();
+  }
+  oc.addEventListener('pointerdown',function(e){rom.drag=true;rom.wasRunning=rom.running;oc.setPointerCapture(e.pointerId);setFromAngle(ang(e))});
+  oc.addEventListener('pointermove',function(e){if(rom.drag)setFromAngle(ang(e))});
+  function up(){rom.drag=false}
+  oc.addEventListener('pointerup',up);oc.addEventListener('pointercancel',up);
+  oc.style.cursor='grab';
+  $('#rPlay').textContent=rom.running?'Pause':'Play';
+}
+
+/* ============================================================
+   II. HUBBLE
+   ============================================================ */
+var TRUE_H0=70;
+var hub={H0:70,gal:[],yel:{x:900,y:310},view:false,eps:0,seed:7,drag:false};
+function makeGalaxies(seed){
+  var r=mulberry32(seed),arr=[];
+  for(var i=0;i<18;i++){var d=150+r()*2250,a=r()*TAU;arr.push({x:d*Math.cos(a),y:d*Math.sin(a),nd:gauss(r)*0.07,nv:gauss(r)*300})}
+  return arr;
+}
+function hubDist(){return Math.hypot(hub.yel.x,hub.yel.y)}
+function hubData(){
+  var f=1+hub.eps/100;
+  return hub.gal.map(function(g){var d=Math.hypot(g.x,g.y);return {d:d*f*(1+g.nd),v:TRUE_H0*d/MPC_MLY+g.nv}});
+}
+function hubFit(){
+  var D=hubData(),sdv=0,sdd=0;
+  D.forEach(function(p){var m=p.d/MPC_MLY;sdv+=m*p.v;sdd+=m*m});
+  var h=sdv/sdd,ss=0;
+  D.forEach(function(p){var m=p.d/MPC_MLY;ss+=Math.pow(p.v-h*m,2)});
+  return {h:h,se:Math.sqrt(ss/(D.length-1)/sdd)};
+}
+function drawHub(){
+  var o=cv.hub,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var cx=w/2,cy=h/2,range=hub.view?5200:2900,s=(Math.min(w,h)/2-12)/range;
+  var org=hub.view?hub.yel:{x:0,y:0};
+  ctx.strokeStyle=cols.line;ctx.lineWidth=1;ctx.setLineDash([2,5]);
+  for(var r=1000;r<range;r+=1000){ctx.beginPath();ctx.arc(cx,cy,r*s,0,TAU);ctx.stroke()}
+  ctx.setLineDash([]);
+  var K=360,Hs=hub.H0;
+  function px(g){return [cx+(g.x-org.x)*s,cy-(g.y-org.y)*s]}
+  function vel(g){var rx=(g.x-org.x)/MPC_MLY,ry=(g.y-org.y)/MPC_MLY;return [Hs*rx,Hs*ry]}
+  var all=[{x:0,y:0,mw:true}].concat(hub.gal);
+  all.forEach(function(g){
+    var p=px(g),v=vel(g),vm=Math.hypot(v[0],v[1]),L=vm/C_KMS*K;
+    if(vm>0){arrow(ctx,p[0],p[1],p[0]+v[0]/vm*L,p[1]-v[1]/vm*L,cols.teal,1.4)}
+    ctx.fillStyle=g.mw?cols.blue:cols.ink;ctx.globalAlpha=g.mw?1:.85;
+    ctx.beginPath();ctx.arc(p[0],p[1],g.mw?5:3,0,TAU);ctx.fill();ctx.globalAlpha=1;
+  });
+  // yellow
+  var yp=px(hub.yel),yv=vel(hub.yel),ym=Math.hypot(yv[0],yv[1]);
+  if(!hub.view&&ym>0)arrow(ctx,yp[0],yp[1],yp[0]+yv[0]/ym*(ym/C_KMS*K),yp[1]-yv[1]/ym*(ym/C_KMS*K),cols.gold,2.2);
+  var gg=ctx.createRadialGradient(yp[0],yp[1],0,yp[0],yp[1],14);gg.addColorStop(0,'rgba(255,215,90,.55)');gg.addColorStop(1,'rgba(255,215,90,0)');
+  ctx.fillStyle=gg;ctx.beginPath();ctx.arc(yp[0],yp[1],14,0,TAU);ctx.fill();
+  ctx.fillStyle='#f6cf4a';ctx.beginPath();ctx.arc(yp[0],yp[1],6,0,TAU);ctx.fill();
+  ctx.font='11px "IBM Plex Sans",sans-serif';ctx.fillStyle=cols.ink;ctx.textAlign='left';
+  var mwp=px({x:0,y:0});
+  ctx.fillText(hub.view?'Milky Way':'Milky Way (us)',mwp[0]+8,mwp[1]-8);
+  if(hub.view)ctx.fillText('Yellow galaxy (you are here)',yp[0]+10,yp[1]+18);
+  ctx.fillStyle=cols.muted;ctx.textAlign='right';ctx.fillText(hub.view?'Distance rings are 1000 Mly apart; scale halved':'Distance rings 1000 Mly apart',w-8,h-8);
+}
+function drawHplot(){
+  var o=cv.hplot,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var xM=3000,yM=Math.max(70000,Math.ceil(hub.H0*xM/MPC_MLY*1.05/10000)*10000);
+  var f=frame(ctx,w,h,{l:70,r:14,t:12,b:40},0,xM,0,yM,[0,500,1000,1500,2000,2500,3000],[0,20000,40000,60000].concat(yM>70000?[80000]:[]).filter(function(v){return v<=yM}),'Distance (million light years)','Recession speed (km/s)',function(v){return v},function(v){return fmtNum(v)});
+  // fraction of c guides
+  ctx.save();ctx.font='10px "IBM Plex Mono",monospace';ctx.fillStyle=cols.muted;ctx.textAlign='right';ctx.textBaseline='bottom';
+  [0.05,0.1,0.15,0.2].forEach(function(fr){var y=fr*C_KMS;if(y<yM){ctx.globalAlpha=.4;ctx.strokeStyle=cols.muted;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(f.L,f.Y(y));ctx.lineTo(f.R,f.Y(y));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;ctx.fillText(fr+'c',f.R-3,f.Y(y)-1)}});
+  ctx.restore();
+  // data
+  hubData().forEach(function(p){ctx.fillStyle=cols.teal;ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(f.X(p.d),f.Y(p.v),3.4,0,TAU);ctx.fill();ctx.globalAlpha=1});
+  // model line
+  ctx.strokeStyle=cols.gold;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.X(0),f.Y(0));ctx.lineTo(f.X(xM),f.Y(Math.min(yM,hub.H0*xM/MPC_MLY)));ctx.stroke();
+  // yellow point on the model line
+  var d=hubDist();ctx.fillStyle='#f6cf4a';ctx.strokeStyle=cols.ink;ctx.lineWidth=1;ctx.beginPath();ctx.arc(f.X(d),f.Y(hub.H0*d/MPC_MLY),6,0,TAU);ctx.fill();ctx.stroke();
+}
+function updateHubReadouts(){
+  var d=hubDist(),mpc=d/MPC_MLY,v=hub.H0*mpc;
+  $('#hHO').textContent=hub.H0.toFixed(1);
+  $('#hDO').textContent=fmtNum(d)+' Mly';
+  $('#hDist').textContent=fmtNum(d)+' Mly';
+  $('#hMpc').textContent=fmtNum(mpc,0)+' Mpc';
+  $('#hV').textContent=fmtNum(v)+' km/s';
+  $('#hVc').textContent=(v/C_KMS).toFixed(3)+' c';
+  $('#hZ').textContent=(v/C_KMS).toFixed(3);
+  $('#hLb').textContent=fmtNum(d)+' Myr ago';
+  $('#hT').textContent=(977.8/hub.H0).toFixed(1)+' Gyr';
+  $('#hEpsO').textContent=(hub.eps>=0?'+':'')+hub.eps.toFixed(1)+'%';
+  var fi=hubFit();
+  $('#hFitOut').innerHTML='Best fit: H₀ = '+fi.h.toFixed(1)+' ± '+fi.se.toFixed(1);
+  $('#hFitNote').textContent='Distances in this sample are scaled by '+(1+hub.eps/100).toFixed(3)+'. A distance scale that is too large by a factor f returns an H₀ too small by the same factor, and a scale that is too small returns an H₀ too large. The line you set above is at H₀ = '+hub.H0.toFixed(1)+'.';
+}
+function wireHubble(){
+  hub.gal=makeGalaxies(hub.seed);
+  $('#hH').addEventListener('input',function(){hub.H0=+this.value;updateHubReadouts()});
+  $('#hD').addEventListener('input',function(){var d=hubDist(),k=(+this.value)/(d||1);hub.yel.x*=k;hub.yel.y*=k;updateHubReadouts()});
+  $('#hView').addEventListener('change',function(){hub.view=this.checked});
+  $('#hEps').addEventListener('input',function(){hub.eps=+this.value;updateHubReadouts()});
+  $('#hFit').addEventListener('click',function(){hub.H0=Math.max(40,Math.min(100,Math.round(hubFit().h*2)/2));$('#hH').value=hub.H0;updateHubReadouts()});
+  $('#hNew').addEventListener('click',function(){hub.seed=Math.floor(Math.random()*1e6);hub.gal=makeGalaxies(hub.seed);updateHubReadouts()});
+  var c=cv.hub.el;
+  function toGal(e){var r=c.getBoundingClientRect(),w=r.width,h=r.height,s=(Math.min(w,h)/2-12)/2900;return {x:(e.clientX-r.left-w/2)/s,y:-(e.clientY-r.top-h/2)/s}}
+  c.addEventListener('pointerdown',function(e){if(hub.view)return;c.setPointerCapture(e.pointerId);hub.drag=true;moveY(e)});
+  c.addEventListener('pointermove',function(e){if(hub.drag)moveY(e)});
+  function moveY(e){var p=toGal(e),d=Math.hypot(p.x,p.y);if(d>2800){p.x*=2800/d;p.y*=2800/d}if(d<50){p.x*=50/(d||1);p.y*=50/(d||1)}
+    hub.yel=p;var dd=hubDist();$('#hD').value=Math.min(2800,Math.max(50,dd));updateHubReadouts()}
+  function up(){hub.drag=false}
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+  c.style.cursor='crosshair';
+}
+
+/* ============================================================
+   III. LADDER
+   ============================================================ */
+var rungs=[
+ {n:'The astronomical unit',m:'Planetary parallax and transits of Venus gave it to a few per cent in the 1670s, and radar echoes fix it today. It is now defined as exactly 149,597,870,700 m.',adj:true,eps:0,lo:1,hi:2e4,key:'Planets and radar'},
+ {n:'The speed of light',m:'Rømer’s delay, then Fizeau, Foucault and Michelson. Exact since 1983, which turns any echo time into a length.',adj:false,eps:0,lo:1,hi:2e4,key:''},
+ {n:'Parallax of nearby stars',m:'The Earth’s orbit supplies a baseline two astronomical units wide, and the apparent shift of a star against the background gives its distance.',adj:true,eps:0,lo:1e7,hi:1e11,key:'Stellar parallax'},
+ {n:'Standard candles in the Milky Way',m:'Stars of known type have predictable brightness, calibrated on the parallax stars, and reach across the Galaxy.',adj:true,eps:0,lo:1e10,hi:3.2e12,key:'Candles in the Galaxy'},
+ {n:'Cepheids in nearby galaxies',m:'Pulsating stars whose period fixes their luminosity (Leavitt’s relation), calibrated in the Milky Way and then found in other galaxies.',adj:true,eps:0,lo:3e12,hi:5e15,key:'Cepheids'},
+ {n:'Type Ia supernovae and redshift',m:'Exploding white dwarfs of nearly uniform peak brightness, calibrated on Cepheid galaxies, reach the galaxies whose redshifts give Hubble’s law.',adj:true,eps:0,lo:1e15,hi:5e17,key:'Supernovae'}
+];
+var lmode='sys';
+function buildRungs(){
+  var h='';
+  rungs.forEach(function(r,i){
+    h+='<div class="rung"><div class="n">'+(i+1)+'</div><div><h4>'+r.n+'</h4><p>'+r.m+'</p></div>'+
+      '<div class="sl">'+(r.adj?'<input type="range" min="-15" max="15" step="0.5" value="0" data-i="'+i+'" aria-label="Error in '+r.n+'"><div style="font:500 12px var(--mono);color:var(--muted)">error <span id="re'+i+'">0.0%</span></div>':'<div style="font:500 12px var(--mono);color:var(--teal)">exact by definition</div>')+'</div>'+
+      '<div class="fac" id="rf'+i+'">×1.000</div></div>';
+  });
+  $('#rungs').innerHTML=h;
+  document.querySelectorAll('#rungs input').forEach(function(inp){inp.addEventListener('input',function(){rungs[+this.dataset.i].eps=+this.value;updateLadder()})});
+}
+function updateLadder(){
+  var f=1,q=0;
+  rungs.forEach(function(r,i){
+    if(r.adj){var e=$('#re'+i);if(e)e.textContent=(r.eps>=0?'+':'')+r.eps.toFixed(1)+'%'}
+    if(lmode==='sys'){f*=1+r.eps/100;$('#rf'+i).textContent='×'+f.toFixed(3)}
+    else{q+=r.eps*r.eps;$('#rf'+i).textContent='±'+Math.sqrt(q).toFixed(1)+'%'}
+  });
+  var res='';
+  if(lmode==='sys'){
+    var rep=1000*f,H=TRUE_H0/f;
+    res='<div><small>Total factor on distances</small><b>×'+f.toFixed(3)+'</b></div>'+
+        '<div><small>A galaxy truly 1000 Mly away is reported at</small><b>'+fmtNum(rep)+' Mly</b></div>'+
+        '<div><small>Inferred H₀ if the truth is 70</small><b>'+H.toFixed(1)+'</b></div>'+
+        '<div><small>Change in H₀</small><b class="'+(Math.abs(H/TRUE_H0-1)<.02?'good':'bad')+'">'+((H/TRUE_H0-1)*100>=0?'+':'')+((H/TRUE_H0-1)*100).toFixed(1)+'%</b></div>';
+    $('#lNote').textContent='Each adjustable rung multiplies every distance above it, so one error at the base is inherited by all the later rungs. A positive error makes distances too large and H₀ too small.';
+  }else{
+    var s=Math.sqrt(q);
+    res='<div><small>Combined random error</small><b>±'+s.toFixed(1)+'%</b></div>'+
+        '<div><small>A galaxy truly 1000 Mly away is reported at</small><b>'+fmtNum(1000)+' ± '+fmtNum(10*s)+' Mly</b></div>'+
+        '<div><small>Inferred H₀ if the truth is 70</small><b>70.0 ± '+(0.7*s).toFixed(1)+'</b></div>';
+    $('#lNote').textContent='Independent random errors add as the root of the sum of squares, so the combined error is dominated by the largest one, and averaging over many objects can reduce it, which a systematic error does not allow.';
+  }
+  $('#lRes').innerHTML=res;
+}
+function setRungs(vals){
+  rungs.forEach(function(r,i){if(r.adj)r.eps=vals(i)});
+  document.querySelectorAll('#rungs input').forEach(function(inp){inp.value=rungs[+inp.dataset.i].eps});
+  updateLadder();
+}
+function fmtTime(ls){
+  if(ls<60)return fmtNum(ls,ls<10?2:1)+' seconds';
+  if(ls<3600)return fmtNum(ls/60,1)+' minutes';
+  if(ls<86400)return fmtNum(ls/3600,1)+' hours';
+  if(ls<LS_YR)return fmtNum(ls/86400,1)+' days';
+  var y=ls/LS_YR;
+  if(y<1e3)return fmtNum(y,1)+' years';
+  if(y<1e6)return fmtNum(y/1e3,1)+' thousand years';
+  if(y<1e9)return fmtNum(y/1e6,1)+' million years';
+  return fmtNum(y/1e9,1)+' billion years';
+}
+function sci(x){var e=Math.floor(Math.log10(x)),m=x/Math.pow(10,e);return m.toFixed(1)+' × 10^'+e}
+var items=[['Moon',1.28],['Sun',499],['Jupiter',2596],['Neptune',14980],['Proxima Cen',4.25*LS_YR],['Milky Way width',1e5*LS_YR],['Andromeda',2.5e6*LS_YR],['Virgo Cluster',5.4e7*LS_YR],['Galaxy at z = 0.1',1.3e9*LS_YR]];
+var ticks=[[1,'1 s'],[60,'1 min'],[3600,'1 hr'],[86400,'1 day'],[LS_YR,'1 yr'],[1e3*LS_YR,'10³ yr'],[1e6*LS_YR,'10⁶ yr'],[1e9*LS_YR,'10⁹ yr']];
+function drawRuler(){
+  var o=cv.ruler,ctx=o.ctx,w=o.w,h=o.h;
+  ctx.fillStyle=cols.canvas;ctx.fillRect(0,0,w,h);
+  var L=16,R=w-16,ax=112,X=function(lg){return L+(lg/18)*(R-L)};
+  var lg=function(x){return Math.log10(x)};
+  ctx.font='11px "IBM Plex Sans",sans-serif';
+  // items above
+  items.forEach(function(it,i){
+    var x=X(lg(it[1])),lev=[26,56,86][i%3];
+    ctx.strokeStyle=cols.line;ctx.beginPath();ctx.moveTo(x,ax);ctx.lineTo(x,ax-lev);ctx.stroke();
+    ctx.fillStyle=cols.gold;ctx.beginPath();ctx.arc(x,ax,3,0,TAU);ctx.fill();
+    ctx.fillStyle=cols.ink;ctx.textAlign=x>w-110?'right':'left';ctx.fillText(it[0],x+(x>w-110?-3:3),ax-lev-3);
+  });
+  ctx.strokeStyle=cols.muted;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(L,ax);ctx.lineTo(R,ax);ctx.stroke();
+  ctx.fillStyle=cols.muted;ctx.textAlign='center';
+  ticks.forEach(function(t){var x=X(lg(t[0]));ctx.beginPath();ctx.moveTo(x,ax);ctx.lineTo(x,ax+5);ctx.stroke();ctx.fillText(t[1],x,ax+17)});
+  ctx.textAlign='right';ctx.fillText('light-travel time (log scale)',R,ax+31);
+  // bands
+  var bc=[cols.claret,cols.gold,cols.teal,cols.blue,cols.ink];var row=0;
+  var bands=rungs.filter(function(r){return r.key});
+  bands.forEach(function(r,i){
+    var x0=X(lg(r.lo)),x1=X(lg(r.hi)),y=ax+42+i*16;
+    ctx.fillStyle=bc[i%5];ctx.globalAlpha=.55;ctx.fillRect(x0,y,x1-x0,10);ctx.globalAlpha=1;
+    ctx.fillStyle=cols.ink;ctx.textAlign=x1>w*0.62?'right':'left';
+    ctx.fillText(r.key,x1>w*0.62?x0-5:x1+5,y+9);
+  });
+  // marker
+  var v=+$('#lgS').value,mx=X(v);
+  ctx.strokeStyle=cols.blue;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(mx,8);ctx.lineTo(mx,h-6);ctx.stroke();
+}
+function updateRulerRead(){
+  var v=+$('#lgS').value,ls=Math.pow(10,v);
+  var km=ls*C_KMS,au=km/AU_KM,ly=ls/LS_YR;
+  $('#lgO').textContent=fmtTime(ls);
+  var rs=rungs.filter(function(r){return r.key&&ls>=r.lo&&ls<=r.hi}).map(function(r){return r.key});
+  $('#lgRead').innerHTML='<div><small>Kilometres</small><b>'+sci(km)+'</b></div>'+
+    '<div><small>Astronomical units</small><b>'+(au<1000?fmtNum(au,au<10?2:0):sci(au))+'</b></div>'+
+    '<div><small>Light-years</small><b>'+(ly<1000?fmtNum(ly,ly<10?3:1):sci(ly))+'</b></div>'+
+    '<div style="grid-column:span 2"><small>Rungs that reach this far</small><b style="font:500 15px var(--sans)">'+(rs.length?rs.join(', '):'None in this sketch (beyond the ladder, or too small for it)')+'</b></div>';
+}
+function wireLadder(){
+  buildRungs();updateLadder();updateRulerRead();
+  document.querySelectorAll('input[name=lmode]').forEach(function(r){r.addEventListener('change',function(){lmode=this.value;updateLadder()})});
+  $('#lPerfect').addEventListener('click',function(){setRungs(function(){return 0})});
+  $('#lRomer').addEventListener('click',function(){setRungs(function(i){return i===0?-6.4:0})});
+  $('#lSame').addEventListener('click',function(){setRungs(function(){return 3})});
+  $('#lgS').addEventListener('input',updateRulerRead);
+}
+
+/* ---------- main loop ---------- */
+var last=performance.now();
+function frameLoop(now){
+  var dt=Math.min(0.05,(now-last)/1000);last=now;
+  stepRom(dt);
+  drawOrbit();drawIo();drawOmc();updateRomReadouts();
+  drawHub();drawHplot();drawRuler();
+  requestAnimationFrame(frameLoop);
+}
+function init(){
+  sizeAll();readCols();
+  wireRomer();wireHubble();wireLadder();
+  setSpeedLabels();computeMean();romClear();estimate();updateHubReadouts();
+  window.addEventListener('resize',function(){sizeAll()});
+  requestAnimationFrame(frameLoop);
+}
+if(document.fonts&&document.fonts.ready){init()}else{init()}
+})();
+</script>
+</body>
+</html>
