@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-fb="std">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chains of Consecutive Numbers · a learner's ladder of conjectures</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{--bg:#0d0e11;--panel:#15171c;--panel2:#1c1f26;--ink:#e9e5da;--mute:#9a968b;--gold:#c9a64a;--line:#2b2e38;--teal:#6fb3a8;--inbg:#0d0e11}
+:root[data-theme="light"]{--bg:#f7f3ea;--panel:#fffdf8;--panel2:#f0ebde;--ink:#1d1c19;--mute:#6d6a60;--gold:#8a6a14;--line:#d9d2bf;--teal:#2a7a6e;--inbg:#ffffff}
+:root[data-fb="std"]{--good:#3f9e6b;--bad:#cf5a4e}
+:root[data-fb="cb"]{--good:#3b82c4;--bad:#e08a00}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;line-height:1.5;transition:background .2s,color .2s}
+.wrap{max-width:860px;margin:0 auto;padding:0 18px 90px}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:9px 18px}
+.topin{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.kick{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.prog{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mute)}
+.bar{height:3px;background:var(--line);margin-top:7px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.tools{display:flex;gap:8px;position:relative}
+.ibtn{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+.ibtn:hover{border-color:var(--gold)}
+.pop{position:absolute;right:0;top:36px;width:290px;background:var(--panel);border:1px solid var(--gold);border-radius:6px;padding:14px;display:none;font-family:'IBM Plex Sans',sans-serif;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.pop.open{display:block}
+.pop h4{margin:0 0 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;font-weight:500}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;padding:6px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;cursor:pointer;font:inherit}
+.seg button.on{border-color:var(--gold);color:var(--gold)}
+.pop input[type=text]{width:100%;padding:6px;background:var(--inbg);color:var(--ink);border:1px solid var(--line);border-radius:4px;font:inherit}
+.pop label{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.hero{padding:46px 0 14px}
+.hero h1{font-weight:600;font-size:46px;line-height:1.08;margin:6px 0 10px;letter-spacing:.2px}
+.hero p{color:var(--mute);margin:0 0 8px;font-size:21px}
+.seed{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;color:var(--mute);border-left:2px solid var(--gold);padding-left:10px;margin-top:14px}
+.printhead{display:none}
+.rung{margin-top:44px;padding-top:6px;scroll-margin-top:70px}
+.rung.locked{display:none}
+.rung>h2{font-size:31px;font-weight:600;margin:0 0 2px}
+.rung>.rk{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.rung p{margin:10px 0}
+.notice{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:3px;padding:10px 16px;margin:14px 0;font-size:19px}
+.notice .nt,.ctag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.notice div.l{font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.75}
+.task,.mc,.finder,.lab,.conj,.compute{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:14px 16px;margin:14px 0}
+.conj{border-color:var(--gold);background:var(--panel2)}
+.q{font-size:20px}
+.fld,.fin{font-family:'IBM Plex Mono',monospace;font-size:15px;width:64px;padding:3px 6px;background:var(--inbg);color:var(--ink);border:1px solid var(--mute);border-radius:3px;text-align:center}
+.fld.wide{width:170px;text-align:left}
+.fld.ok,.fin.ok{border-color:var(--good);box-shadow:0 0 0 1px var(--good);}
+.fld.bad,.fin.bad{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
+.fld.rev{border-style:dashed;border-color:var(--gold)}
+.sel{font-family:'IBM Plex Mono',monospace;font-size:14px;background:var(--inbg);color:var(--ink);border:1px solid var(--gold);border-radius:3px;padding:3px 6px;margin:0 2px}
+.cstate{font-size:21px;line-height:1.9}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:7px 12px;border-radius:4px;border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.btn.ghost{border-color:var(--line);color:var(--mute)}
+.btn.gold{background:var(--gold);color:var(--bg)}
+.btn[hidden]{display:none}
+.fb{margin-top:8px;font-size:18px;min-height:1px}
+.fb b.good,.good{color:var(--good)}
+.fb b.bad,.bad{color:var(--bad)}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid currentColor;border-radius:3px;padding:0 6px;margin-right:6px}
+table.g{border-collapse:collapse;margin:6px 0;font-size:18px}
+table.g td,table.g th{padding:3px 10px;text-align:center;border-bottom:1px solid var(--line)}
+table.g th{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--gold);letter-spacing:.1em;text-transform:uppercase}
+.fin{width:54px}
+.frow{display:flex;gap:8px;align-items:center;margin:5px 0;font-size:18px;flex-wrap:wrap}
+.frow .st{font-family:'IBM Plex Sans',sans-serif;font-size:13px}
+.labout{font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.7;margin-top:8px}
+.labout div{padding:1px 0}
+.next{margin:26px 0 0;text-align:center}
+.ledger{margin-top:56px;border-top:2px solid var(--gold);padding-top:16px}
+.ledger h2{font-size:31px;margin:0}
+.led{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:19px}
+.led .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mute);min-width:26px;padding-top:5px}
+.led .s{font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:64px;padding-top:5px}
+.led small{display:block;color:var(--mute);font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;line-height:1.35}
+.stamp{margin-top:50px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--mute)}
+.stamp em{font-style:normal;color:var(--gold)}
+@media (max-width:560px){body{font-size:18px}.hero h1{font-size:34px}.pop{right:-10px}}
+@media print{
+ :root[data-theme="dark"],:root[data-theme="light"]{--bg:#fff;--panel:#fff;--panel2:#fff;--ink:#111;--mute:#555;--gold:#7a5c0e;--line:#bbb;--teal:#245;--inbg:#fff}
+ body{font-size:13.5px;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ header.top,.noprint,.next,.pop{display:none!important}
+ .wrap{max-width:none;padding:0 4mm}
+ .hero{padding-top:0}.hero h1{font-size:28px}
+ .printhead{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;margin:0 0 8px;color:#333}
+ .rung{margin-top:20px}
+ .task,.mc,.finder,.lab,.conj,.notice,.compute,.led{break-inside:avoid}
+ .fld,.fin,.sel{border:1px solid #555;box-shadow:none}
+ .fld.ok,.fin.ok{border:2px solid var(--good)}.fld.bad,.fin.bad{border:2px solid var(--bad)}
+ .stamp{position:fixed;bottom:2mm;left:0;right:0;margin:0;border:0;font-size:9px}
+ .wrap{padding-bottom:14mm}
+ a{color:inherit}
+}
+</style>
+</head>
+<body>
+<header class="top noprint"><div class="topin">
+ <div><div class="kick">Chains of consecutive numbers · a learner's ladder</div><div class="prog" id="prog">tasks 0 / 0 · conjectures: 0 stand, 0 fall</div></div>
+ <div class="tools">
+  <button class="ibtn" id="printBtn">Print / save as PDF</button>
+  <button class="ibtn" id="setBtn" aria-haspopup="true">Settings</button>
+  <div class="pop" id="pop">
+   <h4>Colour scheme</h4>
+   <div class="seg" id="segTheme"><button data-v="dark" class="on">Dark</button><button data-v="light">Light</button></div>
+   <h4>Right / wrong colours</h4>
+   <div class="seg" id="segFb"><button data-v="std" class="on">Green / red</button><button data-v="cb">Blue / orange</button></div>
+   <label><input type="checkbox" id="revealAll"> Show every rung at once</label>
+   <h4>Name for the printed copy</h4>
+   <input type="text" id="nameIn" placeholder="Your name" autocomplete="off">
+  </div>
+ </div></div>
+ <div class="bar"><i id="barfill"></i></div>
+</header>
+
+<div class="wrap">
+ <div class="hero">
+  <div class="kick">Conjecturing · consecutive sums · divisors and congruences</div>
+  <h1>Chains of Consecutive Numbers</h1>
+  <p>Some numbers are sums of consecutive positive integers. You will find out which ones, how long the sums are and in how many ways, by noticing patterns, framing conjectures and testing them, some of which will fall.</p>
+  <div class="seed">Seed problem: John Mason, with Leone Burton and Kaye Stacey, <i>Thinking Mathematically</i>, Addison-Wesley (1982), the Consecutive Sums investigation, with the examples 9 = 2+3+4, 11 = 5+6 and 18 = 3+4+5+6.</div>
+  <div class="printhead" id="printhead"></div>
+ </div>
+ <main id="main"></main>
+ <section class="ledger" id="ledger"><div class="ctag">Your litany</div><h2>The conjectures you framed</h2><div id="ledgerBody"><p class="mono" style="font-size:13px;color:var(--mute)">Every conjecture you test is recorded here with its fate, including the ones that fall.</p></div></section>
+ <div class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · <em>LeeMcCullochJames</em></div>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const M=5000;
+const R=[],r=[];
+for(let N=0;N<=M;N++){const L=[];for(let k=2;k*(k+1)/2<=N;k++){const rem=N-k*(k-1)/2;if(rem%k===0)L.push({a:rem/k,k});}R[N]=L;r[N]=L.length;}
+const tri=k=>k*(k+1)/2;
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const isPrime=n=>{if(n<2)return false;for(let p=2;p*p<=n;p++)if(n%p===0)return false;return true};
+const oddPart=N=>{while(N%2===0)N/=2;return N};
+const v2=N=>{let j=0;while(N%2===0){N/=2;j++}return j};
+const oddDivs=N=>{const d=[];for(let i=1;i<=N;i+=2)if(N%i===0)d.push(i);return d};
+const isSq=n=>Number.isInteger(Math.sqrt(n));
+const lens=N=>R[N].map(c=>c.k).sort((a,b)=>a-b);
+const hasLen=(N,k)=>R[N].some(c=>c.k===k);
+const spf=m=>{for(let p=3;p<=m;p+=2)if(m%p===0)return p;return m};
+const lpf=n=>{let m=n,b=1;for(let p=2;p*p<=m;p++){while(m%p===0){b=p;m/=p}}return m>1?m:b};
+const phi=n=>{let c=0;for(let i=1;i<=n;i++)if(gcd(i,n)===1)c++;return c};
+const runStr=(a,b)=>{const t=[];for(let i=a;i<=b;i++)t.push(i<0?'('+i+')':i);return t.length<=7?t.join(' + '):t.slice(0,3).join(' + ')+' + … + '+t.slice(-2).join(' + ')};
+const cs=(a,k)=>runStr(a,a+k-1);
+const chainsStr=N=>R[N].length?R[N].map(c=>cs(c.a,c.k)).join(' = '):'none';
+const intRuns=N=>{let c=0;for(let k=1;k<=2*N;k++){const rem=N-k*(k-1)/2;if(rem%k===0)c++}return c};
+const coex={};
+(()=>{const S=[];for(let N=1;N<=M;N++)S[N]=new Set(lens(N));for(let a=2;a<=40;a++)for(let b=a+1;b<=40;b++){let first=null;for(let N=1;N<=M;N++)if(S[N].has(a)&&S[N].has(b)){first=N;break}coex[a+','+b]=first}})();
+const pairFirst=(a,b)=>coex[Math.min(a,b)+','+Math.max(a,b)];
+const meanR=X=>{const t=new Int32Array(X+1);for(let d=1;d<=X;d+=2)for(let j=d;j<=X;j+=d)t[j]++;let s=0;for(let N=1;N<=X;N++)s+=t[N]-1;return s/X};
+
+/* ---------- state & helpers ---------- */
+const S={done:new Set(),total:0,led:[],conjOk:new Set(),conjAll:0};
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const parseNum=s=>{s=String(s).trim().replace('−','-');return /^-?\d+(\.\d+)?$/.test(s)?Number(s):null};
+const parseList=s=>{s=s.trim().toLowerCase();if(s===''||s==='none')return[];const p=s.split(/[\s,;]+/).filter(x=>x!=='');const n=p.map(parseNum);return n.some(x=>x===null)?null:n.sort((a,b)=>a-b)};
+function progress(){const t=S.total,d=S.done.size;const st=S.led.filter(e=>e.ok).length,fl=S.led.filter(e=>!e.ok).length;
+ document.getElementById('prog').textContent=`tasks ${d} / ${t} · conjectures: ${st} stand, ${fl} fall`;
+ document.getElementById('barfill').style.width=(t?100*d/t:0)+'%';}
+
+/* ---------- components ---------- */
+function Notice(title,lines){const n=el('div','notice');n.innerHTML=`<div class="nt">${title||'Notice'}</div>`+lines.map(l=>`<div class="l">${l}</div>`).join('');return n}
+function Para(h){return el('p',null,h)}
+
+function Task(def){
+ const box=el('div','task');S.total++;
+ const body=def.html.replace(/\{\{(\d+)\}\}/g,(m,n)=>{const f=def.fields[+n];return f.type==='list'?`<input class="fld wide" data-i="${n}" type="text" placeholder="e.g. 2, 5, 9" autocomplete="off">`:`<input class="fld" data-i="${n}" type="text" inputmode="decimal" autocomplete="off">`});
+ box.innerHTML=`<div class="q">${body}</div><div class="row noprint"><button class="btn chk">Check</button><button class="btn ghost rev" hidden>Show answer</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb'),rev=box.querySelector('.rev');let tries=0;
+ const inputs=()=>[...box.querySelectorAll('.fld')];
+ box.querySelector('.chk').onclick=()=>{
+  let all=true;
+  inputs().forEach(inp=>{const f=def.fields[+inp.dataset.i];const exp=f.exp();let ok;
+   if(f.type==='list'){const u=parseList(inp.value);ok=u!==null&&JSON.stringify(u)===JSON.stringify([...exp].sort((a,b)=>a-b))}
+   else{const u=parseNum(inp.value);ok=u!==null&&Math.abs(u-exp)<=(f.tol||0)}
+   inp.classList.remove('rev');inp.classList.toggle('ok',!!ok);inp.classList.toggle('bad',!ok);if(!ok)all=false});
+  if(all){S.done.add(def.id);fb.innerHTML=`<b class="good">✓ Correct.</b> ${def.explain||''}`}
+  else{tries++;fb.innerHTML=`<b class="bad">Not yet.</b> ${tries>=1&&def.hint?def.hint:'Check the boxes that are marked and try again.'}`;if(tries>=2)rev.hidden=false}
+  progress()};
+ rev.onclick=()=>{inputs().forEach(inp=>{const f=def.fields[+inp.dataset.i];const e=f.exp();inp.value=f.type==='list'?(e.length?e.join(', '):'none'):(Number.isInteger(e)?e:e.toFixed(3));inp.classList.remove('ok','bad');inp.classList.add('rev')});fb.innerHTML=`<span class="tag" style="color:var(--gold)">answer shown</span> ${def.explain||''}`;progress()};
+ return box}
+
+function MC(def){
+ const box=el('div','mc');S.total++;
+ box.innerHTML=`<div class="q">${def.html}</div>`+def.options.map((o,i)=>`<label class="frow"><input type="radio" name="${def.id}" value="${i}"> <span>${o}</span></label>`).join('')+`<div class="row noprint"><button class="btn chk">Check</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb');
+ box.querySelector('.chk').onclick=()=>{const s=box.querySelector('input:checked');if(!s){fb.innerHTML='<span class="bad">Choose one first.</span>';return}
+  const ok=+s.value===def.correct;if(ok){S.done.add(def.id);fb.innerHTML=`<b class="good">✓ Yes.</b> ${def.explain||''}`}else fb.innerHTML=`<b class="bad">Not that one.</b> ${def.hint||''}`;progress()};
+ return box}
+
+function Finder(def){
+ const N=def.N;const box=el('div','finder');S.total++;
+ box.innerHTML=`<div class="q">${def.html}</div><div class="rows"></div><div class="row noprint"><button class="btn add">+ add a chain</button><button class="btn ghost chk">Check my chains</button><button class="btn fin2">I have found them all</button></div><div class="fb"></div>`;
+ const rows=box.querySelector('.rows'),fb=box.querySelector('.fb');
+ const addRow=()=>{const d=el('div','frow','start <input class="fin a" type="text" inputmode="numeric"> length <input class="fin k" type="text" inputmode="numeric"> <span class="st"></span>');rows.appendChild(d)};
+ box.querySelector('.add').onclick=addRow;addRow();
+ const evalRows=()=>{const seen=new Set();let valid=0;[...rows.children].forEach(d=>{const a=parseNum(d.querySelector('.a').value),k=parseNum(d.querySelector('.k').value),st=d.querySelector('.st'),A=d.querySelector('.a'),K=d.querySelector('.k');
+  A.classList.remove('ok','bad');K.classList.remove('ok','bad');
+  if(a===null||k===null){st.textContent='';return}
+  let msg,ok=false;
+  if(k<2||a<1||!Number.isInteger(a)||!Number.isInteger(k))msg='needs at least two terms, all positive';
+  else{const sum=k*a+k*(k-1)/2;if(sum!==N)msg=`${cs(a,k)} = ${sum}, not ${N}`;else if(seen.has(a+','+k))msg='already listed';else{ok=true;seen.add(a+','+k);valid++;msg=`${cs(a,k)} = ${N}`}}
+  A.classList.add(ok?'ok':'bad');K.classList.add(ok?'ok':'bad');st.textContent=msg;st.style.color=ok?'var(--good)':'var(--bad)'});return valid};
+ box.querySelector('.chk').onclick=()=>{const v=evalRows();fb.innerHTML=`${v} valid chain${v===1?'':'s'} so far.`};
+ box.querySelector('.fin2').onclick=()=>{const v=evalRows();const t=r[N];
+  if(v===t){S.done.add(def.id);fb.innerHTML=t===0?`<b class="good">✓ Correct.</b> ${N} has no chain at all, so r(${N}) = 0. ${def.explain||''}`:`<b class="good">✓ That is all of them,</b> r(${N}) = ${t}. ${def.explain||''}`}
+  else if(v<t)fb.innerHTML=`<b class="bad">Not all yet.</b> There ${t-v===1?'is one more':'are more'} to find; try different lengths, and notice that a longer chain starts lower.`;
+  else fb.innerHTML='<b class="bad">Recheck.</b> Some rows are not valid chains.';progress()};
+ return box}
+
+function Lab(){
+ const box=el('div','lab');box.innerHTML=`<div class="ctag">Lab</div><div class="q">Type any N from 1 to ${M}: <input class="fld" type="text" inputmode="numeric" value="15"> <button class="btn go">Show its chains</button></div><div class="labout"></div>`;
+ const inp=box.querySelector('input'),out=box.querySelector('.labout');
+ const go=()=>{const N=parseNum(inp.value);if(!Number.isInteger(N)||N<1||N>M){out.innerHTML='<div class="bad">Enter a whole number from 1 to '+M+'.</div>';return}
+  const m=oddPart(N),j=v2(N);
+  out.innerHTML=`<div>N = ${N} = 2<sup>${j}</sup> × ${m}   (primitive part ${m}, doubling depth ${j})</div><div>odd divisors: ${oddDivs(N).join(', ')}   (${oddDivs(N).length})</div><div>degeneracy r(${N}) = ${r[N]}</div>`+(r[N]?R[N].map(c=>`<div>${c.a} to ${c.a+c.k-1}, length ${c.k}: ${cs(c.a,c.k)} = ${N}</div>`).join(''):'<div>no chain</div>')};
+ box.querySelector('.go').onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});go();return box}
+
+function PairLab(){
+ const box=el('div','lab');box.innerHTML=`<div class="ctag">Lab · two lengths</div><div class="q">Lengths <input class="fld" type="text" value="3"> and <input class="fld" type="text" value="4"> <button class="btn go">Do they ever occur in the same number?</button></div><div class="labout"></div>`;
+ const [a,b]=box.querySelectorAll('input'),out=box.querySelector('.labout');
+ const go=()=>{const x=parseNum(a.value),y=parseNum(b.value);if(!Number.isInteger(x)||!Number.isInteger(y)||x<2||y<2||x>40||y>40||x===y){out.innerHTML='<div class="bad">Choose two different whole numbers from 2 to 40.</div>';return}
+  const f=pairFirst(x,y);if(f===null){out.innerHTML=`<div>No N up to ${M} has chains of both length ${x} and length ${y}.</div>`;return}
+  const ex=[];for(let N=f;N<=M&&ex.length<6;N++)if(hasLen(N,x)&&hasLen(N,y))ex.push(N);
+  out.innerHTML=`<div>Yes. The first such N are ${ex.join(', ')}.</div><div>Differences: ${ex.slice(1).map((v,i)=>v-ex[i]).join(', ')}</div>`};
+ box.querySelector('.go').onclick=go;go();return box}
+
+function PairTask(def){
+ const box=el('div','task');S.total++;
+ box.innerHTML=`<div class="q">${def.html} <input class="fld" type="text"> and <input class="fld" type="text"></div><div class="row noprint"><button class="btn chk">Check</button></div><div class="fb"></div>`;
+ const [a,b]=box.querySelectorAll('input'),fb=box.querySelector('.fb');
+ box.querySelector('.chk').onclick=()=>{const x=parseNum(a.value),y=parseNum(b.value);
+  if(!Number.isInteger(x)||!Number.isInteger(y)||x<2||y<2||x>40||y>40||x===y){fb.innerHTML='<span class="bad">Use two different whole numbers from 2 to 40.</span>';return}
+  const res=def.validate(x,y);[a,b].forEach(i=>{i.classList.toggle('ok',res.ok);i.classList.toggle('bad',!res.ok)});
+  if(res.ok)S.done.add(def.id);fb.innerHTML=`<b class="${res.ok?'good':'bad'}">${res.ok?'✓':'Not quite.'}</b> ${res.msg}`;progress()};
+ return box}
+
+function Conj(def){
+ const box=el('div','conj');S.conjAll++;
+ const tpl=def.tpl.replace(/\[\[(\d+)\]\]/g,(m,n)=>`<select class="sel" data-i="${n}"><option value="">choose…</option>${def.blanks[+n].map((o,i)=>`<option value="${i}">${o}</option>`).join('')}</select>`);
+ box.innerHTML=`<div class="ctag">Frame the conjecture</div>${def.lead?`<p style="margin:2px 0 8px">${def.lead}</p>`:''}<div class="cstate">${tpl}</div><div class="row noprint"><button class="btn gold tst">Test it against every N up to ${M}</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb');
+ box.querySelector('.tst').onclick=()=>{
+  const sel=[...box.querySelectorAll('.sel')].map(s=>s.value);
+  if(sel.some(v=>v==='')){fb.innerHTML='<span class="bad">Choose a value for every blank first.</span>';return}
+  const idx=sel.map(Number);const res=def.check(idx);
+  const text=def.tpl.replace(/\[\[(\d+)\]\]/g,(m,n)=>def.blanks[+n][idx[+n]]);
+  const key=def.id+':'+idx.join('-');let e=S.led.find(x=>x.key===key);
+  if(!e){e={key,text,ok:res.ok,msg:res.msg};S.led.push(e)}
+  if(res.ok){S.conjOk.add(def.id);fb.innerHTML=`<b class="good">Stands.</b> It survives every case tested. ${def.why||''}`}
+  else fb.innerHTML=`<b class="bad">Falls.</b> ${res.msg} ${def.retry||'Reframe it and test again; the fallen version stays in your litany.'}`;
+  renderLedger();progress()};
+ return box}
+
+function Compute(def){
+ const box=el('div','compute');box.innerHTML=`<div class="ctag">Computed for you</div><div class="q">${def.html}</div><div class="row noprint"><button class="btn go">${def.btn}</button></div><div class="labout"></div>`;
+ box.querySelector('.go').onclick=()=>{box.querySelector('.labout').innerHTML=def.run()};return box}
+
+function renderLedger(){
+ const b=document.getElementById('ledgerBody');
+ if(!S.led.length){return}
+ b.innerHTML=S.led.map((e,i)=>`<div class="led"><div class="n">${i+1}</div><div style="flex:1">${e.text}${e.ok?'':`<small>${e.msg}</small>`}</div><div class="s ${e.ok?'good':'bad'}">${e.ok?'STANDS':'FALLS'}</div></div>`).join('')}
+
+/* ---------- content ---------- */
+const iffTest=(pred,truth,from,to,predOnly,truthOnly)=>{for(let N=from;N<=to;N++){const p=pred(N),t=truth(N);if(p&&!t)return{ok:false,msg:predOnly(N)};if(!p&&t)return{ok:false,msg:truthOnly(N)}}return{ok:true}};
+const RUNGS=[
+/* 1 */{k:'Rung 1 · Noticing',t:'Write it as a sum',items:[
+ ()=>Para('Call a sum of two or more consecutive positive integers a <b>chain</b>, and let <b>r(N)</b> be the number of different chains that N has. The one-term sum N = N is not a chain, and a run that dips through zero or negative numbers is not a chain either. For example 15 = 7 + 8 = 4 + 5 + 6 = 1 + 2 + 3 + 4 + 5 has exactly three chains, so r(15) = 3, and 16 has none, so r(16) = 0. Chains are described by a <b>start</b> and a <b>length</b>.'),
+ ()=>Para('Begin by finding chains yourself. Enter a start and a length for each, add rows as you need them, and press the last button when you believe you have found every one.'),
+ ()=>Finder({id:'f15',N:15,html:'<b>Find the chains of 15.</b>',explain:'Notice the lengths 2, 3 and 5: all of them are odd numbers dividing 30, which is a hint for later.'}),
+ ()=>Finder({id:'f16',N:16,html:'<b>Now try 16.</b> If you think it has no chain, press the last button without adding anything.',explain:'Keep 16 in mind, because it will turn out to have company.'}),
+ ()=>Task({id:'grid',html:'<b>Fill in r(N) for each N.</b> The lab below will help you if you get stuck.<table class="g"><tr><th>N</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr><tr><th>r(N)</th>'+[1,2,3,4,5,6,7,8].map((n,i)=>`<td>{{${i}}}</td>`).join('')+'</tr><tr><th>N</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th></tr><tr><th>r(N)</th>'+[9,10,11,12,13,14,15,16].map((n,i)=>`<td>{{${i+8}}}</td>`).join('')+'</tr></table>',
+  fields:Array.from({length:16},(_,i)=>({exp:()=>r[i+1]})),hint:'Count chains of two or more positive terms only. For example 9 has 4 + 5 and 2 + 3 + 4.',explain:'The pattern in this row of values is what the next question asks about.'}),
+ ()=>Lab(),
+ ()=>Task({id:'zero',html:'Which N from 1 to 16 have r(N) = 0? {{0}}<br>Which have r(N) = 1? {{1}}',fields:[{type:'list',exp:()=>[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].filter(n=>r[n]===0)},{type:'list',exp:()=>[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].filter(n=>r[n]===1)}],hint:'Use your table. Separate the numbers with commas.',explain:'Notice that 1, 2, 4, 8 and 16 are the empty ones.'}),
+ ()=>Conj({id:'c_none',lead:'<i>Pause.</i> The lab shows that 32 and 64 are also empty. Which description fits every empty number you have seen?',tpl:'A number has no chain exactly when it is [[0]].',blanks:[['even','prime','a power of 2','a multiple of 4']],
+  check:s=>{const d=['even','prime','a power of 2','a multiple of 4'][s[0]];const P=[N=>N%2===0,isPrime,N=>(N&(N-1))===0,N=>N%4===0][s[0]];return iffTest(P,N=>r[N]===0,1,M,N=>`${N} is ${d} but it has chains: ${N} = ${chainsStr(N)}.`,N=>`${N} has no chain, yet it is not ${d}.`)},
+  why:'A power of 2 has no odd factor above 1, and the rungs below show that an odd factor is exactly what produces a chain.'})
+]},
+/* 2 */{k:'Rung 2 · Two terms',t:'The odd numbers',items:[
+ ()=>Notice('Notice',[3,5,7,9,11,13].map(N=>`${N} = ${R[N].find(c=>c.k===2).a} + ${R[N].find(c=>c.k===2).a+1}`)),
+ ()=>Task({id:'two',html:'The two-term chain of 21 starts at {{0}}. The two-term chain of 101 starts at {{1}}.',fields:[{exp:()=>10},{exp:()=>50}],hint:'The two terms sit on either side of half of N.',explain:'Each start is a little less than half of N.'}),
+ ()=>MC({id:'two_mc',html:'For an odd number N, the first term of the two-term chain is',options:['N/2','(N − 1)/2','(N + 1)/2','N − 1'],correct:1,hint:'Write N = a + (a + 1) and solve for a.',explain:'N = 2a + 1 gives a = (N − 1)/2.'}),
+ ()=>Conj({id:'c_two',lead:'<i>Pause.</i> Which numbers have a chain of length 2?',tpl:'Exactly the [[0]] numbers N ≥ 3 are sums of two consecutive numbers.',blanks:[['odd','even','prime','multiples of 3']],
+  check:s=>{const d=['odd','even','prime','multiples of 3'][s[0]];const P=[N=>N%2===1,N=>N%2===0,isPrime,N=>N%3===0][s[0]];return iffTest(P,N=>hasLen(N,2),3,M,N=>`${N} is among the ${d} numbers but has no two-term chain.`,N=>`${N} = ${chainsStr(N).split(' = ').find(x=>x.split('+').length===2)} is a two-term sum, yet ${N} is not among the ${d} numbers.`)},
+  why:'Writing N = a + (a + 1) = 2a + 1 gives a = (N − 1)/2, a positive whole number exactly when N is odd and at least 3.'})
+]},
+/* 3 */{k:'Rung 3 · Longer chains',t:'Runs centred on a factor',items:[
+ ()=>Notice('Notice: multiples of 3 and of 5',[...[2,3,4,5,6,7].map(F=>`3 × ${F} = ${R[3*F].find(c=>c.k===3)?cs(R[3*F].find(c=>c.k===3).a,3):''}`),'',...[3,4,5,6,7].map(F=>`5 × ${F} = ${cs(R[5*F].find(c=>c.k===5).a,5)}`)]),
+ ()=>Para('In every line the number in the middle of the run is N divided by the length. A chain with an odd number of terms is therefore <b>centred</b> on a whole number F, with the same count of terms on each side. Try it for bigger lengths.'),
+ ()=>Task({id:'c1',html:'30 = 5 × 6 is the sum of five consecutive numbers centred on 6, running from {{0}} to {{1}}.<br>35 = 7 × 5 is centred on 5 with seven terms, running from {{2}} to {{3}}.',fields:[{exp:()=>4},{exp:()=>8},{exp:()=>2},{exp:()=>8}],hint:'Go K steps down and K steps up from the centre, where there are 2K + 1 terms.',explain:'With 2K + 1 terms the run is F − K, …, F + K.'}),
+ ()=>Task({id:'c2',html:'14 = 7 × 2 is centred on 2 with seven terms, so the run would start at {{0}}.',fields:[{exp:()=>-1}],hint:'Seven terms means three below the centre and three above.',explain:'The run −1, 0, 1, …, 5 sums to 14, but it is not a chain because it contains zero and a negative number. The next rung repairs it.'}),
+ ()=>Conj({id:'c_cent',lead:'<i>Pause.</i> The run F − K, …, F + K has 2K + 1 terms and sums to (2K + 1)·F. When is its first term positive?',tpl:'The run is a chain of N = (2K + 1)·F exactly when F ≥ [[0]].',blanks:[['K','K + 1','2K + 1','K − 1']],
+  check:s=>{const f=[K=>K,K=>K+1,K=>2*K+1,K=>K-1][s[0]];for(let K=1;K<=20;K++)for(let F=1;F<=40;F++){const N=(2*K+1)*F;if(N>M)continue;const truth=R[N].some(c=>c.a===F-K&&c.k===2*K+1),pred=F>=f(K);
+   if(pred&&!truth)return{ok:false,msg:`K = ${K}, F = ${F}: the run starts at F − K = ${F-K}, which is not a positive number.`};
+   if(!pred&&truth)return{ok:false,msg:`K = ${K}, F = ${F}: the run ${F-K}, …, ${F+K} is a chain of ${N}, yet your inequality leaves it out.`}}return{ok:true}},
+  why:'The first term F − K is at least 1 exactly when F ≥ K + 1, which is the same as N ≥ (2K + 1)(K + 1).'})
+]},
+/* 4 */{k:'Rung 4 · When the run dips below one',t:'Cancelling to a shorter chain',items:[
+ ()=>Notice('Notice: runs that dip below one, repaired by cancelling',[[2,2],[2,1],[3,2],[3,3],[5,3]].map(([K,F])=>{const N=(2*K+1)*F;return `${N} = ${runStr(F-K,F+K)}  →  ${chainsStr(N).split(' = ').find(x=>x.startsWith(String(K-F+1)+' +'))||'(see lab)'}`})),
+ ()=>Para('Each time the run reached zero or below, the negative terms cancelled against their positive twins, the zero was dropped, and a shorter chain was left standing. Look at where the survivors start and how long they are.'),
+ ()=>Task({id:'d1',html:'14 = (−1) + 0 + 1 + 2 + 3 + 4 + 5. After cancelling, the chain starts at {{0}} and has length {{1}}.<br>21 = 0 + 1 + 2 + … + 6. After dropping the zero, the chain starts at {{2}} and has length {{3}}.<br>33 = 11 × 3 runs from −2 to 8. The chain that survives starts at {{4}} and has length {{5}}.',fields:[{exp:()=>2},{exp:()=>4},{exp:()=>1},{exp:()=>6},{exp:()=>3},{exp:()=>6}],hint:'Cross out every term that is zero, negative, or the negative twin of a positive term, and count what is left.',explain:'In each case the length is twice the number of positive terms removed from the bottom of the run, which is 2F.'}),
+ ()=>Conj({id:'c_cancel',lead:'<i>Pause.</i> Write each example as N = (2K + 1)·F with F ≤ K and compare K, F with where the survivor starts and how long it is.',tpl:'When N = (2K + 1)·F and F ≤ K, the chain that survives starts at [[0]] and has length [[1]].',blanks:[['F − K','K − F + 1','K + F','2F − K'],['2F','K + F','2F + 1','2K + 1 − F']],
+  check:s=>{const st=[(K,F)=>F-K,(K,F)=>K-F+1,(K,F)=>K+F,(K,F)=>2*F-K][s[0]],ln=[(K,F)=>2*F,(K,F)=>K+F,(K,F)=>2*F+1,(K,F)=>2*K+1-F][s[1]];
+   for(let K=1;K<=20;K++)for(let F=1;F<=K;F++){const N=(2*K+1)*F;if(N>M)continue;const a=st(K,F),k=ln(K,F);if(!R[N].some(c=>c.a===a&&c.k===k))return{ok:false,msg:`For K = ${K}, F = ${F} (N = ${N}) your recipe gives start ${a} and length ${k}, which is not a chain of ${N}. The chains of ${N} are ${chainsStr(N)}.`}}return{ok:true}},
+  why:'The terms F − K, …, −1 cancel against 1, …, K − F, and zero adds nothing, so what survives is K − F + 1, …, K + F, which has 2F terms.'}),
+ ()=>MC({id:'d_mc',html:'So every odd divisor d > 1 of N gives a chain. When N is itself odd and d = N, so that F = 1, the chain has length',options:['1','2','N','N/2'],correct:1,hint:'Use the length 2F with F = 1.',explain:'Length 2F = 2 is the two-term chain of rung 2, so the odd numbers are the case d = N.'})
+]},
+/* 5 */{k:'Rung 5 · Counting',t:'How many chains? Factor and count',items:[
+ ()=>Notice('Notice: odd divisors and chains',[15,21,45,12,9].map(N=>`N = ${N}: odd divisors ${oddDivs(N).join(', ')}   (${oddDivs(N).length}),   r = ${r[N]}`)),
+ ()=>Task({id:'g5',html:'Complete the table.<table class="g"><tr><th>N</th><th>odd divisors</th><th>r(N)</th></tr>'+[9,18,30,45,60,72,90].map((n,i)=>`<tr><td>${n}</td><td>{{${2*i}}}</td><td>{{${2*i+1}}}</td></tr>`).join('')+'</table>',
+  fields:[9,18,30,45,60,72,90].flatMap(n=>[{exp:()=>oddDivs(n).length},{exp:()=>r[n]}]),hint:'List the odd divisors, including 1 and N itself when N is odd, then count the chains in the lab.',explain:'Compare the two columns row by row.'}),
+ ()=>Conj({id:'c_count',lead:'<i>Pause.</i> In every row r(N) and the number of odd divisors are close but not equal. How are they related?',tpl:'The number of chains is r(N) = (number of odd divisors) [[0]].',blanks:[['+ 1','− 1','× 2','with no change']],
+  check:s=>{const f=[t=>t+1,t=>t-1,t=>t*2,t=>t][s[0]];for(let N=1;N<=M;N++){const t=oddDivs(N).length;if(r[N]!==f(t))return{ok:false,msg:`N = ${N} has ${t} odd divisors and r = ${r[N]}, but your rule gives ${f(t)}.`}}return{ok:true}},
+  why:'Each odd divisor above 1 yields one chain by the earlier rungs, and the divisor 1 would give only the one-term sum, which does not count.'}),
+ ()=>Task({id:'pred',html:'Predict, then check in the lab: 360 = 2³ × 3² × 5 has r = {{0}}, and 630 = 2 × 3² × 5 × 7 has r = {{1}}.',fields:[{exp:()=>r[360]},{exp:()=>r[630]}],hint:'Ignore the power of 2, then multiply (exponent + 1) over the odd primes and subtract 1.',explain:'The odd part of 360 is 45 = 3² × 5, which has 3 × 2 = 6 odd divisors; 315 = 3² × 5 × 7 has 3 × 2 × 2 = 12. Subtract 1 each time.'}),
+ ()=>Lab(),
+ ()=>Task({id:'one',html:'List the numbers up to 30 that have exactly one chain: {{0}}',fields:[{type:'list',exp:()=>Array.from({length:30},(_,i)=>i+1).filter(n=>r[n]===1)}],hint:'Use the table or the lab. There are more than just primes.',explain:'Write each as a power of 2 times an odd number: 6 = 2 × 3, 10 = 2 × 5, 12 = 4 × 3, 14 = 2 × 7, 20 = 4 × 5, 22 = 2 × 11, 24 = 8 × 3, 26 = 2 × 13, 28 = 4 × 7.'}),
+ ()=>Conj({id:'c_one',lead:'<i>Pause.</i> The odd primes 3, 5, 7, 11, 13 each have exactly one chain, so that guess comes first. Test whichever description you believe.',tpl:'A number has exactly one chain exactly when it is [[0]].',blanks:[['an odd prime','a prime','a power of 2 times an odd prime','a power of 2 times an odd prime squared']],
+  check:s=>{const d=['an odd prime','a prime','a power of 2 times an odd prime','a power of 2 times an odd prime squared'][s[0]];const P=[N=>N%2===1&&isPrime(N),isPrime,N=>oddPart(N)>1&&isPrime(oddPart(N)),N=>{const m=oddPart(N);return m>1&&isSq(m)&&isPrime(Math.sqrt(m))}][s[0]];
+   return iffTest(P,N=>r[N]===1,1,M,N=>`${N} is ${d} but r(${N}) = ${r[N]}.`,N=>`${N} has exactly one chain (${chainsStr(N)}), yet it is not ${d}.`)},
+  why:'One chain means exactly two odd divisors, so the odd part of N has just two divisors, which is the definition of a prime.',retry:'Look at the counterexample, write it as a power of 2 times an odd number, and try again.'})
+]},
+/* 6 */{k:'Rung 6 · Scaling',t:'Primitive numbers and their doublings',items:[
+ ()=>Para('Call an odd number <b>primitive</b>. Every number is 2<sup>j</sup> × m with m primitive, and then m is its <b>primitive part</b> and N is the j-fold <b>doubling</b> of m. For example 12 = 2² × 3 is the second doubling of 3, and 40 = 2³ × 5 is the third doubling of 5.'),
+ ()=>Notice('Notice: doubling 3, and doubling 15',[3,6,12,24,48,15,30,60,120].map(N=>`${N} = ${chainsStr(N)}   (r = ${r[N]})`)),
+ ()=>Task({id:'s1',html:'List the lengths of the chains of each number.<br>15: {{0}}<br>30: {{1}}<br>60: {{2}}<br>120: {{3}}',fields:[15,30,60,120].map(n=>({type:'list',exp:()=>lens(n)})),hint:'The lab lists each chain and its length.',explain:'The count stays at 3 while the lengths drift.'}),
+ ()=>Conj({id:'c_dbl',lead:'<i>Pause.</i> Compare r(15) with r(30), r(3) with r(6), and so on.',tpl:'For every N, r(2N) [[0]] r(N).',blanks:[['equals','is larger than','is smaller than','is sometimes larger and sometimes smaller than']],
+  check:s=>{let gt=0,lt=0,ex=null;for(let N=1;N<=M/2;N++){if(r[2*N]>r[N]){gt++;ex=ex||N}if(r[2*N]<r[N]){lt++;ex=ex||N}}
+   const truth=[gt===0&&lt===0,gt>0&&lt===0,lt>0&&gt===0,gt>0&&lt>0][s[0]];
+   if(truth)return{ok:true};if(ex===null)return{ok:false,msg:`r(2N) = r(N) for every N tested, for instance r(30) = r(15) = 3, so your relation never applies.`};return{ok:false,msg:`Look at N = ${ex}: r(${2*ex}) = ${r[2*ex]} and r(${ex}) = ${r[ex]}.`}},
+  why:'Doubling changes the chains but not the odd divisors, and r counts odd divisors.'}),
+ ()=>Conj({id:'c_prim',lead:'<i>Pause.</i> If doubling leaves r unchanged, which feature of N does r actually depend on?',tpl:'The number r(N) is determined by [[0]] of N.',blanks:[['the primitive part','the largest prime factor','the last digit','the remainder on division by 4']],
+  check:s=>{const f=[oddPart,lpf,N=>N%10,N=>N%4][s[0]];const names=['the primitive part','the largest prime factor','the last digit','the remainder on division by 4'];const seen={};for(let N=1;N<=2500;N++){const key=f(N);if(key in seen&&r[seen[key]]!==r[N])return{ok:false,msg:`${seen[key]} and ${N} agree on ${names[s[0]]} (${key}) but r(${seen[key]}) = ${r[seen[key]]} while r(${N}) = ${r[N]}.`};if(!(key in seen))seen[key]=N}return{ok:true}},
+  why:'Two numbers with the same primitive part have the same odd divisors, and r is the number of odd divisors minus 1.'})
+]},
+/* 7 */{k:'Rung 7 · A parity pattern',t:'An even or an odd number of chains',items:[
+ ()=>Task({id:'p1',html:'Find r(N) for each number.<table class="g"><tr><th>N</th>'+[9,18,25,36,49,50,15,27,45].map(n=>`<th>${n}</th>`).join('')+'</tr><tr><th>r(N)</th>'+[0,1,2,3,4,5,6,7,8].map(i=>`<td>{{${i}}}</td>`).join('')+'</tr></table>',fields:[9,18,25,36,49,50,15,27,45].map(n=>({exp:()=>r[n]})),hint:'Count the chains or use the odd divisors.',explain:'The first six are even and the last three are odd.'}),
+ ()=>Notice('Notice: primitive parts',[9,18,25,36,49,50,15,27,45].map(N=>`${N} → primitive part ${oddPart(N)},   r = ${r[N]}`)),
+ ()=>Conj({id:'c_par',lead:'<i>Pause.</i> Look at the primitive parts of the numbers with even r, and then at the ones with odd r.',tpl:'The number r(N) is even exactly when the primitive part of N is [[0]].',blanks:[['a prime','a perfect square','a power of 3','a multiple of 3']],
+  check:s=>{const d=['a prime','a perfect square','a power of 3','a multiple of 3'][s[0]];const P=[m=>isPrime(m),m=>isSq(m),m=>{while(m%3===0)m/=3;return m===1},m=>m%3===0][s[0]];
+   return iffTest(N=>P(oddPart(N)),N=>r[N]%2===0,1,M,N=>`The primitive part of ${N} is ${oddPart(N)}, which is ${d}, yet r(${N}) = ${r[N]} is odd.`,N=>`r(${N}) = ${r[N]} is even, yet the primitive part ${oddPart(N)} is not ${d}.`)},
+  why:'The odd divisors of m pair off as d with m/d. Only a square has a divisor paired with itself, so only a square has an odd number of odd divisors, and r is one less.'})
+]},
+/* 8 */{k:'Rung 8 · Lengths',t:'How long can a chain be? Congruences',items:[
+ ()=>Notice('Notice: the numbers that carry a chain of each length',[3,4,5,6].map(k=>{const L=[];for(let N=1;N<=200&&L.length<7;N++)if(hasLen(N,k))L.push(N);return `length ${k}: ${L.join(', ')}, …`})),
+ ()=>Task({id:'l1',html:'For each length k, give the smallest N that has a chain of that length, and the gap between consecutive such N.<table class="g"><tr><th>k</th><th>smallest N</th><th>gap</th></tr>'+[3,4,5,6,7,8].map((k,i)=>`<tr><td>${k}</td><td>{{${2*i}}}</td><td>{{${2*i+1}}}</td></tr>`).join('')+'</table>',fields:[3,4,5,6,7,8].flatMap(k=>[{exp:()=>tri(k)},{exp:()=>k}]),hint:'The smallest is the sum 1 + 2 + … + k. Sliding the window one place right adds k.',explain:'Each list is an arithmetic progression that starts at T(k) = k(k + 1)/2 with common difference k.'}),
+ ()=>Task({id:'l2',html:'Give N mod k for the smallest such N: k = 3: {{0}}, k = 4: {{1}}, k = 5: {{2}}, k = 6: {{3}}, k = 7: {{4}}, k = 8: {{5}}.',fields:[3,4,5,6,7,8].map(k=>({exp:()=>tri(k)%k})),hint:'Divide T(k) by k and take the remainder.',explain:'The remainders are 0 for odd k and k/2 for even k.'}),
+ ()=>Conj({id:'c_len',lead:'<i>Pause.</i> The numbers carrying length k form one residue class mod k, beginning at the smallest. Fill in both blanks.',tpl:'A chain of length k exists exactly when N ≥ [[0]] and N ≡ [[1]] (mod k).',blanks:[['k','T(k)','2k','T(k − 1)'],['0','k/2','T(k) mod k','1']],
+  check:s=>{const lo=[k=>k,k=>tri(k),k=>2*k,k=>tri(k-1)][s[0]],res=[k=>0,k=>k/2,k=>tri(k)%k,k=>1][s[1]];
+   for(let k=2;k<=60;k++)for(let N=1;N<=M;N++){const truth=hasLen(N,k),pred=N>=lo(k)&&N%k===res(k);
+    if(pred&&!truth)return{ok:false,msg:`k = ${k}, N = ${N}: your conditions allow it, but ${N} has no chain of length ${k}${r[N]?` (its chains are ${chainsStr(N)})`:''}.`};
+    if(!pred&&truth)return{ok:false,msg:`k = ${k}, N = ${N}: ${N} does have a chain of length ${k}, namely ${cs(R[N].find(c=>c.k===k).a,k)}, but your conditions exclude it.`}}return{ok:true}},
+  why:'Sliding the window right by one raises every term by 1, hence N by k, and the first window sums to T(k), so N = T(k) + (a − 1)k.'})
+]},
+/* 9 */{k:'Rung 9 · Two lengths together',t:'Which lengths can share a number? Chinese remainder theorem',items:[
+ ()=>Para('A number can carry several lengths at once: 15 has lengths 2, 3, 5, and 75 has lengths 2, 3, 5, 6, 10. Each length asks for a residue class, so two lengths together ask for two classes at once, and the Chinese remainder theorem and the least common multiple govern when that is possible.'),
+ ()=>PairLab(),
+ ()=>PairTask({id:'pn',html:'Find two different lengths that <b>never</b> occur together in any N up to 5000:',validate:(x,y)=>{const f=pairFirst(x,y);return f===null?{ok:true,msg:`Lengths ${x} and ${y} never coexist: the residue classes N ≡ T(${x}) mod ${x} and N ≡ T(${y}) mod ${y} contradict each other.`}:{ok:false,msg:`They do coexist, for instance in N = ${f}. Look for a clash between the two congruences.`}}}),
+ ()=>PairTask({id:'pe',html:'Find two different <b>even</b> lengths that <b>do</b> occur together:',validate:(x,y)=>{if(x%2||y%2)return{ok:false,msg:'Both lengths must be even.'};const f=pairFirst(x,y);return f!==null?{ok:true,msg:`They coexist in N = ${f}. Compare the power of 2 dividing ${x} with the power of 2 dividing ${y}.`}:{ok:false,msg:'Those two never coexist. Try again.'}}}),
+ ()=>Conj({id:'c_pair',lead:'<i>Pause.</i> Use your examples. Which pairs of lengths clash, and what do they have in common?',tpl:'Two lengths k and k′ can occur together in some N [[0]].',blanks:[['always','unless both are even','unless both are even and contain different powers of 2','unless they share a common factor']],
+  check:s=>{const P=[(a,b)=>true,(a,b)=>!(a%2===0&&b%2===0),(a,b)=>!(a%2===0&&b%2===0&&v2(a)!==v2(b)),(a,b)=>gcd(a,b)===1][s[0]];
+   for(let a=2;a<=40;a++)for(let b=a+1;b<=40;b++){const truth=pairFirst(a,b)!==null,pred=P(a,b);
+    if(pred&&!truth)return{ok:false,msg:`Lengths ${a} and ${b} never occur together, although your statement allows it.`};
+    if(!pred&&truth)return{ok:false,msg:`Lengths ${a} and ${b} do occur together (first in N = ${pairFirst(a,b)}), although your statement excludes them.`}}return{ok:true}},
+  why:'N ≡ T(k) mod k and N ≡ T(k′) mod k′ are compatible exactly when they agree modulo gcd(k, k′). For two even lengths 2u and 2v this forces u and v to have the same power of 2. When they are compatible the solutions form one class modulo lcm(k, k′).',retry:'Use the counterexample as a new example in the lab, and revise.'})
+]},
+/* 10 */{k:'Rung 10 · Extremes',t:'The longest and the shortest chain',items:[
+ ()=>Task({id:'x1',html:'Give the length of the <b>longest</b> chain of each number.<table class="g"><tr>'+[7,11,28,40,45,60].map(n=>`<th>${n}</th>`).join('')+'</tr><tr>'+[0,1,2,3,4,5].map(i=>`<td>{{${i}}}</td>`).join('')+'</tr></table>',fields:[7,11,28,40,45,60].map(n=>({exp:()=>Math.max(...lens(n))})),hint:'The lab lists every chain.',explain:'28 and 45 are triangular numbers, and their longest chains begin at 1.'}),
+ ()=>Conj({id:'c_long',lead:'<i>Pause.</i> Compare each longest length with the largest k for which 1 + 2 + … + k does not exceed N.',tpl:'If k* is the largest k with T(k) ≤ N, the longest chain of N has length L(N) [[0]].',blanks:[['= k*','≤ k*','≥ k*','= the whole part of √(2N)']],
+  check:s=>{for(let N=3;N<=M;N++){if(!r[N])continue;let ks=1;while(tri(ks+1)<=N)ks++;const L=Math.max(...lens(N));const ok=[L===ks,L<=ks,L>=ks,L===Math.floor(Math.sqrt(2*N))][s[0]];if(!ok)return{ok:false,msg:`N = ${N}: k* = ${ks} and L(N) = ${L}.`}}return{ok:true}},
+  why:'A chain of length k needs N ≥ T(k), so no length exceeds k*, and in fact every length is below √(2N). Equality at k* is the congruence of rung 8.'}),
+ ()=>Task({id:'x2',html:'Give the length of the <b>shortest</b> chain of each number.<table class="g"><tr>'+[10,14,12,40,45,60].map(n=>`<th>${n}</th>`).join('')+'</tr><tr>'+[0,1,2,3,4,5].map(i=>`<td>{{${i}}}</td>`).join('')+'</tr></table>',fields:[10,14,12,40,45,60].map(n=>({exp:()=>Math.min(...lens(n))})),hint:'The lab lists every chain.',explain:'Notice that 10 and 14 both have shortest length 4, although their smallest odd prime factors are 5 and 7.'}),
+ ()=>Conj({id:'c_short',lead:'<i>Pause.</i> Write N = 2<sup>j</sup> × m with m primitive, let p be the smallest odd prime factor of m, and compare with your table. The cases 10 and 14 are the ones to explain.',tpl:'The shortest chain of N has length [[0]].',blanks:[['p','min(p, 2^(j+1))','min(p, 2^j)','2 if N is odd, and p otherwise']],
+  check:s=>{for(let N=3;N<=M;N++){if(!r[N])continue;const m=oddPart(N),j=v2(N),p=spf(m);const f=[p,Math.min(p,2**(j+1)),Math.min(p,2**j),N%2?2:p][s[0]];const L=Math.min(...lens(N));if(f!==L)return{ok:false,msg:`N = ${N} = 2^${j} × ${m}: p = ${p}, your formula gives ${f}, but the shortest chain has length ${L}.`}}return{ok:true}},
+  why:'Each odd divisor d > 1 gives a chain of length min(d, 2^(j+1)·m/d), which is at least min(p, 2^(j+1)), and that value is reached by d = p or d = m.'})
+]},
+/* 11 */{k:'Rung 11 · Beyond',t:'Extending the question: integer runs, units and averages',items:[
+ ()=>Para('Now allow zero and negative terms, so that any run of consecutive integers of length at least 1 counts. Then 3 has the runs [3], [1, 2], [0, 1, 2] and [−2, …, 3].'),
+ ()=>Task({id:'i1',html:'Count the integer runs of 9: {{0}}. Of 15: {{1}}. Of 12: {{2}}.',fields:[9,15,12].map(n=>({exp:()=>intRuns(n)})),hint:'Include the one-term run, and runs that begin at or below zero.',explain:'Compare each count with the number of odd divisors.'}),
+ ()=>Conj({id:'c_int',lead:'<i>Pause.</i> Compare your three counts with the odd divisors of 9, 15 and 12.',tpl:'The number of integer runs of N is [[0]] the number of odd divisors.',blanks:[['equal to','twice','three times','half of']],
+  check:s=>{const f=[1,2,3,0.5][s[0]];for(let N=1;N<=80;N++){const t=oddDivs(N).length;if(intRuns(N)!==f*t)return{ok:false,msg:`N = ${N} has ${t} odd divisors and ${intRuns(N)} integer runs.`}}return{ok:true}},
+  why:'Each positive chain pairs with a run that starts at or below zero, by cancellation, so the runs come in pairs.'}),
+ ()=>Para('A different refinement asks that the length k of a centred chain (k odd, N = kF) divide N <i>exactly</i>, meaning that k and F share no prime factor, so that gcd(k, F) = 1. The units modulo k are counted by Euler\'s totient φ(k), and the question is how often an exact chain of length k occurs.'),
+ ()=>Compute({html:'For N up to 20000, count the N that have a centred chain of length k with gcd(k, N/k) = 1.',btn:'Compute for k = 3, 5, 7, 9, 15, 21',run:()=>{const X=20000;return [3,5,7,9,15,21].map(k=>{let c=0;for(let F=Math.ceil((k+1)/2);k*F<=X;F++)if(gcd(F,k)===1)c++;return `k = ${k}:  count = ${c},   φ(k) = ${phi(k)},   count / X = ${(c/X).toFixed(4)}`}).join('<br>')}}),
+ ()=>Conj({id:'c_tot',lead:'<i>Pause.</i> Divide the counts by X = 20000 and compare with 1/k, φ(k)/k and φ(k)/k².',tpl:'The proportion of N ≤ X with an exact centred chain of odd length k is about [[0]].',blanks:[['φ(k) / k²','1 / k','φ(k) / k','1 / φ(k)']],
+  check:s=>{const X=20000;const f=[k=>phi(k)/(k*k),k=>1/k,k=>phi(k)/k,k=>1/phi(k)][s[0]];for(const k of [3,5,7,9,15,21]){let c=0;for(let F=Math.ceil((k+1)/2);k*F<=X;F++)if(gcd(F,k)===1)c++;const ratio=(c/X)/f(k);if(Math.abs(ratio-1)>0.04)return{ok:false,msg:`k = ${k}: the observed proportion is ${(c/X).toFixed(4)}, but your formula gives ${f(k).toFixed(4)}.`}}return{ok:true}},
+  why:'Among any k consecutive values of F exactly φ(k) are coprime to k, and F runs up to X/k, giving (X/k)·φ(k)/k. Chains themselves count divisors and never needed units; the totient enters only when the question asks how exactly a divisor divides.'}),
+ ()=>Compute({html:'The average number of chains per number, for N up to X.',btn:'Compute for X = 1000, 10000, 100000',run:()=>[1e3,1e4,1e5].map(X=>`X = ${X}:  mean r = ${meanR(X).toFixed(4)},   ½ ln X = ${(0.5*Math.log(X)).toFixed(4)}`).join('<br>')}),
+ ()=>Task({id:'m1',html:'Compute mean r − ½ ln X at X = 100000 from the table above (to two decimal places): {{0}}',fields:[{exp:()=>meanR(1e5)-0.5*Math.log(1e5),tol:0.02}],hint:'Press the compute button, then subtract ½ ln X from the mean.',explain:'It is close to −0.576, which equals ½ ln 2 + γ − 3/2 where γ is Euler\'s constant, as counting the pairs (start, length) under the boundary shows.'})
+]}
+];
+
+/* ---------- build ---------- */
+const main=document.getElementById('main');
+RUNGS.forEach((R0,i)=>{
+ const sec=el('section','rung'+(i?' locked':''));sec.id='rung'+i;
+ sec.appendChild(el('div','rk',R0.k));sec.appendChild(el('h2',null,R0.t));
+ R0.items.forEach(f=>sec.appendChild(f()));
+ if(i<RUNGS.length-1){const nx=el('div','next noprint');const b=el('button','btn gold','Continue to rung '+(i+2)+' →');b.onclick=()=>{const nx2=document.getElementById('rung'+(i+1));nx2.dataset.open='1';nx2.classList.remove('locked');b.parentElement.style.display='none';nx2.scrollIntoView()};nx.appendChild(b);sec.appendChild(nx)}
+ main.appendChild(sec)});
+progress();
+
+/* ---------- settings ---------- */
+const root=document.documentElement,pop=document.getElementById('pop');
+document.getElementById('setBtn').onclick=e=>{e.stopPropagation();pop.classList.toggle('open')};
+document.addEventListener('click',e=>{if(!pop.contains(e.target)&&e.target.id!=='setBtn')pop.classList.remove('open')});
+const seg=(id,attr)=>{const g=document.getElementById(id);g.querySelectorAll('button').forEach(b=>b.onclick=()=>{root.setAttribute(attr,b.dataset.v);g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))})};
+seg('segTheme','data-theme');seg('segFb','data-fb');
+document.getElementById('revealAll').onchange=e=>{document.querySelectorAll('.rung').forEach(s=>{if(s.id==='rung0')return;s.classList.toggle('locked',!e.target.checked&&!s.dataset.open)})};
+const nameIn=document.getElementById('nameIn');
+const ph=()=>{document.getElementById('printhead').textContent=`Learner: ${nameIn.value||'________________'}   ·   ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}   ·   ${S.done.size} of ${S.total} tasks checked, ${S.led.filter(e=>e.ok).length} conjectures stand, ${S.led.filter(e=>!e.ok).length} fall`};
+nameIn.oninput=ph;
+document.getElementById('printBtn').onclick=()=>{ph();window.print()};
+window.addEventListener('beforeprint',ph);
+</script>
+</body>
+</html>
