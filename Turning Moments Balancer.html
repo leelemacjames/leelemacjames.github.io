@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turning Moments Balancer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1016;--panel:#151a23;--panel2:#1b2230;--ink:#ebe6da;--muted:#9ba3b0;--gold:#d2a94e;
+  --line:#2a3344;--cw:#62b9ad;--acw:#e08a72;--ok:#8fcf8f;--bad:#e27d7d;--onfill:#10141b;--beam:#c9ced8;
+}
+[data-theme="light"]{
+  --bg:#f5f1e6;--panel:#fffdf6;--panel2:#f0ead9;--ink:#1d2129;--muted:#5d6572;--gold:#8a6612;
+  --line:#d8cfb8;--cw:#1f7a70;--acw:#b4533a;--ok:#2e7d32;--bad:#b23b3b;--onfill:#ffffff;--beam:#6b7280;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.55;font-size:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 18px 40px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.05;margin:4px 0 8px}
+.lede{margin:0;color:var(--muted);max-width:760px}
+.settings{position:relative;flex:none}
+.gear{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer}
+.gear:hover{border-color:var(--gold)}
+.pop{position:absolute;right:0;top:calc(100% + 8px);z-index:20;width:240px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.pop[hidden]{display:none}
+.pop h3{margin:0 0 8px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.seg button{flex:1;background:transparent;color:var(--muted);border:0;padding:7px 8px;font:inherit;font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--onfill);font-weight:600}
+.pop label.chk{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+nav.tabs button{background:var(--panel);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:inherit;font-size:14.5px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--gold);color:var(--onfill);border-color:var(--gold);font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.blurb{margin:0 0 14px;color:var(--muted)}
+.beamwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px 6px 0;margin-bottom:12px}
+svg.beam{display:block;width:100%;height:auto}
+svg text{font-family:"IBM Plex Mono",monospace}
+.tickt{font-size:11px;fill:var(--muted)}
+.tagt{font-size:13px;fill:var(--ink)}
+.blockt{font-size:15px;font-weight:500;fill:var(--onfill)}
+.flab{font-size:12px;fill:var(--muted)}
+.side-l{fill:var(--acw)}.side-r{fill:var(--cw)}
+.hl{stroke:var(--gold);stroke-width:3;stroke-dasharray:6 4}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:2px 10px 10px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.read{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
+.card.acw h4{color:var(--acw)}.card.cw h4{color:var(--cw)}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:14px}
+.big{font-family:"Cormorant Garamond",serif;font-size:30px;font-weight:600;line-height:1.1;margin-top:4px}
+.verdict{border:1px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:rgba(210,169,78,.08)}
+.verdict b{font-family:"Cormorant Garamond",serif;font-size:22px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.side h3{margin:0 0 8px;font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:600}
+.side.l h3{color:var(--acw)}.side.r h3{color:var(--cw)}
+.load{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.loadhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:14px;font-weight:600}
+.field{margin:6px 0}
+.field .fl{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted)}
+.field .ctl{display:flex;gap:10px;align-items:center}
+.field input[type=range]{flex:1;accent-color:var(--gold);min-width:0}
+.field input[type=number]{width:74px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 6px;font:inherit;font-family:"IBM Plex Mono",monospace;font-size:14px}
+.field.unk input[type=number]{border-color:var(--gold);color:var(--gold)}
+.btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:var(--onfill);border-color:var(--gold);font-weight:600}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.btn[disabled]{opacity:.45;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.chip{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--gold);color:var(--ink)}
+.chip[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:rgba(210,169,78,.1)}
+.lab{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+.steps{display:grid;gap:10px;margin-top:6px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:12px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.step .n{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--onfill);display:grid;place-items:center;font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:14px}
+.step h5{margin:2px 0 4px;font-family:"Cormorant Garamond",serif;font-size:21px;font-weight:600}
+.step p{margin:4px 0;color:var(--muted);font-size:14.5px}
+.eq{font-family:"IBM Plex Mono",monospace;font-size:16px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin:6px 0;overflow-x:auto;white-space:nowrap}
+.unk{color:var(--gold);font-weight:600;border-bottom:2px solid var(--gold);padding:0 2px}
+.ans{border-color:var(--gold)!important}
+.note{font-size:13px;color:var(--muted)}
+.ma{display:grid;gap:4px}
+.qtext{font-size:18px;margin:6px 0 12px}
+.qrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.qrow input[type=number],.qrow select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-family:"IBM Plex Mono",monospace;font-size:16px}
+.qrow input[type=number]{width:120px}
+.radios{display:flex;gap:8px;flex-wrap:wrap}
+.radios label{border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14.5px}
+.radios input{accent-color:var(--gold);margin-right:6px}
+.feed{min-height:26px;margin:8px 0;font-size:15.5px}
+.feed.good{color:var(--ok)}.feed.bad{color:var(--bad)}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);margin-top:12px}
+.stats b{color:var(--gold);font-weight:500}
+footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.08em;color:var(--muted)}
+footer span{color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (max-width:720px){.cols,.read{grid-template-columns:1fr}.wrap{padding:16px 12px 30px}header{flex-direction:column}.settings{align-self:flex-end;position:absolute;right:14px;top:14px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="kicker">Year 10 Physics · Levers and moments</div>
+    <h1>Turning Moments Balancer</h1>
+    <p class="lede">A lever stays level when the turning effect on its left, which tries to spin it anticlockwise, matches the turning effect on its right, which tries to spin it clockwise, and since each turning effect is a force multiplied by its distance from the fulcrum, a single equation describes every case on this page.</p>
+  </div>
+  <div class="settings">
+    <button class="gear" id="gear" aria-expanded="false" aria-controls="pop">⚙ Settings</button>
+    <div class="pop" id="pop" hidden>
+      <h3>Appearance</h3>
+      <div class="seg" role="group" aria-label="Colour theme">
+        <button id="thDark" aria-pressed="true">Dark</button>
+        <button id="thLight" aria-pressed="false">Light</button>
+      </div>
+      <h3>Motion</h3>
+      <label class="chk"><input type="checkbox" id="animChk" checked> Animate the bar</label>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Modes">
+  <button role="tab" id="tab-explore" aria-selected="true" data-tab="explore">1 · Explore the bar</button>
+  <button role="tab" id="tab-solve" aria-selected="false" data-tab="solve">2 · Solve for the unknown</button>
+  <button role="tab" id="tab-practice" aria-selected="false" data-tab="practice">3 · Practice</button>
+</nav>
+
+<!-- EXPLORE -->
+<section class="panel" id="p-explore" role="tabpanel" aria-labelledby="tab-explore">
+  <p class="blurb">Drag the sliders to hang loads at different distances from the fulcrum and watch the bar respond, comparing the two totals in the panel beneath until you can predict the outcome before it happens.</p>
+  <div class="chips" id="exPresets" aria-label="Example set-ups"></div>
+  <div class="beamwrap"><svg class="beam" id="svgEx" viewBox="0 0 900 340" role="img" aria-label="Lever with loads"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--acw)"></i>Left loads turn the bar anticlockwise</span><span><i class="sw" style="background:var(--cw)"></i>Right loads turn the bar clockwise</span><span>Distances are measured from the fulcrum along the bar, in metres</span></div>
+  </div>
+  <div class="read" id="exRead"></div>
+  <div class="verdict" id="exVerdict" aria-live="polite"></div>
+  <div class="cols">
+    <div class="side l"><h3>Left side</h3><div id="exL"></div><button class="btn" id="addL">+ Add a load</button></div>
+    <div class="side r"><h3>Right side</h3><div id="exR"></div><button class="btn" id="addR">+ Add a load</button></div>
+  </div>
+</section>
+
+<!-- SOLVE -->
+<section class="panel" id="p-solve" role="tabpanel" aria-labelledby="tab-solve" hidden>
+  <p class="blurb">Choose the quantity you want to find, enter the other three, and step through the algebra one line at a time, where each line either multiplies two known numbers or divides both sides of the equation by the same number.</p>
+  <p class="lab">Which side holds the effort?</p>
+  <div class="chips" id="soEffort" role="group" aria-label="Effort side">
+    <button class="chip" data-eff="left" aria-pressed="true">Effort on the left, load on the right</button>
+    <button class="chip" data-eff="right" aria-pressed="false">Effort on the right, load on the left</button>
+  </div>
+  <p class="lab">What do you want to find?</p>
+  <div class="chips" id="soUnknown" role="group" aria-label="Unknown quantity"></div>
+  <div class="beamwrap"><svg class="beam" id="svgSo" viewBox="0 0 900 340" role="img" aria-label="Lever being solved"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--acw)"></i>Left side</span><span><i class="sw" style="background:var(--cw)"></i>Right side</span><span>The dashed gold outline marks the quantity being found</span></div>
+  </div>
+  <div class="cols" id="soFields"></div>
+  <div class="verdict" id="soWarn" hidden></div>
+  <p class="lab" style="margin-top:14px">The algebra, line by line</p>
+  <div class="qrow">
+    <button class="btn primary" id="soNext">Show next step</button>
+    <button class="btn" id="soAll">Show all steps</button>
+    <button class="btn" id="soReset">Hide steps</button>
+  </div>
+  <div class="steps" id="soSteps"></div>
+  <div class="card ma" id="soMA" style="margin-top:14px"></div>
+</section>
+
+<!-- PRACTICE -->
+<section class="panel" id="p-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+  <p class="blurb">Each question is generated with friendly numbers, and the hint button reveals the working one line at a time so that you can stop as soon as you see what to do next.</p>
+  <div class="chips" id="prTypes" role="group" aria-label="Question type"></div>
+  <div class="beamwrap"><svg class="beam" id="svgPr" viewBox="0 0 900 340" role="img" aria-label="Lever for the question"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--acw)"></i>Left side</span><span><i class="sw" style="background:var(--cw)"></i>Right side</span><span id="prHold"></span></div>
+  </div>
+  <div class="lab" id="prMeta"></div>
+  <p class="qtext" id="prText"></p>
+  <div id="prAns"></div>
+  <div class="qrow">
+    <button class="btn primary" id="prCheck">Check answer</button>
+    <button class="btn" id="prHint">Hint: next step</button>
+    <button class="btn" id="prShow">Show full working</button>
+    <button class="btn" id="prNew">New question</button>
+  </div>
+  <div class="feed" id="prFeed" aria-live="polite"></div>
+  <div class="steps" id="prSteps"></div>
+  <div class="stats"><span>Answered <b id="stN">0</b></span><span>Correct <b id="stC">0</b></span><span>Current streak <b id="stS">0</b></span></div>
+</section>
+
+<footer>Constructed by Silicon · Anthropic Claude — Architect Carbon · <span>LeeMcCullochJames</span></footer>
+</div>
+
+<script>
+'use strict';
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const trim=(x,dp)=>String(Math.round(x*Math.pow(10,dp))/Math.pow(10,dp));
+const fmtF=x=>trim(x,2), fmtM=x=>trim(x,3), fmtX=x=>trim(x,3);
+const fmtD=x=>{let s=trim(x,3); if(!s.includes('.')) return s+'.00'; return s.split('.')[1].length<2? s+'0':s;};
+const sumM=a=>a.reduce((t,l)=>t+l.F*l.d,0);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const MAXD=0.6;
+let animate=true;
+
+function angleFor(L,R){
+  const net=R-L; if(Math.abs(net)<1e-6) return 0;
+  const ratio=Math.abs(net)/(L+R);
+  return Math.sign(net)*Math.min(12,3+30*ratio);
+}
+
+/* ---------- the bar ---------- */
+class Beam{
+  constructor(svg){this.svg=svg;this.angle=0;this.target=0;this.loads={left:[],right:[]};this.raf=null;this.render();}
+  show(loads,hold){
+    this.loads=loads;
+    const L=sumM(loads.left),R=sumM(loads.right);
+    this.target=hold?0:angleFor(L,R);
+    if(!animate){this.angle=this.target;this.render();return;}
+    if(!this.raf) this.tick();
+  }
+  tick(){
+    const diff=this.target-this.angle;
+    if(Math.abs(diff)<0.02){this.angle=this.target;this.render();this.raf=null;return;}
+    this.angle+=diff*0.14;this.render();
+    this.raf=requestAnimationFrame(()=>this.tick());
+  }
+  render(){
+    const PX=450,PY=160,PPM=620,th=this.angle*Math.PI/180,c=Math.cos(th),s=Math.sin(th);
+    let h='';
+    h+=`<rect x="${PX-60}" y="${PY+84}" width="120" height="10" rx="3" fill="var(--line)"/>`;
+    h+=`<polygon points="${PX},${PY+6} ${PX-24},${PY+84} ${PX+24},${PY+84}" fill="var(--panel)" stroke="var(--gold)" stroke-width="2"/>`;
+    h+=`<text x="${PX}" y="${PY+110}" text-anchor="middle" class="flab">fulcrum</text>`;
+    h+=`<g transform="rotate(${this.angle} ${PX} ${PY})"><rect x="${PX-0.65*PPM}" y="${PY-7}" width="${1.3*PPM}" height="14" rx="3" fill="var(--beam)"/>`;
+    for(let i=1;i<=6;i++){
+      for(const sg of[-1,1]){const x=PX+sg*i*0.1*PPM;
+        h+=`<line x1="${x}" y1="${PY-7}" x2="${x}" y2="${PY-12}" stroke="var(--muted)" stroke-width="1.5"/><text x="${x}" y="${PY-17}" text-anchor="middle" class="tickt">${(i/10).toFixed(1)}</text>`;}
+    }
+    h+=`</g><circle cx="${PX}" cy="${PY}" r="5" fill="var(--gold)"/>`;
+    for(const side of['left','right']){
+      const sg=side==='left'?-1:1;
+      this.loads[side].forEach((ld,i)=>{
+        const d=Math.min(ld.d,0.63);
+        const px=PX+sg*d*PPM*c, py=PY+sg*d*PPM*s+7;
+        const str=26+i*52, sz=30+Math.min(32,Math.sqrt(ld.F)*5.2), w=sz*1.1, hh=sz*0.82;
+        const cls=side==='left'?'side-l':'side-r';
+        h+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py+str}" stroke="var(--muted)" stroke-width="1.5"/>`;
+        h+=`<rect x="${px-w/2}" y="${py+str}" width="${w}" height="${hh}" rx="5" class="${cls}${ld.hl?' hl':''}"/>`;
+        h+=`<text x="${px}" y="${py+str+hh/2+5}" text-anchor="middle" class="blockt">${ld.qF?'?':fmtF(ld.F)+' N'}</text>`;
+        h+=`<text x="${px}" y="${py-34}" text-anchor="middle" class="tagt">${ld.qD?'? m':fmtD(ld.d)+' m'}</text>`;
+      });
+    }
+    this.svg.innerHTML=h;
+  }
+}
+
+/* ---------- reusable slider + number field ---------- */
+function fieldHTML(id,label,min,max,step,val,unit,extra=''){
+  return `<div class="field ${extra}" data-id="${id}" data-min="${min}" data-max="${max}">
+    <div class="fl"><span>${label}</span><span>${unit}</span></div>
+    <div class="ctl"><input type="range" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label} slider" data-f>
+    <input type="number" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label} value" data-f></div></div>`;
+}
+function wireFields(root,cb){
+  root.addEventListener('input',e=>{
+    const t=e.target; if(!t.matches('[data-f]')) return;
+    const w=t.closest('.field'); const rng=$('input[type=range]',w),num=$('input[type=number]',w);
+    let v=parseFloat(t.value); if(isNaN(v)) return;
+    const mn=parseFloat(w.dataset.min),mx=parseFloat(w.dataset.max);
+    v=Math.min(mx,Math.max(mn,v));
+    if(t===num){rng.value=v;} else {num.value=v;}
+    cb(w.dataset.id,v);
+  });
+}
+function setField(root,id,val,locked){
+  const w=$(`.field[data-id="${id}"]`,root); if(!w) return;
+  $('input[type=range]',w).value=val; $('input[type=number]',w).value=fmtM(val);
+  $$('input',w).forEach(i=>i.disabled=!!locked); w.classList.toggle('unk',!!locked);
+}
+
+/* ---------- algebra steps (shared by Solve and Practice) ---------- */
+function solveSteps(v,key,pre=[]){
+  const unkF=key[0]==='F', sym=unkF?'F':'d', unit=unkF?'N':'m';
+  const u=n=>`<span class="unk">${n}</span>`;
+  const side=key.endsWith('l')?'l':'r', sideName=side==='l'?'left':'right', known=side==='l'?'r':'l';
+  const Fk=v['F'+known], dk=v['d'+known], K=Fk*dk;
+  const other=unkF?v['d'+side]:v['F'+side];
+  const otherS=unkF?fmtD(other):fmtF(other);
+  const shown={Fl:fmtF(v.Fl),dl:fmtD(v.dl),Fr:fmtF(v.Fr),dr:fmtD(v.dr)}; shown[key]=u(sym);
+  const leftE=`${shown.Fl} × ${shown.dl}`, rightE=`${shown.Fr} × ${shown.dr}`;
+  const unkE=side==='l'?leftE:rightE;
+  const ans=K/other, exact=Math.abs(ans-Math.round(ans*1000)/1000)<1e-9;
+  const knownS=`${fmtF(Fk)} × ${fmtD(dk)}`;
+  const Lm=v.Fl*v.dl, Rm=v.Fr*v.dr;
+  const out=[...pre];
+  out.push({title:'Write the balance rule',html:`<p>The bar balances when the two turning effects match, with a downward force on the left turning the bar anticlockwise and a downward force on the right turning it clockwise.</p><div class="eq">anticlockwise moment = clockwise moment</div><div class="eq">force × distance (left) = force × distance (right)</div>`});
+  out.push({title:'Put in the numbers you know',html:`<div class="eq">${leftE} = ${rightE}</div><p>The letter ${u(sym)} stands for the ${unkF?'force':'distance'} on the ${sideName} that we want to find.</p>`});
+  out.push({title:'Work out the side that has no letter',html:`<div class="eq">${knownS} = ${fmtM(K)}</div><p>Multiplying force by distance gives a moment in newton metres, so the equation becomes:</p><div class="eq">${side==='l'?`${leftE} = ${fmtM(K)}`:`${fmtM(K)} = ${rightE}`}</div>`});
+  out.push({title:'Divide both sides by the number next to the letter',html:`<p>${u(sym)} is being multiplied by ${otherS}, and dividing by ${otherS} undoes that, provided the same division is applied to both sides so that the equation stays balanced.</p><div class="eq">(${unkE}) ÷ ${otherS} = ${fmtM(K)} ÷ ${otherS}</div><p>On the side with the letter, the ${otherS} cancels and leaves the letter alone:</p><div class="eq">${u(sym)} = ${fmtM(K)} ÷ ${otherS}</div>`});
+  out.push({title:'Calculate the answer',html:`<div class="eq ans">${u(sym)} = ${fmtM(K)} ÷ ${otherS} ${exact?'=':'≈'} ${fmtX(ans)} ${unit}</div>${exact?'':'<p class="note">The division does not come out exactly, so the answer is rounded to three decimal places.</p>'}`});
+  const ansR=Math.round(ans*1000)/1000;
+  const chk=side==='l'?(unkF?ansR*v.dl:v.Fl*ansR):(unkF?ansR*v.dr:v.Fr*ansR);
+  const kn=Fk*dk;
+  out.push({title:'Check by putting it back in',html:`<div class="eq">${side==='l'?`${unkF?fmtX(ansR):fmtF(v.Fl)} × ${unkF?fmtD(v.dl):fmtX(ansR)}`:`${unkF?fmtX(ansR):fmtF(v.Fr)} × ${unkF?fmtD(v.dr):fmtX(ansR)}`} = ${fmtM(chk)} N m</div><div class="eq">${knownS} = ${fmtM(kn)} N m</div><p>${Math.abs(chk-kn)<=0.005*kn?'Both turning effects agree, so the lever balances.':'The two moments agree to within the rounding of the answer.'}</p>`});
+  return out;
+}
+const stepHTML=(s,i)=>`<div class="step"><div class="n">${i+1}</div><div><h5>${s.title}</h5>${s.html}</div></div>`;
+
+/* ---------- tabs and settings ---------- */
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  $$('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  $$('section.panel').forEach(p=>p.hidden=p.id!=='p-'+b.dataset.tab);
+  if(b.dataset.tab==='solve') renderSolve();
+  if(b.dataset.tab==='practice'&&!P.q) newQ();
+  if(b.dataset.tab==='explore') renderExplore(false);
+}));
+const gear=$('#gear'),pop=$('#pop');
+gear.addEventListener('click',e=>{e.stopPropagation();pop.hidden=!pop.hidden;gear.setAttribute('aria-expanded',!pop.hidden);});
+document.addEventListener('click',e=>{if(!pop.hidden&&!pop.contains(e.target)){pop.hidden=true;gear.setAttribute('aria-expanded','false');}});
+function setTheme(t){document.documentElement.dataset.theme=t;$('#thDark').setAttribute('aria-pressed',t==='dark');$('#thLight').setAttribute('aria-pressed',t==='light');try{localStorage.setItem('tm-theme',t);}catch(e){}}
+$('#thDark').onclick=()=>setTheme('dark');$('#thLight').onclick=()=>setTheme('light');
+$('#animChk').onchange=e=>{animate=e.target.checked;};
+try{const t=localStorage.getItem('tm-theme'); if(t) setTheme(t);}catch(e){}
+
+/* ---------- 1. EXPLORE ---------- */
+const bEx=new Beam($('#svgEx'));
+const ex={left:[{F:6,d:0.40}],right:[{F:12,d:0.20}]};
+const exPre=[
+  ['Worksheet lever: 6 N and 12 N',{left:[{F:6,d:0.40}],right:[{F:12,d:0.20}]}],
+  ['Q2: 8 N effort, 24 N load',{left:[{F:8,d:0.45}],right:[{F:24,d:0.15}]}],
+  ['Q3: effort arm shortened',{left:[{F:8,d:0.30}],right:[{F:24,d:0.15}]}],
+  ['Ruler test: 2 counters, 3 counters',{left:[{F:2,d:0.06}],right:[{F:3,d:0.04}]}],
+  ['Two loads on one side',{left:[{F:10,d:0.30}],right:[{F:6,d:0.20},{F:6,d:0.30}]}]
+];
+$('#exPresets').innerHTML=exPre.map((p,i)=>`<button class="chip" data-i="${i}">${p[0]}</button>`).join('');
+$('#exPresets').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const p=exPre[+b.dataset.i][1];ex.left=p.left.map(x=>({...x}));ex.right=p.right.map(x=>({...x}));renderExplore(true);});
+function rowsHTML(side){
+  return ex[side].map((l,i)=>`<div class="load" data-side="${side}" data-i="${i}">
+    <div class="loadhead"><span>Load ${i+1}</span><button class="btn small" data-rm>Remove</button></div>
+    ${fieldHTML(side+i+'F','Force',1,40,1,l.F,'newtons (N)')}
+    ${fieldHTML(side+i+'d','Distance from fulcrum',0.01,MAXD,0.01,l.d,'metres (m)')}</div>`).join('')||'<p class="note">No loads on this side.</p>';
+}
+function renderExplore(rebuild){
+  if(rebuild){$('#exL').innerHTML=rowsHTML('left');$('#exR').innerHTML=rowsHTML('right');
+    $('#addL').disabled=ex.left.length>=3;$('#addR').disabled=ex.right.length>=3;}
+  const L=sumM(ex.left),R=sumM(ex.right);
+  const terms=a=>a.length?a.map(l=>`<div class="mono">${fmtF(l.F)} N × ${fmtD(l.d)} m = ${fmtM(l.F*l.d)} N m</div>`).join(''):'<div class="note">no loads</div>';
+  $('#exRead').innerHTML=`<div class="card acw"><h4>Anticlockwise (left)</h4>${terms(ex.left)}<div class="big">${fmtM(L)} N m</div></div><div class="card cw"><h4>Clockwise (right)</h4>${terms(ex.right)}<div class="big">${fmtM(R)} N m</div></div>`;
+  const net=R-L; let v;
+  if(!ex.left.length&&!ex.right.length) v='<b>Add a load to begin.</b>';
+  else if(Math.abs(net)<1e-6) v=`<b>Balanced.</b> The anticlockwise moment of ${fmtM(L)} N m equals the clockwise moment of ${fmtM(R)} N m, so the bar stays level.`;
+  else v=`<b>The bar turns ${net>0?'clockwise':'anticlockwise'}.</b> The ${net>0?'clockwise (right)':'anticlockwise (left)'} moment is larger by ${fmtM(Math.abs(net))} N m, which is the net moment.`;
+  $('#exVerdict').innerHTML=v;
+  $('#svgEx').setAttribute('aria-label',`Lever. Anticlockwise ${fmtM(L)} newton metres, clockwise ${fmtM(R)} newton metres.`);
+  bEx.show(ex,false);
+}
+wireFields($('#p-explore'),(id,v)=>{
+  const row=$(`.field[data-id="${id}"]`).closest('.load'); const side=row.dataset.side,i=+row.dataset.i;
+  ex[side][i][id.endsWith('F')?'F':'d']=v; renderExplore(false);
+});
+$('#p-explore').addEventListener('click',e=>{
+  const rm=e.target.closest('[data-rm]'); if(!rm) return;
+  const row=rm.closest('.load'); ex[row.dataset.side].splice(+row.dataset.i,1); renderExplore(true);
+});
+$('#addL').onclick=()=>{ex.left.push({F:5,d:0.25});renderExplore(true);};
+$('#addR').onclick=()=>{ex.right.push({F:5,d:0.25});renderExplore(true);};
+
+/* ---------- 2. SOLVE ---------- */
+const bSo=new Beam($('#svgSo'));
+const so={eff:'left',unknown:'Fl',Fl:8,dl:0.45,Fr:24,dr:0.15,shown:1};
+function solvedVals(){
+  const v={Fl:so.Fl,dl:so.dl,Fr:so.Fr,dr:so.dr};
+  switch(so.unknown){
+    case 'Fl':v.Fl=so.Fr*so.dr/so.dl;break;
+    case 'dl':v.dl=so.Fr*so.dr/so.Fl;break;
+    case 'Fr':v.Fr=so.Fl*so.dl/so.dr;break;
+    case 'dr':v.dr=so.Fl*so.dl/so.Fr;break;
+  }
+  return v;
+}
+function soBuild(){
+  const roleL=so.eff==='left'?'Effort':'Load', roleR=so.eff==='left'?'Load':'Effort';
+  const names={Fl:`${roleL} force (left)`,dl:`${roleL} distance (left)`,Fr:`${roleR} force (right)`,dr:`${roleR} distance (right)`};
+  $('#soUnknown').innerHTML=Object.keys(names).map(k=>`<button class="chip" data-k="${k}" aria-pressed="${k===so.unknown}">Find the ${names[k].toLowerCase()}</button>`).join('');
+  const f=(k,lab,mn,mx,st,un)=>fieldHTML(k,lab,mn,mx,st,so[k],un);
+  $('#soFields').innerHTML=`<div class="side l"><h3>Left · ${roleL}</h3>${f('Fl','Force',1,40,1,'newtons (N)')}${f('dl','Distance from fulcrum',0.01,MAXD,0.01,'metres (m)')}</div>
+    <div class="side r"><h3>Right · ${roleR}</h3>${f('Fr','Force',1,40,1,'newtons (N)')}${f('dr','Distance from fulcrum',0.01,MAXD,0.01,'metres (m)')}</div>`;
+  $('#soEffort').querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.eff===so.eff));
+}
+function renderSolve(rebuild=true){
+  if(rebuild) soBuild();
+  const v=solvedVals();
+  ['Fl','dl','Fr','dr'].forEach(k=>setField($('#soFields'),k,Math.min(v[k],k[0]==='F'?40:MAXD)>0?(k[0]==='F'?Math.min(v[k],40):Math.min(v[k],MAXD)):so[k],k===so.unknown));
+  if(true){const w=$(`.field[data-id="${so.unknown}"] input[type=number]`,$('#soFields')); if(w) w.value=fmtM(v[so.unknown]);}
+  const warn=$('#soWarn'); const bad=[];
+  if(v.dl>MAXD+1e-9||v.dr>MAXD+1e-9) bad.push(`The distance needed is ${fmtM(Math.max(v.dl,v.dr))} m, which lies beyond the ${MAXD.toFixed(2)} m reach of this bar, so the bar below tilts because the load cannot be hung there.`);
+  if(v.Fl>40.0001||v.Fr>40.0001) bad.push(`The force needed is ${fmtM(Math.max(v.Fl,v.Fr))} N, which is larger than the 40 N the sliders allow.`);
+  warn.hidden=!bad.length; warn.innerHTML=bad.join(' ');
+  const mk=(side)=>{const s=side==='left'?'l':'r';return {F:Math.min(v['F'+s],60),d:v['d'+s],hl:so.unknown==='F'+s||so.unknown==='d'+s};};
+  bSo.show({left:[mk('left')],right:[mk('right')]},false);
+  const steps=solveSteps(v,so.unknown);
+  so.shown=Math.min(Math.max(so.shown,1),steps.length);
+  $('#soSteps').innerHTML=so.shown>0?steps.slice(0,so.shown).map(stepHTML).join(''):'';
+  $('#soNext').disabled=so.shown>=steps.length;
+  const eF=so.eff==='left'?v.Fl:v.Fr, lF=so.eff==='left'?v.Fr:v.Fl, eD=so.eff==='left'?v.dl:v.dr, lD=so.eff==='left'?v.dr:v.dl;
+  const MA=lF/eF;
+  $('#soMA').innerHTML=`<h4 class="lab" style="margin:0">Mechanical advantage</h4>
+    <div class="mono">load ÷ effort = ${fmtF(lF)} ÷ ${fmtF(eF)} = <b style="color:var(--gold)">${fmtX(MA)}</b></div>
+    <div class="mono">effort arm ÷ load arm = ${fmtD(eD)} ÷ ${fmtD(lD)} = ${fmtX(eD/lD)}</div>
+    <div class="note">Both ratios agree for a balanced lever, and when the bar tilts the effort end moves ${fmtX(MA)} times as far as the load end.</div>`;
+}
+wireFields($('#p-solve'),(id,v)=>{so[id]=v;renderSolve(false);});
+$('#soEffort').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;so.eff=b.dataset.eff;renderSolve(true);});
+$('#soUnknown').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;so.unknown=b.dataset.k;so.shown=1;renderSolve(true);});
+$('#soNext').onclick=()=>{so.shown++;renderSolve(false);};
+$('#soAll').onclick=()=>{so.shown=99;renderSolve(false);};
+$('#soReset').onclick=()=>{so.shown=1;renderSolve(false);};
+
+/* ---------- 3. PRACTICE ---------- */
+const bPr=new Beam($('#svgPr'));
+const P={type:'any',q:null,done:false,shown:0,n:0,right:0,streak:0,count:0};
+const TYPES=[['any','Mixed'],['force','Find a force'],['distance','Find a distance'],['moment','Find a moment'],['turn','Which way does it turn?']];
+$('#prTypes').innerHTML=TYPES.map(t=>`<button class="chip" data-t="${t[0]}" aria-pressed="${t[0]==='any'}">${t[1]}</button>`).join('');
+$('#prTypes').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;P.type=b.dataset.t;$$('#prTypes .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));newQ();});
+const CM=[5,10,15,20,25,30,40,45,50,60], FS=[2,3,4,5,6,8,10,12,15,18,20,24,30];
+const D=(cm,u)=>u?`${cm} cm`:`${fmtD(cm/100)} m`;
+function gen(type){
+  for(let t=0;t<2000;t++){
+    const unitCm=Math.random()<0.5;
+    if(type==='force'){
+      const Fk=pick(FS),dk=pick(CM),du=pick(CM); if(dk===du) continue;
+      const Fu=Fk*dk/du; if(!Number.isInteger(Fu)||Fu<1||Fu>40||Fu===Fk) continue;
+      return {type,Fk,dk,du,Fu,unitCm,us:pick(['left','right']),ans:Fu};
+    }
+    if(type==='distance'){
+      const Fk=pick(FS),dk=pick(CM),Fu=pick(FS); if(Fu===Fk) continue;
+      const du=Fk*dk/Fu; if(!Number.isInteger(du)||du<5||du>60) continue;
+      return {type,Fk,dk,du,Fu,unitCm,us:pick(['left','right']),ans:du/100};
+    }
+    if(type==='moment'){
+      const F=pick(FS),d=pick(CM); return {type,F,d,unitCm:true,s:pick(['left','right']),ans:F*d/100};
+    }
+    if(type==='turn'){
+      const Fl=pick(FS),dl=pick(CM); let Fr,dr;
+      if(Math.random()<0.25){Fr=pick(FS);dr=Fl*dl/Fr; if(!Number.isInteger(dr)||dr<5||dr>60||(Fr===Fl)) continue;}
+      else{Fr=pick(FS);dr=pick(CM); if(Fl*dl===Fr*dr) continue;}
+      const l=Fl*dl,r=Fr*dr; return {type,Fl,dl,Fr,dr,unitCm,ans:l===r?'balanced':(r>l?'clockwise':'anticlockwise')};
+    }
+  }
+}
+function qView(q){
+  const sideO=s=>s==='left'?'right':'left';
+  if(q.type==='force'){
+    const ks=sideO(q.us);
+    return {text:`A ${q.Fk} N load hangs ${D(q.dk,q.unitCm)} to the ${ks} of the fulcrum. What downward force, hung ${D(q.du,q.unitCm)} to the ${q.us} of the fulcrum, balances the bar?`,label:'Find a force'};
+  }
+  if(q.type==='distance'){
+    const ks=sideO(q.us);
+    return {text:`A ${q.Fk} N load hangs ${D(q.dk,q.unitCm)} to the ${ks} of the fulcrum. A ${q.Fu} N force is hung on the ${q.us}. How far from the fulcrum must it hang to balance the bar? Give your answer in metres.`,label:'Find a distance'};
+  }
+  if(q.type==='moment') return {text:`A downward force of ${q.F} N acts ${q.d} cm to the ${q.s} of a fulcrum. Calculate its moment in N m and say which way it turns the bar.`,label:'Find a moment'};
+  return {text:`The left side carries ${q.Fl} N at ${D(q.dl,q.unitCm)} and the right side carries ${q.Fr} N at ${D(q.dr,q.unitCm)}. Which way does the bar turn when released?`,label:'Which way does it turn?'};
+}
+function prLoads(q,reveal){
+  const m=x=>x/100;
+  if(q.type==='force'||q.type==='distance'){
+    const ks=q.us==='left'?'right':'left';
+    const o={left:[],right:[]};
+    o[ks]=[{F:q.Fk,d:m(q.dk)}];
+    o[q.us]=[{F:q.Fu,d:m(q.du),hl:reveal,qF:!reveal&&q.type==='force',qD:!reveal&&q.type==='distance'}];
+    if(!reveal){ if(q.type==='force') o[q.us][0].F=10; else o[q.us][0].d=0.3; }
+    return o;
+  }
+  if(q.type==='moment'){const o={left:[],right:[]};o[q.s]=[{F:q.F,d:m(q.d)}];return o;}
+  return {left:[{F:q.Fl,d:m(q.dl)}],right:[{F:q.Fr,d:m(q.dr)}]};
+}
+function prSteps(q){
+  const pre=[]; const m=x=>x/100;
+  if(q.type==='force'||q.type==='distance'){
+    const v=q.us==='left'?{Fl:q.Fu,dl:m(q.du),Fr:q.Fk,dr:m(q.dk)}:{Fl:q.Fk,dl:m(q.dk),Fr:q.Fu,dr:m(q.du)};
+    if(q.unitCm){
+      const items=q.type==='force'?[q.dk,q.du]:[q.dk];
+      pre.push({title:'Convert centimetres to metres',html:`<p>Moments are worked out with distances in metres, so each distance in centimetres is divided by 100.</p>${items.map(c=>`<div class="eq">${c} cm ÷ 100 = ${fmtD(c/100)} m</div>`).join('')}`});
+    }
+    const key=(q.type==='force'?'F':'d')+(q.us==='left'?'l':'r');
+    return solveSteps(v,key,pre);
+  }
+  if(q.type==='moment'){
+    const dir=q.s==='left'?'anticlockwise':'clockwise';
+    return [
+      {title:'Recall the definition',html:`<div class="eq">moment = force × perpendicular distance from the fulcrum</div>`},
+      {title:'Convert centimetres to metres',html:`<div class="eq">${q.d} cm ÷ 100 = ${fmtD(q.d/100)} m</div>`},
+      {title:'Multiply force by distance',html:`<div class="eq ans">${q.F} × ${fmtD(q.d/100)} = ${fmtM(q.ans)} N m</div>`},
+      {title:'Decide the direction',html:`<p>A downward force on the ${q.s} of the fulcrum lifts the opposite end, so it turns the bar ${dir}.</p><div class="eq ans">${fmtM(q.ans)} N m ${dir}</div>`}
+    ];
+  }
+  const l=q.Fl*q.dl/100,r=q.Fr*q.dr/100;
+  return [
+    {title:'Find the left moment',html:`<div class="eq">${q.Fl} × ${fmtD(q.dl/100)} = ${fmtM(l)} N m anticlockwise</div>`},
+    {title:'Find the right moment',html:`<div class="eq">${q.Fr} × ${fmtD(q.dr/100)} = ${fmtM(r)} N m clockwise</div>`},
+    {title:'Compare the two',html:`<p>${Math.abs(l-r)<1e-9?'The two moments are equal, so nothing turns.':`The ${r>l?'clockwise':'anticlockwise'} moment is larger by ${fmtM(Math.abs(r-l))} N m, so that is the way the bar turns.`}</p><div class="eq ans">${q.ans}</div>`}
+  ];
+}
+function newQ(){
+  const t=P.type==='any'?pick(['force','distance','moment','turn']):P.type;
+  P.q=gen(t);P.done=false;P.shown=0;P.count++;
+  const v=qView(P.q);
+  $('#prMeta').textContent=`Question ${P.count} · ${v.label}`;
+  $('#prText').textContent=v.text;
+  let a='';
+  if(t==='turn') a=`<div class="radios" role="radiogroup" aria-label="Direction">${['clockwise','anticlockwise','balanced'].map(x=>`<label><input type="radio" name="dir" value="${x}">${x[0].toUpperCase()+x.slice(1)}</label>`).join('')}</div>`;
+  else{
+    const unit=t==='force'?'N':t==='distance'?'m':'N m';
+    a=`<div class="qrow"><input type="number" id="prNum" step="any" inputmode="decimal" aria-label="Your answer"> <span class="mono">${unit}</span>
+    ${t==='moment'?`<select id="prDir" aria-label="Direction"><option value="">direction…</option><option value="clockwise">clockwise</option><option value="anticlockwise">anticlockwise</option></select>`:''}</div>`;
+  }
+  $('#prAns').innerHTML=a;
+  $('#prFeed').className='feed';$('#prFeed').textContent='';$('#prSteps').innerHTML='';
+  $('#prCheck').disabled=false;
+  bPr.show(prLoads(P.q,false),true);
+  $('#prHold').textContent='The bar is held level until you answer';
+}
+function reveal(){
+  bPr.show(prLoads(P.q,true),false);
+  $('#prHold').textContent='Bar released with the correct values';
+}
+function showSteps(n){
+  const st=prSteps(P.q);P.shown=Math.min(Math.max(n,0),st.length);
+  $('#prSteps').innerHTML=st.slice(0,P.shown).map(stepHTML).join('');
+}
+function feed(msg,cls){const f=$('#prFeed');f.className='feed '+cls;f.textContent=msg;}
+function tally(){$('#stN').textContent=P.n;$('#stC').textContent=P.right;$('#stS').textContent=P.streak;}
+$('#prCheck').onclick=()=>{
+  const q=P.q; let ok=false;
+  if(q.type==='turn'){
+    const c=$('input[name=dir]:checked'); if(!c){feed('Choose one of the three options first.','bad');return;}
+    ok=c.value===q.ans;
+  }else{
+    const raw=$('#prNum').value.replace(',','.'); const val=parseFloat(raw);
+    if(isNaN(val)){feed('Enter a number first.','bad');return;}
+    const tol=Math.max(Math.abs(q.ans)*0.01,1e-9);
+    const numOK=Math.abs(val-q.ans)<=tol;
+    let dirOK=true;
+    if(q.type==='moment'){const d=$('#prDir').value; if(!d){feed('Choose the direction as well as the number.','bad');return;} dirOK=d===(q.s==='left'?'anticlockwise':'clockwise');}
+    ok=numOK&&dirOK;
+    if(!ok){
+      let m='Not quite yet. Press the hint button for the next line of working.';
+      if(!numOK&&(Math.abs(val/100-q.ans)<=tol||Math.abs(val*100-q.ans)<=tol)) m='The digits look right but the size is out by a factor of 100, so check the conversion between centimetres and metres.';
+      else if(numOK&&!dirOK) m='The number is right. Think about which end of the bar the force pushes down.';
+      P.n++;P.streak=0;tally();feed(m,'bad');return;
+    }
+  }
+  P.n++;
+  if(ok){P.right++;P.streak++;tally();feed('Correct. The full working is shown below so you can compare it with your own.','good');P.done=true;showSteps(99);reveal();$('#prCheck').disabled=true;}
+  else{P.streak=0;tally();feed('Not quite. Press the hint button for the next line of working, or choose another option.','bad');}
+};
+$('#prHint').onclick=()=>showSteps(P.shown+1);
+$('#prShow').onclick=()=>{showSteps(99);reveal();};
+$('#prNew').onclick=newQ;
+
+/* ---------- start ---------- */
+renderExplore(true);
+</script>
+</body>
+</html>
