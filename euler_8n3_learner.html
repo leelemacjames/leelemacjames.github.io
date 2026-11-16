@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-fb="std">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Euler's 8n + 3 Conjecture · a learner's ladder of conjectures</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{--bg:#0d0e11;--panel:#15171c;--panel2:#1c1f26;--ink:#e9e5da;--mute:#9a968b;--gold:#c9a64a;--line:#2b2e38;--teal:#6fb3a8;--inbg:#0d0e11}
+:root[data-theme="light"]{--bg:#f7f3ea;--panel:#fffdf8;--panel2:#f0ebde;--ink:#1d1c19;--mute:#6d6a60;--gold:#8a6a14;--line:#d9d2bf;--teal:#2a7a6e;--inbg:#ffffff}
+:root[data-fb="std"]{--good:#3f9e6b;--bad:#cf5a4e}
+:root[data-fb="cb"]{--good:#3b82c4;--bad:#e08a00}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;line-height:1.5;transition:background .2s,color .2s}
+.wrap{max-width:860px;margin:0 auto;padding:0 18px 90px}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:9px 18px}
+.topin{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.kick{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.prog{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mute)}
+.bar{height:3px;background:var(--line);margin-top:7px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.tools{display:flex;gap:8px;position:relative}
+.ibtn{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+.ibtn:hover{border-color:var(--gold)}
+.pop{position:absolute;right:0;top:36px;width:290px;background:var(--panel);border:1px solid var(--gold);border-radius:6px;padding:14px;display:none;font-family:'IBM Plex Sans',sans-serif;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.pop.open{display:block}
+.pop h4{margin:0 0 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;font-weight:500}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;padding:6px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;cursor:pointer;font:inherit}
+.seg button.on{border-color:var(--gold);color:var(--gold)}
+.pop input[type=text]{width:100%;padding:6px;background:var(--inbg);color:var(--ink);border:1px solid var(--line);border-radius:4px;font:inherit}
+.pop label{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.hero{padding:46px 0 14px}
+.hero h1{font-weight:600;font-size:46px;line-height:1.08;margin:6px 0 10px;letter-spacing:.2px}
+.hero p{color:var(--mute);margin:0 0 8px;font-size:21px}
+.seed{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;color:var(--mute);border-left:2px solid var(--gold);padding-left:10px;margin-top:14px}
+.printhead{display:none}
+.rung{margin-top:44px;padding-top:6px;scroll-margin-top:70px}
+.rung.locked{display:none}
+.rung>h2{font-size:31px;font-weight:600;margin:0 0 2px}
+.rung>.rk{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.rung p{margin:10px 0}
+.notice{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:3px;padding:10px 16px;margin:14px 0;font-size:19px}
+.notice .nt,.ctag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.notice div.l{font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.75}
+.task,.mc,.finder,.lab,.conj,.compute{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:14px 16px;margin:14px 0}
+.conj{border-color:var(--gold);background:var(--panel2)}
+.q{font-size:20px}
+.fld,.fin{font-family:'IBM Plex Mono',monospace;font-size:15px;width:64px;padding:3px 6px;background:var(--inbg);color:var(--ink);border:1px solid var(--mute);border-radius:3px;text-align:center}
+.fld.wide{width:170px;text-align:left}
+.fld.ok,.fin.ok{border-color:var(--good);box-shadow:0 0 0 1px var(--good);}
+.fld.bad,.fin.bad{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
+.fld.rev{border-style:dashed;border-color:var(--gold)}
+.sel{font-family:'IBM Plex Mono',monospace;font-size:14px;background:var(--inbg);color:var(--ink);border:1px solid var(--gold);border-radius:3px;padding:3px 6px;margin:0 2px}
+.cstate{font-size:21px;line-height:1.9}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:7px 12px;border-radius:4px;border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.btn.ghost{border-color:var(--line);color:var(--mute)}
+.btn.gold{background:var(--gold);color:var(--bg)}
+.btn[hidden]{display:none}
+.fb{margin-top:8px;font-size:18px;min-height:1px}
+.fb b.good,.good{color:var(--good)}
+.fb b.bad,.bad{color:var(--bad)}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid currentColor;border-radius:3px;padding:0 6px;margin-right:6px}
+table.g{border-collapse:collapse;margin:6px 0;font-size:18px}
+table.g td,table.g th{padding:3px 10px;text-align:center;border-bottom:1px solid var(--line)}
+table.g th{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--gold);letter-spacing:.1em;text-transform:uppercase}
+.fin{width:54px}
+.frow{display:flex;gap:8px;align-items:center;margin:5px 0;font-size:18px;flex-wrap:wrap}
+.frow .st{font-family:'IBM Plex Sans',sans-serif;font-size:13px}
+.labout{font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.7;margin-top:8px}
+.labout div{padding:1px 0}
+.next{margin:26px 0 0;text-align:center}
+.ledger{margin-top:56px;border-top:2px solid var(--gold);padding-top:16px}
+.ledger h2{font-size:31px;margin:0}
+.led{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:19px}
+.led .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mute);min-width:26px;padding-top:5px}
+.led .s{font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:64px;padding-top:5px}
+.led small{display:block;color:var(--mute);font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;line-height:1.35}
+.stamp{margin-top:50px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--mute)}
+.stamp em{font-style:normal;color:var(--gold)}
+
+.fig{margin:16px 0;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:12px 14px}
+.fig img{width:100%;height:auto;display:block;border-radius:3px}
+.fig .fd{display:none}
+:root[data-theme="dark"] .fig .fl{display:none}
+:root[data-theme="dark"] .fig .fd{display:block}
+.fig .cap{font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--mute);margin-top:8px;line-height:1.45}
+.fig .ctag{margin-bottom:8px}
+.fig details{margin-top:8px;font-size:15px}.fig summary{cursor:pointer;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:12px}
+.fig details div{margin-top:6px;color:var(--ink)}
+@media (max-width:560px){body{font-size:18px}.hero h1{font-size:34px}.pop{right:-10px}}
+@media print{
+ :root[data-theme="dark"],:root[data-theme="light"]{--bg:#fff;--panel:#fff;--panel2:#fff;--ink:#111;--mute:#555;--gold:#7a5c0e;--line:#bbb;--teal:#245;--inbg:#fff}
+ body{font-size:13.5px;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ header.top,.noprint,.next,.pop{display:none!important}
+ .fig .fd{display:none!important}.fig .fl{display:block!important}.fig{break-inside:avoid}
+ .wrap{max-width:none;padding:0 4mm}
+ .hero{padding-top:0}.hero h1{font-size:28px}
+ .printhead{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;margin:0 0 8px;color:#333}
+ .rung{margin-top:20px}
+ .task,.mc,.finder,.lab,.conj,.notice,.compute,.led{break-inside:avoid}
+ .fld,.fin,.sel{border:1px solid #555;box-shadow:none}
+ .fld.ok,.fin.ok{border:2px solid var(--good)}.fld.bad,.fin.bad{border:2px solid var(--bad)}
+ .stamp{position:fixed;bottom:2mm;left:0;right:0;margin:0;border:0;font-size:9px}
+ .wrap{padding-bottom:14mm}
+ a{color:inherit}
+}
+</style>
+</head>
+<body>
+<header class="top noprint"><div class="topin">
+ <div><div class="kick">Euler's 8n + 3 conjecture · a learner's ladder</div><div class="prog" id="prog">tasks 0 / 0 · conjectures: 0 stand, 0 fall</div></div>
+ <div class="tools">
+  <button class="ibtn" id="printBtn">Print / save as PDF</button>
+  <button class="ibtn" id="setBtn" aria-haspopup="true">Settings</button>
+  <div class="pop" id="pop">
+   <h4>Colour scheme</h4>
+   <div class="seg" id="segTheme"><button data-v="dark" class="on">Dark</button><button data-v="light">Light</button></div>
+   <h4>Right / wrong colours</h4>
+   <div class="seg" id="segFb"><button data-v="std" class="on">Green / red</button><button data-v="cb">Blue / orange</button></div>
+   <label><input type="checkbox" id="revealAll"> Show every rung at once</label>
+   <h4>Name for the printed copy</h4>
+   <input type="text" id="nameIn" placeholder="Your name" autocomplete="off">
+  </div>
+ </div></div>
+ <div class="bar"><i id="barfill"></i></div>
+</header>
+
+<div class="wrap">
+ <div class="hero">
+  <div class="kick">Conjecturing · squares and doubled primes · residues and local densities</div>
+  <h1>Euler's 8n + 3 Conjecture</h1>
+  <p>Every number of the form 8n + 3 seems to be a square plus twice a prime. You will find the shape of the representations, watch several natural guesses fall, and build a counting law that predicts how many representations each number has.</p>
+  <div class="seed">Seed: Euler's conjecture as quoted, with his table for n = 1, …, 10 and the remark that he verified it for every number of the form 8n + 3 below 200, from a supplied excerpt of an introductory number-theory text.</div>
+  <div class="printhead" id="printhead"></div>
+ </div>
+ <main id="main"></main>
+ <section class="ledger" id="ledger"><div class="ctag">Your litany</div><h2>The conjectures you framed</h2><div id="ledgerBody"><p class="mono" style="font-size:13px;color:var(--mute)">Every conjecture you test is recorded here with its fate, including the ones that fall.</p></div></section>
+ <div class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · <em>LeeMcCullochJames</em></div>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const M=300000;
+const sv=new Uint8Array(M+1).fill(1);sv[0]=0;sv[1]=0;
+for(let i=2;i*i<=M;i++)if(sv[i])for(let j=i*i;j<=M;j+=i)sv[j]=0;
+const isP=n=>n>=2&&n<=M&&sv[n]===1;
+const rho=new Int16Array(M+1),amin=new Int16Array(M+1);
+for(let N=7;N<=M;N+=4){let c=0,f=0;for(let a=1;a*a+4<=N;a+=2){if(sv[(N-a*a)/2]){c++;if(!f)f=a}}rho[N]=c;amin[N]=f}
+function repsOf(N){const o=[];for(let a=1;a*a+4<=N;a++){const m=N-a*a;if(m%2===0&&isP(m/2))o.push({a,p:m/2})}return o}
+const repsStr=N=>{const r=repsOf(N);return r.length?r.map(x=>`${x.a}² + 2·${x.p}`).join(' = '):'none'};
+const SP=[];for(let q=3;q<100;q+=2)if(isP(q))SP.push(q);
+const lostTab={};SP.forEach(q=>{const t=new Array(q).fill(0);for(let a=0;a<q;a++)for(let n=0;n<q;n++)if(((a*a-n)%q+q)%q===0)t[n]++;lostTab[q]=t});
+const sigma=N=>{let s=1;for(const q of SP)s*=(q/(q-1))*(1-lostTab[q][N%q]/q);return s};
+const lam=N=>{let s=0;for(let a=1;a*a+4<=N;a+=2)s+=2/Math.log((N-a*a)/2);return s*sigma(N)};
+const leg=(N,q)=>{const r=((N%q)+q)%q;if(r===0)return 0;for(let a=1;a<q;a++)if((a*a)%q===r)return 1;return -1};
+const first3=lo=>lo+(((3-lo)%8)+8)%8;
+const scaled=N=>rho[N]*Math.log(N)/Math.sqrt(N);
+const meanOver=(lo,hi,f,pred)=>{let s=0,c=0;for(let N=first3(lo);N<hi;N+=8){if(pred&&!pred(N))continue;s+=f(N);c++}return s/c};
+const f2=x=>x.toFixed(2),f3=x=>x.toFixed(3);
+/* ---------- state & helpers ---------- */
+const S={done:new Set(),total:0,led:[],conjOk:new Set(),conjAll:0};
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const parseNum=s=>{s=String(s).trim().replace('−','-');return /^-?\d+(\.\d+)?$/.test(s)?Number(s):null};
+const parseList=s=>{s=s.trim().toLowerCase();if(s===''||s==='none')return[];const p=s.split(/[\s,;]+/).filter(x=>x!=='');const n=p.map(parseNum);return n.some(x=>x===null)?null:n.sort((a,b)=>a-b)};
+function progress(){const t=S.total,d=S.done.size;const st=S.led.filter(e=>e.ok).length,fl=S.led.filter(e=>!e.ok).length;
+ document.getElementById('prog').textContent=`tasks ${d} / ${t} · conjectures: ${st} stand, ${fl} fall`;
+ document.getElementById('barfill').style.width=(t?100*d/t:0)+'%';}
+
+/* ---------- components ---------- */
+function Notice(title,lines){const n=el('div','notice');n.innerHTML=`<div class="nt">${title||'Notice'}</div>`+lines.map(l=>`<div class="l">${l}</div>`).join('');return n}
+function Para(h){return el('p',null,h)}
+
+function Task(def){
+ const box=el('div','task');S.total++;
+ const body=def.html.replace(/\{\{(\d+)\}\}/g,(m,n)=>{const f=def.fields[+n];return f.type==='list'?`<input class="fld wide" data-i="${n}" type="text" placeholder="e.g. 2, 5, 9" autocomplete="off">`:`<input class="fld" data-i="${n}" type="text" inputmode="decimal" autocomplete="off">`});
+ box.innerHTML=`<div class="q">${body}</div><div class="row noprint"><button class="btn chk">Check</button><button class="btn ghost rev" hidden>Show answer</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb'),rev=box.querySelector('.rev');let tries=0;
+ const inputs=()=>[...box.querySelectorAll('.fld')];
+ box.querySelector('.chk').onclick=()=>{
+  let all=true;
+  inputs().forEach(inp=>{const f=def.fields[+inp.dataset.i];const exp=f.exp();let ok;
+   if(f.type==='list'){const u=parseList(inp.value);ok=u!==null&&JSON.stringify(u)===JSON.stringify([...exp].sort((a,b)=>a-b))}
+   else{const u=parseNum(inp.value);ok=u!==null&&Math.abs(u-exp)<=(f.tol||0)}
+   inp.classList.remove('rev');inp.classList.toggle('ok',!!ok);inp.classList.toggle('bad',!ok);if(!ok)all=false});
+  if(all){S.done.add(def.id);fb.innerHTML=`<b class="good">✓ Correct.</b> ${def.explain||''}`}
+  else{tries++;fb.innerHTML=`<b class="bad">Not yet.</b> ${tries>=1&&def.hint?def.hint:'Check the boxes that are marked and try again.'}`;if(tries>=2)rev.hidden=false}
+  progress()};
+ rev.onclick=()=>{inputs().forEach(inp=>{const f=def.fields[+inp.dataset.i];const e=f.exp();inp.value=f.type==='list'?(e.length?e.join(', '):'none'):(Number.isInteger(e)?e:e.toFixed(3));inp.classList.remove('ok','bad');inp.classList.add('rev')});fb.innerHTML=`<span class="tag" style="color:var(--gold)">answer shown</span> ${def.explain||''}`;progress()};
+ return box}
+
+function MC(def){
+ const box=el('div','mc');S.total++;
+ box.innerHTML=`<div class="q">${def.html}</div>`+def.options.map((o,i)=>`<label class="frow"><input type="radio" name="${def.id}" value="${i}"> <span>${o}</span></label>`).join('')+`<div class="row noprint"><button class="btn chk">Check</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb');
+ box.querySelector('.chk').onclick=()=>{const s=box.querySelector('input:checked');if(!s){fb.innerHTML='<span class="bad">Choose one first.</span>';return}
+  const ok=+s.value===def.correct;if(ok){S.done.add(def.id);fb.innerHTML=`<b class="good">✓ Yes.</b> ${def.explain||''}`}else fb.innerHTML=`<b class="bad">Not that one.</b> ${def.hint||''}`;progress()};
+ return box}
+
+function RepFinder(def){
+ const N=def.N;const box=el('div','finder');S.total++;
+ box.innerHTML=`<div class="q">${def.html}</div><div class="rows"></div><div class="row noprint"><button class="btn add">+ add a pair</button><button class="btn ghost chk">Check my pairs</button><button class="btn fin2">I have found them all</button></div><div class="fb"></div>`;
+ const rows=box.querySelector('.rows'),fb=box.querySelector('.fb');
+ const addRow=()=>rows.appendChild(el('div','frow','a = <input class="fin a" type="text" inputmode="numeric"> p = <input class="fin k" type="text" inputmode="numeric"> <span class="st"></span>'));
+ box.querySelector('.add').onclick=addRow;addRow();
+ const evalRows=()=>{const seen=new Set();let valid=0;[...rows.children].forEach(d=>{const a=parseNum(d.querySelector('.a').value),p=parseNum(d.querySelector('.k').value),st=d.querySelector('.st'),A=d.querySelector('.a'),P=d.querySelector('.k');
+  A.classList.remove('ok','bad');P.classList.remove('ok','bad');
+  if(a===null||p===null){st.textContent='';return}
+  let msg,ok=false;
+  if(!Number.isInteger(a)||!Number.isInteger(p)||a<1)msg='a must be a positive whole number';
+  else if(!isP(p))msg=`${p} is not prime`;
+  else if(a*a+2*p!==N)msg=`${a}² + 2·${p} = ${a*a+2*p}, not ${N}`;
+  else if(seen.has(a+','+p))msg='already listed';
+  else{ok=true;seen.add(a+','+p);valid++;msg=`${a}² + 2·${p} = ${N}`}
+  A.classList.add(ok?'ok':'bad');P.classList.add(ok?'ok':'bad');st.textContent=msg;st.style.color=ok?'var(--good)':'var(--bad)'});return valid};
+ box.querySelector('.chk').onclick=()=>{const v=evalRows();fb.innerHTML=`${v} valid pair${v===1?'':'s'} so far.`};
+ box.querySelector('.fin2').onclick=()=>{const v=evalRows();const t=repsOf(N).length;
+  if(v===t){S.done.add(def.id);fb.innerHTML=`<b class="good">✓ That is all of them,</b> ρ(${N}) = ${t}. ${def.explain||''}`}
+  else if(v<t)fb.innerHTML=`<b class="bad">Not all yet.</b> There ${t-v===1?'is one more':'are more'} to find. Try each odd a in turn and ask whether (${N} − a²)/2 is prime.`;
+  else fb.innerHTML='<b class="bad">Recheck.</b> Some rows are not valid pairs.';progress()};
+ return box}
+
+function Lab(){
+ const box=el('div','lab');box.innerHTML=`<div class="ctag">Lab</div><div class="q">Type any N from 5 to ${M}: <input class="fld" type="text" inputmode="numeric" value="35"> <button class="btn go">Show its representations</button></div><div class="labout"></div>`;
+ const inp=box.querySelector('input'),out=box.querySelector('.labout');
+ const go=()=>{const N=parseNum(inp.value);if(!Number.isInteger(N)||N<5||N>M){out.innerHTML='<div class="bad">Enter a whole number from 5 to '+M+'.</div>';return}
+  const r=repsOf(N);
+  out.innerHTML=`<div>N = ${N}   (N mod 8 = ${N%8}, N mod 3 = ${N%3}, N mod 5 = ${N%5})</div><div>${r.length?r.map(x=>`${x.a}² + 2·${x.p}`).join('<br>'):'no representation a² + 2p'}</div><div>ρ(${N}) = ${r.length}${r.length?`,  least a = ${r[0].a}`:''}</div><div>Legendre symbols: (N/3) = ${leg(N,3)}, (N/5) = ${leg(N,5)}, (N/7) = ${leg(N,7)}</div>`};
+ box.querySelector('.go').onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});go();return box}
+
+const allReps=(lim,start,step,P,expl)=>{for(let N=start;N<=lim;N+=step){for(const x of repsOf(N))if(!P(x))return{ok:false,msg:expl(N,x)}}return{ok:true}};
+function Conj(def){
+ const box=el('div','conj');S.conjAll++;
+ const tpl=def.tpl.replace(/\[\[(\d+)\]\]/g,(m,n)=>`<select class="sel" data-i="${n}"><option value="">choose…</option>${def.blanks[+n].map((o,i)=>`<option value="${i}">${o}</option>`).join('')}</select>`);
+ box.innerHTML=`<div class="ctag">Frame the conjecture</div>${def.lead?`<p style="margin:2px 0 8px">${def.lead}</p>`:''}<div class="cstate">${tpl}</div><div class="row noprint"><button class="btn gold tst">Test it against every N up to ${def.lim||M}</button></div><div class="fb"></div>`;
+ const fb=box.querySelector('.fb');
+ box.querySelector('.tst').onclick=()=>{
+  const sel=[...box.querySelectorAll('.sel')].map(s=>s.value);
+  if(sel.some(v=>v==='')){fb.innerHTML='<span class="bad">Choose a value for every blank first.</span>';return}
+  const idx=sel.map(Number);const res=def.check(idx);
+  const text=def.tpl.replace(/\[\[(\d+)\]\]/g,(m,n)=>def.blanks[+n][idx[+n]]);
+  const key=def.id+':'+idx.join('-');let e=S.led.find(x=>x.key===key);
+  if(!e){e={key,text,ok:res.ok,msg:res.msg};S.led.push(e)}
+  if(res.ok){S.conjOk.add(def.id);fb.innerHTML=`<b class="good">Stands.</b> It survives every case tested. ${def.why||''}`}
+  else fb.innerHTML=`<b class="bad">Falls.</b> ${res.msg} ${def.retry||'Reframe it and test again; the fallen version stays in your litany.'}`;
+  renderLedger();progress()};
+ return box}
+
+function Compute(def){
+ const box=el('div','compute');box.innerHTML=`<div class="ctag">Computed for you</div><div class="q">${def.html}</div><div class="row noprint"><button class="btn go">${def.btn}</button></div><div class="labout"></div>`;
+ box.querySelector('.go').onclick=()=>{box.querySelector('.labout').innerHTML=def.run()};return box}
+
+function renderLedger(){
+ const b=document.getElementById('ledgerBody');
+ if(!S.led.length){return}
+ b.innerHTML=S.led.map((e,i)=>`<div class="led"><div class="n">${i+1}</div><div style="flex:1">${e.text}${e.ok?'':`<small>${e.msg}</small>`}</div><div class="s ${e.ok?'good':'bad'}">${e.ok?'STANDS':'FALLS'}</div></div>`).join('')}
+
+/* ---------- content ---------- */
+const cls3=N=>N%8===3;
+const RUNGS=[
+/* 1 */{k:'Rung 1 · Noticing',t:'Write it as a square and a doubled prime',items:[
+ ()=>Para('Euler noticed that numbers of the form <b>8n + 3</b> seem always to be the sum of a square and the double of a prime. For instance 11 = 1 + 2×5. A <b>representation</b> of N is a pair (a, p) with a a positive whole number, p a prime, and N = a² + 2p. Write <b>ρ(N)</b> for the number of representations. The number 3 is left out, so N ≥ 11.'),
+ ()=>RepFinder({id:'r11',N:11,html:'<b>Find every representation of 11.</b> Try a = 1, 3, 5, … and ask whether (11 − a²)/2 is prime.',explain:'Only one square works, and it is the smallest.'}),
+ ()=>RepFinder({id:'r35',N:35,html:'<b>Now find every representation of 35.</b>',explain:'Three representations this time. Keep the squares in mind: 1, 9, 25.'}),
+ ()=>Task({id:'g1',html:'<b>Fill in ρ(N).</b> The lab below will help.<table class="g"><tr><th>N</th>'+[11,19,27,35,43,51,59,67].map(n=>`<th>${n}</th>`).join('')+'</tr><tr><th>ρ(N)</th>'+[0,1,2,3,4,5,6,7].map(i=>`<td>{{${i}}}</td>`).join('')+'</tr></table>',
+  fields:[11,19,27,35,43,51,59,67].map(n=>({exp:()=>rho[n]})),hint:'Count pairs (a, p) with a² + 2p = N and p prime. For example 19 = 9 + 2×5 only.',explain:'Most of these numbers have a single representation, and a few have three.'}),
+ ()=>Lab(),
+ ()=>Task({id:'g2',html:'From the lab, ρ(83) = {{0}} and ρ(107) = {{1}}.',fields:[{exp:()=>rho[83]},{exp:()=>rho[107]}],hint:'Type 83 and 107 into the lab.',explain:'Both are 4, so the multiplicity grows slowly with N.'}),
+ ()=>MC({id:'m3',html:'Why is N = 3 left out?',options:['3 is prime','3 = 1 + 2×1 would need 1 to be a prime','3 is not of the form 8n + 3','3 is odd'],correct:1,hint:'Look at the only way to write 3 as a² + 2p.',explain:'The number 1 is not prime, so 3 has no representation, and the conjecture starts at 11.'})
+]},
+/* 2 */{k:'Rung 2 · The shape',t:'Parity and squares modulo 8',items:[
+ ()=>Notice('Notice: three numbers and all their representations',[59,83,107].map(N=>`${N} = ${repsStr(N)}`)),
+ ()=>Task({id:'al',html:'The values of a in the representations of 83 are {{0}}.<br>The values of a in the representations of 107 are {{1}}.',fields:[{type:'list',exp:()=>repsOf(83).map(x=>x.a)},{type:'list',exp:()=>repsOf(107).map(x=>x.a)}],hint:'Read the squares off the notice above and list the numbers being squared.',explain:'Every one of them is odd.'}),
+ ()=>Conj({id:'c_odd',lim:20000,lead:'<i>Pause.</i> Look at the numbers being squared. What do they have in common, and can you say why?',tpl:'In every representation of an N of the form 8n + 3, the number a is [[0]].',blanks:[['odd','even','prime','a multiple of 3']],
+  check:s=>{const P=[x=>x.a%2===1,x=>x.a%2===0,x=>isP(x.a),x=>x.a%3===0][s[0]];const d=['odd','even','prime','a multiple of 3'][s[0]];return allReps(20000,11,8,P,(N,x)=>`${N} = ${x.a}² + 2·${x.p} has a = ${x.a}, which is not ${d}.`)},
+  why:'N is odd and 2p is even, so a² = N − 2p is odd, and then a is odd.'}),
+ ()=>Task({id:'sq8',html:'Compute a² mod 8 for a = 1, 3, 5, 7: {{0}}, {{1}}, {{2}}, {{3}}.',fields:[{exp:()=>1},{exp:()=>1},{exp:()=>1},{exp:()=>1}],hint:'1, 9, 25, 49, then divide by 8 and take the remainder.',explain:'Every odd square leaves remainder 1 on division by 8.'}),
+ ()=>Task({id:'two8',html:'Then N − a² ≡ 3 − 1 = {{0}} (mod 8), so 2p ≡ {{0}} (mod 8), and dividing by 2 gives p ≡ {{1}} (mod 4).',fields:[{exp:()=>2},{exp:()=>1}],hint:'If 2p leaves remainder 2 on division by 8 then p leaves remainder 1 on division by 4.',explain:'This is the shape of the prime.'}),
+ ()=>Conj({id:'c_p4',lim:20000,lead:'<i>Pause.</i> Look at the primes in the table: 5, 13, 17, 29, 37, 41, 53. What remainder do they leave on division by 4?',tpl:'In every representation of an N of the form 8n + 3, the prime p satisfies [[0]].',blanks:[['p ≡ 1 (mod 4)','p ≡ 3 (mod 4)','p ≡ 1 or 3 (mod 4), depending on N','p ≡ 2 (mod 4)']],
+  check:s=>{const exp=[[1],[3],[1,3],[2]][s[0]];const seen=new Set();for(let N=11;N<=20000;N+=8)for(const x of repsOf(N))seen.add(x.p%4);const want=[...seen].sort();if(want.join()===exp.join())return{ok:true};
+   const miss=exp.filter(r=>!seen.has(r));if(miss.length)return{ok:false,msg:`no prime with p ≡ ${miss[0]} (mod 4) ever occurs for N up to 20000.`};const extra=want.find(r=>!exp.includes(r));return{ok:false,msg:`primes with p ≡ ${extra} (mod 4) occur, so your statement leaves out a case.`}},
+  why:'That is the mod 8 argument above, so the primes live in a single class, where they are twice as dense as among all numbers.'}),
+ ()=>Task({id:'fer',html:'A prime p ≡ 1 (mod 4) is a sum of two squares (Fermat). Write 29 = x² + y² with the numbers {{0}}.',fields:[{type:'list',exp:()=>[2,5]}],hint:'25 + 4.',explain:'29 = 5² + 2².'}),
+ ()=>Task({id:'fer2',html:'Take x = 5 and y = 2. Put b = x + y = {{0}} and c = x − y = {{1}}. Then 1² + b² + c² = {{2}}.',fields:[{exp:()=>7},{exp:()=>3},{exp:()=>59}],hint:'1 + 49 + 9.',explain:'Because 2(x² + y²) = (x + y)² + (x − y)², a representation 59 = 1 + 2×29 becomes 59 = 1² + 7² + 3², a sum of three odd squares.'}),
+ ()=>MC({id:'m_gauss',html:'Gauss proved that every N = 8n + 3 is a sum of three odd squares. Which statement is then <b>equivalent</b> to Euler\'s conjecture?',options:['Every N = 8n + 3 is a sum of three squares','Some triple a² + b² + c² of odd squares has (b² + c²)/2 prime','Every N = 8n + 3 is a sum of three primes','a² + b² + c² always has a = 1'],correct:1,hint:'Run the substitution of the previous task backwards.',explain:'If (b² + c²)/2 = p is prime then p = ((b+c)/2)² + ((b−c)/2)² and N = a² + 2p. Gauss therefore supplies plenty of triples, and Euler needs one with a prime half-sum.'})
+]},
+/* 3 */{k:'Rung 3 · First attempts',t:'Natural guesses, and where they fall',items:[
+ ()=>Notice('Notice: the first representation of each N',[11,19,27,35,43,51].map(N=>`${N} = ${repsStr(N).split(' = ')[0]}`)),
+ ()=>Conj({id:'c_a1',lead:'<i>Pause.</i> The square 1 shows up for 11, 27 and 35. Does the representation N = 1 + 2p always exist?',tpl:'The representation N = 1 + 2p exists for [[0]] of the form 8n + 3 (N ≥ 11).',blanks:[['every N','all but finitely many N','a proportion of the N that shrinks as N grows','no N']],
+  check:s=>{const ok=N=>isP((N-1)/2);
+   if(s[0]===0){for(let N=11;N<=M;N+=8)if(!ok(N))return{ok:false,msg:`N = ${N}: (N − 1)/2 = ${(N-1)/2} is not prime.`};return{ok:true}}
+   if(s[0]===1){let last=0;for(let N=11;N<=M;N+=8)if(!ok(N))last=N;return{ok:false,msg:`the failures keep coming: N = ${last}, with (N − 1)/2 = ${(last-1)/2} composite, is near the top of the range.`}}
+   if(s[0]===3)return{ok:false,msg:'11 = 1 + 2×5.'};
+   const fr=h=>{let c=0,t=0;for(let N=11;N<h;N+=8){t++;if(ok(N))c++}return c/t};const f=[1e3,1e4,1e5,3e5].map(fr);
+   for(let i=1;i<f.length;i++)if(f[i]>=f[i-1])return{ok:false,msg:`the proportion does not keep shrinking: ${f.map(x=>x.toFixed(3)).join(', ')}.`};
+   return{ok:true,extra:f}},
+  why:'The proportion of N below 10³, 10⁴, 10⁵, 3·10⁵ with a = 1 working is about 0.35, 0.26, 0.20, 0.17, falling slowly as the primes thin out.',retry:'The version that every N works fails first at 19.'}),
+ ()=>Task({id:'a1f',html:'The first N = 8n + 3 (N ≥ 11) for which N = 1 + 2p fails is N = {{0}}.',fields:[{exp:()=>{for(let N=11;;N+=8)if(!isP((N-1)/2))return N}}],hint:'Test (N − 1)/2 for N = 11, 19, 27, … and look for the first composite.',explain:'(19 − 1)/2 = 9 is composite, although 19 = 9 + 2×5 uses a different square.'}),
+ ()=>Task({id:'big',html:'Try the <b>largest</b> odd a with a² < N instead. List the N = 8n + 3 with 11 ≤ N ≤ 99 for which it fails (p not prime): {{0}}',fields:[{type:'list',exp:()=>{const o=[];for(let N=11;N<=99;N+=8){let a=1;while((a+2)*(a+2)<N)a+=2;if(!isP((N-a*a)/2))o.push(N)}return o}}],hint:'For 11 the largest odd a is 3, giving (11 − 9)/2 = 1, which is not prime. Do the same for each N.',explain:'The failures 11, 27, 51, 83 leave remainder 1 (they are a² + 2), and 43, 67, 99 leave a composite half.'}),
+ ()=>Conj({id:'c_cls',lim:5000,lead:'<i>Pause.</i> So far N ≡ 3 (mod 8). Could some other odd classes modulo 8 also be of the form a² + 2p with p an odd prime? Work out N − a² modulo 8 for each class, with a odd, and then test.',tpl:'A number N = a² + 2p with p an odd prime can only be congruent to [[0]] modulo 8.',blanks:[['3 only','3 or 7','1 or 3','any odd class']],
+  check:s=>{const exp=[[3],[3,7],[1,3],[1,3,5,7]][s[0]];const seen=new Set();for(let N=5;N<=5000;N+=2){for(const x of repsOf(N))if(x.p%2===1){seen.add(N%8);break}}
+   const bad=exp.find(c=>!seen.has(c));if(bad!==undefined)return{ok:false,msg:`no N ≡ ${bad} (mod 8) has a representation with p odd (checked up to 5000): a odd gives N − a² ≡ ${(bad-1+8)%8} (mod 8), so 2p would need to be ≡ ${(bad-1+8)%8} (mod 8), which is impossible for odd p.`};
+   const miss=[...seen].find(c=>!exp.includes(c));if(miss!==undefined){const N=[...Array(5000).keys()].find(n=>n>4&&n%8===miss&&repsOf(n).some(x=>x.p%2===1));return{ok:false,msg:`N ≡ ${miss} (mod 8) does occur, for example ${N} = ${repsStr(N).split(' = ')[0]}.`}}return{ok:true}},
+  why:'For N ≡ 1 the odd squares leave 2p ≡ 0 (mod 8), which is impossible. For N ≡ 5 they leave 2p ≡ 4, forcing p = 2, so only the numbers a² + 4 occur. For N ≡ 7 they leave 2p ≡ 6, which gives p ≡ 3 (mod 4), possible. Only 3 and 7 survive.'}),
+ ()=>Compute({html:'The class 8n + 7 has p ≡ 3 (mod 4). Does every N = 8n + 7 have a representation?',btn:'Search 8n + 7 up to 300000',run:()=>{const bad=[];for(let N=7;N<=M;N+=8)if(rho[N]===0)bad.push(N);const a=79;return `numbers searched: ${Math.floor((M-7)/8)+1}<br>with no representation: ${bad.join(', ')||'none'}<br>for N = 79 the halves (79 − a²)/2 are ${[1,3,5,7].map(a=>(79-a*a)/2).join(', ')}, all composite`}}),
+ ()=>Conj({id:'c_79',lead:'<i>Pause.</i> Use the computation above.',tpl:'Among N = 8n + 7 up to 300000, the numbers with no representation a² + 2p are [[0]].',blanks:[['none','N = 79 only','at least ten numbers','a positive proportion of all of them']],
+  check:s=>{const bad=[];for(let N=7;N<=M;N+=8)if(rho[N]===0)bad.push(N);if(s[0]===1&&bad.length===1&&bad[0]===79)return{ok:true};
+   if(s[0]===0)return{ok:false,msg:'N = 79 has none.'};if(s[0]===2)return{ok:false,msg:`only ${bad.length} found.`};if(s[0]===3)return{ok:false,msg:`${bad.length} of about ${Math.floor((M-7)/8)+1} is nowhere near a positive proportion.`};return{ok:false,msg:'the list is '+bad.join(', ')}},
+  why:'The class 8n + 7 is never a sum of three squares, so Gauss\'s bridge is unavailable, and yet it behaves almost exactly like 8n + 3, which points at the local arithmetic that the next rung quantifies.'})
+]},
+/* 4 */{k:'Rung 4 · Counting',t:'How many representations should there be?',items:[
+ ()=>Para('The odd a with a² < N give about √N/2 candidates m = (N − a²)/2, and all of them lie in the single class 1 (mod 4). A number near x is prime with probability about 1/ln x, and in the class 1 (mod 4) the probability doubles to 2/ln x. The expected count is therefore about (√N/2)·(2/ln N) = √N/ln N.'),
+ ()=>Task({id:'cnt',html:'For N = 10003, the number of odd a with a² < N is {{0}}, and each m = (N − a²)/2 is ≡ {{1}} (mod 4).',fields:[{exp:()=>{let c=0;for(let a=1;a*a<10003;a+=2)c++;return c}},{exp:()=>1}],hint:'100² = 10000 < 10003, so a runs over odd numbers up to 99. For m use a² ≡ 1 and N ≡ 3 (mod 8).',explain:'About 50 candidates, so we expect roughly 50·2/ln 5000 ≈ 12 primes.'}),
+ ()=>Compute({html:'Mean multiplicity of N = 8n + 3 by size.',btn:'Compute',run:()=>[[1e3,1e4],[1e4,1e5],[1e5,3e5]].map(([a,b])=>`${a} ≤ N < ${b}:  mean ρ = ${meanOver(a,b,N=>rho[N]).toFixed(1)},   mean ρ·ln N/√N = ${meanOver(a,b,scaled).toFixed(3)}`).join('<br>')}),
+ ()=>Conj({id:'c_gr',lead:'<i>Pause.</i> Which function of N does ρ(N) track? Compare the mean of ρ(N) divided by each candidate across the three ranges.',tpl:'The multiplicity ρ(N) is of order [[0]].',blanks:[['ln N','√N / ln N','√N','N / ln N']],
+  check:s=>{const fs=[N=>Math.log(N),N=>Math.sqrt(N)/Math.log(N),N=>Math.sqrt(N),N=>N/Math.log(N)];const rg=[[1e3,1e4],[1e4,1e5],[1e5,3e5]];const v=rg.map(([a,b])=>meanOver(a,b,N=>rho[N]/fs[s[0]](N)));
+   const spread=Math.max(...v)/Math.min(...v);if(spread<1.15)return{ok:true};return{ok:false,msg:`ρ divided by that function is ${v.map(x=>x.toPrecision(3)).join(', ')} over the three ranges, so it is not settling to a constant.`}},
+  why:'ρ·ln N/√N stays close to 1 (1.16, 1.14, 1.10 across these ranges), drifting down slowly because ln m is a little below ln N.'}),
+ ()=>Para('Now look more closely at the primes 3 and 5. For N of a given residue, some residues a mod 3 make 3 | N − a², and those a can only give composite m.'),
+ ()=>Task({id:'l3',html:'The number of residues a mod 3 with 3 | N − a² is {{0}} when N ≡ 0, {{1}} when N ≡ 1, and {{2}} when N ≡ 2 (mod 3).',fields:[{exp:()=>lostTab[3][0]},{exp:()=>lostTab[3][1]},{exp:()=>lostTab[3][2]}],hint:'The squares mod 3 are 0 and 1, and a ≡ 1 and a ≡ 2 give the same square.',explain:'N ≡ 0 loses only a ≡ 0; N ≡ 1 loses a ≡ 1 and a ≡ 2; N ≡ 2 loses none.'}),
+ ()=>Task({id:'f3',html:'The surviving a make m about q/(q−1) times as likely to be prime, so the local factor at q is (q/(q−1))(1 − lost/q). At q = 3 it is {{0}} for N ≡ 0, {{1}} for N ≡ 1, {{2}} for N ≡ 2.',fields:[{exp:()=>1,tol:0.01},{exp:()=>0.5,tol:0.01},{exp:()=>1.5,tol:0.01}],hint:'(3/2)(1 − 1/3), (3/2)(1 − 2/3), (3/2)(1 − 0/3).',explain:'So N ≡ 1 (mod 3) numbers should have fewer representations and N ≡ 2 more.'}),
+ ()=>Compute({html:'Mean of ρ·ln N/√N over N = 8n + 3 with 10⁵ ≤ N < 3·10⁵, split by N mod 3.',btn:'Compute',run:()=>{const v=[0,1,2].map(r=>meanOver(1e5,3e5,scaled,N=>N%3===r));return [0,1,2].map(r=>`N ≡ ${r}:  ${v[r].toFixed(3)}   (ratio to N ≡ 0: ${(v[r]/v[0]).toFixed(2)})`).join('<br>')}}),
+ ()=>Conj({id:'c_m3',lead:'<i>Pause.</i> Use the ratios just computed.',tpl:'Compared with N ≡ 0 (mod 3), the count ρ(N) is multiplied by [[0]] when N ≡ 1 and by [[1]] when N ≡ 2 (mod 3).',blanks:[['1/2','1','3/2','2'],['1/2','1','3/2','2']],
+  check:s=>{const v=[0,1,2].map(r=>meanOver(1e5,3e5,scaled,N=>N%3===r));const val=[0.5,1,1.5,2];const r1=v[1]/v[0],r2=v[2]/v[0];
+   if(Math.abs(val[s[0]]-r1)<0.07&&Math.abs(val[s[1]]-r2)<0.07)return{ok:true};
+   return{ok:false,msg:`the data give ${r1.toFixed(2)} and ${r2.toFixed(2)}, against your ${val[s[0]]} and ${val[s[1]]}.`}},
+  why:'These are the factors 1/2, 1 and 3/2 from the local factor at the prime 3.'}),
+ ()=>Task({id:'leg',html:'Legendre symbols: (19/3) = {{0}}, (19/5) = {{1}}, (19/7) = {{2}}. (The symbol is 1 if 19 is a nonzero square mod q, −1 if a non-square, 0 if q divides 19.)',fields:[{exp:()=>leg(19,3)},{exp:()=>leg(19,5)},{exp:()=>leg(19,7)}],hint:'19 ≡ 1 mod 3, 19 ≡ 4 mod 5, 19 ≡ 5 mod 7. The squares mod 7 are 1, 2, 4.',explain:'The number of a mod q with a² ≡ N is 1 + (N/q), so the number of lost residues at q is 1 + (N/q), which includes the cases 0 and 2.'}),
+ ()=>Task({id:'l5',html:'Lost residues mod 5 for N ≡ 0, 1, 2, 3, 4: {{0}}, {{1}}, {{2}}, {{3}}, {{4}}. (The squares mod 5 are 0, 1, 4.)',fields:[0,1,2,3,4].map(n=>({exp:()=>lostTab[5][n]})),hint:'Count the a in {0,…,4} with a² ≡ N (mod 5).',explain:'N ≡ 1 and 4 lose two, N ≡ 0 loses one, N ≡ 2 and 3 lose none.'}),
+ ()=>Conj({id:'c_m5',lead:'<i>Pause.</i> Compute the local factor at 5 from your counts, (5/4)(1 − lost/5), and predict the ratios to the class N ≡ 0 (mod 5).',tpl:'Compared with N ≡ 0 (mod 5), ρ(N) is multiplied by [[0]] when N ≡ 1 or 4 and by [[1]] when N ≡ 2 or 3 (mod 5).',blanks:[['3/4','4/5','5/4','3/2'],['3/4','5/4','3/2','2']],
+  check:s=>{const v=[0,1,2,3,4].map(r=>meanOver(1e5,3e5,scaled,N=>N%5===r));const val1=[0.75,0.8,1.25,1.5],val2=[0.75,1.25,1.5,2];const r14=(v[1]+v[4])/(2*v[0]),r23=(v[2]+v[3])/(2*v[0]);
+   if(Math.abs(val1[s[0]]-r14)<0.06&&Math.abs(val2[s[1]]-r23)<0.06)return{ok:true};
+   return{ok:false,msg:`the data give ${r14.toFixed(2)} and ${r23.toFixed(2)}, against your ${val1[s[0]]} and ${val2[s[1]]}.`}},
+  why:'(5/4)·(3/5) = 3/4, (5/4)·(4/5) = 1, (5/4)·1 = 5/4: the same recipe as at 3, with 1 + (N/5) lost residues.'}),
+ ()=>Compute({html:'Put everything together: λ(N) = σ(N) · Σ over odd a of 2/ln((N − a²)/2), where σ is the product of local factors over odd primes below 100. Compare it with the true count.',btn:'Compute mean of ρ/λ',run:()=>[[1e3,1e4],[1e4,1e5],[1e5,3e5]].map(([a,b])=>{let s=0,c=0,mx=0;for(let N=first3(a);N<b;N+=8){const x=rho[N]/lam(N);s+=x;c++}return `${a} ≤ N < ${b}:  mean ρ/λ = ${(s/c).toFixed(4)}`}).join('<br>')}),
+ ()=>Task({id:'lamr',html:'Mean of ρ/λ for 10⁵ ≤ N < 3·10⁵ (two decimals): {{0}}',fields:[{exp:()=>{let s=0,c=0;for(let N=first3(1e5);N<3e5;N+=8){s+=rho[N]/lam(N);c++}return s/c},tol:0.03}],hint:'Press the compute button above and read the last line.',explain:'The predicted count is accurate on average to a few parts in a thousand, with individual counts within about 6% of it.'})
+]},
+/* 5 */{k:'Rung 5 · Extremes',t:'How far must one search?',items:[
+ ()=>Para('The <b>least root</b> a_min(N) is the smallest a that works. It measures how far one must search, and the largest values over a range of N show how bad the search can get.'),
+ ()=>Compute({html:'Records of a_min for N = 8n + 3 beyond 1000.',btn:'List the records',run:()=>{let rec=0;const o=[];for(let N=11;N<=M;N+=8)if(amin[N]>rec){rec=amin[N];if(N>1000)o.push(`a_min = ${rec} at N = ${N},   a_min/(ln N)² = ${(rec/Math.log(N)**2).toFixed(2)},   N mod 3 = ${N%3}`)}return o.join('<br>')}}),
+ ()=>MC({id:'m_rec',html:'Almost all the records occur at N congruent to which residue modulo 3?',options:['0','1','2','they are evenly spread'],correct:1,hint:'Which class has the smallest local factor at 3?',explain:'The class N ≡ 1 (mod 3) has factor 1/2, so successes are rarest there and the search runs longest. Averages of a_min for N > 10⁵ are about 13, 26 and 9 for N ≡ 0, 1, 2.'}),
+ ()=>Conj({id:'c_am',lead:'<i>Pause.</i> A search succeeds with probability about 1/ln N per step, so a_min is typically of order ln N and its record values of order (ln N)². Test a few bounds against the records above.',tpl:'For every N = 8n + 3 up to 300000, a_min(N) ≤ [[0]].',blanks:[['(ln N)²','2·(ln N)²','√N / 10','10·ln N']],
+  check:s=>{const f=[N=>Math.log(N)**2,N=>2*Math.log(N)**2,N=>Math.sqrt(N)/10,N=>10*Math.log(N)][s[0]];for(let N=11;N<=M;N+=8)if(amin[N]>f(N))return{ok:false,msg:`N = ${N} has a_min = ${amin[N]}, above ${f(N).toFixed(1)}.`};return{ok:true}},
+  why:'In this range the largest ratio a_min/(ln N)² is about 1.3 and it creeps upward with N, in line with the extra factor ln X that a maximum over many N picks up, so the true bound probably grows a little faster than (ln N)² and even 2(ln N)² may fall later.',retry:'Compare with the records in the table; (ln N)² is passed first at N = 20179.'})
+]},
+/* 6 */{k:'Rung 6 · Safety',t:'Is an exception still likely?',items:[
+ ()=>Para('If ρ(N) were a Poisson count with mean λ(N), the chance that ρ(N) = 0 would be e^(−λ(N)). Adding these chances over a range of N estimates how many exceptions to expect there.'),
+ ()=>Compute({html:'Expected number of exceptions Σ e^(−λ), against the observed number, for N = 8n + 3.',btn:'Compute',run:()=>[1e3,1e4,1e5].map(lo=>{let s=0,o=0;for(let N=first3(lo);N<=M;N+=8){s+=Math.exp(-lam(N));if(rho[N]===0)o++}return `N from ${lo} to ${M}:  expected ${s.toFixed(2)},  observed ${o}`}).join('<br>')}),
+ ()=>MC({id:'m_pois',html:'The model expects about 11 exceptions above 1000 and about 2.5 above 10⁴, yet none are observed. What is the best explanation?',options:['Exceptions exist but lie further out','The real counts are more tightly bunched than Poisson counts, so the model overstates the risk','Euler\'s conjecture has been proved','The computer skipped them'],correct:1,hint:'Compare the spread of (ρ − λ)/√λ with the Poisson value 1.',explain:'The observed spread is about 0.4 to 0.6 of the Poisson value, because the primes are sieved rather than independent. The model is conservative and still expects well under one exception beyond 10⁵.'}),
+ ()=>Conj({id:'c_safe',lead:'<i>Pause.</i> Use the table above.',tpl:'Among N = 8n + 3 with 1000 ≤ N ≤ 300000, the number of N with no representation is [[0]].',blanks:[['0','about 11, as the Poisson model expects','between 1 and 5','a positive proportion of them']],
+  check:s=>{let o=0;for(let N=first3(1000);N<=M;N+=8)if(rho[N]===0)o++;if(s[0]===0&&o===0)return{ok:true};
+   if(s[0]===0)return{ok:false,msg:`${o} found.`};const msgs=['',`the model predicts about 11 over this range (dominated by N near 1000), but the data show ${o}.`,`the data show ${o}.`,`the data show ${o}, far below a positive proportion.`];return{ok:false,msg:msgs[s[0]]}},
+  why:'Euler\'s statement has no exception among the 37,000 numbers 8n + 3 between 1000 and 300000 (and none up to 10⁷). That is numerical and heuristic evidence only; no proof is known.'})
+]},
+/* 7 */{k:'Rung 7 · A neighbour',t:'Goldbach\'s other conjecture',items:[
+ ()=>Para('Replace the square-plus-doubled-prime by a prime plus a doubled square. <b>Goldbach\'s other conjecture</b> says every odd composite N equals p + 2b² with p prime and b ≥ 1. The same local analysis applies, with 1 + (2N/q) lost residues b at each prime q.'),
+ ()=>Compute({html:'Search all odd composite N below 100000.',btn:'Search',run:()=>{const bad=[];for(let N=9;N<100000;N+=2){if(isP(N))continue;let ok=false;for(let b=1;2*b*b<N;b++)if(isP(N-2*b*b)){ok=true;break}if(!ok)bad.push(N)}return 'odd composite N that are not p + 2b²: '+(bad.join(', ')||'none')}}),
+ ()=>Conj({id:'c_st',lead:'<i>Pause.</i> Use the search.',tpl:'Among odd composite N below 100000, those that are not p + 2b² (b ≥ 1) are [[0]].',blanks:[['none','5777 and 5993 only','all N ≡ 1 (mod 8)','about one in ten']],
+  check:s=>{const bad=[];for(let N=9;N<100000;N+=2){if(isP(N))continue;let ok=false;for(let b=1;2*b*b<N;b++)if(isP(N-2*b*b)){ok=true;break}if(!ok)bad.push(N)}if(s[0]===1&&bad.join()==='5777,5993')return{ok:true};
+   if(s[0]===0)return{ok:false,msg:'5777 = 53 × 109 has no representation.'};return{ok:false,msg:`the search found ${bad.length} numbers: ${bad.join(', ')}.`}},
+  why:'These two counterexamples have been known since the nineteenth century.'}),
+ ()=>Compute({html:'The expected count λ for the neighbour, with σ taken over odd primes below 100 and Σ 2/ln(N − 2b²) over b ≥ 1.',btn:'Compute',run:()=>{const L=N=>{let s=1;for(const q of SP){let lost=0;for(let b=0;b<q;b++)if(((N-2*b*b)%q+q)%q===0)lost++;s*=(q/(q-1))*(1-lost/q)}let t=0;for(let b=1;N-2*b*b>2;b++)t+=2/Math.log(N-2*b*b);return s*t};let tot=0,c=0;for(let N=5001;N<7001;N+=2){tot+=L(N);c++}return `λ(5777) = ${L(5777).toFixed(2)}<br>λ(5993) = ${L(5993).toFixed(2)}<br>mean λ over odd N from 5001 to 7001 = ${(tot/c).toFixed(1)}`}}),
+ ()=>MC({id:'m_st',html:'The two exceptions have expected counts of about 3.8 and 3.9 against an average near 15. What does that say?',options:['They are far in the low tail of the expected count, where a Poisson chance of about e^(−3.8) per number is enough to produce a few exceptions','The formula is wrong','Their prime factors are too large','There must be infinitely many exceptions'],correct:0,hint:'Think about how likely a count of zero is when the mean is about 4.',explain:'About 2% per number. Among thousands of candidates a few exceptions are to be expected, and for Euler\'s statement the expected counts above 10⁵ are never below about 7.'})
+]},
+/* 8 */{k:'Rung 8 · The conjecture',t:'Euler\'s statement, tested',items:[
+ ()=>Conj({id:'c_fin',lead:'<i>Pause.</i> Frame Euler\'s conjecture as strongly as the evidence allows, then test it against every N = 8n + 3 up to 300000.',tpl:'Every N = 8n + 3 with 11 ≤ N ≤ 300000 has [[0]].',blanks:[['at least one representation, ρ(N) ≥ 1','at least two representations, ρ(N) ≥ 2','at least four representations, ρ(N) ≥ 4','a representation with a = 1']],
+  check:s=>{if(s[0]===3){for(let N=11;N<=M;N+=8)if(!isP((N-1)/2))return{ok:false,msg:`N = ${N} has no representation with a = 1.`}}
+   const need=[1,2,4][s[0]];if(s[0]<3){for(let N=11;N<=M;N+=8)if(rho[N]<need)return{ok:false,msg:`N = ${N} has ρ = ${rho[N]}.`}}return{ok:true}},
+  why:'Euler\'s statement is true for every case tested. It is still a conjecture: no proof is known, and the problem belongs to the additive problems of Goldbach type, where proofs exist for relatives with extra variables, such as a prime plus two squares, but not for one prime and one square.'}),
+ ()=>Notice('What you now have',['1. a is odd and p ≡ 1 (mod 4), from parity and squares mod 8.','2. N is a sum of three odd squares (Gauss), and Euler asks for one with a prime half-sum.','3. a = 1, the largest a, and every odd class all fall; 8n+7 falls once, at 79.','4. ρ(N) ≈ λ(N), with a local factor 1 + (N/q) lost residues at each odd prime q.','5. The least root is of order (ln N)², with records at N ≡ 1 (mod 3).','6. The Poisson model expects under one exception beyond 10⁵, and the data show none.'])
+]}
+];
+/* ---------- build ---------- */
+const main=document.getElementById('main');
+RUNGS.forEach((R0,i)=>{
+ const sec=el('section','rung'+(i?' locked':''));sec.id='rung'+i;
+ sec.appendChild(el('div','rk',R0.k));sec.appendChild(el('h2',null,R0.t));
+ R0.items.forEach(f=>sec.appendChild(f()));
+ if(i<RUNGS.length-1){const nx=el('div','next noprint');const b=el('button','btn gold','Continue to rung '+(i+2)+' →');b.onclick=()=>{const nx2=document.getElementById('rung'+(i+1));nx2.dataset.open='1';nx2.classList.remove('locked');b.parentElement.style.display='none';nx2.scrollIntoView()};nx.appendChild(b);sec.appendChild(nx)}
+ main.appendChild(sec)});
+progress();
+
+/* ---------- settings ---------- */
+const root=document.documentElement,pop=document.getElementById('pop');
+document.getElementById('setBtn').onclick=e=>{e.stopPropagation();pop.classList.toggle('open')};
+document.addEventListener('click',e=>{if(!pop.contains(e.target)&&e.target.id!=='setBtn')pop.classList.remove('open')});
+const seg=(id,attr)=>{const g=document.getElementById(id);g.querySelectorAll('button').forEach(b=>b.onclick=()=>{root.setAttribute(attr,b.dataset.v);g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))})};
+seg('segTheme','data-theme');seg('segFb','data-fb');
+document.getElementById('revealAll').onchange=e=>{document.querySelectorAll('.rung').forEach(s=>{if(s.id==='rung0')return;s.classList.toggle('locked',!e.target.checked&&!s.dataset.open)})};
+const nameIn=document.getElementById('nameIn');
+const ph=()=>{document.getElementById('printhead').textContent=`Learner: ${nameIn.value||'________________'}   ·   ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}   ·   ${S.done.size} of ${S.total} tasks checked, ${S.led.filter(e=>e.ok).length} conjectures stand, ${S.led.filter(e=>!e.ok).length} fall`};
+nameIn.oninput=ph;
+document.getElementById('printBtn').onclick=()=>{ph();window.print()};
+window.addEventListener('beforeprint',ph);
+</script>
+</body>
+</html>
