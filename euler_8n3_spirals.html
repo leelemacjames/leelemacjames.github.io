@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Euler's 8n + 3 Conjecture on the Ulam and Eisenstein-Ulam Spirals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{--bg:#0d0e11;--panel:#15171c;--panel2:#1c1f26;--ink:#e9e5da;--mute:#9a968b;--gold:#c9a64a;--line:#2b2e38;--inbg:#0d0e11}
+:root[data-theme="light"]{--bg:#f7f3ea;--panel:#fffdf8;--panel2:#f0ebde;--ink:#1d1c19;--mute:#6d6a60;--gold:#8a6a14;--line:#d9d2bf;--inbg:#ffffff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;line-height:1.5;transition:background .25s,color .25s}
+.mono{font-family:'IBM Plex Mono',monospace}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.topin{max-width:1180px;margin:0 auto;padding:9px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}
+.kick{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.ibtn{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer;margin-left:6px}
+.ibtn:hover{border-color:var(--gold);color:var(--gold)}
+.pop{display:none;position:absolute;right:18px;top:48px;width:250px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.pop.open{display:block}
+.pop h4{margin:8px 0 5px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;font-weight:500}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;padding:6px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;cursor:pointer;font:inherit;font-size:14px}
+.seg button.on{border-color:var(--gold);color:var(--gold)}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+h1{font-size:44px;line-height:1.05;margin:4px 0 8px;font-weight:600}
+.lede{color:var(--mute);margin:0 0 6px;font-size:21px;max-width:900px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:14px 0}
+.ctag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.ctl{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+.ctl .g{display:flex;flex-direction:column;gap:4px}
+.ctl label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:7px 11px;border-radius:4px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.btn.on{border-color:var(--gold);color:var(--gold)}
+.btn:hover{border-color:var(--gold)}
+.row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=number],select{font-family:'IBM Plex Mono',monospace;font-size:14px;padding:6px 8px;background:var(--inbg);color:var(--ink);border:1px solid var(--line);border-radius:4px}
+input[type=text],input[type=number]{width:96px}
+input[type=range]{accent-color:var(--gold);width:190px}
+.views{display:grid;gap:14px;margin:14px 0}
+.views.one{grid-template-columns:1fr}.views.two{grid-template-columns:1fr 1fr}
+@media(max-width:760px){.views.two{grid-template-columns:1fr}h1{font-size:34px}body{font-size:18px}}
+.vbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px}
+.vbox .vt{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+canvas{width:100%;height:auto;display:block;background:var(--bg);border-radius:4px;cursor:crosshair;touch-action:manipulation}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--mute);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.out{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7}
+.out .k{color:var(--gold)}
+.good{color:#3f9e6b}.bad{color:#cf5a4e}
+.notice{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:3px;padding:10px 16px;margin:14px 0;font-size:19px}
+.notice p{margin:4px 0}
+.stamp{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--mute)}
+.stamp em{font-style:normal;color:var(--gold)}
+table.reps{border-collapse:collapse;width:100%}
+table.reps td,table.reps th{padding:3px 8px;text-align:left;border-bottom:1px solid var(--line);font-size:12.5px}
+table.reps th{color:var(--gold);font-weight:500;letter-spacing:.08em;text-transform:uppercase;font-size:10.5px}
+.printhead{display:none}
+@media print{
+ :root[data-theme="dark"],:root[data-theme="light"]{--bg:#fff;--panel:#fff;--panel2:#fff;--ink:#111;--mute:#555;--gold:#7a5c0e;--line:#bbb;--inbg:#fff}
+ body{font-size:13.5px;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ header.top,.noprint{display:none!important}
+ .card,.vbox,.notice{break-inside:avoid}
+ .printhead{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;margin:0 0 8px;color:#333}
+ h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<header class="top noprint"><div class="topin">
+ <div class="kick">Euler's 8n + 3 conjecture · Ulam and Eisenstein-Ulam spirals</div>
+ <div>
+  <button class="ibtn" id="printBtn">Print / save as PDF</button>
+  <button class="ibtn" id="setBtn" aria-haspopup="true">Settings</button>
+  <div class="pop" id="pop">
+   <h4>Colour scheme</h4>
+   <div class="seg" id="segTheme"><button data-v="dark" class="on">Dark</button><button data-v="light">Light</button></div>
+   <h4>Number labels on cells</h4>
+   <div class="seg" id="segLab"><button data-v="1" class="on">On</button><button data-v="0">Off</button></div>
+  </div>
+ </div></div>
+</header>
+
+<div class="wrap">
+ <div class="kick">Squares and doubled primes · four roots of unity · three roots of unity</div>
+ <h1>Euler's 8n + 3 Conjecture on the Spirals</h1>
+ <p class="lede">Lay the integers along an Ulam spiral on the Gaussian lattice, whose units are the four fourth roots of unity, or along the Eisenstein-Ulam spiral on the hexagonal lattice, whose units are the six sixth roots of unity (the three cube roots of unity and their negatives). Then watch where the primes p of Euler's representations N = a² + 2p fall.</p>
+ <div class="printhead" id="printhead"></div>
+
+ <div class="card noprint">
+  <div class="ctl">
+   <div class="g"><label>Lattice</label><div class="row" id="latBtns">
+    <button class="btn on" data-v="square">Square · ℤ[i]</button><button class="btn" data-v="hex">Hexagonal · ℤ[ω]</button><button class="btn" data-v="both">Both</button></div></div>
+   <div class="g"><label>View</label><div class="row" id="modeBtns">
+    <button class="btn" data-v="primes">Primes</button><button class="btn on" data-v="euler">One number N</button><button class="btn" data-v="heat">Every N ≡ 3 (mod 8)</button></div></div>
+   <div class="g"><label>Cells shown: <span id="kv">2500</span></label><input type="range" id="K" min="100" max="30000" step="100" value="2500"></div>
+   <div class="g"><label>Centre of the spiral</label><div class="row"><input type="number" id="S" value="1" min="1" max="100000"><button class="btn" data-s="1">1</button><button class="btn" data-s="11">11</button><button class="btn" data-s="17">17</button><button class="btn" data-s="41">41</button></div></div>
+  </div>
+  <div class="ctl" id="eulerCtl" style="margin-top:12px">
+   <div class="g"><label>N (tap a cell, or type)</label><div class="row"><button class="btn" id="prevN">◀ 8n+3</button><input type="number" id="Nin" value="107" min="5"><button class="btn" id="nextN">8n+3 ▶</button></div></div>
+  </div>
+  <div class="ctl" id="heatCtl" style="margin-top:12px;display:none">
+   <div class="g"><label>Class</label><select id="cls"><option value="3">N ≡ 3 (mod 8), Euler's class</option><option value="7">N ≡ 7 (mod 8), the neighbour</option></select></div>
+   <div class="g"><label>Colour by</label><select id="scl"><option value="scaled">ρ(N) · ln N / √N (shows the local factors)</option><option value="raw">ρ(N), the raw count (log colour)</option><option value="mod3">N mod 3 (where the three classes sit)</option></select></div>
+  </div>
+ </div>
+
+ <div id="views" class="views one"></div>
+ <div class="legend" id="legend"></div>
+
+ <div class="grid2">
+  <div class="card"><div class="ctag" id="infoTag">Representations</div><div class="out" id="info"></div></div>
+  <div class="card"><div class="ctag">Reading the lattice</div><div class="out" id="read" style="font-family:'Cormorant Garamond',serif;font-size:19px;line-height:1.45"></div></div>
+ </div>
+
+ <div class="notice" id="notice"></div>
+
+ <div class="stamp">Constructed by Silicon · Anthropic Claude — Architect Carbon · <em>LeeMcCullochJames</em></div>
+</div>
+
+<script>
+/* ---------- arithmetic ---------- */
+const LIM=400000;
+const sv=new Uint8Array(LIM+1).fill(1);sv[0]=0;sv[1]=0;
+for(let i=2;i*i<=LIM;i++)if(sv[i])for(let j=i*i;j<=LIM;j+=i)sv[j]=0;
+const isP=n=>n>=2&&n<=LIM&&sv[n]===1;
+const repsOf=N=>{const o=[];for(let a=1;a*a+4<=N;a++){const m=N-a*a;if(m%2===0&&isP(m/2))o.push({a,p:m/2})}return o};
+const rhoOf=N=>{let c=0;for(let a=1;a*a+4<=N;a++){const m=N-a*a;if(m%2===0&&sv[m/2])c++}return c};
+const SP=[];for(let q=3;q<100;q+=2)if(isP(q))SP.push(q);
+const sigma=N=>{let s=1;for(const q of SP){let lost=0;for(let a=0;a<q;a++)if(((a*a-N)%q+q)%q===0)lost++;s*=(q/(q-1))*(1-lost/q)}return s};
+const lam=N=>{let s=0;for(let a=1;a*a+4<=N;a+=2)s+=2/Math.log((N-a*a)/2);return s*sigma(N)};
+const twoSq=p=>{for(let x=1;2*x*x<=p;x++){const y=Math.round(Math.sqrt(p-x*x));if(x*x+y*y===p)return[Math.max(x,y),Math.min(x,y)]}return null};
+const eisen=p=>{for(let y=0;y*y*3<=4*p;y++){for(let x=y;x*x-x*y+y*y<=p;x++)if(x*x-x*y+y*y===p)return[x,y]}return null};
+
+/* ---------- spirals ---------- */
+function spiralSquare(K){const gx=[0],gy=[0];let x=0,y=0,d=0,len=1;const dx=[1,0,-1,0],dy=[0,1,0,-1];
+ while(gx.length<K){for(let rep=0;rep<2&&gx.length<K;rep++){for(let t=0;t<len&&gx.length<K;t++){x+=dx[d];y+=dy[d];gx.push(x);gy.push(y)}d=(d+1)%4}len++}
+ return{a:gx,b:gy,px:gx,py:gy}}
+function spiralHex(K){const D=[[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];const O=400,W=801;const seen=new Set();const qs=[0,1],rs=[0,0];seen.add(O*W+O);seen.add((1+O)*W+O);
+ let q=1,r=0,h=0;
+ while(qs.length<K){let moved=false;for(const t of [2,1,0,5]){const nh=(h+t)%6;const nq=q+D[nh][0],nr=r+D[nh][1];if(!seen.has((nq+O)*W+(nr+O))){q=nq;r=nr;h=nh;seen.add((q+O)*W+(r+O));qs.push(q);rs.push(r);moved=true;break}}if(!moved)break}
+ qs.length=Math.min(qs.length,K);rs.length=qs.length;
+ return{a:qs,b:rs,px:qs.map((q,i)=>q+rs[i]/2),py:rs.map(r=>r*Math.sqrt(3)/2)}}
+
+/* ---------- state ---------- */
+const st={lat:'square',mode:'euler',K:2500,s:1,N:107,cls:3,scl:'scaled',lab:true};
+const views={};
+const root=document.documentElement;
+const colors=()=>{const dark=root.getAttribute('data-theme')==='dark';return dark?
+ {bg:'#0d0e11',ink:'#e9e5da',mute:'#9a968b',comp:'#1b1e25',prime:'#323744',split:'#3987e5',inert:'#d95926',ram:'#c9a64a',gold:'#c9a64a',line:'#2b2e38',seq:['#143a6b','#1b5199','#2a6dc4','#3987e5','#6da7ec','#a5c9f6'],zero:'#d95926',pt:'#ffffff'}:
+ {bg:'#fcfcfb',ink:'#1d1c19',mute:'#6d6a60',comp:'#efede7',prime:'#c9c6bc',split:'#2a78d6',inert:'#eb6834',ram:'#8a6a14',gold:'#8a6a14',line:'#d9d2bf',seq:['#cde2fb','#9ec5f4','#6da7ec','#3987e5','#2570c8','#104281'],zero:'#eb6834',pt:'#111111'}};
+const lerp=(a,b,t)=>a+(b-a)*t;
+const hex2=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+function ramp(C,t){t=Math.max(0,Math.min(1,t));const n=C.seq.length-1,i=Math.min(n-1,Math.floor(t*n)),f=t*n-i;const a=hex2(C.seq[i]),b=hex2(C.seq[i+1]);return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`}
+
+/* ---------- geometry per view ---------- */
+function build(v){
+ const sp=v.lat==='square'?spiralSquare(st.K):spiralHex(st.K);v.sp=sp;v.K=sp.px.length;
+ const xs=sp.px,ys=sp.py;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<v.K;i++){if(xs[i]<x0)x0=xs[i];if(xs[i]>x1)x1=xs[i];if(ys[i]<y0)y0=ys[i];if(ys[i]>y1)y1=ys[i]}
+ const w=x1-x0+1.2,h=y1-y0+1.2;const W=v.canvas.width,H=v.canvas.height;const u=Math.min(W/w,H/h);
+ v.u=u;v.cx=(x0+x1)/2;v.cy=(y0+y1)/2;
+ v.map=new Map();for(let i=0;i<v.K;i++)v.map.set(sp.a[i]*100003+sp.b[i],i);
+}
+const scrX=(v,x)=>v.canvas.width/2+(x-v.cx)*v.u;
+const scrY=(v,y)=>v.canvas.height/2-(y-v.cy)*v.u;
+function cellPath(ctx,v,i,sc){const x=scrX(v,v.sp.px[i]),y=scrY(v,v.sp.py[i]);const u=v.u*sc;
+ if(v.lat==='square'){ctx.rect(x-u/2,y-u/2,u,u)}
+ else{const R=u/Math.sqrt(3);for(let k=0;k<6;k++){const ang=Math.PI/6+k*Math.PI/3;const px=x+R*Math.cos(ang),py=y+R*Math.sin(ang);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}}
+function fillCell(ctx,v,i,sc,color){ctx.beginPath();cellPath(ctx,v,i,sc);ctx.fillStyle=color;ctx.fill()}
+function ringCell(ctx,v,i,sc,color,lw){ctx.beginPath();cellPath(ctx,v,i,sc);ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.stroke()}
+const num=(v,i)=>st.s+i;
+const idxOf=(v,n)=>{const i=n-st.s;return i>=0&&i<v.K?i:-1};
+
+function drawView(v){
+ const C=colors();const ctx=v.ctx;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=C.bg;ctx.fillRect(0,0,v.canvas.width,v.canvas.height);
+ const K=v.K,small=v.u<5;
+ // class colouring of primes by splitting
+ const split=v.lat==='square'?n=>n%4===1:n=>n%3===1, inert=v.lat==='square'?n=>n%4===3:n=>n%3===2, ramf=v.lat==='square'?n=>n===2:n=>n===3;
+ let hmax=1,hs=null,hz=null;
+ if(st.mode==='heat'){hs=new Float32Array(K).fill(-1);hz=new Int16Array(K);const lo=st.cls===3?11:7;for(let i=0;i<K;i++){const n=num(v,i);if(n%8===st.cls&&n>=lo){const r=rhoOf(n);hz[i]=r;hs[i]=st.scl==='raw'?r:r*Math.log(n)/Math.sqrt(n);if(r>hmax)hmax=r}}}
+ for(let i=0;i<K;i++){const n=num(v,i);let col=C.comp;
+  if(st.mode==='primes'){if(isP(n)){col=ramf(n)?C.ram:split(n)?C.split:C.inert}}
+  else if(st.mode==='euler'){if(isP(n))col=C.prime}
+  else{if(hs[i]>=0){col=st.scl==='mod3'?(n%3===0?C.ram:n%3===1?C.inert:C.split):hz[i]===0?C.zero:(st.scl==='raw'?ramp(C,Math.log(1+hz[i])/Math.log(1+hmax)):ramp(C,hs[i]/2.2))}else if(isP(n))col=C.prime}
+  if(small){const x=scrX(v,v.sp.px[i]),y=scrY(v,v.sp.py[i]);ctx.fillStyle=col;const s=Math.max(1,v.u*0.95);ctx.fillRect(x-s/2,y-s/2,s,s)}else fillCell(ctx,v,i,0.94,col)}
+ if(st.mode==='euler')overlayEuler(ctx,v,C);
+ if(st.lab&&v.u>=22){ctx.font=`${Math.max(8,Math.min(14,v.u*0.36))}px "IBM Plex Mono",monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let i=0;i<K;i++){const n=num(v,i);ctx.fillStyle=isP(n)&&st.mode==='primes'?'#0d0e11':C.mute;ctx.fillText(String(n),scrX(v,v.sp.px[i]),scrY(v,v.sp.py[i]))}}
+ // pin: starting centre
+ ringCell(ctx,v,0,1.0,C.gold,Math.max(1,v.u*0.08));
+}
+
+function overlayEuler(ctx,v,C){
+ const N=st.N;const reps=[];for(let a=1;a*a+4<=N;a++){const m=N-a*a;if(m%2===0){reps.push({a,m:m/2,prime:isP(m/2)})}}
+ const iN=idxOf(v,N);
+ const pr=reps.filter(r=>r.prime);
+ pr.forEach((r,k)=>{const j=idxOf(v,r.m);if(j<0||iN<0)return;ctx.beginPath();ctx.moveTo(scrX(v,v.sp.px[iN]),scrY(v,v.sp.py[iN]));ctx.lineTo(scrX(v,v.sp.px[j]),scrY(v,v.sp.py[j]));ctx.strokeStyle=C.gold;ctx.globalAlpha=0.55;ctx.lineWidth=Math.max(1,v.u*0.07);ctx.stroke();ctx.globalAlpha=1});
+ const maxA=Math.max(1,...pr.map(r=>r.a));
+ reps.forEach(r=>{const j=idxOf(v,r.m);if(j<0)return;
+  if(r.prime){const t=0.25+0.75*(r.a/maxA);fillCell(ctx,v,j,1.0,ramp(C,t));ringCell(ctx,v,j,1.1,C.pt,Math.max(1.2,v.u*0.1))}
+  else{ringCell(ctx,v,j,0.9,C.inert,Math.max(1,v.u*0.07))}});
+ if(iN>=0){fillCell(ctx,v,iN,1.0,C.gold);ringCell(ctx,v,iN,1.25,C.pt,Math.max(1.5,v.u*0.12))}
+}
+
+/* ---------- info ---------- */
+function updateInfo(){
+ const N=st.N,C=colors();const info=document.getElementById('info'),tag=document.getElementById('infoTag'),rd=document.getElementById('read'),nt=document.getElementById('notice');
+ const lat=st.lat;
+ if(st.mode==='euler'){
+  tag.textContent=`N = ${N}`;
+  const reps=[];for(let a=1;a*a+4<=N;a++){const m=N-a*a;if(m%2===0)reps.push({a,m:m/2,prime:isP(m/2)})}
+  const rr=reps.filter(r=>r.prime);
+  const off=idxOf(views[Object.keys(views)[0]],N)<0;
+  let h=`<div><span class="k">N mod 8</span> = ${N%8}, <span class="k">mod 4</span> = ${N%4}, <span class="k">mod 3</span> = ${N%3}</div>`;
+  h+=`<div><span class="k">ρ(N)</span> = ${rr.length}${rr.length?`, <span class="k">least a</span> = ${rr[0].a}`:' (no representation)'}</div>`;
+  if(N%4===3&&N>=7){const L=lam(N);h+=`<div><span class="k">predicted</span> λ(N) = ${L.toFixed(1)}, <span class="k">local factor at 3</span> = ${[1,0.5,1.5][N%3]}</div>`}
+  if(off)h+=`<div class="bad">N lies outside the window: raise the number of cells or move the centre.</div>`;
+  h+='<table class="reps"><tr><th>a</th><th>p</th><th>Gauss</th><th>Eisenstein</th></tr>';
+  rr.forEach(r=>{const p=r.m;const ts=twoSq(p);let g='–';if(ts){const b=ts[0]+ts[1],c=Math.abs(ts[0]-ts[1]);g=`${p}=${ts[0]}²+${ts[1]}²<br>${N}=${r.a}²+${b}²+${c}²`}
+   let e=p%3===1?(()=>{const t=eisen(p);return t?`split, ${p}=${t[0]}²−${t[0]}·${t[1]}+${t[1]}²`:'split'})():p===3?'ramified':'inert';
+   h+=`<tr><td>${r.a}</td><td>${p}</td><td>${g}</td><td>${e}</td></tr>`});
+  h+='</table>';
+  info.innerHTML=h;
+  rd.innerHTML=`<p><b>Gaussian reading (4 roots of unity).</b> Every prime p in a representation of N ≡ 3 (mod 8) satisfies p ≡ 1 (mod 4), so p splits in ℤ[i] and equals x² + y². Substituting gives N = a² + (x+y)² + (x−y)², a sum of three odd squares, which is the form Gauss's theorem guarantees.</p><p><b>Eisenstein reading (3 roots of unity).</b> The residue of N mod 3 decides which primes can appear. If 3 | N every prime p is ≡ 1 (mod 3) and splits in ℤ[ω]. If N ≡ 1 (mod 3) every prime is ≡ 2 (mod 3) and inert, and only a divisible by 3 can work, so the count is halved. If N ≡ 2 (mod 3) both kinds occur and the count is multiplied by 3/2.</p>`;
+  nt.innerHTML=`<p>Tap any cell to make its number N. The gold cell is N, joined by gold lines to the cells (N − a²)/2 that are prime, coloured from pale to deep blue by a. Orange outlines mark values of (N − a²)/2 that are composite.</p>`;
+ }else if(st.mode==='primes'){
+  tag.textContent='Primes by splitting';
+  let sq={s:0,i:0,r:0},hx={s:0,i:0,r:0};for(let n=st.s;n<st.s+st.K;n++)if(isP(n)){if(n===2)sq.r++;else n%4===1?sq.s++:sq.i++;if(n===3)hx.r++;else if(n>3)(n%3===1?hx.s++:hx.i++)}
+  info.innerHTML=`<div><span class="k">in ℤ[i]</span>: split (≡ 1 mod 4) ${sq.s}, inert (≡ 3 mod 4) ${sq.i}, ramified 2: ${sq.r}</div><div><span class="k">in ℤ[ω]</span>: split (≡ 1 mod 3) ${hx.s}, inert (≡ 2 mod 3) ${hx.i}, ramified 3: ${hx.r}</div><div style="margin-top:6px;color:var(--mute)">Window: ${st.s} to ${st.s+st.K-1}.</div>`;
+  rd.innerHTML=`<p>On the square lattice a prime splits in ℤ[i] exactly when p ≡ 1 (mod 4), and these are the only primes that can occur in Euler's representations, because a is odd and N ≡ 3 (mod 8) force p ≡ 1 (mod 4). On the hexagonal lattice a prime splits in ℤ[ω] exactly when p ≡ 1 (mod 3). Changing the centre moves the diagonals along which a quadratic polynomial produces runs of primes, as with the Euler polynomial x² + x + 41.</p>`;
+  nt.innerHTML=`<p>Switch to “One number N” to see the primes p of a single N, or to “Every N ≡ 3 (mod 8)” for the multiplicity ρ(N) of every number in Euler's class at once.</p>`;
+ }else{
+  tag.textContent=`Every N ≡ ${st.cls} (mod 8)`;
+  let z=[],c=0,mx=0;for(let n=st.s;n<st.s+st.K;n++)if(n%8===st.cls&&n>=(st.cls===3?11:7)){c++;const r=rhoOf(n);if(r===0)z.push(n);if(r>mx)mx=r}
+  info.innerHTML=`<div><span class="k">numbers in the window</span>: ${c}</div><div><span class="k">largest ρ</span> = ${mx}</div><div><span class="k">numbers with no representation</span>: ${z.length?z.slice(0,12).join(', ')+(z.length>12?' …':''):'none'}</div>`;
+  rd.innerHTML=st.scl==='scaled'?`<p>Colour is ρ(N)·ln N/√N, which removes the overall growth and leaves the local factors. The classes N ≡ 1, 0, 2 (mod 3) have levels in the ratio 1 : 2 : 3, so the cells fall into three shades. Switch the colouring to “N mod 3” to see where each class sits on the spiral. Orange cells are numbers with no representation.</p>`:st.scl==='mod3'?`<p>Gold cells are N ≡ 0 (mod 3), orange N ≡ 1 and blue N ≡ 2. The residue mod 3 is the Eisenstein information: N ≡ 1 forces every prime of a representation to be inert in ℤ[ω] and halves the count, N ≡ 0 forces every prime to split, and N ≡ 2 allows both and raises the count by one half.</p>`:`<p>Colour is the raw count ρ(N) on a log scale, deepening outward as ρ grows like √N/ln N. Orange cells are numbers with no representation.</p>`;
+  nt.innerHTML=st.cls===7?`<p>For N ≡ 7 (mod 8) the prime p must be ≡ 3 (mod 4), so there is no Gaussian splitting, yet the same local factors apply. The single orange cell near 79 is the only number of the class with no representation below 300000.</p>`:`<p>Every cell of the class has a representation in the range shown, in line with Euler's conjecture, which has been checked for all N = 8n + 3 below ten million.</p>`;
+ }
+}
+
+/* ---------- UI ---------- */
+const viewsEl=document.getElementById('views');
+function setup(){
+ viewsEl.innerHTML='';Object.keys(views).forEach(k=>delete views[k]);
+ const lats=st.lat==='both'?['square','hex']:[st.lat];viewsEl.className='views '+(lats.length===2?'two':'one');
+ lats.forEach(l=>{const box=document.createElement('div');box.className='vbox';box.innerHTML=`<div class="vt"><span>${l==='square'?'Ulam spiral · <span style="text-transform:none">ℤ[i]</span> · fourth roots of unity':'Eisenstein-Ulam spiral · <span style="text-transform:none">ℤ[ω]</span> · cube roots of unity'}</span><span class="cn"></span></div>`;
+  const cv=document.createElement('canvas');const S=lats.length===2?720:900;cv.width=S;cv.height=S;box.appendChild(cv);viewsEl.appendChild(box);
+  const v={lat:l,canvas:cv,ctx:cv.getContext('2d'),box};views[l]=v;
+  const pick=e=>{const r=cv.getBoundingClientRect();const px=(e.clientX-r.left)*cv.width/r.width,py=(e.clientY-r.top)*cv.height/r.height;const x=(px-cv.width/2)/v.u+v.cx,y=-(py-cv.height/2)/v.u+v.cy;let key;
+   if(l==='square'){key=Math.round(x)*100003+Math.round(y)}else{const rr=y/(Math.sqrt(3)/2),q=x-rr/2;let cx=q,cz=rr,cy=-cx-cz;let rx=Math.round(cx),ry=Math.round(cy),rz=Math.round(cz);const dx=Math.abs(rx-cx),dy=Math.abs(ry-cy),dz=Math.abs(rz-cz);if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;key=rx*100003+rz}
+   const i=v.map.get(key);if(i===undefined)return;const n=st.s+i;setN(n,true)};
+  cv.addEventListener('click',pick);
+ });
+ redraw(true);
+}
+function redraw(rebuild){Object.values(views).forEach(v=>{if(rebuild||!v.sp)build(v);drawView(v)});updateInfo();legend();
+ Object.values(views).forEach(v=>{const cn=v.box.querySelector('.cn');cn.textContent=`${st.s} to ${st.s+v.K-1}`})}
+function legend(){const C=colors();const sw=(c,t)=>`<span><i style="background:${c}"></i>${t}</span>`;const L=document.getElementById('legend');
+ const sq=st.lat!=='hex',hx=st.lat!=='square';
+ if(st.mode==='primes'){L.innerHTML=(sq?sw(C.split,'p ≡ 1 (mod 4), split in ℤ[i]')+sw(C.inert,'p ≡ 3 (mod 4), inert')+sw(C.ram,'2, ramified'):'')+(hx?sw(C.split,'p ≡ 1 (mod 3), split in ℤ[ω]')+sw(C.inert,'p ≡ 2 (mod 3), inert')+sw(C.ram,'3, ramified'):'')}
+ else if(st.mode==='euler'){L.innerHTML=sw(C.gold,'N')+sw(ramp(C,0.45),'prime (N − a²)/2, shade by a')+`<span><i style="background:transparent;border:2px solid ${C.inert}"></i>composite (N − a²)/2</span>`+sw(C.prime,'other primes')}
+ else if(st.scl==='mod3'){L.innerHTML=sw(C.ram,'N ≡ 0 (mod 3)')+sw(C.inert,'N ≡ 1 (mod 3)')+sw(C.split,'N ≡ 2 (mod 3)')+sw(C.prime,'primes')}
+ else{L.innerHTML=sw(C.zero,'ρ(N) = 0')+[0.1,0.35,0.6,0.85].map(t=>sw(ramp(C,t),t<0.2?'low':t>0.8?'high':'')).join('')+sw(C.prime,'primes')+sw(C.comp,'other numbers')}}
+function setN(n,fromClick){n=Math.max(5,Math.min(LIM,n));st.N=n;document.getElementById('Nin').value=n;
+ if(n>=st.s+st.K||n<st.s){if(n<st.s)st.s=Math.max(1,Math.min(st.s,n));if(n>=st.s+st.K)st.K=Math.min(30000,Math.ceil((n-st.s+1)*1.05/100)*100);document.getElementById('K').value=st.K;document.getElementById('kv').textContent=st.K;document.getElementById('S').value=st.s;redraw(true)}else redraw(false);
+ if(fromClick&&st.mode!=='euler'){setMode('euler')}}
+function setMode(m){st.mode=m;document.querySelectorAll('#modeBtns .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===m));document.getElementById('eulerCtl').style.display=m==='euler'?'':'none';document.getElementById('heatCtl').style.display=m==='heat'?'':'none';redraw(false)}
+document.querySelectorAll('#latBtns .btn').forEach(b=>b.onclick=()=>{st.lat=b.dataset.v;document.querySelectorAll('#latBtns .btn').forEach(x=>x.classList.toggle('on',x===b));setup()});
+document.querySelectorAll('#modeBtns .btn').forEach(b=>b.onclick=()=>setMode(b.dataset.v));
+const Kin=document.getElementById('K');Kin.oninput=()=>{st.K=+Kin.value;document.getElementById('kv').textContent=st.K;if(st.mode==='euler'&&st.N>=st.s+st.K){}redraw(true)};
+const Sin=document.getElementById('S');const setS=v=>{st.s=Math.max(1,Math.min(100000,v|0));Sin.value=st.s;redraw(true)};
+Sin.onchange=()=>setS(+Sin.value);document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>setS(+b.dataset.s));
+document.getElementById('Nin').onchange=e=>setN(+e.target.value|0);
+document.getElementById('prevN').onclick=()=>{let n=st.N-1;while(n%8!==3)n--;setN(Math.max(11,n))};
+document.getElementById('nextN').onclick=()=>{let n=st.N+1;while(n%8!==3)n++;setN(n)};
+document.getElementById('cls').onchange=e=>{st.cls=+e.target.value;redraw(false)};
+document.getElementById('scl').onchange=e=>{st.scl=e.target.value;redraw(false)};
+const pop=document.getElementById('pop');
+document.getElementById('setBtn').onclick=e=>{e.stopPropagation();pop.classList.toggle('open')};
+document.addEventListener('click',e=>{if(!pop.contains(e.target)&&e.target.id!=='setBtn')pop.classList.remove('open')});
+const seg=(id,fn)=>{const g=document.getElementById(id);g.querySelectorAll('button').forEach(b=>b.onclick=()=>{fn(b.dataset.v);g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))})};
+seg('segTheme',v=>{root.setAttribute('data-theme',v);redraw(false)});
+seg('segLab',v=>{st.lab=v==='1';redraw(false)});
+const ph=()=>{document.getElementById('printhead').textContent=`Euler's 8n+3 on the spirals · lattice: ${st.lat} · view: ${st.mode} · centre ${st.s} · ${st.K} cells${st.mode==='euler'?' · N = '+st.N:''}`};
+let prevTheme=null;
+window.addEventListener('beforeprint',()=>{ph();prevTheme=root.getAttribute('data-theme');root.setAttribute('data-theme','light');redraw(false)});
+window.addEventListener('afterprint',()=>{if(prevTheme){root.setAttribute('data-theme',prevTheme);redraw(false)}});
+document.getElementById('printBtn').onclick=()=>window.print();
+setup();
+</script>
+</body>
+</html>
